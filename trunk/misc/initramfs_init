@@ -1,0 +1,43 @@
+#! /bin/busybox sh
+#
+# $Id$
+
+rescue_shell() {
+	echo "Something bad happened; attempting to drop into a shell..."
+	/bin/busybox --install -s
+	exec /bin/sh
+}
+
+# Install BusyBox
+/bin/busybox --install -s
+
+# Wait for the kernel to settle
+sleep 5
+
+# A few requirements
+echo "Initializing tmpfs filesystem..."
+mount -t proc none /proc
+mount -t sysfs none /sys
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+mdev -s
+
+# Mount up
+mount -t tmpfs -o size=1024m tmpfs /mnt/root || rescue_shell
+mount -o ro $(findfs LABEL=esos_root) /mnt/tmp || rescue_shell
+
+# Setup the root filesystem
+cd /mnt/tmp && find . -depth | cpio -pmd /mnt/root
+cd /
+cp -a /dev/* /mnt/root/dev/
+mkdir -p /dev/pts
+mkdir -p /dev/shm
+ln -s busybox /mnt/root/bin/sh
+chroot /mnt/root /bin/sh -c "/bin/busybox --install -s"
+
+# All done
+umount /mnt/tmp
+umount /proc
+umount /sys
+
+# Boot the real thing
+exec switch_root /mnt/root /sbin/init

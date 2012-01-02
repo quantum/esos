@@ -1,0 +1,11 @@
+# $Id$
+
+SHELL=/bin/sh
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+MAILTO=root
+HOME=/
+
+# Normal system tasks
+0 0 * * * root /sbin/fsck -A -T -p
+10 * * * * root /usr/local/sbin/conf_sync.sh
+20 * * * * root if [ `du -sk /var/log | awk '{print $1}'` -ge 50000 ]; then /usr/local/sbin/archive_logs; fi
