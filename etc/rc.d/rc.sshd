@@ -1,0 +1,15 @@
+#! /bin/sh
+
+# $Id$
+
+# Generate keys if necessary
+for i in ecdsa dsa rsa; do
+	key_file="/etc/ssh_host_${i}_key"
+	if [ ! -e "${key_file}" ]; then
+		/bin/echo "Generating ${i} host key..."
+		/usr/bin/ssh-keygen -t ${i} -f "${key_file}" -N ''
+	fi
+done
+
+# Start sshd
+/usr/sbin/sshd -f /etc/sshd_config

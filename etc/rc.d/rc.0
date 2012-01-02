@@ -1,0 +1,53 @@
+#! /bin/sh
+
+# $Id$
+
+/bin/echo "Sending all processes the TERM signal..."
+/sbin/killall5 -15
+/bin/sleep 1
+
+/bin/echo "Sending all processes the KILL signal..."
+/sbin/killall5 -9
+/bin/sleep 1
+
+/bin/echo "Saving random seed to a temporary file..."
+/bin/dd if=/dev/urandom of=/etc/random-seed count=1 bs=512 2> /dev/null
+
+/bin/echo "Saving the system time to hardware clock..."
+/sbin/hwclock --systohc --utc
+
+# Write wtmp records
+case "$0" in
+	*6)
+		/sbin/reboot -w
+	;;
+	*0)
+		/sbin/halt -w
+	;;
+esac
+
+/bin/echo "Synchronizing configuration..."
+/usr/local/sbin/conf_sync.sh
+
+/bin/echo "Saving log files..."
+/usr/local/sbin/archive_logs.sh
+
+/bin/echo "Remounting root filesystem read-only..."
+/bin/mount -n -o remount,ro /
+
+/bin/echo "Flushing filesystem buffers..."
+/bin/sync
+
+/bin/echo "Unmounting local filesystems..."
+/bin/umount -a -tnonfs
+
+case "$0" in
+	*6)
+		/bin/echo "Rebooting..."
+		/sbin/reboot -d -f -i
+	;;
+	*0)
+		/bin/echo "Bye..."
+		/sbin/halt -d -f -p
+	;;
+esac

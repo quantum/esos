@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# $Id$
+
+/bin/echo "Starting vixie-cron..."
+/usr/sbin/cron
+
+/bin/echo "Bringing up loopback interface..."
+/sbin/ifconfig lo 127.0.0.1
+/sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
+
+if [ -f /etc/network ]; then
+	/bin/echo "Setting up network..."
+	/bin/sh /etc/network
+fi
+
+if [ -x /etc/rc.d/rc.sshd ]; then
+	/bin/echo "Starting sshd..."
+	/etc/rc.d/rc.sshd
+fi
+
+if [ -x /etc/rc.d/rc.scst ]; then
+	/bin/echo "Loading and configuring SCST..."
+	/etc/rc.d/rc.scst
+fi
+
+if [ -x /etc/rc.d/rc.local ]; then
+	/etc/rc.d/rc.local
+fi

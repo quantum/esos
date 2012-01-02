@@ -1,0 +1,19 @@
+#! /bin/sh
+
+# $Id$
+
+MODULES="qla2xxx scst qla2x00tgt iscsi-scst scst_disk scst_vdisk"
+SCST_CFG="/etc/scst.conf"
+
+# Load the modules
+for i in ${MODULES}; do
+	/sbin/modprobe ${i}
+done
+
+# Start the iSCSI SCST daemon
+/usr/sbin/iscsi-scstd
+
+# Configure SCST
+if [ -f ${SCST_CFG} ]; then
+	/usr/sbin/scstadmin -config ${SCST_CFG}
+fi

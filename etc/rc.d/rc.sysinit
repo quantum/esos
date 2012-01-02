@@ -1,0 +1,56 @@
+#! /bin/sh
+
+# $Id$
+
+/bin/echo "Setting up mdev (/dev)..."
+/bin/mount -t tmpfs mdev /dev
+/bin/mkdir /dev/pts
+/bin/mkdir /dev/shm
+
+/bin/echo "Mounting other local filesystems..."
+/bin/mount -a
+
+/bin/echo "Populating /dev with device nodes..."
+/bin/echo /sbin/mdev > /proc/sys/kernel/hotplug
+/sbin/mdev -s
+
+/bin/grep -v rootfs /proc/mounts > /etc/mtab
+
+/sbin/fsck -A -T
+if [ $? -gt 1 ]; then
+	/bin/echo
+	/bin/echo "ERROR (fsck): Your filesystem appears to be severely damaged."
+	/bin/echo "ERROR (fsck): You can probably correct this problem by running e2fsck manually."
+	/bin/echo "ERROR (fsck): After you logout, the system will reboot."
+	/bin/echo
+	PS1="(Repair filesystem) # "
+	export PS1
+	/sbin/sulogin
+	/bin/umount -a -r
+	/sbin/reboot -f
+fi
+
+/bin/echo "Performing initial configuration sync..."
+/usr/local/sbin/conf_sync.sh
+
+/bin/echo "Configuring kernel parameters..."
+/sbin/sysctl -p /etc/sysctl.conf
+
+echo "Setting up hostname..."
+/bin/hostname -F /etc/hostname
+
+if [ -f "/etc/random-seed" ]; then
+	/bin/echo "Initializing random number generator..."
+	/bin/cat /etc/random-seed > /dev/urandom
+	/bin/rm -f /etc/random-seed
+fi
+
+echo "Setting system time from hardware clock..."
+/sbin/hwclock --hctosys --utc
+
+echo "Starting system and kernel log daemons...."
+/sbin/syslogd
+/sbin/klogd -c4
+
+echo "Updating module dependencies..."
+/sbin/depmod -a

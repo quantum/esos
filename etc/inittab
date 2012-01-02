@@ -1,0 +1,24 @@
+# $Id$
+
+id:2:initdefault:
+
+si:S:sysinit:/etc/rc.d/rc.sysinit
+
+l0:0:wait:/etc/rc.d/rc.0
+l1:1:wait:/etc/rc.d/rc.1
+l2:2:wait:/etc/rc.d/rc.2
+l3:3:wait:/etc/rc.d/rc.3
+l4:4:wait:/etc/rc.d/rc.4
+l5:5:wait:/etc/rc.d/rc.5
+l6:6:wait:/etc/rc.d/rc.6
+
+ca:12345:ctrlaltdel:/sbin/shutdown -t1 -r now
+
+su:S1:respawn:/sbin/sulogin
+
+c1:2345:respawn:/sbin/getty 38400 tty1 linux
+c2:2345:respawn:/sbin/getty 38400 tty2 linux
+c3:2345:respawn:/sbin/getty 38400 tty3 linux
+c4:2345:respawn:/sbin/getty 38400 tty4 linux
+c5:2345:respawn:/sbin/getty 38400 tty5 linux
+c6:2345:respawn:/sbin/getty 38400 tty6 linux

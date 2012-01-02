@@ -1,0 +1,6 @@
+# $Id$
+
+export PATH="${PATH}:/usr/local/bin:/usr/local/sbin"
+export PS1="\u@\h ${PS1}"
+export EDITOR="/bin/vi"
+export VISUAL="/bin/vi"
