@@ -49,8 +49,7 @@ CHOWN		:= chown
 QUIET	:= @
 STRIP	:= -s
 
-# 1st set of packages
-distfiles_1 = $(addprefix $(DISTFILES_DIR)/,busybox-1.19.0.tar.bz2	\
+distfiles = $(addprefix $(DISTFILES_DIR)/,busybox-1.19.0.tar.bz2	\
 					grub-0.97.tar.gz		\
 					sysvinit-2.88dsf.tar.bz2	\
 					glibc-2.12.2.tar.bz2		\
@@ -62,39 +61,18 @@ distfiles_1 = $(addprefix $(DISTFILES_DIR)/,busybox-1.19.0.tar.bz2	\
 					e2fsprogs-1.41.14.tar.gz	\
 					zlib-1.2.5.tar.bz2		\
 					ncurses-5.7.tar.gz		\
-					gcc-4.4.5.tar.bz2)
-distfiles_1_repo = http://distfiles.gentoo.org/distfiles
-
-# 2nd set of packages
-distfiles_2 = $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
-distfiles_2_repo = ftp://ftp8.tw.freebsd.org/distfiles
-
-# 3rd set of packages
-distfiles_3 = $(addprefix $(DISTFILES_DIR)/qlogic_fw/,ql2100_fw.bin	\
-					ql2200_fw.bin			\
-					ql2300_fw.bin			\
-					ql2322_fw.bin			\
-					ql2400_fw.bin			\
-					ql2500_fw.bin)
-distfiles_3_repo = ftp://ftp.qlogic.com/outgoing/linux/firmware
-
-# 4th set of packages
-distfiles_4 = $(addprefix $(DISTFILES_DIR)/,linux-2.6.39.4.tar.bz2)
-distfiles_4_repo = http://www.kernel.org/pub/linux/kernel/v2.6
-
-# 5th set of packages
-distfiles_5 = $(addprefix $(DISTFILES_DIR)/,qla2x00t-2.1.0.tar.gz)
-distfiles_5_repo = http://downloads.sourceforge.net/project/scst/qla2x00-target/2.1.0
-
-# 6th set of packages
-distfiles_6 = $(addprefix $(DISTFILES_DIR)/,scstadmin-2.1.0.tar.gz	\
+					qlogic_fw-20120101.tar.gz	\
+					linux-2.6.39.4.tar.bz2		\
+					srpt-2.1.0.tar.bz2		\
+					qla2x00t-2.1.0.tar.gz		\
+					scstadmin-2.1.0.tar.gz		\
 					scst-2.1.0.tar.gz		\
-					iscsi-scst-2.1.0.tar.gz)
-distfiles_6_repo = http://distfiles.alpinelinux.org/distfiles
+					iscsi-scst-2.1.0.tar.gz		\
+					gcc-4.4.5.tar.bz2)
+distfiles_repo = http://enterprise-storage-os.googlecode.com/files
 
-# 7th set of packages
-distfiles_7 = $(addprefix $(DISTFILES_DIR)/,lpfc_scst_8.2.0.41_tm_10.0.0.tar.gz)
-distfiles_7_repo = http://downloads.sourceforge.net/project/lpfcxxxx/lpfc%20SCST%20Support/lpfc_scst_8.2.0.41_tm_10.0.0
+no_fetch_pkg_1 = $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
+no_fetch_pkg_1_url = http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_MegaCLI.zip
 
 gzip_tarballs	= $(DISTFILES_DIR)/*.tar.gz
 bzip2_tarballs	= $(DISTFILES_DIR)/*.tar.bz2
@@ -204,28 +182,15 @@ distclean: clean
 
 
 # fetch - Grab all required packages from distribution file repositories.
-fetch: $(distfiles_1) $(distfiles_2) $(distfiles_3) $(distfiles_4) $(distfiles_5) $(distfiles_6) $(distfiles_7) ;
+fetch: $(distfiles) $(no_fetch_pkg_1) ;
 
-$(distfiles_1):
-	$(WGET) -P $(DISTFILES_DIR) $(distfiles_1_repo)/$(notdir $(@))
+$(distfiles):
+	$(WGET) -P $(DISTFILES_DIR) $(distfiles_repo)/$(notdir $(@))
 
-$(distfiles_2):
-	$(WGET) -P $(DISTFILES_DIR) $(distfiles_2_repo)/$(notdir $(@))
-
-$(distfiles_3):
-	$(WGET) -P $(DISTFILES_DIR)/qlogic_fw $(distfiles_3_repo)/$(notdir $(@))
-
-$(distfiles_4):
-	$(WGET) -P $(DISTFILES_DIR) $(distfiles_4_repo)/$(notdir $(@))
-
-$(distfiles_5):
-	$(WGET) -P $(DISTFILES_DIR) $(distfiles_5_repo)/$(notdir $(@))
-
-$(distfiles_6):
-	$(WGET) -P $(DISTFILES_DIR) $(distfiles_6_repo)/$(notdir $(@))
-
-$(distfiles_7):
-	$(WGET) -P $(DISTFILES_DIR) $(distfiles_7_repo)/$(notdir $(@))
+$(no_fetch_pkg_1):
+	$(QUIET) $(ECHO) "### Fetch restriction: Please download '$(notdir $(@))'"
+	$(QUIET) $(ECHO) "### from '$(no_fetch_pkg_1_url)'"
+	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
 
 
 # extract - Extract all of the previously downloaded packages/archives.
