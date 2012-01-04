@@ -4,10 +4,6 @@
 # Something.
 # Something.
 
-ESOS_VER	:= 0.1
-PROD_SUFFIX	:= -esos.prod
-DEBUG_SUFFIX	:= -esos.debug
-
 CWD		:= $(shell pwd)
 WORK_DIR	:= $(CWD)/work
 DISTFILES_DIR	:= $(WORK_DIR)/distfiles
@@ -46,8 +42,8 @@ INSTALL		:= install
 PATCH		:= patch
 CHOWN		:= chown
 
-QUIET	:= @
-STRIP	:= -s
+QUIET		:= @
+STRIP		:= -s
 
 distfiles = $(addprefix $(DISTFILES_DIR)/,busybox-1.19.0.tar.bz2	\
 					grub-0.97.tar.gz		\
@@ -55,7 +51,7 @@ distfiles = $(addprefix $(DISTFILES_DIR)/,busybox-1.19.0.tar.bz2	\
 					glibc-2.12.2.tar.bz2		\
 					vixie-cron-4.1.tar.bz2		\
 					openssh-5.8p1.tar.gz		\
-					ssmtp_2.64.orig.tar.bz2		\
+					ssmtp-2.64.tar.bz2		\
 					perl-5.12.4.tar.bz2		\
 					openssl-1.0.0e.tar.gz		\
 					e2fsprogs-1.41.14.tar.gz	\
@@ -74,16 +70,17 @@ distfiles_repo = http://enterprise-storage-os.googlecode.com/files
 no_fetch_pkg_1 = $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
 no_fetch_pkg_1_url = http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_MegaCLI.zip
 
-gzip_tarballs	= $(DISTFILES_DIR)/*.tar.gz
-bzip2_tarballs	= $(DISTFILES_DIR)/*.tar.bz2
-zip_archives	= $(DISTFILES_DIR)/*.zip
-
 build_targets := scst_kernel busybox sysvinit grub glibc \
 			perl MegaCLI qlogic_fw scstadmin openssh \
 			vixie-cron gcc openssl zlib ncurses \
 			e2fsprogs ssmtp
 clean_targets := $(addprefix clean-,$(build_targets))
 src_dir = $(wildcard $(BUILD_DIR)/$(@)-*)
+tarball_src_dirs = $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
+
+esos_ver	:= 0.1
+prod_suffix	:= -esos.prod
+debug_suffix	:= -esos.debug
 
 
 # all - The default goal; complete every target except install.
@@ -92,6 +89,7 @@ all: fetch extract build ;
 
 
 # install - Prompt for USB thumb-drive device node and install the distribution to it.
+.PHONY: install
 install: install_dev_node = $(WORK_DIR)/install_dev_node
 install: usb_device = $$($(CAT) $(install_dev_node))
 install: initramfs
@@ -139,7 +137,7 @@ install: initramfs
 	$(CD) $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdv $(IMAGE_DIR)/etc && $(CD) -
 	$(CD) $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdv $(MOUNT_DIR) && $(CD) -
 	$(IMAGE_DIR)/usr/sbin/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(usb_device)
-	$(SED) 's/@@esos_ver@@/$(ESOS_VER)/' $(CWD)/misc/grub.conf > $(MOUNT_DIR)/boot/grub/grub.conf
+	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.conf > $(MOUNT_DIR)/boot/grub/grub.conf
 	$(LN) grub.conf $(MOUNT_DIR)/boot/grub/menu.lst
 	$(LN) /usr/share/zoneinfo/UTC $(MOUNT_DIR)/etc/localtime
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
@@ -188,27 +186,25 @@ $(distfiles):
 	$(WGET) -P $(DISTFILES_DIR) $(distfiles_repo)/$(notdir $(@))
 
 $(no_fetch_pkg_1):
-	$(QUIET) $(ECHO) "### Fetch restriction: Please download '$(notdir $(@))'"
-	$(QUIET) $(ECHO) "### from '$(no_fetch_pkg_1_url)'"
+	$(QUIET) $(ECHO) "### Fetch restriction: $(notdir $(@))"
+	$(QUIET) $(ECHO) "### Please download from '$(no_fetch_pkg_1_url)'"
 	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
 
 
 # extract - Extract all of the previously downloaded packages/archives.
-.PHONY: extract
-extract: fetch
+extract: fetch $(tarball_src_dirs) ;
+
+$(tarball_src_dirs): src_file = $(wildcard $(DISTFILES_DIR)/$(notdir $(@)).*)
+$(tarball_src_dirs):
 	$(MKDIR) $(BUILD_DIR)
-	$(QUIET) for i in $(gzip_tarballs);			\
-	do							\
-	  $(TAR) xvfz $$i -C $(BUILD_DIR);			\
-	done
-	$(QUIET) for i in $(bzip2_tarballs);			\
-	do							\
-	  $(TAR) xvfj $$i -C $(BUILD_DIR);			\
-	done
-	$(QUIET) for i in $(zip_archives);			\
-	do							\
-	  $(UNZIP) -o $$i -d $(BUILD_DIR);			\
-	done
+	$(QUIET) if [ "$(suffix $(src_file))" == ".gz" ]; then \
+	  $(TAR) xvfz $(src_file) -C $(BUILD_DIR); \
+	elif [ "$(suffix $(src_file))" == ".bz2" ]; then \
+	  $(TAR) xvfj $(src_file) -C $(BUILD_DIR); \
+	else \
+	  $(ECHO) "### Unhandled file extension: $(suffix $(src_file))"; \
+	  $(EXIT) 1; \
+	fi
 
 
 # build - Configure/compile/build all of the required projects.
@@ -284,7 +280,7 @@ scst_kernel:
 	### Build the kernel (prod)
 	$(MAKE) --directory=$(linux_src) clean
 	$(MAKE) --directory=$(linux_src) distclean
-	$(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(PROD_SUFFIX)\"/' \
+	$(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
 	$(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config
 	$(MAKE) --directory=$(linux_src)
 	$(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage $(IMAGE_DIR)/boot/bzImage.prod
@@ -295,7 +291,7 @@ scst_kernel:
 	$(MAKE) --directory=$(scst_src)/src debug2perf
 	$(MAKE) --directory=$(scst_src)/src KDIR=$(linux_src) all
 	$(MAKE) --directory=$(scst_src)/src KDIR=$(linux_src) DESTDIR=$(IMAGE_DIR) \
-	KVER=$(kernel_ver)$(PROD_SUFFIX) install
+	KVER=$(kernel_ver)$(prod_suffix) install
 	### Build qla2x00t modules (prod)
 	$(MAKE) --directory=$(qla2x00t_src)/qla2x00-target clean
 	$(MAKE) --directory=$(qla2x00t_src)/qla2x00-target extraclean
@@ -303,7 +299,7 @@ scst_kernel:
 	$(MAKE) --directory=$(qla2x00t_src)/qla2x00-target \
 	SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst KDIR=$(linux_src) all
 	$(MAKE) --directory=$(qla2x00t_src)/qla2x00-target KDIR=$(linux_src) \
-	KVER=$(kernel_ver)$(PROD_SUFFIX) INSTALL_MOD_PATH=$(IMAGE_DIR) \
+	KVER=$(kernel_ver)$(prod_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) \
 	SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst install
 	### Build iscsi-scst modules (prod)
 	$(MAKE) --directory=$(iscsi-scst_src) clean
@@ -313,11 +309,11 @@ scst_kernel:
 	$(MAKE) --directory=$(iscsi-scst_src) SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst \
 	KDIR=$(linux_src) mods
 	$(INSTALL) -vD -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
-	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(PROD_SUFFIX)/extra/iscsi-scst.ko
+	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(prod_suffix)/extra/iscsi-scst.ko
 	### Build the kernel (debug)
 	$(MAKE) --directory=$(linux_src) clean
 	$(MAKE) --directory=$(linux_src) distclean
-	$(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(DEBUG_SUFFIX)\"/' \
+	$(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
 	$(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config
 	$(MAKE) --directory=$(linux_src)
 	$(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage $(IMAGE_DIR)/boot/bzImage.debug
@@ -328,7 +324,7 @@ scst_kernel:
 	$(MAKE) --directory=$(scst_src)/src perf2debug
 	$(MAKE) --directory=$(scst_src)/src KDIR=$(linux_src) all
 	$(MAKE) --directory=$(scst_src)/src KDIR=$(linux_src) DESTDIR=$(IMAGE_DIR) \
-	KVER=$(kernel_ver)$(DEBUG_SUFFIX) install
+	KVER=$(kernel_ver)$(debug_suffix) install
 	### Build qla2x00t modules (debug)
 	$(MAKE) --directory=$(qla2x00t_src)/qla2x00-target clean
 	$(MAKE) --directory=$(qla2x00t_src)/qla2x00-target extraclean
@@ -336,7 +332,7 @@ scst_kernel:
 	$(MAKE) --directory=$(qla2x00t_src)/qla2x00-target \
 	SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst KDIR=$(linux_src) all
 	$(MAKE) --directory=$(qla2x00t_src)/qla2x00-target KDIR=$(linux_src) \
-	KVER=$(kernel_ver)$(DEBUG_SUFFIX) INSTALL_MOD_PATH=$(IMAGE_DIR) \
+	KVER=$(kernel_ver)$(debug_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) \
 	SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst install
 	### Build iscsi-scst modules (debug)
 	$(MAKE) --directory=$(iscsi-scst_src) clean
@@ -346,7 +342,7 @@ scst_kernel:
 	$(MAKE) --directory=$(iscsi-scst_src) SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst \
 	KDIR=$(linux_src) mods
 	$(INSTALL) -vD -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
-	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(DEBUG_SUFFIX)/extra/iscsi-scst.ko
+	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(debug_suffix)/extra/iscsi-scst.ko
 	### Build iscsi-scst userland
 	$(MAKE) --directory=$(iscsi-scst_src) include/iscsi_scst_itf_ver.h
 	$(MAKE) --directory=$(iscsi-scst_src) \
