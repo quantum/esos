@@ -12,6 +12,9 @@ IMAGE_DIR	:= $(WORK_DIR)/image
 INITRAMFS_DIR	:= $(WORK_DIR)/initramfs
 MOUNT_DIR	:= $(WORK_DIR)/mnt
 
+QUIET		:= @
+STRIP		:= -s
+
 WGET		:= wget -t 5
 MKDIR		:= mkdir -p
 RM		:= rm -rf
@@ -42,41 +45,40 @@ INSTALL		:= install
 PATCH		:= patch
 CHOWN		:= chown
 
-QUIET		:= @
-STRIP		:= -s
-
-distfiles = $(addprefix $(DISTFILES_DIR)/,busybox-1.19.0.tar.bz2	\
-					grub-0.97.tar.gz		\
-					sysvinit-2.88dsf.tar.bz2	\
-					glibc-2.12.2.tar.bz2		\
-					vixie-cron-4.1.tar.bz2		\
-					openssh-5.8p1.tar.gz		\
-					ssmtp-2.64.tar.bz2		\
-					perl-5.12.4.tar.bz2		\
-					openssl-1.0.0e.tar.gz		\
-					e2fsprogs-1.41.14.tar.gz	\
-					zlib-1.2.5.tar.bz2		\
-					ncurses-5.7.tar.gz		\
-					qlogic_fw-20120101.tar.gz	\
-					linux-2.6.39.4.tar.bz2		\
-					srpt-2.1.0.tar.bz2		\
-					qla2x00t-2.1.0.tar.gz		\
-					scstadmin-2.1.0.tar.gz		\
-					scst-2.1.0.tar.gz		\
-					iscsi-scst-2.1.0.tar.gz		\
-					gcc-4.4.5.tar.bz2)
+distfiles = $(addprefix $(DISTFILES_DIR)/,	\
+		busybox-1.19.0.tar.bz2		\
+		grub-0.97.tar.gz		\
+		sysvinit-2.88dsf.tar.bz2	\
+		glibc-2.12.2.tar.bz2		\
+		vixie-cron-4.1.tar.bz2		\
+		openssh-5.8p1.tar.gz		\
+		ssmtp-2.64.tar.bz2		\
+		perl-5.12.4.tar.bz2		\
+		openssl-1.0.0e.tar.gz		\
+		e2fsprogs-1.41.14.tar.gz	\
+		zlib-1.2.5.tar.bz2		\
+		ncurses-5.7.tar.gz		\
+		qlogic_fw-20120101.tar.gz	\
+		linux-2.6.39.4.tar.bz2		\
+		srpt-2.1.0.tar.bz2		\
+		qla2x00t-2.1.0.tar.gz		\
+		scstadmin-2.1.0.tar.gz		\
+		scst-2.1.0.tar.gz		\
+		iscsi-scst-2.1.0.tar.gz		\
+		gcc-4.4.5.tar.bz2)
 distfiles_repo = http://enterprise-storage-os.googlecode.com/files
 
 no_fetch_pkg_1 = $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
 no_fetch_pkg_1_url = http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_MegaCLI.zip
 
 build_targets := scst_kernel busybox sysvinit grub glibc \
-			perl MegaCLI qlogic_fw scstadmin openssh \
-			vixie-cron gcc openssl zlib ncurses \
-			e2fsprogs ssmtp
+		perl MegaCLI qlogic_fw scstadmin openssh \
+		vixie-cron gcc openssl zlib ncurses \
+		e2fsprogs ssmtp
 clean_targets := $(addprefix clean-,$(build_targets))
 src_dir = $(wildcard $(BUILD_DIR)/$(@)-*)
-tarball_src_dirs = $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
+tarball_src_dirs = $(addprefix $(BUILD_DIR)/, \
+		$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
 
 esos_ver	:= 0.1
 prod_suffix	:= -esos.prod
@@ -93,23 +95,20 @@ all: fetch extract build ;
 install: install_dev_node = $(WORK_DIR)/install_dev_node
 install: usb_device = $$($(CAT) $(install_dev_node))
 install: initramfs
-	$(QUIET) if [ `whoami` != "root" ];				\
-	then								\
-	  $(ECHO) "### Snap! Ya gotta be root for this part...";	\
-	  $(EXIT) 1;							\
+	$(QUIET) if [ `whoami` != "root" ]; then \
+	  $(ECHO) "### Snap! Ya gotta be root for this part..."; \
+	  $(EXIT) 1; \
 	fi
 	$(QUIET) $(ECHO) "### Please type the full path of your USB drive device node (eg, /dev/sdz):" &&	\
 	$(READ) dev_node && $(ECHO) -n $$dev_node > $(install_dev_node)
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) if [ "$(usb_device)" == "" ] || [ ! -e $(usb_device) ];		\
-	then										\
-	  $(ECHO) "### That device node doesn't seem to exist.";			\
-	  $(EXIT) 1;									\
+	$(QUIET) if [ "$(usb_device)" == "" ] || [ ! -e $(usb_device) ]; then \
+	  $(ECHO) "### That device node doesn't seem to exist."; \
+	  $(EXIT) 1; \
 	fi
-	$(QUIET) if $(GREP) $(usb_device) /proc/mounts > /dev/null;	\
-	then								\
-	  $(ECHO) "### It looks like that device is mounted...";	\
-	  $(EXIT) 1;							\
+	$(QUIET) if $(GREP) $(usb_device) /proc/mounts > /dev/null; then \
+	  $(ECHO) "### It looks like that device is mounted..."; \
+	  $(EXIT) 1; \
 	fi
 	$(QUIET) $(ECHO) "### This is what '$(usb_device)' looks like..."
 	$(QUIET) $(SFDISK) -l $(usb_device)
@@ -213,50 +212,57 @@ build: image_setup $(build_targets) ;
 
 .PHONY: image_setup
 image_setup:
+	$(MKDIR) $(IMAGE_DIR)/{etc,bin,sbin,dev,proc,sys,root,home}
 	$(MKDIR) $(IMAGE_DIR)/boot/grub
-	$(MKDIR) $(IMAGE_DIR)/mnt/root
-	$(MKDIR) $(IMAGE_DIR)/mnt/conf
-	$(MKDIR) $(IMAGE_DIR)/mnt/logs
-	$(MKDIR) $(IMAGE_DIR)/etc
+	$(MKDIR) $(IMAGE_DIR)/mnt/{root,conf,logs}
+	#$(MKDIR) $(IMAGE_DIR)/mnt/conf
+	#$(MKDIR) $(IMAGE_DIR)/mnt/logs
+	#$(MKDIR) $(IMAGE_DIR)/etc
 	$(MKDIR) $(IMAGE_DIR)/lib/firmware
-	$(MKDIR) $(IMAGE_DIR)/bin
-	$(MKDIR) $(IMAGE_DIR)/sbin
-	$(MKDIR) $(IMAGE_DIR)/usr/bin
-	$(MKDIR) $(IMAGE_DIR)/usr/sbin
-	$(MKDIR) $(IMAGE_DIR)/usr/libexec
-	$(MKDIR) $(IMAGE_DIR)/usr/local/bin
-	$(MKDIR) $(IMAGE_DIR)/usr/local/sbin
-	$(MKDIR) $(IMAGE_DIR)/dev
-	$(MKDIR) $(IMAGE_DIR)/proc
-	$(MKDIR) $(IMAGE_DIR)/sys
-	$(MKDIR) $(IMAGE_DIR)/root
+	#$(MKDIR) $(IMAGE_DIR)/bin
+	#$(MKDIR) $(IMAGE_DIR)/sbin
+	$(MKDIR) $(IMAGE_DIR)/usr/{bin,sbin,libexec}
+	#$(MKDIR) $(IMAGE_DIR)/usr/bin
+	#$(MKDIR) $(IMAGE_DIR)/usr/sbin
+	#$(MKDIR) $(IMAGE_DIR)/usr/libexec
+	$(MKDIR) $(IMAGE_DIR)/usr/local/{bin,sbin}
+	#$(MKDIR) $(IMAGE_DIR)/usr/local/bin
+	#$(MKDIR) $(IMAGE_DIR)/usr/local/sbin
+	#$(MKDIR) $(IMAGE_DIR)/dev
+	#$(MKDIR) $(IMAGE_DIR)/proc
+	#$(MKDIR) $(IMAGE_DIR)/sys
+	#$(MKDIR) $(IMAGE_DIR)/root
 	#$(MKDIR) $(IMAGE_DIR)/tmp
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/tmp
-	$(MKDIR) $(IMAGE_DIR)/home
-	$(MKDIR) $(IMAGE_DIR)/var/spool
-	$(MKDIR) $(IMAGE_DIR)/var/lock
-	$(MKDIR) $(IMAGE_DIR)/var/run
-	$(MKDIR) $(IMAGE_DIR)/var/state
-	$(MKDIR) $(IMAGE_DIR)/var/cache
+	#$(MKDIR) $(IMAGE_DIR)/home
+	$(MKDIR) $(IMAGE_DIR)/var/{spool,lock,run,state,cache,log,empty}
+	#$(MKDIR) $(IMAGE_DIR)/var/spool
+	#$(MKDIR) $(IMAGE_DIR)/var/lock
+	#$(MKDIR) $(IMAGE_DIR)/var/run
+	#$(MKDIR) $(IMAGE_DIR)/var/state
+	#$(MKDIR) $(IMAGE_DIR)/var/cache
 	#$(MKDIR) $(IMAGE_DIR)/var/tmp
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/var/tmp
-	$(MKDIR) $(IMAGE_DIR)/var/log
-	$(MKDIR) $(IMAGE_DIR)/var/empty
+	#$(MKDIR) $(IMAGE_DIR)/var/log
+	#$(MKDIR) $(IMAGE_DIR)/var/empty
 	$(INSTALL) -m 710 -d $(IMAGE_DIR)/var/cron
 	$(INSTALL) -m 700 -d $(IMAGE_DIR)/var/cron/tabs
 	$(LN) lib $(IMAGE_DIR)/lib64
 	$(LN) lib $(IMAGE_DIR)/usr/lib64
-	$(MKDIR) $(INITRAMFS_DIR)/bin
-	$(MKDIR) $(INITRAMFS_DIR)/sbin
-	$(MKDIR) $(INITRAMFS_DIR)/mnt/root
-	$(MKDIR) $(INITRAMFS_DIR)/mnt/tmp
-	$(MKDIR) $(INITRAMFS_DIR)/mnt/conf
-	$(MKDIR) $(INITRAMFS_DIR)/mnt/logs
-	$(MKDIR) $(INITRAMFS_DIR)/proc
-	$(MKDIR) $(INITRAMFS_DIR)/sys
-	$(MKDIR) $(INITRAMFS_DIR)/usr/bin
-	$(MKDIR) $(INITRAMFS_DIR)/usr/sbin
-	$(MKDIR) $(INITRAMFS_DIR)/dev
+	$(MKDIR) $(INITRAMFS_DIR)/{bin,sbin,proc,sys,dev}
+	#$(MKDIR) $(INITRAMFS_DIR)/bin
+	#$(MKDIR) $(INITRAMFS_DIR)/sbin
+	$(MKDIR) $(INITRAMFS_DIR)/mnt/{root,tmp}
+	#$(MKDIR) $(INITRAMFS_DIR)/mnt/root
+	#$(MKDIR) $(INITRAMFS_DIR)/mnt/tmp
+	#$(MKDIR) $(INITRAMFS_DIR)/mnt/conf
+	#$(MKDIR) $(INITRAMFS_DIR)/mnt/logs
+	#$(MKDIR) $(INITRAMFS_DIR)/proc
+	#$(MKDIR) $(INITRAMFS_DIR)/sys
+	$(MKDIR) $(INITRAMFS_DIR)/usr/{bin,sbin}
+	#$(MKDIR) $(INITRAMFS_DIR)/usr/bin
+	#$(MKDIR) $(INITRAMFS_DIR)/usr/sbin
+	#$(MKDIR) $(INITRAMFS_DIR)/dev
 
 scst_kernel: linux_src = $(wildcard $(BUILD_DIR)/linux-*)
 scst_kernel: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
@@ -436,8 +442,6 @@ gcc:
 	$(CD) $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ --disable-nls --enable-threads \
 	--with-gnu-as --with-gnu-ld --with-gcc --prefix=$(IMAGE_DIR)/usr && $(CD) -
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build
-	#$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libgcc
-	#$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libstdc++-v3
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build install-target-libgcc
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build install-target-libstdc++-v3
 	$(TOUCH) $(@)
