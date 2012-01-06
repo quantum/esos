@@ -44,6 +44,8 @@ RPM2CPIO	:= rpm2cpio
 INSTALL		:= install
 PATCH		:= patch
 CHOWN		:= chown
+MD5SUM		:= md5sum -w
+SHA256SUM	:= sha256sum -w
 
 distfiles = $(addprefix $(DISTFILES_DIR)/,	\
 		busybox-1.19.0.tar.bz2		\
@@ -133,8 +135,8 @@ install: initramfs
 	$(MOUNT) -L esos_root $(MOUNT_DIR) 
 	$(MKDIR) $(MOUNT_DIR)/boot
 	$(MOUNT) -L esos_boot $(MOUNT_DIR)/boot
-	$(CD) $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdv $(IMAGE_DIR)/etc && $(CD) -
-	$(CD) $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdv $(MOUNT_DIR) && $(CD) -
+	$(CD) $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdv $(IMAGE_DIR)/etc
+	$(CD) $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdv $(MOUNT_DIR)
 	$(IMAGE_DIR)/usr/sbin/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(usb_device)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.conf > $(MOUNT_DIR)/boot/grub/grub.conf
 	$(LN) grub.conf $(MOUNT_DIR)/boot/grub/menu.lst
@@ -158,7 +160,7 @@ initramfs:
 	$(LN) busybox $(INITRAMFS_DIR)/bin/sh
 	$(CD) $(INITRAMFS_DIR) && $(FIND) . -print0 |	\
 	$(CPIO) --null -ov --format=newc |		\
-	$(GZIP) > $(IMAGE_DIR)/boot/initramfs.cpio.gz && $(CD) -
+	$(GZIP) > $(IMAGE_DIR)/boot/initramfs.cpio.gz
 
 
 # clean - Remove all temporary files and clean/distclean each package source directory.
@@ -190,8 +192,17 @@ $(no_fetch_pkg_1):
 	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
 
 
+# checksum - Verify checksums for all distribution files.
+.PHONY: checksum
+checksum: fetch
+	$(QUIET) $(ECHO) "### Verifying MD5 checksums..."
+	$(QUIET) $(CD) $(DISTFILES_DIR) && $(MD5SUM) -c $(CWD)/CHECKSUM.MD5
+	$(QUIET) $(ECHO) "### Verifying SHA256 checksums..."
+	$(QUIET) $(CD) $(DISTFILES_DIR) && $(SHA256SUM) -c $(CWD)/CHECKSUM.SHA256
+
+
 # extract - Extract all of the previously downloaded packages/archives.
-extract: fetch $(tarball_src_dirs) ;
+extract: fetch checksum $(tarball_src_dirs) ;
 
 $(tarball_src_dirs): src_file = $(wildcard $(DISTFILES_DIR)/$(notdir $(@)).*)
 $(tarball_src_dirs):
@@ -377,7 +388,7 @@ sysvinit:
 	$(TOUCH) $(@)
 
 grub:
-	$(CD) $(src_dir) && LDFLAGS="--static" ./configure --prefix=$(IMAGE_DIR)/usr && $(CD) -
+	$(CD) $(src_dir) && LDFLAGS="--static" ./configure --prefix=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) install-exec
 	$(TOUCH) $(@)
@@ -385,15 +396,14 @@ grub:
 glibc:
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
-	$(CD) $(WORK_DIR)/glibc-build &&						\
-	CFLAGS="-O2 -U_FORTIFY_SOURCE" $(src_dir)/configure --prefix=/usr &&		\
-	$(CD) -
+	$(CD) $(WORK_DIR)/glibc-build && \
+	CFLAGS="-O2 -U_FORTIFY_SOURCE" $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 perl:
-	$(CD) $(src_dir) && ./configure.gnu --prefix=/usr && $(CD) -
+	$(CD) $(src_dir) && ./configure.gnu --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) test
 	$(MAKE) --directory=$(src_dir) install.perl DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
@@ -402,8 +412,8 @@ perl:
 MegaCLI:
 	$(MKDIR) $(BUILD_DIR)/$(@)
 	$(UNZIP) -o $(BUILD_DIR)/LINUX/MegaCliLin.zip -d $(BUILD_DIR)/$(@)
-	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(BUILD_DIR)/$(@)/Lib_Utils-*.rpm | $(CPIO) -idmv && $(CD) -
-	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(BUILD_DIR)/$(@)/MegaCli-*.rpm | $(CPIO) -idmv && $(CD) -
+	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(BUILD_DIR)/$(@)/Lib_Utils-*.rpm | $(CPIO) -idmv
+	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(BUILD_DIR)/$(@)/MegaCli-*.rpm | $(CPIO) -idmv
 	$(TOUCH) $(@)
 
 qlogic_fw:
@@ -412,16 +422,15 @@ qlogic_fw:
 
 scstadmin: perl_mod = $(wildcard $(src_dir)/scstadmin/scst-*)
 scstadmin:
-	$(CD) $(src_dir)/scstadmin/scst-* &&					\
-	$(IMAGE_DIR)/usr/bin/perl Makefile.PL PREFIX=$(IMAGE_DIR)/usr &&	\
-	$(CD) -
+	$(CD) $(src_dir)/scstadmin/scst-* && \
+	$(IMAGE_DIR)/usr/bin/perl Makefile.PL PREFIX=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(perl_mod)
 	$(MAKE) --directory=$(perl_mod) install
 	$(CP) $(src_dir)/scstadmin/scstadmin $(IMAGE_DIR)/usr/sbin
 	$(TOUCH) $(@)
 
 openssh:
-	$(CD) $(src_dir) && ./configure --prefix="" --exec-prefix=/usr && $(CD) -
+	$(CD) $(src_dir) && ./configure --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) -m 0755 -s $(src_dir)/sshd $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) -m 0755 -s $(src_dir)/ssh $(IMAGE_DIR)/usr/bin/
@@ -440,40 +449,40 @@ vixie-cron:
 gcc:
 	$(MKDIR) $(WORK_DIR)/gcc-build
 	$(CD) $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ --disable-nls --enable-threads \
-	--with-gnu-as --with-gnu-ld --with-gcc --prefix=$(IMAGE_DIR)/usr && $(CD) -
+	--with-gnu-as --with-gnu-ld --with-gcc --prefix=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build install-target-libgcc
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build install-target-libstdc++-v3
 	$(TOUCH) $(@)
 
 openssl:
-	$(CD) $(src_dir) && ./config shared --prefix=$(IMAGE_DIR)/usr && $(CD) -
+	$(CD) $(src_dir) && ./config shared --prefix=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) install_sw
 	$(TOUCH) $(@)
 
 zlib:
-	$(CD) $(src_dir) && ./configure --prefix=$(IMAGE_DIR)/usr && $(CD) -
+	$(CD) $(src_dir) && ./configure --prefix=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) install-libs
 	$(TOUCH) $(@)
 
 ncurses:
-	$(CD) $(src_dir) && ./configure --prefix=$(IMAGE_DIR)/usr --with-shared && $(CD) -
+	$(CD) $(src_dir) && ./configure --prefix=$(IMAGE_DIR)/usr --with-shared
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) install.libs
 	$(TOUCH) $(@)
 
 e2fsprogs:
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
-	$(CD) $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=$(IMAGE_DIR)/usr && $(CD) -
+	$(CD) $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build install
 	$(TOUCH) $(@)
 
 ssmtp:
-	$(CD) $(src_dir) && ./configure --enable-ssl --prefix="" --exec-prefix=/usr && $(CD) -
+	$(CD) $(src_dir) && ./configure --enable-ssl --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/ssmtp
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
