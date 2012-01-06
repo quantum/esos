@@ -19,3 +19,6 @@ df5a914c80dfe167163a4da6f6044d86  scstadmin-2.1.0.tar.gz
 6eda8a97b86e0a6f59dabbf25202aa6f  sysvinit-2.88dsf.tar.bz2
 09dc04f9879684d27c64c910174a9536  vixie-cron-4.1.tar.bz2
 be1e89810e66150f5b0327984d8625a0  zlib-1.2.5.tar.bz2
+c7575b7620615d7dfa1c7fdbbd310ec7  libibumad-1.3.7.tar.gz
+c90739bd0178bb568aad3b2ba03bb73a  libibverbs-1.1.4.tar.gz
+f8370ac17c33aa8d6a897064794a7d68  srptools-0.0.4.tar.gz
