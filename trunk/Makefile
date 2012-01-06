@@ -53,6 +53,9 @@ distfiles = $(addprefix $(DISTFILES_DIR)/,	\
 		sysvinit-2.88dsf.tar.bz2	\
 		glibc-2.12.2.tar.bz2		\
 		vixie-cron-4.1.tar.bz2		\
+		libibumad-1.3.7.tar.gz		\
+		libibverbs-1.1.4.tar.gz		\
+		srptools-0.0.4.tar.gz		\
 		openssh-5.8p1.tar.gz		\
 		ssmtp-2.64.tar.bz2		\
 		perl-5.12.4.tar.bz2		\
@@ -76,7 +79,7 @@ no_fetch_pkg_1_url = http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_Me
 build_targets := scst_kernel busybox sysvinit grub glibc \
 		perl MegaCLI qlogic_fw scstadmin openssh \
 		vixie-cron gcc openssl zlib ncurses \
-		e2fsprogs ssmtp
+		e2fsprogs ssmtp libibumad libibverbs srptools
 clean_targets := $(addprefix clean-,$(build_targets))
 src_dir = $(wildcard $(BUILD_DIR)/$(@)-*)
 tarball_src_dirs = $(addprefix $(BUILD_DIR)/, \
@@ -280,6 +283,7 @@ scst_kernel: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
 scst_kernel: scst_src = $(wildcard $(BUILD_DIR)/scst-*)
 scst_kernel: qla2x00t_src = $(wildcard $(BUILD_DIR)/qla2x00t-*)
 scst_kernel: iscsi-scst_src = $(wildcard $(BUILD_DIR)/iscsi-scst-*)
+scst_kernel: srpt_src = $(wildcard $(BUILD_DIR)/srpt-*)
 scst_kernel:
 	### Kernel prerequisites for SCST
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
@@ -327,6 +331,14 @@ scst_kernel:
 	KDIR=$(linux_src) mods
 	$(INSTALL) -vD -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
 	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(prod_suffix)/extra/iscsi-scst.ko
+	### Build srpt modules (prod)
+	$(MAKE) --directory=$(srpt_src) clean
+	$(MAKE) --directory=$(srpt_src) extraclean
+	$(SED) -i 's/^EXTRA_CFLAGS/#&/' $(srpt_src)/src/Makefile
+	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
+	KDIR=$(linux_src) KVER=$(kernel_ver)$(prod_suffix) EXTRA_CFLAGS="-I$(IMAGE_DIR)/usr/local/include"
+	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
+	KDIR=$(linux_src) KVER=$(kernel_ver)$(prod_suffix) install
 	### Build the kernel (debug)
 	$(MAKE) --directory=$(linux_src) clean
 	$(MAKE) --directory=$(linux_src) distclean
@@ -360,6 +372,14 @@ scst_kernel:
 	KDIR=$(linux_src) mods
 	$(INSTALL) -vD -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
 	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(debug_suffix)/extra/iscsi-scst.ko
+	### Build srpt modules (debug)
+	$(MAKE) --directory=$(srpt_src) clean
+	$(MAKE) --directory=$(srpt_src) extraclean
+	$(SED) -i 's/^#//' $(srpt_src)/src/Makefile
+	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
+	KDIR=$(linux_src) KVER=$(kernel_ver)$(debug_suffix) EXTRA_CFLAGS="-I$(IMAGE_DIR)/usr/local/include"
+	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
+	KDIR=$(linux_src) KVER=$(kernel_ver)$(debug_suffix) install
 	### Build iscsi-scst userland
 	$(MAKE) --directory=$(iscsi-scst_src) include/iscsi_scst_itf_ver.h
 	$(MAKE) --directory=$(iscsi-scst_src) \
@@ -486,6 +506,30 @@ ssmtp:
 	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/ssmtp
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
+	$(TOUCH) $(@)
+
+libibumad:
+	$(CD) $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(INSTALL) -D -m 644 $(src_dir)/include/infiniband/umad.h $(IMAGE_DIR)/usr/include/infiniband/
+	$(TOUCH) $(@)
+
+libibverbs:
+	$(CD) $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(INSTALL) -D -m 644 $(src_dir)/include/infiniband/arch.h \
+	$(src_dir)/include/infiniband/driver.h $(src_dir)/include/infiniband/kern-abi.h \
+	$(src_dir)/include/infiniband/opcode.h $(src_dir)/include/infiniband/verbs.h \
+	$(src_dir)/include/infiniband/sa-kern-abi.h $(src_dir)/include/infiniband/sa.h \
+	$(src_dir)/include/infiniband/marshall.h $(IMAGE_DIR)/usr/include/infiniband/
+	$(TOUCH) $(@)
+
+srptools: libibumad libibverbs
+	$(CD) $(src_dir) && ./configure LDFLAGS="-L$(IMAGE_DIR)/usr/lib" CFLAGS="-I$(IMAGE_DIR)/usr/include" --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(TOUCH) $(@)
 
 
