@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary How to build/install ESOS on your USB flash drive.
 
 = Introduction =
 
