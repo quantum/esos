@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary More details on the design and internal workings.
 
 = Introduction =
 
