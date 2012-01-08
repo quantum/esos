@@ -41,7 +41,7 @@ SED		:= sed
 MKNOD		:= mknod
 TOUCH		:= touch
 RPM2CPIO	:= rpm2cpio
-INSTALL		:= install
+INSTALL		:= install -c
 PATCH		:= patch
 CHOWN		:= chown
 MD5SUM		:= md5sum -w
@@ -329,16 +329,18 @@ scst_kernel:
 	$(MAKE) --directory=$(iscsi-scst_src) include/iscsi_scst_itf_ver.h
 	$(MAKE) --directory=$(iscsi-scst_src) SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst \
 	KDIR=$(linux_src) mods
-	$(INSTALL) -vD -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
+	$(INSTALL) -D -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
 	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(prod_suffix)/extra/iscsi-scst.ko
 	### Build srpt modules (prod)
 	$(MAKE) --directory=$(srpt_src) clean
 	$(MAKE) --directory=$(srpt_src) extraclean
 	$(SED) -i 's/^EXTRA_CFLAGS/#&/' $(srpt_src)/src/Makefile
 	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
-	KDIR=$(linux_src) KVER=$(kernel_ver)$(prod_suffix) EXTRA_CFLAGS="-I$(IMAGE_DIR)/usr/local/include"
+	KDIR=$(linux_src) KVER=$(kernel_ver)$(prod_suffix) \
+	EXTRA_CFLAGS="-I$(IMAGE_DIR)/usr/local/include/scst" all
 	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
-	KDIR=$(linux_src) KVER=$(kernel_ver)$(prod_suffix) install
+	KDIR=$(linux_src) KVER=$(kernel_ver)$(prod_suffix) \
+	EXTRA_CFLAGS="-I$(IMAGE_DIR)/usr/local/include/scst" INSTALL_MOD_PATH=$(IMAGE_DIR) install
 	### Build the kernel (debug)
 	$(MAKE) --directory=$(linux_src) clean
 	$(MAKE) --directory=$(linux_src) distclean
@@ -370,22 +372,24 @@ scst_kernel:
 	$(MAKE) --directory=$(iscsi-scst_src) include/iscsi_scst_itf_ver.h
 	$(MAKE) --directory=$(iscsi-scst_src) SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst \
 	KDIR=$(linux_src) mods
-	$(INSTALL) -vD -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
+	$(INSTALL) -D -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
 	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(debug_suffix)/extra/iscsi-scst.ko
 	### Build srpt modules (debug)
 	$(MAKE) --directory=$(srpt_src) clean
 	$(MAKE) --directory=$(srpt_src) extraclean
 	$(SED) -i 's/^#//' $(srpt_src)/src/Makefile
 	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
-	KDIR=$(linux_src) KVER=$(kernel_ver)$(debug_suffix) EXTRA_CFLAGS="-I$(IMAGE_DIR)/usr/local/include"
+	KDIR=$(linux_src) KVER=$(kernel_ver)$(debug_suffix) \
+	EXTRA_CFLAGS="-I$(IMAGE_DIR)/usr/local/include/scst" all
 	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
-	KDIR=$(linux_src) KVER=$(kernel_ver)$(debug_suffix) install
+	KDIR=$(linux_src) KVER=$(kernel_ver)$(debug_suffix) \
+	EXTRA_CFLAGS="-I$(IMAGE_DIR)/usr/local/include/scst" INSTALL_MOD_PATH=$(IMAGE_DIR) install
 	### Build iscsi-scst userland
 	$(MAKE) --directory=$(iscsi-scst_src) include/iscsi_scst_itf_ver.h
 	$(MAKE) --directory=$(iscsi-scst_src) \
 	SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst progs
-	$(INSTALL) -vD -m 755 $(iscsi-scst_src)/usr/iscsi-scstd $(IMAGE_DIR)/usr/sbin/iscsi-scstd
-	$(INSTALL) -vD -m 755 $(iscsi-scst_src)/usr/iscsi-scst-adm $(IMAGE_DIR)/usr/sbin/iscsi-scst-adm
+	$(INSTALL) $(STRIP) -m 755 $(iscsi-scst_src)/usr/iscsi-scstd $(IMAGE_DIR)/usr/sbin/iscsi-scstd
+	$(INSTALL) $(STRIP) -m 755 $(iscsi-scst_src)/usr/iscsi-scst-adm $(IMAGE_DIR)/usr/sbin/iscsi-scst-adm
 	### Done
 	$(TOUCH) $(@)
 
@@ -404,13 +408,30 @@ busybox:
 
 sysvinit:
 	LDFLAGS="--static" $(MAKE) --directory=$(src_dir)/src
-	$(MAKE) ROOT=$(IMAGE_DIR) --directory=$(src_dir)/src install
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mountpoint $(IMAGE_DIR)/bin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/init $(IMAGE_DIR)/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/halt $(IMAGE_DIR)/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/shutdown $(IMAGE_DIR)/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/runlevel $(IMAGE_DIR)/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/killall5 $(IMAGE_DIR)/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/fstab-decode $(IMAGE_DIR)/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/sulogin $(IMAGE_DIR)/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/bootlogd $(IMAGE_DIR)/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/last $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mesg $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/utmpdump $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/wall $(IMAGE_DIR)/usr/bin/
+	$(LN) halt $(IMAGE_DIR)/sbin/reboot
+	$(LN) halt $(IMAGE_DIR)/sbin/poweroff
+	$(LN) init $(IMAGE_DIR)/sbin/telinit
+	$(LN) /sbin/killall5 $(IMAGE_DIR)/bin/pidof
+	$(LN) last $(IMAGE_DIR)/usr/bin/lastb
 	$(TOUCH) $(@)
 
 grub:
-	$(CD) $(src_dir) && LDFLAGS="--static" ./configure --prefix=$(IMAGE_DIR)/usr
+	$(CD) $(src_dir) && LDFLAGS="--static" ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) install-exec
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(TOUCH) $(@)
 
 glibc:
@@ -430,81 +451,112 @@ perl:
 	$(TOUCH) $(@)
 
 MegaCLI:
-	$(MKDIR) $(BUILD_DIR)/$(@)
-	$(UNZIP) -o $(BUILD_DIR)/LINUX/MegaCliLin.zip -d $(BUILD_DIR)/$(@)
-	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(BUILD_DIR)/$(@)/Lib_Utils-*.rpm | $(CPIO) -idmv
-	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(BUILD_DIR)/$(@)/MegaCli-*.rpm | $(CPIO) -idmv
+	$(MKDIR) $(WORK_DIR)/$(@)
+	$(UNZIP) -o $(wildcard $(DISTFILES_DIR)/*$(@)*) -d $(WORK_DIR)/$(@)
+	$(UNZIP) -o $(BUILD_DIR)/$(@)/LINUX/MegaCliLin.zip -d $(WORK_DIR)/$(@)/MegaCliLin
+	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
+	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
 	$(TOUCH) $(@)
 
 qlogic_fw:
-	$(CP) $(DISTFILES_DIR)/qlogic_fw/* $(IMAGE_DIR)/lib/firmware/
+	$(CP) $(src_dir)/*.bin $(IMAGE_DIR)/lib/firmware/
 	$(TOUCH) $(@)
 
 scstadmin: perl_mod = $(wildcard $(src_dir)/scstadmin/scst-*)
-scstadmin:
-	$(CD) $(src_dir)/scstadmin/scst-* && \
+scstadmin: perl
+	$(CD) $(perl_mod) && \
 	$(IMAGE_DIR)/usr/bin/perl Makefile.PL PREFIX=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(perl_mod)
-	$(MAKE) --directory=$(perl_mod) install
-	$(CP) $(src_dir)/scstadmin/scstadmin $(IMAGE_DIR)/usr/sbin
+	#$(MAKE) --directory=$(perl_mod) install
+	$(MAKE) --directory=$(perl_mod) install_perl
+	$(INSTALL) -m 755 $(src_dir)/scstadmin/scstadmin $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
 openssh:
 	$(CD) $(src_dir) && ./configure --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(INSTALL) -m 0755 -s $(src_dir)/sshd $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) -m 0755 -s $(src_dir)/ssh $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 0755 -s $(src_dir)/sftp $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 0755 -s $(src_dir)/scp $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 0755 -s $(src_dir)/sftp-server $(IMAGE_DIR)/usr/libexec/
-	$(INSTALL) -m 0755 -s $(src_dir)/ssh-keygen $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/sshd $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssh $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/sftp $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/scp $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/sftp-server $(IMAGE_DIR)/usr/libexec/
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssh-keygen $(IMAGE_DIR)/usr/bin/
 	$(TOUCH) $(@)
 
 vixie-cron:
 	$(MAKE) --directory=$(src_dir) all
-	$(INSTALL) -c -m  111 -s $(src_dir)/cron $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) -c -m 4111 -s $(src_dir)/crontab $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 111 $(src_dir)/cron $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 4111 $(src_dir)/crontab $(IMAGE_DIR)/usr/bin/
 	$(TOUCH) $(@)
 
 gcc:
 	$(MKDIR) $(WORK_DIR)/gcc-build
-	$(CD) $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ --disable-nls --enable-threads \
-	--with-gnu-as --with-gnu-ld --with-gcc --prefix=$(IMAGE_DIR)/usr
+	$(CD) $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ \
+	--disable-nls --enable-threads --with-gnu-as --with-gnu-ld --with-gcc --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build
-	$(MAKE) --directory=$(WORK_DIR)/gcc-build install-target-libgcc
-	$(MAKE) --directory=$(WORK_DIR)/gcc-build install-target-libstdc++-v3
+	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libgcc
+	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libstdc++-v3
 	$(TOUCH) $(@)
 
 openssl:
-	$(CD) $(src_dir) && ./config shared --prefix=$(IMAGE_DIR)/usr
+	$(CD) $(src_dir) && ./config shared --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) install_sw
+	$(MAKE) --directory=$(src_dir) INSTALL_PREFIX=$(IMAGE_DIR) install_sw
 	$(TOUCH) $(@)
 
 zlib:
-	$(CD) $(src_dir) && ./configure --prefix=$(IMAGE_DIR)/usr
+	$(CD) $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) install-libs
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-libs
 	$(TOUCH) $(@)
 
 ncurses:
-	$(CD) $(src_dir) && ./configure --prefix=$(IMAGE_DIR)/usr --with-shared
+	$(CD) $(src_dir) && ./configure --prefix=/usr --with-shared
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) install.libs
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install.libs
 	$(TOUCH) $(@)
 
 e2fsprogs:
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
-	$(CD) $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=$(IMAGE_DIR)/usr
+	$(CD) $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
-	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build install
+	#$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build install
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/e2fsck/e2fsck $(IMAGE_DIR)/usr/sbin/
+	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext2 
+	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext3 
+	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext4 
+	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext4dev
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/debugfs/debugfs $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/mke2fs $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/badblocks $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/tune2fs $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/dumpe2fs $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/blkid $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/logsave $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2image $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/fsck $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2undo $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/mklost+found $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/filefrag $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2freefrag $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/uuidd $(IMAGE_DIR)/usr/sbin/
+	$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext2
+	$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext3
+	$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext4
+	$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext4dev
+	$(LN) tune2fs $(IMAGE_DIR)/usr/sbin/findfs
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/chattr $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/lsattr $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/uuidgen $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2initrd_helper $(IMAGE_DIR)/usr/lib/
+	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/resize/resize2fs $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
 ssmtp:
 	$(CD) $(src_dir) && ./configure --enable-ssl --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/ssmtp
+	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
 	$(TOUCH) $(@)
 
@@ -527,7 +579,8 @@ libibverbs:
 	$(TOUCH) $(@)
 
 srptools: libibumad libibverbs
-	$(CD) $(src_dir) && ./configure LDFLAGS="-L$(IMAGE_DIR)/usr/lib" CFLAGS="-I$(IMAGE_DIR)/usr/include" --prefix=/usr
+	$(CD) $(src_dir) && ./configure LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
+	CFLAGS="-I$(IMAGE_DIR)/usr/include" --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(TOUCH) $(@)
