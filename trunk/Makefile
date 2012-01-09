@@ -193,6 +193,7 @@ $(no_fetch_pkg_1):
 	$(QUIET) $(ECHO) "### Fetch restriction: $(notdir $(@))"
 	$(QUIET) $(ECHO) "### Please download from '$(no_fetch_pkg_1_url)'"
 	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
+	$(QUIET) $(EXIT) 1
 
 
 # checksum - Verify checksums for all distribution files.
@@ -453,7 +454,7 @@ perl:
 MegaCLI:
 	$(MKDIR) $(WORK_DIR)/$(@)
 	$(UNZIP) -o $(wildcard $(DISTFILES_DIR)/*$(@)*) -d $(WORK_DIR)/$(@)
-	$(UNZIP) -o $(BUILD_DIR)/$(@)/LINUX/MegaCliLin.zip -d $(WORK_DIR)/$(@)/MegaCliLin
+	$(UNZIP) -o $(WORK_DIR)/$(@)/LINUX/MegaCliLin.zip -d $(WORK_DIR)/$(@)/MegaCliLin
 	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
 	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
 	$(TOUCH) $(@)
@@ -468,7 +469,8 @@ scstadmin: perl
 	$(IMAGE_DIR)/usr/bin/perl Makefile.PL PREFIX=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(perl_mod)
 	#$(MAKE) --directory=$(perl_mod) install
-	$(MAKE) --directory=$(perl_mod) install_perl
+	#$(MAKE) --directory=$(perl_mod) install_perl
+	$(MAKE) --directory=$(perl_mod) pure_install
 	$(INSTALL) -m 755 $(src_dir)/scstadmin/scstadmin $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
@@ -491,8 +493,8 @@ vixie-cron:
 
 gcc:
 	$(MKDIR) $(WORK_DIR)/gcc-build
-	$(CD) $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ \
-	--disable-nls --enable-threads --with-gnu-as --with-gnu-ld --with-gcc --prefix=/usr
+	$(CD) $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ --disable-nls \
+	--enable-threads --with-gnu-as --with-gnu-ld --with-gcc --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libgcc
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libstdc++-v3
@@ -507,7 +509,12 @@ openssl:
 zlib:
 	$(CD) $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-libs
+	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-libs
+	$(INSTALL) -m 644 $(src_dir)/libz.a $(IMAGE_DIR)/usr/lib/
+	$(INSTALL) -m 755 $(src_dir)/libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/
+	$(LN) libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/libz.so
+	$(LN) libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/libz.so.1
+	$(INSTALL) -D $(src_dir)/zlib.pc $(IMAGE_DIR)/usr/lib/pkgconfig/zlib.pc
 	$(TOUCH) $(@)
 
 ncurses:
@@ -564,14 +571,16 @@ libibumad:
 	$(CD) $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
-	$(INSTALL) -D -m 644 $(src_dir)/include/infiniband/umad.h $(IMAGE_DIR)/usr/include/infiniband/
+	$(MKDIR) $(IMAGE_DIR)/usr/include/infiniband
+	$(INSTALL) -m 644 $(src_dir)/include/infiniband/umad.h $(IMAGE_DIR)/usr/include/infiniband/
 	$(TOUCH) $(@)
 
 libibverbs:
 	$(CD) $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
-	$(INSTALL) -D -m 644 $(src_dir)/include/infiniband/arch.h \
+	$(MKDIR) $(IMAGE_DIR)/usr/include/infiniband
+	$(INSTALL) -m 644 $(src_dir)/include/infiniband/arch.h \
 	$(src_dir)/include/infiniband/driver.h $(src_dir)/include/infiniband/kern-abi.h \
 	$(src_dir)/include/infiniband/opcode.h $(src_dir)/include/infiniband/verbs.h \
 	$(src_dir)/include/infiniband/sa-kern-abi.h $(src_dir)/include/infiniband/sa.h \
