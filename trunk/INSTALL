@@ -1,0 +1,24 @@
+The ESOS project is really just a Makefile, scripts, config. files, and
+hopefully someday will have a very nice text user interface for management.
+The Makefile fetches all required distribution files, or for restricted
+packages, it provides directions on obtaining those files. It then extracts
+and compiles everything. The 'install' target prompts for a USB flash drive
+device node and then installs ESOS on it.
+
+In order to build ESOS, you need a recent release of a modern Linux
+distribution that has the software development packages installed. Please
+visit the ESOS project home page for all of the prerequisites and detailed
+build/install instructions: http://code.google.com/p/enterprise-storage-os/
+
+If this source is coming from svn/trunk then you will need to generate the
+configure script, otherwise if this is a release, it should already be present.
+
+The following should work in most cases:
+autoconf
+./configure
+make
+sudo make install
+
+If you're still having trouble building ESOS, even after reading the detailed
+documentation on the project home page, please use the Google Group for
+support: http://groups.google.com/group/esos-users

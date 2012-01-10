@@ -4,8 +4,8 @@ project. It also provides all of the necessary utilities/tools to configure
 your back-storage devices (eg, RAID controllers).
 
 Currently ESOS is very, very new and probably shouldn't be used as a
-production service. That being said, the two core components of ESOS,
-the Linux Kernel and SCST are quite stable.
+production disk array. That being said, the two core components of ESOS,
+the Linux Kernel and SCST, are both quite stable.
 
 The project home is located here: http://code.google.com/p/enterprise-storage-os/
 
