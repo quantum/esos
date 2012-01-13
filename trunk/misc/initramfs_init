@@ -14,6 +14,12 @@ rescue_shell() {
 # Wait for the kernel to settle
 sleep 5
 
+# Make sure we have enough physical memory
+if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 4194304 ]; then
+	echo "We don't have enough RAM!"
+	rescue_shell
+fi
+
 # A few requirements
 echo "Initializing tmpfs filesystem..."
 mount -t proc none /proc
