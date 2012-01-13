@@ -2,11 +2,17 @@
 
 # $Id$
 
-MODULES="qla2xxx scst qla2x00tgt iscsi-scst scst_disk scst_vdisk"
+IB_MODS="mlx4_ib ib_mthca ib_ipath ib_qib"
+SCST_MODS="qla2xxx scst qla2x00tgt iscsi-scst scst_disk scst_vdisk"
 SCST_CFG="/etc/scst.conf"
 
-# Load the modules
-for i in ${MODULES}; do
+# Load the InfiniBand modules
+for i in ${IB_MODS}; do
+	/sbin/modprobe ${i}
+done
+
+# Load the SCST modules and drivers
+for i in ${SCST_MODS}; do
 	/sbin/modprobe ${i}
 done
 

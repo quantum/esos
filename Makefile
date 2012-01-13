@@ -44,6 +44,7 @@ RPM2CPIO	:= rpm2cpio
 INSTALL		:= install -c
 PATCH		:= patch
 CHOWN		:= chown
+CHMOD		:= chmod
 MD5SUM		:= md5sum -w
 SHA256SUM	:= sha256sum -w
 
@@ -140,7 +141,7 @@ install: initramfs
 	$(MOUNT) -L esos_boot $(MOUNT_DIR)/boot
 	$(CD) $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdv $(IMAGE_DIR)/etc
 	$(CD) $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdv $(MOUNT_DIR)
-	$(IMAGE_DIR)/usr/sbin/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(usb_device)
+	$(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(usb_device)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.conf > $(MOUNT_DIR)/boot/grub/grub.conf
 	$(LN) grub.conf $(MOUNT_DIR)/boot/grub/menu.lst
 	$(LN) /usr/share/zoneinfo/UTC $(MOUNT_DIR)/etc/localtime
@@ -230,54 +231,19 @@ image_setup:
 	$(MKDIR) $(IMAGE_DIR)/{etc,bin,sbin,dev,proc,sys,root,home}
 	$(MKDIR) $(IMAGE_DIR)/boot/grub
 	$(MKDIR) $(IMAGE_DIR)/mnt/{root,conf,logs}
-	#$(MKDIR) $(IMAGE_DIR)/mnt/conf
-	#$(MKDIR) $(IMAGE_DIR)/mnt/logs
-	#$(MKDIR) $(IMAGE_DIR)/etc
 	$(MKDIR) $(IMAGE_DIR)/lib/firmware
-	#$(MKDIR) $(IMAGE_DIR)/bin
-	#$(MKDIR) $(IMAGE_DIR)/sbin
 	$(MKDIR) $(IMAGE_DIR)/usr/{bin,sbin,libexec}
-	#$(MKDIR) $(IMAGE_DIR)/usr/bin
-	#$(MKDIR) $(IMAGE_DIR)/usr/sbin
-	#$(MKDIR) $(IMAGE_DIR)/usr/libexec
 	$(MKDIR) $(IMAGE_DIR)/usr/local/{bin,sbin}
-	#$(MKDIR) $(IMAGE_DIR)/usr/local/bin
-	#$(MKDIR) $(IMAGE_DIR)/usr/local/sbin
-	#$(MKDIR) $(IMAGE_DIR)/dev
-	#$(MKDIR) $(IMAGE_DIR)/proc
-	#$(MKDIR) $(IMAGE_DIR)/sys
-	#$(MKDIR) $(IMAGE_DIR)/root
-	#$(MKDIR) $(IMAGE_DIR)/tmp
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/tmp
-	#$(MKDIR) $(IMAGE_DIR)/home
 	$(MKDIR) $(IMAGE_DIR)/var/{spool,lock,run,state,cache,log,empty}
-	#$(MKDIR) $(IMAGE_DIR)/var/spool
-	#$(MKDIR) $(IMAGE_DIR)/var/lock
-	#$(MKDIR) $(IMAGE_DIR)/var/run
-	#$(MKDIR) $(IMAGE_DIR)/var/state
-	#$(MKDIR) $(IMAGE_DIR)/var/cache
-	#$(MKDIR) $(IMAGE_DIR)/var/tmp
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/var/tmp
-	#$(MKDIR) $(IMAGE_DIR)/var/log
-	#$(MKDIR) $(IMAGE_DIR)/var/empty
 	$(INSTALL) -m 710 -d $(IMAGE_DIR)/var/cron
 	$(INSTALL) -m 700 -d $(IMAGE_DIR)/var/cron/tabs
 	$(LN) lib $(IMAGE_DIR)/lib64
 	$(LN) lib $(IMAGE_DIR)/usr/lib64
 	$(MKDIR) $(INITRAMFS_DIR)/{bin,sbin,proc,sys,dev}
-	#$(MKDIR) $(INITRAMFS_DIR)/bin
-	#$(MKDIR) $(INITRAMFS_DIR)/sbin
 	$(MKDIR) $(INITRAMFS_DIR)/mnt/{root,tmp}
-	#$(MKDIR) $(INITRAMFS_DIR)/mnt/root
-	#$(MKDIR) $(INITRAMFS_DIR)/mnt/tmp
-	#$(MKDIR) $(INITRAMFS_DIR)/mnt/conf
-	#$(MKDIR) $(INITRAMFS_DIR)/mnt/logs
-	#$(MKDIR) $(INITRAMFS_DIR)/proc
-	#$(MKDIR) $(INITRAMFS_DIR)/sys
 	$(MKDIR) $(INITRAMFS_DIR)/usr/{bin,sbin}
-	#$(MKDIR) $(INITRAMFS_DIR)/usr/bin
-	#$(MKDIR) $(INITRAMFS_DIR)/usr/sbin
-	#$(MKDIR) $(INITRAMFS_DIR)/dev
 
 scst_kernel: linux_src = $(wildcard $(BUILD_DIR)/linux-*)
 scst_kernel: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
@@ -395,10 +361,7 @@ scst_kernel:
 	$(TOUCH) $(@)
 
 busybox:
-	$(MAKE) --directory=$(src_dir) defconfig
-	$(SED) -i -e 's/.*CONFIG_BUSYBOX_EXEC_PATH.*/CONFIG_BUSYBOX_EXEC_PATH\=\"\/bin\/busybox\"/' $(src_dir)/.config
-	$(SED) -i -e 's/.*CONFIG_FEATURE_BASH_IS_ASH.*/CONFIG_FEATURE_BASH_IS_ASH\=y/' $(src_dir)/.config
-	$(SED) -i -e 's/.*CONFIG_FEATURE_BASH_IS_NONE.*/# CONFIG_FEATURE_BASH_IS_NONE is not set/' $(src_dir)/.config
+	$(CP) $(CWD)/misc/$(notdir $(src_dir)).config $(src_dir)/.config
 	LDFLAGS="--static" $(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) $(src_dir)/busybox_unstripped $(WORK_DIR)/initramfs/bin/busybox
 	$(MAKE) --directory=$(src_dir)
@@ -433,6 +396,8 @@ grub:
 	$(CD) $(src_dir) && LDFLAGS="--static" ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(IMAGE_DIR)/usr/sbin/grub-install > $(WORK_DIR)/grub-install
+	$(CHMOD) +x $(WORK_DIR)/grub-install
 	$(TOUCH) $(@)
 
 glibc:
@@ -509,7 +474,6 @@ openssl:
 zlib:
 	$(CD) $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-libs
 	$(INSTALL) -m 644 $(src_dir)/libz.a $(IMAGE_DIR)/usr/lib/
 	$(INSTALL) -m 755 $(src_dir)/libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/
 	$(LN) libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/libz.so
@@ -528,7 +492,6 @@ e2fsprogs:
 	$(CD) $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
-	#$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build install
 	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/e2fsck/e2fsck $(IMAGE_DIR)/usr/sbin/
 	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext2 
 	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext3 
