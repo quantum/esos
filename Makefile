@@ -116,6 +116,10 @@ install: initramfs
 	  $(ECHO) "### It looks like that device is mounted..."; \
 	  $(EXIT) 1; \
 	fi
+	$(QUIET) if [ `$(SFDISK) -s $(usb_device)` -lt 4194304 ]; then \
+	  $(ECHO) "### Your USB flash drive isn't large enough; it must be at least 4 GB."; \
+	  $(EXIT) 1; \
+	fi
 	$(QUIET) $(ECHO) "### This is what '$(usb_device)' looks like..."
 	$(QUIET) $(SFDISK) -l $(usb_device)
 	$(QUIET) $(ECHO) && $(ECHO)
