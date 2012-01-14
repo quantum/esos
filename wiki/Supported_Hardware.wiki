@@ -8,18 +8,7 @@ Enterprise-grade server hardware is definitely recommended for your ESOS disk ar
 In addition to the above, the following are required to run ESOS:
   * At least 4 GB of usable, physical RAM.
   * A USB flash drive that is at least 4 GB. 
-
-
-
-
-
-
-
-
-
-
-
-
+<br>
 
 ==== Local RAID Controllers ====
 Add your content here.  Format your content with:
