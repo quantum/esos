@@ -19,20 +19,22 @@ Add your content here.  Format your content with:
   * Headings, paragraphs, and lists
   * Automatic links to other wiki pages
 
+<br>
 
 ==== Fibre Channel HBAs ====
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Currently only QLogic FC HBAs are supported. SCST does support Emulex HBAs, however, the SCST-to-LPFC shim driver does not support newer kernels (eg, the version ESOS uses). We anticipate that we will be able to support Emulex FC HBAs in the near future.
+  * QLogic QLA2XXX FC Host Bus Adapters (QLE2460, QLE2560, QLA2340, etc.)
 
+<br>
 
 ==== InfiniBand HCAs ====
 Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+  * Mellanox InfiniHost Host Channel Adapters (MT23108, MT25208, etc.)
+  * Mellanox ConnectX PCI Express HCAs (MNPH29D-XTR, MHGH28-XTC, etc.)
+  * QLogic HTX Host Channel Adapter (QHT7140)
+  * QLogic PCIe QLE InfiniBand HCAs (QLE7340, QLE7280, etc.)
 
+<br>
 
 ==== Network Interface Cards ====
 Add your content here.  Format your content with:
