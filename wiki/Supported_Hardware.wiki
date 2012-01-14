@@ -1,7 +1,13 @@
 #summary List of hardware known to work with ESOS.
 
 ====System Requirements====
-Add your content here.
+ESOS will run on any x86-64 platform; a 64-bit capable CPU is required (eg, AMD64 / Intel 64). SCST, the core of ESOS, is fully multi-threaded with complete SMP support, meaning the more sockets/cores you have, and the faster your CPUs, the more IO that can be processed.
+
+Enterprise-grade server hardware is definitely recommended for your ESOS disk array. Obviously redundant power supplies, multiple HBAs/HCAs/NICs, fault-tolerant RAID back-storage, memory sparring/mirroring, etc. should all be must-haves for production deployments.
+
+In addition to the above, the following are required to run ESOS:
+* At least 4 GB of usable, physical RAM.
+* A USB flash drive that is at least 4 GB. 
 
 
 = Details =
