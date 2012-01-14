@@ -1,7 +1,6 @@
 #summary List of hardware known to work with ESOS.
 
 ====System Requirements====
-
 Add your content here.
 
 
