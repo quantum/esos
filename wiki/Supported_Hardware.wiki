@@ -28,7 +28,7 @@ Currently only QLogic FC HBAs are supported. SCST does support Emulex HBAs, howe
 <br>
 
 ==== InfiniBand HCAs ====
-Add your content here.  Format your content with:
+Mellanox and QLogic InfiniBand Host Channel Adapters work with ESOS.
   * Mellanox InfiniHost Host Channel Adapters (MT23108, MT25208, etc.)
   * Mellanox ConnectX PCI Express HCAs (MNPH29D-XTR, MHGH28-XTC, etc.)
   * QLogic HTX Host Channel Adapter (QHT7140)
@@ -36,8 +36,20 @@ Add your content here.  Format your content with:
 
 <br>
 
-==== Network Interface Cards ====
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+==== Network Interface Cards / CNAs ====
+Although Linux provides drivers for a ton of different NICs, we tried to keep it simple and only support NICs that are common in enterprise IT environments. The list below includes 10 GbE and 1 GbE cards -- no one actually uses 10/100 NICs in their data center anymore, right?
+  * Intel PRO/1000 Gigabit Ethernet adapters
+  * Intel PRO/1000 PCI-Express Gigabit Ethernet adapters
+  * Intel 82575/82576 PCI-Express Gigabit Ethernet adapters
+  * Broadcom Tigon3 adapters
+  * Broadcom NetXtremeII adapters (with CNIC support)
+  * QLogic QLA3XXX adapters
+  * Chelsio 1 GbE and 10 GbE adapters (T1, T3, T4)
+  * Cisco VIC Ethernet NIC adapter
+  * Intel 10GbE PCI Express adapters
+  * Intel PRO/10GbE adapters
+  * Mellanox Technologies ConnectX 10Gbit Ethernet adapters
+  * Broadcom NetXtremeII 10Gb cards
+  * QLOGIC QLCNIC 1/10Gb CNAs (QLE8240, QLE8242)
+  * QLogic QLGE ISP8XXX 10Gb Ethernet adapters
+  * Brocade 1010/1020 10Gb Ethernet cards
