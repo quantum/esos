@@ -14,10 +14,11 @@ _If you have any hardware that you would like supported that is not listed below
 <br>
 
 ==== Local RAID Controllers ====
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+While there is support for a number of different RAID controllers, currently only two brands include the CLI tools that allow creating/destroying/etc. volumes from inside ESOS. If your favorite RAID controller has a CLI tool, please let us know so we can consider including it with ESOS.
+  * LSI Logic MegaRAID cards (CLI tool is part of ESOS)
+  * Adaptec AACRAID cards (CLI tool is part of ESOS)
+  * HP Smart Array cards
+  * IBM ServeRAID cards
 
 <br>
 
@@ -44,12 +45,12 @@ Although Linux provides drivers for a ton of different NICs, we tried to keep it
   * Broadcom Tigon3 adapters
   * Broadcom NetXtremeII adapters (with CNIC support)
   * QLogic QLA3XXX adapters
-  * Chelsio 1 GbE and 10 GbE adapters (T1, T3, T4)
+  * Chelsio T1/T3/T4 1 GbE and 10 GbE adapters (with T3/T4 iSCSI offload support)
   * Cisco VIC Ethernet NIC adapter
   * Intel 10GbE PCI Express adapters
   * Intel PRO/10GbE adapters
   * Mellanox Technologies ConnectX 10Gbit Ethernet adapters
-  * Broadcom NetXtremeII 10Gb cards
+  * Broadcom NetXtremeII 10Gb cards (with iSCSI/FCoE offload support)
   * QLOGIC QLCNIC 1/10Gb CNAs (QLE8240, QLE8242)
   * QLogic QLGE ISP8XXX 10Gb Ethernet adapters
   * Brocade 1010/1020 10Gb Ethernet cards
