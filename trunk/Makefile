@@ -85,7 +85,8 @@ no_fetch_pkg_2_url	= http://www.adaptec.com/en-us/speed/raid/storage_manager/asm
 build_targets		:= scst_kernel busybox sysvinit grub glibc \
 			perl MegaCLI qlogic_fw scstadmin openssh \
 			vixie-cron gcc openssl zlib ncurses \
-			e2fsprogs ssmtp libibumad libibverbs srptools
+			e2fsprogs ssmtp libibumad libibverbs \
+			srptools asm_linux
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
@@ -580,8 +581,11 @@ srptools: libibumad libibverbs
 asm_linux:
 	$(MKDIR) $(WORK_DIR)/$(@)
 	$(TAR) xvfz $(wildcard $(DISTFILES_DIR)/$(@)*) -C $(WORK_DIR)/$(@)
+	$(CD) $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/manager/StorMan-*.x86_64.rpm | $(CPIO) -idmv
 	$(MKDIR) $(IMAGE_DIR)/opt/asm_linux/cmdline
+	$(MKDIR) $(IMAGE_DIR)/opt/asm_linux/lib
 	$(CP) $(WORK_DIR)/$(@)/cmdline/arcconf $(IMAGE_DIR)/opt/asm_linux/cmdline/
+	$(CP) $(WORK_DIR)/$(@)/usr/StorMan/libstdc++.so.5 $(IMAGE_DIR)/opt/asm_linux/lib/
 	$(TOUCH) $(@)
 
 
