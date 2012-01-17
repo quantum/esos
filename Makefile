@@ -47,6 +47,8 @@ CHOWN		:= chown
 CHMOD		:= chmod
 MD5SUM		:= md5sum -w
 SHA256SUM	:= sha256sum -w
+BLOCKDEV	:= blockdev
+SLEEP		:= sleep
 
 distfiles = $(addprefix $(DISTFILES_DIR)/,	\
 		busybox-1.19.0.tar.bz2		\
@@ -116,7 +118,7 @@ install: initramfs
 	  $(ECHO) "### It looks like that device is mounted..."; \
 	  $(EXIT) 1; \
 	fi
-	$(QUIET) if [ `$(SFDISK) -s $(usb_device)` -lt 4194304 ]; then \
+	$(QUIET) if [ `$(SFDISK) -s $(usb_device)` -lt 3900000 ]; then \
 	  $(ECHO) "### Your USB flash drive isn't large enough; it must be at least 4 GB."; \
 	  $(EXIT) 1; \
 	fi
@@ -130,9 +132,15 @@ install: initramfs
 	$(DD) if=$(usb_device) of=$(WORK_DIR)/`basename $(usb_device)`.mbr bs=512 count=1
 	$(SFDISK) -d $(usb_device) > $(WORK_DIR)/`basename $(usb_device)`.sfdisk
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Creating new partitions / filesystems on $(usb_device)..."
+	$(QUIET) $(ECHO) "### Creating new partition table on $(usb_device)..."
 	$(DD) if=/dev/zero of=$(usb_device) bs=512 count=1
 	$(ECHO) -e ",32,L,*\n,512,L\n,256,L\n,1024,L\n" | $(SFDISK) -uM $(usb_device)
+	$(QUIET) $(ECHO) && $(ECHO)
+	$(QUIET) $(ECHO) "### Rereading partition table..."
+	$(BLOCKDEV) -v --rereadpt $(usb_device)
+	$(SLEEP) 20
+	$(QUIET) $(ECHO) && $(ECHO)
+	$(QUIET) $(ECHO) "### Making new filesystems on $(usb_device)..."
 	$(MKE2FS) -L esos_boot $(usb_device)1
 	$(MKE2FS) -L esos_root $(usb_device)2
 	$(MKE2FS) -L esos_conf $(usb_device)3
