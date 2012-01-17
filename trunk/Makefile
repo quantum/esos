@@ -50,43 +50,45 @@ SHA256SUM	:= sha256sum -w
 BLOCKDEV	:= blockdev
 SLEEP		:= sleep
 
-distfiles = $(addprefix $(DISTFILES_DIR)/,	\
-		busybox-1.19.0.tar.bz2		\
-		grub-0.97.tar.gz		\
-		sysvinit-2.88dsf.tar.bz2	\
-		glibc-2.12.2.tar.bz2		\
-		vixie-cron-4.1.tar.bz2		\
-		libibumad-1.3.7.tar.gz		\
-		libibverbs-1.1.4.tar.gz		\
-		srptools-0.0.4.tar.gz		\
-		openssh-5.8p1.tar.gz		\
-		ssmtp-2.64.tar.bz2		\
-		perl-5.12.4.tar.bz2		\
-		openssl-1.0.0e.tar.gz		\
-		e2fsprogs-1.41.14.tar.gz	\
-		zlib-1.2.5.tar.bz2		\
-		ncurses-5.7.tar.gz		\
-		qlogic_fw-20120101.tar.gz	\
-		linux-2.6.39.4.tar.bz2		\
-		srpt-2.1.0.tar.bz2		\
-		qla2x00t-2.1.0.tar.gz		\
-		scstadmin-2.1.0.tar.gz		\
-		scst-2.1.0.tar.gz		\
-		iscsi-scst-2.1.0.tar.gz		\
+distfiles	= $(addprefix $(DISTFILES_DIR)/, \
+		busybox-1.19.0.tar.bz2 \
+		grub-0.97.tar.gz \
+		sysvinit-2.88dsf.tar.bz2 \
+		glibc-2.12.2.tar.bz2 \
+		vixie-cron-4.1.tar.bz2 \
+		libibumad-1.3.7.tar.gz \
+		libibverbs-1.1.4.tar.gz \
+		srptools-0.0.4.tar.gz \
+		openssh-5.8p1.tar.gz \
+		ssmtp-2.64.tar.bz2 \
+		perl-5.12.4.tar.bz2 \
+		openssl-1.0.0e.tar.gz \
+		e2fsprogs-1.41.14.tar.gz \
+		zlib-1.2.5.tar.bz2 \
+		ncurses-5.7.tar.gz \
+		qlogic_fw-20120101.tar.gz \
+		linux-2.6.39.4.tar.bz2 \
+		srpt-2.1.0.tar.bz2 \
+		qla2x00t-2.1.0.tar.gz \
+		scstadmin-2.1.0.tar.gz \
+		scst-2.1.0.tar.gz \
+		iscsi-scst-2.1.0.tar.gz	 \
 		gcc-4.4.5.tar.bz2)
-distfiles_repo = http://enterprise-storage-os.googlecode.com/files
+distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
-no_fetch_pkg_1 = $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
-no_fetch_pkg_1_url = http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_MegaCLI.zip
+no_fetch_pkg_1		= $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
+no_fetch_pkg_1_url	= http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_MegaCLI.zip
 
-build_targets := scst_kernel busybox sysvinit grub glibc \
-		perl MegaCLI qlogic_fw scstadmin openssh \
-		vixie-cron gcc openssl zlib ncurses \
-		e2fsprogs ssmtp libibumad libibverbs srptools
-clean_targets := $(addprefix clean-,$(build_targets))
-src_dir = $(wildcard $(BUILD_DIR)/$(@)-*)
-tarball_src_dirs = $(addprefix $(BUILD_DIR)/, \
-		$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
+no_fetch_pkg_2		= $(addprefix $(DISTFILES_DIR)/,asm_linux_x64_v7_30_18837.tgz)
+no_fetch_pkg_2_url	= http://www.adaptec.com/en-us/speed/raid/storage_manager/asm_linux_x64_v7_30_18837_tgz.htm
+
+build_targets		:= scst_kernel busybox sysvinit grub glibc \
+			perl MegaCLI qlogic_fw scstadmin openssh \
+			vixie-cron gcc openssl zlib ncurses \
+			e2fsprogs ssmtp libibumad libibverbs srptools
+clean_targets		:= $(addprefix clean-,$(build_targets))
+src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
+tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
 
 esos_ver	:= 0.1
 prod_suffix	:= -esos.prod
@@ -197,7 +199,7 @@ distclean: clean
 
 
 # fetch - Grab all required packages from distribution file repositories.
-fetch: $(distfiles) $(no_fetch_pkg_1) ;
+fetch: $(distfiles) $(no_fetch_pkg_1) $(no_fetch_pkg_2) ;
 
 $(distfiles):
 	$(WGET) -P $(DISTFILES_DIR) $(distfiles_repo)/$(notdir $(@))
@@ -205,6 +207,12 @@ $(distfiles):
 $(no_fetch_pkg_1):
 	$(QUIET) $(ECHO) "### Fetch restriction: $(notdir $(@))"
 	$(QUIET) $(ECHO) "### Please download from '$(no_fetch_pkg_1_url)'"
+	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
+	$(QUIET) $(EXIT) 1
+
+$(no_fetch_pkg_2):
+	$(QUIET) $(ECHO) "### Fetch restriction: $(notdir $(@))"
+	$(QUIET) $(ECHO) "### Please download from '$(no_fetch_pkg_2_url)'"
 	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
 	$(QUIET) $(EXIT) 1
 
@@ -567,6 +575,13 @@ srptools: libibumad libibverbs
 	CFLAGS="-I$(IMAGE_DIR)/usr/include" --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(TOUCH) $(@)
+
+asm_linux:
+	$(MKDIR) $(WORK_DIR)/$(@)
+	$(TAR) xvfz $(wildcard $(DISTFILES_DIR)/$(@)*) -C $(WORK_DIR)/$(@)
+	$(MKDIR) $(IMAGE_DIR)/opt/asm_linux/cmdline
+	$(CP) $(WORK_DIR)/$(@)/cmdline/arcconf $(IMAGE_DIR)/opt/asm_linux/cmdline/
 	$(TOUCH) $(@)
 
 
