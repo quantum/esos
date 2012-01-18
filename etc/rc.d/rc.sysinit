@@ -54,3 +54,6 @@ echo "Starting system and kernel log daemons...."
 
 echo "Updating module dependencies..."
 /sbin/depmod -a
+
+echo "Updating run-time linker cache..."
+/sbin/ldconfig
