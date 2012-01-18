@@ -39,7 +39,8 @@ esac
 /bin/sync
 
 /bin/echo "Unmounting local filesystems..."
-/bin/umount -a -tnonfs
+/bin/umount -l /dev
+/bin/umount -a
 
 case "$0" in
 	*6)
