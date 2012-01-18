@@ -255,6 +255,7 @@ image_setup:
 	$(MKDIR) $(IMAGE_DIR)/lib/firmware
 	$(MKDIR) $(IMAGE_DIR)/usr/{bin,sbin,libexec}
 	$(MKDIR) $(IMAGE_DIR)/usr/local/{bin,sbin}
+	$(MKDIR) $(IMAGE_DIR)/opt/{bin,sbin,lib}
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/tmp
 	$(MKDIR) $(IMAGE_DIR)/var/{spool,lock,run,state,cache,log,empty}
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/var/tmp
@@ -441,8 +442,10 @@ MegaCLI:
 	$(MKDIR) $(WORK_DIR)/$(@)
 	$(UNZIP) -o $(wildcard $(DISTFILES_DIR)/*$(@)*) -d $(WORK_DIR)/$(@)
 	$(UNZIP) -o $(WORK_DIR)/$(@)/LINUX/MegaCliLin.zip -d $(WORK_DIR)/$(@)/MegaCliLin
-	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
-	$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
+	#$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
+	#$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
+	$(CD) $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
+	$(CP) $(WORK_DIR)/$(@)/opt/MegaRAID/MegaCli/MegaCli64 $(IMAGE_DIR)/opt/sbin/
 	$(TOUCH) $(@)
 
 qlogic_fw:
@@ -582,10 +585,8 @@ asm_linux:
 	$(MKDIR) $(WORK_DIR)/$(@)
 	$(TAR) xvfz $(wildcard $(DISTFILES_DIR)/$(@)*) -C $(WORK_DIR)/$(@)
 	$(CD) $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/manager/StorMan-*.x86_64.rpm | $(CPIO) -idmv
-	$(MKDIR) $(IMAGE_DIR)/opt/asm_linux/cmdline
-	$(MKDIR) $(IMAGE_DIR)/opt/asm_linux/lib
-	$(CP) $(WORK_DIR)/$(@)/cmdline/arcconf $(IMAGE_DIR)/opt/asm_linux/cmdline/
-	$(CP) $(WORK_DIR)/$(@)/usr/StorMan/libstdc++.so.5 $(IMAGE_DIR)/opt/asm_linux/lib/
+	$(CP) $(WORK_DIR)/$(@)/cmdline/arcconf $(IMAGE_DIR)/opt/sbin/
+	$(CP) $(WORK_DIR)/$(@)/usr/StorMan/libstdc++.so.5 $(IMAGE_DIR)/opt/lib/
 	$(TOUCH) $(@)
 
 
