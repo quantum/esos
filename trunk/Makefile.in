@@ -1,8 +1,8 @@
 # $Id$
 
-# Something.
-# Something.
-# Something.
+# ESOS Makefile[.in]
+# Makefile is generated from Makefile.in via the configure script.
+# Please see the README/INSTALL documents for help.
 
 CWD		:= $(shell pwd)
 WORK_DIR	:= $(CWD)/work
@@ -15,37 +15,37 @@ MOUNT_DIR	:= $(WORK_DIR)/mnt
 QUIET		:= @
 STRIP		:= -s
 
-WGET		:= wget -t 5
-MKDIR		:= mkdir -p
-RM		:= rm -rf
-TAR		:= tar
-UNZIP		:= unzip
-CP		:= cp -L
-FIND		:= find
-CPIO		:= cpio
-GZIP		:= gzip -9
-ECHO		:= echo
-SFDISK		:= sfdisk
-CAT		:= cat
-TEST		:= test
-GREP		:= grep
-DD		:= dd
-MKE2FS		:= mke2fs
-LN		:= ln -sf
-MOUNT		:= mount
-UMOUNT		:= umount
-SED		:= sed
-MKNOD		:= mknod
-TOUCH		:= touch
-RPM2CPIO	:= rpm2cpio
-INSTALL		:= install -c
-PATCH		:= patch
-CHOWN		:= chown
-CHMOD		:= chmod
-MD5SUM		:= md5sum -w
-SHA256SUM	:= sha256sum -w
-BLOCKDEV	:= blockdev
-SLEEP		:= sleep
+WGET		:= @wget@ -t 5
+MKDIR		:= @mkdir@ -p
+RM		:= @rm@ -rf
+TAR		:= @tar@
+UNZIP		:= @unzip@
+CP		:= @cp@ -L
+FIND		:= @find@
+CPIO		:= @cpio@
+GZIP		:= @gzip@ -9
+ECHO		:= @echo@
+SFDISK		:= @sfdisk@
+CAT		:= @cat@
+TEST		:= @test@
+GREP		:= @grep@
+DD		:= @dd@
+MKE2FS		:= @mke2fs@
+LN		:= @ln@ -sf
+MOUNT		:= @mount@
+UMOUNT		:= @umount@
+SED		:= @sed@
+MKNOD		:= @mknod@
+TOUCH		:= @touch@
+RPM2CPIO	:= @rpm2cpio@
+INSTALL		:= @install@ -c
+PATCH		:= @patch@
+CHOWN		:= @chown@
+CHMOD		:= @chmod@
+MD5SUM		:= @md5sum@ -w
+SHA256SUM	:= @sha256sum@ -w
+BLOCKDEV	:= @blockdev@
+SLEEP		:= @sleep@
 
 distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		busybox-1.19.0.tar.bz2 \
@@ -194,6 +194,11 @@ $(clean_targets):
 .PHONY: distclean
 distclean: clean
 	$(RM) $(WORK_DIR)
+	$(RM) autom4te.cache
+	$(RM) configure
+	$(RM) config.status
+	$(RM) config.log
+	$(RM) Makefile
 
 
 # fetch - Grab all required packages from distribution file repositories.
