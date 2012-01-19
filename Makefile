@@ -24,13 +24,10 @@ CP		:= cp -L
 FIND		:= find
 CPIO		:= cpio
 GZIP		:= gzip -9
-CD		:= cd
 ECHO		:= echo
 SFDISK		:= sfdisk
 CAT		:= cat
 TEST		:= test
-EXIT		:= exit
-READ		:= read
 GREP		:= grep
 DD		:= dd
 MKE2FS		:= mke2fs
@@ -108,28 +105,28 @@ install: usb_device = $$($(CAT) $(install_dev_node))
 install: initramfs
 	$(QUIET) if [ `whoami` != "root" ]; then \
 	  $(ECHO) "### Snap! Ya gotta be root for this part..."; \
-	  $(EXIT) 1; \
+	  exit 1; \
 	fi
 	$(QUIET) $(ECHO) "### Please type the full path of your USB drive device node (eg, /dev/sdz):" &&	\
-	$(READ) dev_node && $(ECHO) -n $$dev_node > $(install_dev_node)
+	read dev_node && $(ECHO) -n $$dev_node > $(install_dev_node)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) if [ "$(usb_device)" == "" ] || [ ! -e $(usb_device) ]; then \
 	  $(ECHO) "### That device node doesn't seem to exist."; \
-	  $(EXIT) 1; \
+	  exit 1; \
 	fi
 	$(QUIET) if $(GREP) $(usb_device) /proc/mounts > /dev/null; then \
 	  $(ECHO) "### It looks like that device is mounted..."; \
-	  $(EXIT) 1; \
+	  exit 1; \
 	fi
 	$(QUIET) if [ `$(SFDISK) -s $(usb_device)` -lt 3900000 ]; then \
 	  $(ECHO) "### Your USB flash drive isn't large enough; it must be at least 4 GB."; \
-	  $(EXIT) 1; \
+	  exit 1; \
 	fi
 	$(QUIET) $(ECHO) "### This is what '$(usb_device)' looks like..."
 	$(QUIET) $(SFDISK) -l $(usb_device)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Proceeding will completely wipe the above device! Are you sure (Yes)?" &&	\
-	$(READ) confirm && $(TEST) $$confirm == "Yes"
+	read confirm && $(TEST) $$confirm == "Yes"
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Saving MBR / partition table for $(usb_device)..."
 	$(DD) if=$(usb_device) of=$(WORK_DIR)/`basename $(usb_device)`.mbr bs=512 count=1
@@ -154,8 +151,8 @@ install: initramfs
 	$(MOUNT) -L esos_root $(MOUNT_DIR) 
 	$(MKDIR) $(MOUNT_DIR)/boot
 	$(MOUNT) -L esos_boot $(MOUNT_DIR)/boot
-	$(CD) $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdv $(IMAGE_DIR)/etc
-	$(CD) $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdv $(MOUNT_DIR)
+	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdv $(IMAGE_DIR)/etc
+	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdv $(MOUNT_DIR)
 	$(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(usb_device)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.conf > $(MOUNT_DIR)/boot/grub/grub.conf
 	$(LN) grub.conf $(MOUNT_DIR)/boot/grub/menu.lst
@@ -177,7 +174,7 @@ initramfs:
 	$(MKNOD) $(INITRAMFS_DIR)/dev/tty c 5 0
 	$(INSTALL) $(CWD)/misc/initramfs_init $(INITRAMFS_DIR)/init
 	$(LN) busybox $(INITRAMFS_DIR)/bin/sh
-	$(CD) $(INITRAMFS_DIR) && $(FIND) . -print0 |	\
+	cd $(INITRAMFS_DIR) && $(FIND) . -print0 |	\
 	$(CPIO) --null -ov --format=newc |		\
 	$(GZIP) > $(IMAGE_DIR)/boot/initramfs.cpio.gz
 
@@ -209,22 +206,22 @@ $(no_fetch_pkg_1):
 	$(QUIET) $(ECHO) "### Fetch restriction: $(notdir $(@))"
 	$(QUIET) $(ECHO) "### Please download from '$(no_fetch_pkg_1_url)'"
 	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
-	$(QUIET) $(EXIT) 1
+	$(QUIET) exit 1
 
 $(no_fetch_pkg_2):
 	$(QUIET) $(ECHO) "### Fetch restriction: $(notdir $(@))"
 	$(QUIET) $(ECHO) "### Please download from '$(no_fetch_pkg_2_url)'"
 	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
-	$(QUIET) $(EXIT) 1
+	$(QUIET) exit 1
 
 
 # checksum - Verify checksums for all distribution files.
 .PHONY: checksum
 checksum: fetch
 	$(QUIET) $(ECHO) "### Verifying MD5 checksums..."
-	$(QUIET) $(CD) $(DISTFILES_DIR) && $(MD5SUM) -c $(CWD)/CHECKSUM.MD5
+	$(QUIET) cd $(DISTFILES_DIR) && $(MD5SUM) -c $(CWD)/CHECKSUM.MD5
 	$(QUIET) $(ECHO) "### Verifying SHA256 checksums..."
-	$(QUIET) $(CD) $(DISTFILES_DIR) && $(SHA256SUM) -c $(CWD)/CHECKSUM.SHA256
+	$(QUIET) cd $(DISTFILES_DIR) && $(SHA256SUM) -c $(CWD)/CHECKSUM.SHA256
 
 
 # extract - Extract all of the previously downloaded packages/archives.
@@ -239,7 +236,7 @@ $(tarball_src_dirs):
 	  $(TAR) xvfj $(src_file) -C $(BUILD_DIR); \
 	else \
 	  $(ECHO) "### Unhandled file extension: $(suffix $(src_file))"; \
-	  $(EXIT) 1; \
+	  exit 1; \
 	fi
 
 
@@ -415,7 +412,7 @@ sysvinit:
 	$(TOUCH) $(@)
 
 grub:
-	$(CD) $(src_dir) && LDFLAGS="--static" ./configure --prefix=/usr
+	cd $(src_dir) && LDFLAGS="--static" ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(IMAGE_DIR)/usr/sbin/grub-install > $(WORK_DIR)/grub-install
@@ -425,14 +422,14 @@ grub:
 glibc:
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
-	$(CD) $(WORK_DIR)/glibc-build && \
+	cd $(WORK_DIR)/glibc-build && \
 	CFLAGS="-O2 -U_FORTIFY_SOURCE" $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 perl:
-	$(CD) $(src_dir) && ./configure.gnu --prefix=/usr
+	cd $(src_dir) && ./configure.gnu --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) test
 	$(MAKE) --directory=$(src_dir) install.perl DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
@@ -442,9 +439,9 @@ MegaCLI:
 	$(MKDIR) $(WORK_DIR)/$(@)
 	$(UNZIP) -o $(wildcard $(DISTFILES_DIR)/*$(@)*) -d $(WORK_DIR)/$(@)
 	$(UNZIP) -o $(WORK_DIR)/$(@)/LINUX/MegaCliLin.zip -d $(WORK_DIR)/$(@)/MegaCliLin
-	#$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
-	#$(CD) $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
-	$(CD) $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
+	#cd $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
+	#cd $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
+	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
 	$(CP) $(WORK_DIR)/$(@)/opt/MegaRAID/MegaCli/MegaCli64 $(IMAGE_DIR)/opt/sbin/
 	$(TOUCH) $(@)
 
@@ -454,7 +451,7 @@ qlogic_fw:
 
 scstadmin: perl_mod = $(wildcard $(src_dir)/scstadmin/scst-*)
 scstadmin: perl
-	$(CD) $(perl_mod) && \
+	cd $(perl_mod) && \
 	$(IMAGE_DIR)/usr/bin/perl Makefile.PL PREFIX=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(perl_mod)
 	#$(MAKE) --directory=$(perl_mod) install
@@ -464,7 +461,7 @@ scstadmin: perl
 	$(TOUCH) $(@)
 
 openssh:
-	$(CD) $(src_dir) && ./configure --prefix="" --exec-prefix=/usr
+	cd $(src_dir) && ./configure --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/sshd $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssh $(IMAGE_DIR)/usr/bin/
@@ -482,7 +479,7 @@ vixie-cron:
 
 gcc:
 	$(MKDIR) $(WORK_DIR)/gcc-build
-	$(CD) $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ --disable-nls \
+	cd $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ --disable-nls \
 	--enable-threads --with-gnu-as --with-gnu-ld --with-gcc --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libgcc
@@ -490,13 +487,13 @@ gcc:
 	$(TOUCH) $(@)
 
 openssl:
-	$(CD) $(src_dir) && ./config shared --prefix=/usr
+	cd $(src_dir) && ./config shared --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) INSTALL_PREFIX=$(IMAGE_DIR) install_sw
 	$(TOUCH) $(@)
 
 zlib:
-	$(CD) $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) -m 644 $(src_dir)/libz.a $(IMAGE_DIR)/usr/lib/
 	$(INSTALL) -m 755 $(src_dir)/libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/
@@ -506,14 +503,14 @@ zlib:
 	$(TOUCH) $(@)
 
 ncurses:
-	$(CD) $(src_dir) && ./configure --prefix=/usr --with-shared
+	cd $(src_dir) && ./configure --prefix=/usr --with-shared
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install.libs
 	$(TOUCH) $(@)
 
 e2fsprogs:
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
-	$(CD) $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
+	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
 	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/e2fsck/e2fsck $(IMAGE_DIR)/usr/sbin/
@@ -548,14 +545,14 @@ e2fsprogs:
 	$(TOUCH) $(@)
 
 ssmtp:
-	$(CD) $(src_dir) && ./configure --enable-ssl --prefix="" --exec-prefix=/usr
+	cd $(src_dir) && ./configure --enable-ssl --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
 	$(TOUCH) $(@)
 
 libibumad:
-	$(CD) $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MKDIR) $(IMAGE_DIR)/usr/include/infiniband
@@ -563,7 +560,7 @@ libibumad:
 	$(TOUCH) $(@)
 
 libibverbs:
-	$(CD) $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MKDIR) $(IMAGE_DIR)/usr/include/infiniband
@@ -575,7 +572,7 @@ libibverbs:
 	$(TOUCH) $(@)
 
 srptools: libibumad libibverbs
-	$(CD) $(src_dir) && ./configure LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
+	cd $(src_dir) && ./configure LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
 	CFLAGS="-I$(IMAGE_DIR)/usr/include" --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
@@ -584,7 +581,7 @@ srptools: libibumad libibverbs
 asm_linux:
 	$(MKDIR) $(WORK_DIR)/$(@)
 	$(TAR) xvfz $(wildcard $(DISTFILES_DIR)/$(@)*) -C $(WORK_DIR)/$(@)
-	$(CD) $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/manager/StorMan-*.x86_64.rpm | $(CPIO) -idmv
+	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/manager/StorMan-*.x86_64.rpm | $(CPIO) -idmv
 	$(CP) $(WORK_DIR)/$(@)/cmdline/arcconf $(IMAGE_DIR)/opt/sbin/
 	$(CP) $(WORK_DIR)/$(@)/usr/StorMan/libstdc++.so.5 $(IMAGE_DIR)/opt/lib/
 	$(TOUCH) $(@)
