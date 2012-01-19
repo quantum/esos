@@ -2,8 +2,8 @@ dnl $Id$
 
 dnl Wrapper for AC_PATH_PROG that kills configure script if program is missing
 AC_DEFUN([MY_PATH_PROG],
-[AC_PATH_PROG([$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
-test $[$1] == NOT_FOUND && AC_MSG_ERROR([program $1 is required])])
+	[AC_PATH_PROG([$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
+	test $[$1] == NOT_FOUND && AC_MSG_ERROR([program $1 is required])])
 
 AC_INIT()
 
@@ -33,13 +33,10 @@ MY_PATH_PROG([cp])
 MY_PATH_PROG([find])
 MY_PATH_PROG([cpio])
 MY_PATH_PROG([gzip])
-dnl MY_PATH_PROG([cd])
 MY_PATH_PROG([echo])
 MY_PATH_PROG([sfdisk])
 MY_PATH_PROG([cat])
 MY_PATH_PROG([test])
-dnl MY_PATH_PROG([exit])
-dnl MY_PATH_PROG([read])
 MY_PATH_PROG([grep])
 MY_PATH_PROG([dd])
 MY_PATH_PROG([mke2fs])
@@ -59,3 +56,4 @@ MY_PATH_PROG([sha256sum])
 MY_PATH_PROG([blockdev])
 MY_PATH_PROG([sleep])
 
+AC_OUTPUT(Makefile)
