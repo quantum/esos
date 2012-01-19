@@ -1,7 +1,17 @@
 #summary How to build/install ESOS on your USB flash drive.
 
 ==== Build Prerequisites ====
-Add your content here.
+Since ESOS makes use of some proprietary software, currently the only method of getting/installing it is to grab the source and compile it on your computer. ESOS is still in the very early stages of development/testing so the only method of obtaining the source is via SVN; there are no "release" tarballs available yet.
+
+Here is a list of the build host system requirements:
+  * A recent release, of a modern x86-64 Linux distribution (64-bit Linux is required since ESOS uses only 64-bit kernel/programs).
+  * All of the typical software development packages (eg, GCC, GNU Make, Autoconf, Libtool, etc.) are required.
+  * A USB flash drive that is at least 4 GB -- not really required for building, but need to install the ESOS "distribution" on to (below).
+  * Subversion is required to pull the source down to your machine.
+  * The configure script will check for all of the required tools/utilities that are used directly by the ESOS Makefile.
+  * Other tools, libraries, etc. that are required by the packages/projects that ESOS uses should be caught by those project's configure scripts.
+
+More here...?
 
 <br>
 
