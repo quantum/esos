@@ -5,8 +5,19 @@ AC_DEFUN([MY_PATH_PROG],
 [AC_PATH_PROG([$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
 test $[$1] == NOT_FOUND && AC_MSG_ERROR([program $1 is required])])
 
-dnl Some standard stuff
 AC_INIT()
+
+dnl Must be a 64-bit Linux host
+AC_MSG_CHECKING([if this is a x86-64 Linux host])
+if test "`uname -o`" == "GNU/Linux" && test "`uname -m`" == "x86_64"
+then
+	AC_MSG_RESULT([yes])
+else
+	AC_MSG_RESULT([no])
+	AC_MSG_ERROR([this system must be GNU/Linux x86_64])
+fi
+
+dnl Compiler checks
 AC_PROG_CC
 AC_LANG_C
 AC_PROG_CXX
@@ -22,13 +33,13 @@ MY_PATH_PROG([cp])
 MY_PATH_PROG([find])
 MY_PATH_PROG([cpio])
 MY_PATH_PROG([gzip])
-MY_PATH_PROG([cd])
+dnl MY_PATH_PROG([cd])
 MY_PATH_PROG([echo])
 MY_PATH_PROG([sfdisk])
 MY_PATH_PROG([cat])
 MY_PATH_PROG([test])
-MY_PATH_PROG([exit])
-MY_PATH_PROG([read])
+dnl MY_PATH_PROG([exit])
+dnl MY_PATH_PROG([read])
 MY_PATH_PROG([grep])
 MY_PATH_PROG([dd])
 MY_PATH_PROG([mke2fs])
