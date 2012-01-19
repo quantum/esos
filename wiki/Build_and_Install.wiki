@@ -10,13 +10,14 @@ Here is a list of the build host system requirements:
   * Subversion is required to pull the source down to your machine.
   * The configure script will check for all of the required tools/utilities that are used directly by the ESOS Makefile.
   * Other tools, libraries, etc. that are required by the packages/projects that ESOS uses should be caught by those project's configure scripts.
+  * Some free disk space for building, probably around 10 GB to be safe.
+  * A lot of time! Unfortunately, several larger projects (GCC, Linux kernel, glibc, etc.) are required that take quite a while to compile.
 
 More here...?
 
 <br>
 
 ==== Building ESOS ====
-Add your content here.
 Grab the latest revision from trunk:
 {{{
 svn checkout http://enterprise-storage-os.googlecode.com/svn/trunk esos
