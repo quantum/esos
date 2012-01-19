@@ -17,8 +17,21 @@ More here...?
 
 ==== Building ESOS ====
 Add your content here.
+Grab the latest revision from trunk:
 {{{
 svn checkout http://enterprise-storage-os.googlecode.com/svn/trunk esos
+cd esos
+}}}
+
+Generate the configure script and execute it:
+{{{
+autoconf
+./configure
+}}}
+
+Finally, run make, which will fetch, extract, and build everything:
+{{{
+make
 }}}
 More here.
 
