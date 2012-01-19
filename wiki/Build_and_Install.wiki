@@ -17,6 +17,10 @@ More here...?
 
 ==== Building ESOS ====
 Add your content here.
+{{{
+svn checkout http://enterprise-storage-os.googlecode.com/svn/trunk esos
+}}}
+More here.
 
 <br>
 
