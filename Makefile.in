@@ -314,8 +314,8 @@ scst_kernel:
 	KVER=$(kernel_ver)$(prod_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) \
 	SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst install
 	### Build iscsi-scst modules (prod)
-	$(MAKE) --directory=$(iscsi-scst_src) clean
-	$(MAKE) --directory=$(iscsi-scst_src) extraclean
+	$(MAKE) --directory=$(iscsi-scst_src) KDIR=$(linux_src) clean
+	$(MAKE) --directory=$(iscsi-scst_src) KDIR=$(linux_src) extraclean
 	$(MAKE) --directory=$(iscsi-scst_src) debug2perf
 	$(MAKE) --directory=$(iscsi-scst_src) include/iscsi_scst_itf_ver.h
 	$(MAKE) --directory=$(iscsi-scst_src) SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst \
@@ -323,8 +323,8 @@ scst_kernel:
 	$(INSTALL) -D -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
 	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(prod_suffix)/extra/iscsi-scst.ko
 	### Build srpt modules (prod)
-	$(MAKE) --directory=$(srpt_src) clean
-	$(MAKE) --directory=$(srpt_src) extraclean
+	$(MAKE) --directory=$(srpt_src) KDIR=$(linux_src) clean
+	$(MAKE) --directory=$(srpt_src) KDIR=$(linux_src) extraclean
 	$(SED) -i 's/^EXTRA_CFLAGS/#&/' $(srpt_src)/src/Makefile
 	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
 	KDIR=$(linux_src) KVER=$(kernel_ver)$(prod_suffix) \
@@ -357,8 +357,8 @@ scst_kernel:
 	KVER=$(kernel_ver)$(debug_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) \
 	SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst install
 	### Build iscsi-scst modules (debug)
-	$(MAKE) --directory=$(iscsi-scst_src) clean
-	$(MAKE) --directory=$(iscsi-scst_src) extraclean
+	$(MAKE) --directory=$(iscsi-scst_src) KDIR=$(linux_src) clean
+	$(MAKE) --directory=$(iscsi-scst_src) KDIR=$(linux_src) extraclean
 	$(MAKE) --directory=$(iscsi-scst_src) perf2debug
 	$(MAKE) --directory=$(iscsi-scst_src) include/iscsi_scst_itf_ver.h
 	$(MAKE) --directory=$(iscsi-scst_src) SCST_INC_DIR=$(IMAGE_DIR)/usr/local/include/scst \
@@ -366,8 +366,8 @@ scst_kernel:
 	$(INSTALL) -D -m 644 $(iscsi-scst_src)/kernel/iscsi-scst.ko \
 	$(IMAGE_DIR)/lib/modules/$(kernel_ver)$(debug_suffix)/extra/iscsi-scst.ko
 	### Build srpt modules (debug)
-	$(MAKE) --directory=$(srpt_src) clean
-	$(MAKE) --directory=$(srpt_src) extraclean
+	$(MAKE) --directory=$(srpt_src) KDIR=$(linux_src) clean
+	$(MAKE) --directory=$(srpt_src) KDIR=$(linux_src) extraclean
 	$(SED) -i 's/^#//' $(srpt_src)/src/Makefile
 	$(MAKE) --directory=$(srpt_src) SCST_DIR=$(IMAGE_DIR)/usr/local/include/scst \
 	KDIR=$(linux_src) KVER=$(kernel_ver)$(debug_suffix) \
