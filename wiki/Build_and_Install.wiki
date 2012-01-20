@@ -13,7 +13,13 @@ Here is a list of the build host system requirements:
   * Some free disk space for building, probably around 10 GB to be safe.
   * A lot of time! Unfortunately, several larger projects (GCC, Linux kernel, glibc, etc.) are required that take quite a while to compile.
 
-More here...?
+Using _Red Hat Enterprise Linux 6.2 Server x86_64_ as your build host:
+  * Standard install, defaults for everything.
+  * blah
+
+Using _SUSE Linux Enterprise 11 SP1 x86_64_ as your build host:
+  * blah
+  * blah
 
 <br>
 
