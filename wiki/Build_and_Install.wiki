@@ -16,6 +16,7 @@ Here is a list of the build host system requirements:
 Using _Red Hat Enterprise Linux 6.2 Server x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * yum groupinstall "Development tools"
+  * yum install glibc-static --enablerepo=rhel-6-server-optional-rpms
 
 <br>
 
