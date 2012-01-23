@@ -255,7 +255,7 @@ image_setup:
 	$(MKDIR) $(IMAGE_DIR)/boot/grub
 	$(MKDIR) $(IMAGE_DIR)/mnt/{root,conf,logs}
 	$(MKDIR) $(IMAGE_DIR)/lib/firmware
-	$(MKDIR) $(IMAGE_DIR)/usr/{bin,sbin,libexec}
+	$(MKDIR) $(IMAGE_DIR)/usr/{bin,sbin,libexec,lib}
 	$(MKDIR) $(IMAGE_DIR)/usr/local/{bin,sbin}
 	$(MKDIR) $(IMAGE_DIR)/opt/{bin,sbin,lib}
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/tmp
@@ -395,7 +395,8 @@ busybox:
 	$(TOUCH) $(@)
 
 sysvinit:
-	LDFLAGS="--static" $(MAKE) --directory=$(src_dir)/src
+	#LDFLAGS="--static" $(MAKE) --directory=$(src_dir)/src
+	$(MAKE) --directory=$(src_dir)/src
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mountpoint $(IMAGE_DIR)/bin/
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/init $(IMAGE_DIR)/sbin/
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/halt $(IMAGE_DIR)/sbin/
@@ -457,12 +458,13 @@ qlogic_fw:
 
 scstadmin: perl_mod = $(wildcard $(src_dir)/scstadmin/scst-*)
 scstadmin: perl
+	# TODO - This needs to be tweaked a bit!
 	cd $(perl_mod) && \
-	$(IMAGE_DIR)/usr/bin/perl Makefile.PL PREFIX=$(IMAGE_DIR)/usr
-	$(MAKE) --directory=$(perl_mod)
-	#$(MAKE) --directory=$(perl_mod) install
-	#$(MAKE) --directory=$(perl_mod) install_perl
-	$(MAKE) --directory=$(perl_mod) pure_install
+	PERL5LIB="$(IMAGE_DIR)/usr/lib/perl5/5.12.4" $(IMAGE_DIR)/usr/bin/perl Makefile.PL \
+	PREFIX=/usr DESTDIR=$(IMAGE_DIR) PERL_LIB="$(IMAGE_DIR)/usr/lib/perl5/5.12.4" \
+	PERL_ARCHLIB="$(IMAGE_DIR)/usr/lib/perl5/5.12.4/x86_64-linux"
+	$(MAKE) --directory=$(perl_mod) PERL5LIB="$(IMAGE_DIR)/usr/lib/perl5/5.12.4"
+	$(MAKE) --directory=$(perl_mod) PERL5LIB="$(IMAGE_DIR)/usr/lib/perl5/5.12.4" install
 	$(INSTALL) -m 755 $(src_dir)/scstadmin/scstadmin $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
