@@ -42,7 +42,22 @@ More here.
 <br>
 
 ==== Installing ESOS ====
-Add your content here.
+To install ESOS, you need a USB flash drive that is at least 4 GB in size. After plugging in your drive to the build host, one of the easiest ways to find the drive's device node is to use the lsscsi command. Here is an example of what that looks like:
+{{{
+[root@localhost ~]# lsscsi 
+[0:0:0:0]    disk    ATA      ST9160412AS      D005  /dev/sda 
+[1:0:0:0]    cd/dvd  TSSTcorp DVD+-RW TS-L633C DW50  /dev/sr0 
+[8:0:0:0]    disk    Kingston DataTraveler G3  1.00  /dev/sdb 
+}}}
+
+In the example above, we clearly recognize "Kingston DataTraveler G3" (hopefully) as our USB flash drive, and we can see the device node is "/dev/sdb" (far right column).
+
+Now that we know the device node of our USB device, we can install ESOS on it:
+{{{
+sudo make install
+}}}
+
+You must be root to install ESOS; you will be prompted for the device node and asked for confirmation as the make target will completely wipe/destroy any data on the given device.
 
 <br>
 
