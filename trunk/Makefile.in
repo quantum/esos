@@ -154,8 +154,8 @@ install: initramfs
 	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdv $(IMAGE_DIR)/etc
 	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdv $(MOUNT_DIR)
 	$(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(usb_device)
-	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.conf > $(MOUNT_DIR)/boot/grub/grub.conf
-	$(LN) grub.conf $(MOUNT_DIR)/boot/grub/menu.lst
+	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.cfg > $(MOUNT_DIR)/boot/grub/grub.cfg
+	#$(LN) grub.conf $(MOUNT_DIR)/boot/grub/menu.lst
 	$(LN) /usr/share/zoneinfo/UTC $(MOUNT_DIR)/etc/localtime
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
