@@ -110,7 +110,7 @@ install: initramfs
 	$(QUIET) $(ECHO) "### Please type the full path of your USB drive device node (eg, /dev/sdz):" &&	\
 	read dev_node && $(ECHO) -n $$dev_node > $(install_dev_node)
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) if [ "$(usb_device)" == "" ] || [ ! -e $(usb_device) ]; then \
+	$(QUIET) if [ "$(usb_device)" = "" ] || [ ! -e $(usb_device) ]; then \
 	  $(ECHO) "### That device node doesn't seem to exist."; \
 	  exit 1; \
 	fi
@@ -126,7 +126,7 @@ install: initramfs
 	$(QUIET) $(SFDISK) -l $(usb_device)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Proceeding will completely wipe the above device! Are you sure (Yes)?" &&	\
-	read confirm && $(TEST) $$confirm == "Yes"
+	read confirm && $(TEST) $$confirm = "Yes"
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Saving MBR / partition table for $(usb_device)..."
 	$(DD) if=$(usb_device) of=$(WORK_DIR)/`basename $(usb_device)`.mbr bs=512 count=1
@@ -137,6 +137,7 @@ install: initramfs
 	$(ECHO) -e ",32,L,*\n,512,L\n,256,L\n,1024,L\n" | $(SFDISK) -uM $(usb_device)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Rereading partition table..."
+	$(SLEEP) 5
 	$(BLOCKDEV) -v --rereadpt $(usb_device)
 	$(SLEEP) 20
 	$(QUIET) $(ECHO) && $(ECHO)
@@ -235,9 +236,9 @@ extract: fetch checksum $(tarball_src_dirs) ;
 $(tarball_src_dirs): src_file = $(wildcard $(DISTFILES_DIR)/$(notdir $(@)).*)
 $(tarball_src_dirs):
 	$(MKDIR) $(BUILD_DIR)
-	$(QUIET) if [ "$(suffix $(src_file))" == ".gz" ]; then \
+	$(QUIET) if [ "$(suffix $(src_file))" = ".gz" ]; then \
 	  $(TAR) xvfz $(src_file) -C $(BUILD_DIR); \
-	elif [ "$(suffix $(src_file))" == ".bz2" ]; then \
+	elif [ "$(suffix $(src_file))" = ".bz2" ]; then \
 	  $(TAR) xvfj $(src_file) -C $(BUILD_DIR); \
 	else \
 	  $(ECHO) "### Unhandled file extension: $(suffix $(src_file))"; \
