@@ -53,7 +53,6 @@ MY_PATH_PROG([chown])
 MY_PATH_PROG([chmod])
 MY_PATH_PROG([md5sum])
 MY_PATH_PROG([sha256sum])
-MY_PATH_PROG([blockdev])
 MY_PATH_PROG([sleep])
 
 AC_OUTPUT(Makefile)
