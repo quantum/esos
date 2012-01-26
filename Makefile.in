@@ -423,6 +423,7 @@ grub:
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir)/grub-core DESTDIR=$(IMAGE_DIR) install-platformDATA
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(IMAGE_DIR)/usr/sbin/grub-install > $(WORK_DIR)/grub-install
 	$(CHMOD) +x $(WORK_DIR)/grub-install
 	$(TOUCH) $(@)
