@@ -44,7 +44,6 @@ CHOWN		:= @chown@
 CHMOD		:= @chmod@
 MD5SUM		:= @md5sum@ -w
 SHA256SUM	:= @sha256sum@ -w
-BLOCKDEV	:= @blockdev@
 SLEEP		:= @sleep@
 
 distfiles	= $(addprefix $(DISTFILES_DIR)/, \
@@ -134,12 +133,10 @@ install: initramfs
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Creating new partition table on $(usb_device)..."
 	$(DD) if=/dev/zero of=$(usb_device) bs=512 count=1
-	$(ECHO) -e ",32,L,*\n,512,L\n,256,L\n,1024,L\n" | $(SFDISK) -uM $(usb_device)
+	$(ECHO) -e "1,20,L,*\n21,100,L\n121,30,L\n151,300,L\n" | $(SFDISK) $(usb_device)
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Rereading partition table..."
-	$(SLEEP) 5
-	$(BLOCKDEV) -v --rereadpt $(usb_device)
-	$(SLEEP) 20
+	$(QUIET) $(ECHO) "### Waiting for the device nodes to appear..."
+	$(SLEEP) 15
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Making new filesystems on $(usb_device)..."
 	$(MKE2FS) -L esos_boot $(usb_device)1
