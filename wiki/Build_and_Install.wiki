@@ -37,7 +37,8 @@ Finally, run make, which will fetch, extract, and build everything:
 {{{
 make
 }}}
-More here.
+
+If you found you needed to install any additional tools, libraries, etc. that weren't caught by any of the configure scripts, please [http://groups.google.com/group/esos-users let us know].
 
 <br>
 
