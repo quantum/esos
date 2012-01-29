@@ -91,6 +91,9 @@ esos_ver	:= 0.1
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
+export LDFLAGS = -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib
+export CFLAGS = -I$(IMAGE_DIR)/usr/include
+
 
 # all - The default goal; complete every target except install.
 .PHONY: all
@@ -382,7 +385,7 @@ scst_kernel:
 	### Done
 	$(TOUCH) $(@)
 
-busybox:
+busybox: glibc
 	$(CP) $(CWD)/misc/$(notdir $(src_dir)).config $(src_dir)/.config
 	LDFLAGS="--static" $(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) $(src_dir)/busybox_unstripped $(WORK_DIR)/initramfs/bin/busybox
@@ -392,7 +395,7 @@ busybox:
 	$(INSTALL) $(src_dir)/examples/udhcp/simple.script $(IMAGE_DIR)/usr/share/udhcpc/default.script
 	$(TOUCH) $(@)
 
-sysvinit:
+sysvinit: glibc
 	#LDFLAGS="--static" $(MAKE) --directory=$(src_dir)/src
 	$(MAKE) --directory=$(src_dir)/src
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mountpoint $(IMAGE_DIR)/bin/
@@ -415,7 +418,7 @@ sysvinit:
 	$(LN) last $(IMAGE_DIR)/usr/bin/lastb
 	$(TOUCH) $(@)
 
-grub:
+grub: glibc
 	#cd $(src_dir) && LDFLAGS="--static" ./configure --prefix=/usr
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
@@ -434,7 +437,7 @@ glibc:
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-perl:
+perl: glibc
 	cd $(src_dir) && ./configure.gnu --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) test
@@ -467,7 +470,7 @@ scstadmin: perl
 	$(INSTALL) -m 755 $(src_dir)/scstadmin/scstadmin $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
-openssh:
+openssh: glibc zlib openssl
 	cd $(src_dir) && ./configure --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/sshd $(IMAGE_DIR)/usr/sbin/
@@ -478,13 +481,13 @@ openssh:
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssh-keygen $(IMAGE_DIR)/usr/bin/
 	$(TOUCH) $(@)
 
-vixie-cron:
+vixie-cron: glibc
 	$(MAKE) --directory=$(src_dir) all
 	$(INSTALL) $(STRIP) -m 111 $(src_dir)/cron $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) $(STRIP) -m 4111 $(src_dir)/crontab $(IMAGE_DIR)/usr/bin/
 	$(TOUCH) $(@)
 
-gcc:
+gcc: glibc
 	$(MKDIR) $(WORK_DIR)/gcc-build
 	cd $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ --disable-nls \
 	--enable-threads --with-gnu-as --with-gnu-ld --with-gcc --prefix=/usr
@@ -493,13 +496,13 @@ gcc:
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libstdc++-v3
 	$(TOUCH) $(@)
 
-openssl:
+openssl: glibc
 	cd $(src_dir) && ./config shared --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) INSTALL_PREFIX=$(IMAGE_DIR) install_sw
 	$(TOUCH) $(@)
 
-zlib:
+zlib: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) -m 644 $(src_dir)/libz.a $(IMAGE_DIR)/usr/lib/
@@ -509,13 +512,13 @@ zlib:
 	$(INSTALL) -D $(src_dir)/zlib.pc $(IMAGE_DIR)/usr/lib/pkgconfig/zlib.pc
 	$(TOUCH) $(@)
 
-ncurses:
+ncurses: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --with-shared
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install.libs
 	$(TOUCH) $(@)
 
-e2fsprogs:
+e2fsprogs: glibc
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
 	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
@@ -551,14 +554,14 @@ e2fsprogs:
 	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/resize/resize2fs $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
-ssmtp:
+ssmtp: glibc openssl
 	cd $(src_dir) && ./configure --enable-ssl --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
 	$(TOUCH) $(@)
 
-libibumad:
+libibumad: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
@@ -566,7 +569,7 @@ libibumad:
 	$(INSTALL) -m 644 $(src_dir)/include/infiniband/umad.h $(IMAGE_DIR)/usr/include/infiniband/
 	$(TOUCH) $(@)
 
-libibverbs:
+libibverbs: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
@@ -578,9 +581,10 @@ libibverbs:
 	$(src_dir)/include/infiniband/marshall.h $(IMAGE_DIR)/usr/include/infiniband/
 	$(TOUCH) $(@)
 
-srptools: libibumad libibverbs
-	cd $(src_dir) && ./configure LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
-	CFLAGS="-I$(IMAGE_DIR)/usr/include" --prefix=/usr
+srptools: glibc libibumad libibverbs
+	#cd $(src_dir) && ./configure LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
+	#CFLAGS="-I$(IMAGE_DIR)/usr/include" --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(TOUCH) $(@)
