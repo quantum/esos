@@ -438,7 +438,7 @@ glibc:
 	$(TOUCH) $(@)
 
 perl: glibc
-	cd $(src_dir) && ./configure.gnu --prefix=/usr
+	cd $(src_dir) && CFLAGS="" ./configure.gnu --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) test
 	$(MAKE) --directory=$(src_dir) install.perl DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
