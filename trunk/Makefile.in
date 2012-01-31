@@ -387,7 +387,7 @@ scst_kernel:
 
 busybox: glibc
 	$(CP) $(CWD)/misc/$(notdir $(src_dir)).config $(src_dir)/.config
-	LDFLAGS="--static" $(MAKE) --directory=$(src_dir)
+	LDFLAGS="$(LDFLAGS) --static" $(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) $(src_dir)/busybox_unstripped $(WORK_DIR)/initramfs/bin/busybox
 	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) $(src_dir)/busybox_unstripped $(IMAGE_DIR)/bin/busybox
@@ -397,7 +397,7 @@ busybox: glibc
 
 sysvinit: glibc
 	#LDFLAGS="--static" $(MAKE) --directory=$(src_dir)/src
-	$(MAKE) --directory=$(src_dir)/src
+	$(MAKE) --directory=$(src_dir)/src SULOGINLIBS=-lcrypt
 	$(MAKE) --directory=$(src_dir)/src ROOT=$(IMAGE_DIR) install
 	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mountpoint $(IMAGE_DIR)/bin/
 	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/init $(IMAGE_DIR)/sbin/
@@ -472,7 +472,7 @@ scstadmin: perl
 	$(TOUCH) $(@)
 
 openssh: glibc zlib openssl
-	cd $(src_dir) && ./configure --prefix="" --exec-prefix=/usr
+	cd $(src_dir) && ./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-files
 	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/sshd $(IMAGE_DIR)/usr/sbin/
@@ -491,10 +491,11 @@ vixie-cron: glibc
 
 gcc: glibc
 	$(MKDIR) $(WORK_DIR)/gcc-build
-	cd $(WORK_DIR)/gcc-build && $(src_dir)/configure --enable-languages=c,c++ --disable-nls \
-	--enable-threads --with-gnu-as --with-gnu-ld --with-gcc --prefix=/usr
-	$(MAKE) --directory=$(WORK_DIR)/gcc-build
+	cd $(WORK_DIR)/gcc-build && $(src_dir)/configure --prefix=/usr --disable-multilib \
+	--disable-nls --disable-bootstrap --enable-languages=c,c++
+	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libgcc
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libgcc
+	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libstdc++-v3
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libstdc++-v3
 	$(TOUCH) $(@)
 
