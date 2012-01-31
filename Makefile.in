@@ -398,24 +398,25 @@ busybox: glibc
 sysvinit: glibc
 	#LDFLAGS="--static" $(MAKE) --directory=$(src_dir)/src
 	$(MAKE) --directory=$(src_dir)/src
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mountpoint $(IMAGE_DIR)/bin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/init $(IMAGE_DIR)/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/halt $(IMAGE_DIR)/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/shutdown $(IMAGE_DIR)/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/runlevel $(IMAGE_DIR)/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/killall5 $(IMAGE_DIR)/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/fstab-decode $(IMAGE_DIR)/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/sulogin $(IMAGE_DIR)/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/bootlogd $(IMAGE_DIR)/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/last $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mesg $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/utmpdump $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/wall $(IMAGE_DIR)/usr/bin/
-	$(LN) halt $(IMAGE_DIR)/sbin/reboot
-	$(LN) halt $(IMAGE_DIR)/sbin/poweroff
-	$(LN) init $(IMAGE_DIR)/sbin/telinit
-	$(LN) /sbin/killall5 $(IMAGE_DIR)/bin/pidof
-	$(LN) last $(IMAGE_DIR)/usr/bin/lastb
+	$(MAKE) --directory=$(src_dir)/src ROOT=$(IMAGE_DIR) install
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mountpoint $(IMAGE_DIR)/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/init $(IMAGE_DIR)/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/halt $(IMAGE_DIR)/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/shutdown $(IMAGE_DIR)/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/runlevel $(IMAGE_DIR)/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/killall5 $(IMAGE_DIR)/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/fstab-decode $(IMAGE_DIR)/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/sulogin $(IMAGE_DIR)/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/bootlogd $(IMAGE_DIR)/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/last $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/mesg $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/utmpdump $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/src/wall $(IMAGE_DIR)/usr/bin/
+	#$(LN) halt $(IMAGE_DIR)/sbin/reboot
+	#$(LN) halt $(IMAGE_DIR)/sbin/poweroff
+	#$(LN) init $(IMAGE_DIR)/sbin/telinit
+	#$(LN) /sbin/killall5 $(IMAGE_DIR)/bin/pidof
+	#$(LN) last $(IMAGE_DIR)/usr/bin/lastb
 	$(TOUCH) $(@)
 
 grub: glibc
@@ -473,12 +474,13 @@ scstadmin: perl
 openssh: glibc zlib openssl
 	cd $(src_dir) && ./configure --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/sshd $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssh $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/sftp $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/scp $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/sftp-server $(IMAGE_DIR)/usr/libexec/
-	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssh-keygen $(IMAGE_DIR)/usr/bin/
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-files
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/sshd $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssh $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/sftp $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/scp $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/sftp-server $(IMAGE_DIR)/usr/libexec/
+	#$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssh-keygen $(IMAGE_DIR)/usr/bin/
 	$(TOUCH) $(@)
 
 vixie-cron: glibc
@@ -505,11 +507,12 @@ openssl: glibc
 zlib: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(INSTALL) -m 644 $(src_dir)/libz.a $(IMAGE_DIR)/usr/lib/
-	$(INSTALL) -m 755 $(src_dir)/libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/
-	$(LN) libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/libz.so
-	$(LN) libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/libz.so.1
-	$(INSTALL) -D $(src_dir)/zlib.pc $(IMAGE_DIR)/usr/lib/pkgconfig/zlib.pc
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	#$(INSTALL) -m 644 $(src_dir)/libz.a $(IMAGE_DIR)/usr/lib/
+	#$(INSTALL) -m 755 $(src_dir)/libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/
+	#$(LN) libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/libz.so
+	#$(LN) libz.so.1.2.5 $(IMAGE_DIR)/usr/lib/libz.so.1
+	#$(INSTALL) -D $(src_dir)/zlib.pc $(IMAGE_DIR)/usr/lib/pkgconfig/zlib.pc
 	$(TOUCH) $(@)
 
 ncurses: glibc
@@ -523,35 +526,36 @@ e2fsprogs: glibc
 	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/e2fsck/e2fsck $(IMAGE_DIR)/usr/sbin/
-	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext2 
-	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext3 
-	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext4 
-	$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext4dev
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/debugfs/debugfs $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/mke2fs $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/badblocks $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/tune2fs $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/dumpe2fs $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/blkid $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/logsave $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2image $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/fsck $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2undo $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/mklost+found $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/filefrag $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2freefrag $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/uuidd $(IMAGE_DIR)/usr/sbin/
-	$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext2
-	$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext3
-	$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext4
-	$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext4dev
-	$(LN) tune2fs $(IMAGE_DIR)/usr/sbin/findfs
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/chattr $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/lsattr $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/uuidgen $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2initrd_helper $(IMAGE_DIR)/usr/lib/
-	$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/resize/resize2fs $(IMAGE_DIR)/usr/sbin/
+	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-progs-recursive
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/e2fsck/e2fsck $(IMAGE_DIR)/usr/sbin/
+	#$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext2 
+	#$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext3 
+	#$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext4 
+	#$(LN) e2fsck $(IMAGE_DIR)/usr/sbin/fsck.ext4dev
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/debugfs/debugfs $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/mke2fs $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/badblocks $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/tune2fs $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/dumpe2fs $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/blkid $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/logsave $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2image $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/fsck $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2undo $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/mklost+found $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/filefrag $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2freefrag $(IMAGE_DIR)/usr/sbin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/uuidd $(IMAGE_DIR)/usr/sbin/
+	#$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext2
+	#$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext3
+	#$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext4
+	#$(LN) mke2fs $(IMAGE_DIR)/usr/sbin/mkfs.ext4dev
+	#$(LN) tune2fs $(IMAGE_DIR)/usr/sbin/findfs
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/chattr $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/lsattr $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/uuidgen $(IMAGE_DIR)/usr/bin/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/misc/e2initrd_helper $(IMAGE_DIR)/usr/lib/
+	#$(INSTALL) $(STRIP) -m 755 $(WORK_DIR)/e2fsprogs-build/resize/resize2fs $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
 ssmtp: glibc openssl
