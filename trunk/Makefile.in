@@ -567,7 +567,7 @@ e2fsprogs: glibc
 
 ssmtp: glibc openssl
 	cd $(src_dir) && ./configure --enable-ssl --prefix="" --exec-prefix=/usr
-	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc CC="$(LDFLAGS) -lcrypto"
+	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc CC="gcc $(LDFLAGS) -lcrypto"
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
 	$(TOUCH) $(@)
