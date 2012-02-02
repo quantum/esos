@@ -63,4 +63,4 @@ You must be root to install ESOS; you will be prompted for the device node and a
 <br>
 
 ==== Next Steps ====
-Add your content here.
+Once you have successfully built and installed the ESOS image to a USB flash device, take the flash drive and plug it into your storage server. Then reboot the storage server and set USB devices to first (only) in the boot order. Then proceed to the [Initial_Configuration] page.
