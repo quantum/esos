@@ -1,13 +1,19 @@
 #summary Setting up after the first boot.
 
-= Introduction =
+==== The First Boot ====
+At this point its assumed you have already inserted your USB flash drive into your storage server's USB port, set USB as the only boot device in the BIOS, and you are at the physical console and have a login prompt. If you're ESOS USB flash drive failed to boot for some reason, please let us know on the esos-users Google Group so we can help.
 
-Add your content here.
+The first item on your agenda will be to login as root and change the root password.
+  * Superuser account: root
+  * Default password: esos
 
+Next, *this is important*, you need to change the default root password:
+{{{
+passwd
+}}}
+Choose a nice hefty password, assuming this machine will be on your IP network, you don't want it to be susceptible to easy SSH brute-force attacks.
 
-= Details =
+<br>
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+==== What's Next ====
+From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [General_Usage] document.
