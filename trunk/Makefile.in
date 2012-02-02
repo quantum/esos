@@ -386,9 +386,15 @@ scst_kernel:
 	$(TOUCH) $(@)
 
 busybox: glibc
-	$(CP) $(CWD)/misc/$(notdir $(src_dir)).config $(src_dir)/.config
-	LDFLAGS="$(LDFLAGS) --static" $(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) clean
+	$(MAKE) --directory=$(src_dir) distclean
+	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
+	$(CWD)/misc/$(notdir $(src_dir)).config > $(src_dir)/.config
+	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) $(src_dir)/busybox_unstripped $(WORK_DIR)/initramfs/bin/busybox
+	$(MAKE) --directory=$(src_dir) clean
+	$(MAKE) --directory=$(src_dir) distclean
+	$(CP) $(CWD)/misc/$(notdir $(src_dir)).config $(src_dir)/.config
 	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) $(src_dir)/busybox_unstripped $(IMAGE_DIR)/bin/busybox
 	$(INSTALL) -d $(IMAGE_DIR)/usr/share/udhcpc
