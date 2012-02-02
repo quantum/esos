@@ -38,7 +38,7 @@ Finally, run make, which will fetch, extract, and build everything:
 make
 }}}
 
-If you found you needed to install any additional tools, libraries, etc. that weren't caught by any of the configure scripts, please [http://groups.google.com/group/esos-users let us know].
+If you found you needed to install any additional tools, libraries, etc. that weren't caught by any of the configure scripts, please [http://groups.google.com/group/esos-users let us know]. The make recipe will download all required distribution files from the ESOS project home, except for a few packages that will need to be downloaded manually due to licensing restrictions.
 
 <br>
 
