@@ -31,7 +31,7 @@ Delete logical drive 0:
 MegaCli64 -CfgLdDel -L0 -a0
 }}}
 
-Create a new RAID5 logical drive, with six physical disks, adaptive read-ahead (ADRA) and write cache (WB) enabled:
+Create a new RAID5 logical drive, with six physical disks, adaptive read-ahead (ADRA) and write cache enabled (WB):
 {{{
 MegaCli64 -CfgLDAdd -R5[:1,:2,:3,:5,:6,:7] WB ADRA -a0
 }}}
@@ -44,28 +44,24 @@ MegaCli64 -CfgLDAdd -R5[:0,:1] WT NORA -a0
 <br>
 
 ==== Back-Storage Setup: Adaptec AACRAID ====
-blha
+blah
 
 <br>
 
 ==== Back-Storage Setup: Other ====
-
 blah
 
 <br>
 
 ==== Configuring Targets: Fibre Channel ====
-
 blah
 
 <br>
 
 ==== Configuring Targets: iSCSI ====
-
 blah
 
 <br>
 
 ==== Configuring Targets: InfiniBand (SRP) ====
-
 blah
