@@ -92,7 +92,7 @@ prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
 export LDFLAGS = -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib
-export CFLAGS = -I$(IMAGE_DIR)/usr/include
+export CPPFLAGS = -I$(IMAGE_DIR)/usr/include
 
 
 # all - The default goal; complete every target except install.
