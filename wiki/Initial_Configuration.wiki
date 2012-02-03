@@ -3,6 +3,8 @@
 ==== The First Boot ====
 At this point its assumed you have already inserted your USB flash drive into your storage server's USB port, set USB as the only boot device in the BIOS, and you are at the physical console and have a login prompt. If you're ESOS USB flash drive failed to boot for some reason, please let us know on the esos-users Google Group so we can help.
 
+On the first boot, you may get messages saying something like "Superblock last write time is in the future." -- just hit 'y' to fix it. This happens typically because the time on your build machine is different than your ESOS storage server machine.
+
 The first item on your agenda will be to login as root and change the root password.
   * Superuser account: root
   * Default password: esos
@@ -12,6 +14,31 @@ Next, *this is important*, you need to change the default root password:
 passwd
 }}}
 Choose a nice hefty password, assuming this machine will be on your IP network, you don't want it to be susceptible to easy SSH brute-force attacks.
+
+Next, you will want to configure your network interface(s). The "network configuration file" is really just a shell script that runs any commands you put in it. The configuration file is located here: /etc/network
+
+So, to configure an interface using DHCP, you would have a line similar to this:
+{{{
+udhcpc -i eth0
+}}}
+To configure a network interface with a static IP and default gateway, use this:
+{{{
+ifconfig eth0 192.168.0.1 broadcast 192.168.0.255 netmask 255.255.255.0
+route add -net default gw 192.168.0.1 netmask 0.0.0.0
+}}}
+If you are using static IPs, be sure to edit '/etc/resolv.conf' for your environment:
+{{{
+search host.domain
+nameserver 192.168.0.11
+nameserver 192.168.0.12
+}}}
+
+Once your '/etc/network' file is configured, you can start the network by using this command:
+{{{
+sh /etc/network
+}}}
+
+
 
 <br>
 
