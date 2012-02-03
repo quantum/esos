@@ -9,16 +9,41 @@ There are two broad steps when configuring ESOS storage: The first is configurin
 <br>
 
 ==== Back-Storage Setup: LSI MegaRAID ====
+The LSI Logic "MegaCLI" utility is included with ESOS. The utility allows you to create/delete/modify volumes (logical drives) on your MegaRAID controller. Below are a few examples of using the MegaCLI tool (MegaCli64 for us). A nice handy cheat sheet is located [http://tools.rapidsoft.de/perc/perc-cheat-sheet.html here]. Or for a very in-depth document, consult the user guide available on LSI Logic's web site.
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Get adapter information for the first MegaRAID adapter (0):
+{{{
+MegaCli64 -AdpAllInfo -a0
+}}}
+
+A list of all the adapter's physical drives:
+{{{
+MegaCli64 -PDList -a0
+}}}
+
+All of the logical drives for the adapter:
+{{{
+MegaCli64 -LDInfo -Lall -a0
+}}}
+
+Delete logical drive 0:
+{{{
+MegaCli64 -CfgLdDel -L0 -a0
+}}}
+
+Create a new RAID5 logical drive, with six physical disks, adaptive read-ahead (ADRA) and write cache (WB) enabled:
+{{{
+MegaCli64 -CfgLDAdd -R5[:1,:2,:3,:5,:6,:7] WB ADRA -a0
+}}}
+
+Create a new RAID0 logical drive, with two physical disks, no read-ahead (NORA) and write cache disabled (WT):
+{{{
+MegaCli64 -CfgLDAdd -R5[:0,:1] WT NORA -a0
+}}}
 
 <br>
 
 ==== Back-Storage Setup: Adaptec AACRAID ====
-
 blha
 
 <br>
