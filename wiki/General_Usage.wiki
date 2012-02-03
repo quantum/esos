@@ -1,6 +1,6 @@
 #summary Configuring your back-storage, setting up target devices, etc.
 
-<wiki:toc max_depth="1" />
+<wiki:toc max_depth="4" />
 
 ==== Introduction ====
 
