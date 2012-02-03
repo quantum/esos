@@ -23,7 +23,7 @@ udhcpc -i eth0
 }}}
 To configure a network interface with a static IP and default gateway, use this:
 {{{
-ifconfig eth0 192.168.0.1 broadcast 192.168.0.255 netmask 255.255.255.0
+ifconfig eth0 192.168.0.10 broadcast 192.168.0.255 netmask 255.255.255.0
 route add -net default gw 192.168.0.1 netmask 0.0.0.0
 }}}
 If you are using static IPs, be sure to edit '/etc/resolv.conf' for your environment:
