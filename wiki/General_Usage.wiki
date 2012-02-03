@@ -1,10 +1,8 @@
 #summary Configuring your back-storage, setting up target devices, etc.
 
-<wiki:toc max_depth="4" />
-
 ==== Introduction ====
-
 Add your content here.
+<wiki:toc max_depth="4" />
 
 <br>
 
@@ -14,6 +12,8 @@ Add your content here.  Format your content with:
   * Text in *bold* or _italic_
   * Headings, paragraphs, and lists
   * Automatic links to other wiki pages
+
+<br>
 
 ==== Back-Storage Setup: Adaptec AACRAID ====
 
