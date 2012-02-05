@@ -152,8 +152,8 @@ install: initramfs
 	$(MOUNT) -L esos_root $(MOUNT_DIR) 
 	$(MKDIR) $(MOUNT_DIR)/boot
 	$(MOUNT) -L esos_boot $(MOUNT_DIR)/boot
-	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdv $(IMAGE_DIR)/etc
-	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdv $(MOUNT_DIR)
+	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdvu $(IMAGE_DIR)/etc
+	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)
 	$(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(usb_device)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.cfg > $(MOUNT_DIR)/boot/grub/grub.cfg
 	#$(LN) grub.conf $(MOUNT_DIR)/boot/grub/menu.lst

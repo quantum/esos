@@ -15,6 +15,8 @@
 /sbin/mdev -s
 
 /bin/grep -v rootfs /proc/mounts > /etc/mtab
+/bin/touch /var/log/wtmp
+/bin/touch /var/log/lastlog
 
 /sbin/fsck -A -T
 if [ $? -gt 1 ]; then
