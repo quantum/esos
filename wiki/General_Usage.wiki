@@ -63,5 +63,5 @@ blah
 
 <br>
 
-==== Configuring Targets: InfiniBand (SRP) ====
+==== Configuring Targets: InfiniBand ====
 blah
