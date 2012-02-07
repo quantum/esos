@@ -458,7 +458,11 @@ MegaCLI:
 	#cd $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
 	#cd $(IMAGE_DIR) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
 	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
+	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
 	$(CP) $(WORK_DIR)/$(@)/opt/MegaRAID/MegaCli/MegaCli64 $(IMAGE_DIR)/opt/sbin/
+	$(CP) $(WORK_DIR)/$(@)/opt/lsi/3rdpartylibs/libsysfs.so.2.0.2 $(IMAGE_DIR)/opt/lib/
+	$(MKDIR) $(IMAGE_DIR)/opt/lsi/3rdpartylibs/x86_64
+	$(LN) /opt/lib/libsysfs.so.2.0.2 $(IMAGE_DIR)/opt/lsi/3rdpartylibs/x86_64/libsysfs.so.2.0.2
 	$(TOUCH) $(@)
 
 qlogic_fw:
