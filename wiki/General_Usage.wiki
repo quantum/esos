@@ -31,14 +31,14 @@ Delete logical drive 0:
 MegaCli64 -CfgLdDel -L0 -a0
 }}}
 
-Create a new RAID5 logical drive, with six physical disks, adaptive read-ahead (ADRA) and write cache enabled (WB):
+Create a new RAID5 logical drive, with three physical disks, adaptive read-ahead (ADRA) and write cache enabled (WB):
 {{{
-MegaCli64 -CfgLDAdd -R5[:1,:2,:3,:5,:6,:7] WB ADRA -a0
+MegaCli64 -CfgLDAdd -R5[8:0,8:1,8:2] WB ADRA -a0
 }}}
 
 Create a new RAID0 logical drive, with two physical disks, no read-ahead (NORA) and write cache disabled (WT):
 {{{
-MegaCli64 -CfgLDAdd -R5[:0,:1] WT NORA -a0
+MegaCli64 -CfgLDAdd -R0[8:0,8:1] WT NORA -a0
 }}}
 
 <br>
