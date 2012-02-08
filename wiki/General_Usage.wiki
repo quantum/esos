@@ -41,10 +41,24 @@ Create a new RAID0 logical drive, with two physical disks, no read-ahead (NORA) 
 MegaCli64 -CfgLDAdd -R0[8:0,8:1] WT NORA -a0
 }}}
 
+After you have created your new volume(s) you will need to find and record the SCSI device node (eg, /dev/sdz). You can easily find this using `lsscsi` or checking `dmesg`. You can now move on to configuring your front-side targets.
+
 <br>
 
 ==== Back-Storage Setup: Adaptec AACRAID ====
+The arcconf utility is also included with ESOS for configuring Adaptec RAID controllers from inside the OS. This tool should work with most/all Adaptec SATA/SAS RAID controllers.
+
+See all controller/drive/volume information for controller # 1:
+{{{
+arcconf GETCONFIG 1
+}}}
+
+Delete a logical drive (volume):
+{{{
 blah
+}}}
+
+
 
 <br>
 
