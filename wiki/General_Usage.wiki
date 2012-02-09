@@ -86,7 +86,50 @@ Below is an example of configuring a BLOCKIO device using SCST. In the example w
 
 The first step is creating the virtual disk using BLOCKIO mode (vdisk_blockio):
 {{{
-scstadmin -open_dev vdi_ssd_vmfs_1 -handler vdisk_blockio -attributes filename=/dev/sda,blocksize=512,nv_cache=0,read_only=0,removable=0,threads_pool_type=per_initiator,threads_num=4
+scstadmin -open_dev test_disk_1 -handler vdisk_blockio -attributes filename=/dev/sda,blocksize=512
+scstadmin -set_dev_attr test_disk_1 -attributes threads_pool_type=per_initiator,threads_num=4
+}}}
+
+In our example, the ESOS storage server has two QLogic FC HBAs connected to two fabrics (two independent Fibre Channel switches). The other server that will be using the storage volume we are configuring (initiators) also has two FC HBAs connected to the fabrics and zoned appropriately.
+
+We will now create two security groups, one for each Fibre Channel target. This allows you to do some fine tuning with LUN masking and a few other attributes (io_grouping_type, etc.).
+{{{
+scstadmin -add_group myserver -driver qla2x00t -target 21:00:00:1b:32:01:6b:11
+scstadmin -add_group myserver -driver qla2x00t -target 21:01:00:1b:32:21:6b:11
+}}}
+
+Next we need to know the WWN's of the initiators on our server that will be using the storage. A couple different ways of getting this... you could look through the system configuration information that the OS provides on the server, you could grab them from your Fibre Channel switches, or you could get them from inside ESOS by looking at data in sysfs. Take a look here:
+{{{
+cat /sys/class/fc_host/host8/device/scsi_host/host8/port_database
+cat /sys/class/fc_host/host9/device/scsi_host/host9/port_database
+}}}
+
+Once you have the WWN's of the server's initiators, you can add them to the security groups:
+{{{
+scstadmin -add_init 21:00:00:e0:8b:9e:ce:24 -driver qla2x00t -target 21:00:00:1b:32:01:6b:11 -group myserver
+scstadmin -add_init 21:01:00:e0:8b:be:ce:24 -driver qla2x00t -target 21:01:00:1b:32:21:6b:11 -group myserver
+}}}
+
+Now we can add the LUN's for our device to each target. *Be sure to start LU numbering with 0 (zero) unless you are sure the initiator side has sparse LUN support (eg, VMware ESX).* Its probably also best to keep the LUN's the same for each server/volume combination.
+{{{
+scstadmin -add_lun 0 -driver qla2x00t -target 21:00:00:1b:32:01:6b:11 -group myserver -device test_disk_1
+scstadmin -add_lun 0 -driver qla2x00t -target 21:01:00:1b:32:21:6b:11 -group myserver -device test_disk_1
+}}}
+
+Finally, we can enable our targets:
+{{{
+scstadmin -enable_target 21:00:00:1b:32:01:6b:11 -driver qla2x00t
+scstadmin -enable_target 21:01:00:1b:32:21:6b:11 -driver qla2x00t
+}}}
+
+Be sure to save your SCST configuration to a flat file after you have made changes:
+{{{
+scstadmin -nonkey -write_config /etc/scst.conf
+}}}
+
+You will need to do an HBA re-scan on the initiator side to find the new targets (SCSI disk); or on some operating systems, issuing a LIP will do the trick:
+{{{
+scstadmin -issue_lip
 }}}
 
 <br>
