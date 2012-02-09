@@ -82,7 +82,12 @@ If you find that your favorite "enterprise class" RAID controller is not support
 <br>
 
 ==== Configuring Targets: Fibre Channel ====
-blah
+Below is an example of configuring a BLOCKIO device using SCST. In the example we are using a Linux block device (RAID volume, etc.) as the back-storage device. There are lots of options with SCST -- instead of using a raw block device, you could partition the device and put a filesystem on and then create multiple virtual devices using files. See the SCST documentation for more information.
+
+The first step is creating the virtual disk using BLOCKIO mode (vdisk_blockio):
+{{{
+scstadmin -open_dev vdi_ssd_vmfs_1 -handler vdisk_blockio -attributes filename=/dev/sda,blocksize=512,nv_cache=0,read_only=0,removable=0,threads_pool_type=per_initiator,threads_num=4
+}}}
 
 <br>
 
