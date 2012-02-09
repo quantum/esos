@@ -42,6 +42,7 @@ MegaCli64 -CfgLDAdd -R0[8:0,8:1] WT NORA -a0
 }}}
 
 After you have created your new volume(s) you will need to find and record the SCSI device node (eg, /dev/sdz). You can easily find this using `lsscsi` or checking `dmesg`. You can now move on to configuring your front-side targets.
+
 <br>
 
 ==== Back-Storage Setup: Adaptec AACRAID ====
@@ -68,6 +69,7 @@ arcconf CREATE 1 LOGICALDRIVE Rcache ROFF Wcache WT MAX 0 0 2 0 3
 }}}
 
 Once you've created a new volume on your Adaptec RAID controller, grab the SCSI device node (`lsscsi` works well) and continue with one of the target configuration sections below.
+
 <br>
 
 ==== Back-Storage Setup: Other ====
@@ -76,6 +78,7 @@ Other RAID controllers are supported, however, not all of them necessarily have 
 You can still use these other controllers with ESOS, you will just need to configure your volumes / logical drives "outside" of ESOS -- via the BIOS.
 
 If you find that your favorite "enterprise class" RAID controller is not supported by ESOS, please let us know on the esos-users Google Group. It would also be helpful to know if there are any CLI management tools that can be used to configure these controllers from inside the OS.
+
 <br>
 
 ==== Configuring Targets: Fibre Channel ====
