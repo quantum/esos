@@ -200,4 +200,42 @@ You can now discover the new target via your iSCSI initiator.
 <br>
 
 ==== Configuring Targets: IB / SRP ====
-blah
+Again, in this example we will use BLOCKIO mode for our device. We start with creating the SCST device, and then move to configuring the security group, and adding the LUN. This example uses InfiniBand/SRP (ib_srpt SCST driver) as the target.
+
+The first step is creating the virtual disk using BLOCKIO mode (vdisk_blockio):
+{{{
+scstadmin -open_dev test_disk_1 -handler vdisk_blockio -attributes filename=/dev/sda,blocksize=512
+scstadmin -set_dev_attr test_disk_1 -attributes threads_pool_type=per_initiator,threads_num=4
+}}}
+
+Next, we need the ib_srpt target name. The `scstadmin` utility has lots of useful functions for getting information from SCST too; see the SCST documentation for more details.
+{{{
+scstadmin -list_target -driver ib_srpt
+}}}
+
+Now we create a security group for the InfiniBand/SRP target:
+{{{
+scstadmin -add_group myserver -driver ib_srpt -target ib_srpt_target_0
+}}}
+
+Now add the IB/SRP initiator to the security group:
+{{{
+scstadmin -add_init 0x0002c9020022f9fd0002c802003210cb -driver ib_srpt -target ib_srpt_target_0 -group myserver
+}}}
+
+Next add the LUN mapping (0) for our BLOCKIO device:
+{{{
+scstadmin -add_lun 0 -driver ib_srpt -target ib_srpt_target_0 -group myserver -device test_disk_1
+}}}
+
+Finally, enable the IB/SRP target:
+{{{
+scstadmin -enable_target ib_srpt_target_0 -driver ib_srpt
+}}}
+
+Save your SCST configuration:
+{{{
+scstadmin -nonkey -write_config /etc/scst.conf
+}}}
+
+You can now re-scan from the initiator side to access the new target.
