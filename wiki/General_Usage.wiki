@@ -132,10 +132,43 @@ You will need to do an HBA re-scan on the initiator side to find the new targets
 scstadmin -issue_lip
 }}}
 
+You should now have a brand new volume available on the initiator side. Again, please see the SCST documentation -- the above was just one example, SCST can do a whole lot more.
+
 <br>
 
 ==== Configuring Targets: iSCSI ====
-blah
+In this example, we will be making use of SCST's BLOCKIO mode for our storage device. ESOS supports several different NIC / CNA / TCP Offload Engine (TOE) combinations; see the [Supported_Hardware] document for more information.
+
+The first step is creating the virtual disk using BLOCKIO mode (vdisk_blockio):
+{{{
+scstadmin -open_dev test_disk_1 -handler vdisk_blockio -attributes filename=/dev/sda,blocksize=512
+scstadmin -set_dev_attr test_disk_1 -attributes threads_pool_type=per_initiator,threads_num=4
+}}}
+
+Before creating the iSCSI target(s) in SCST, you will need to come up with a iSCSI Qualified Name (IQN) for each target on your ESOS storage server. [http://tools.ietf.org/html/rfc3721#section-1.1 RFC 3721] contains more information and examples on IQN, but briefly it goes like this (example taken from Wikipedia):
+
+{{{
+                 Naming     Optional String Defined By
+    Type  Date   Authority  "example.com" Naming Authority
+    +--++------++---------++-----------------------------+
+    |  ||      ||         ||                             |
+
+    iqn.2001-04.com.example:storage:diskarrays-sn-a8675309
+    iqn.2001-04.com.example
+    iqn.2001-04.com.example:storage.tape1.sys1.xyz
+    iqn.2001-04.com.example:storage.disk2.sys1.xyz
+}}}
+
+  * 'Type' is always the string "iqn"
+  * 'Date' is the date that the naming authority took ownership of the domain in "yyyy-mm" format
+  * 'Naming Authority' is the reversed domain name of the authority (eg, example.com is com.example)
+  * The last section is optional; prefix with a ':' and give a storage target name specified by the naming authority
+
+Once you have a decided on a name, you can now create the iSCSI target using `scstadmin`:
+{{{
+scstadmin -add_target iqn.2012-02.local.esoshost:storage1 -driver iscsi
+}}}
+
 
 <br>
 
