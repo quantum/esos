@@ -195,6 +195,7 @@ Don't forget to save your SCST configuration:
 scstadmin -nonkey -write_config /etc/scst.conf
 }}}
 
+You can now discover the new target via your iSCSI initiator.
 
 <br>
 
