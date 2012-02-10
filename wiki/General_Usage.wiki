@@ -169,6 +169,32 @@ Once you have a decided on a name, you can now create the iSCSI target using `sc
 scstadmin -add_target iqn.2012-02.local.esoshost:storage1 -driver iscsi
 }}}
 
+We can now create a security group for our new iSCSI target so only specified initiators can access the storage:
+{{{
+scstadmin -add_group myserver -driver iscsi -target iqn.2012-02.local.esoshost:storage1
+}}}
+
+Now add an initiator to the group:
+{{{
+scstadmin -add_init iqn.1991-05.com.microsoft:computer.domain -driver iscsi -target iqn.2012-02.local.esoshost:storage1 -group myserver
+}}}
+
+Next we will setup our BLOCKIO device as LUN 0 in our security group:
+{{{
+scstadmin -add_lun 0 -driver iscsi -target iqn.2012-02.local.esoshost:storage1 -group myserver -device test_disk_1
+}}}
+
+Finally we can enable the iSCSI target:
+{{{
+scstadmin -enable_target iqn.2012-02.local.esoshost:storage1 -driver iscsi
+scstadmin -set_drv_attr iscsi -attributes enabled=1
+}}}
+
+Don't forget to save your SCST configuration:
+{{{
+scstadmin -nonkey -write_config /etc/scst.conf
+}}}
+
 
 <br>
 
