@@ -58,10 +58,11 @@ AuthMethod=CRAM-MD5
 UseSTARTTLS=YES
 }}}
 
-You can then test mail by using the `ssmtp` command; type a test message and then hit CTRL-D. If you encounter any problems, consult /var/log/mail.* for help.
+You can then test mail by using the `ssmtp` command; type a test message and then hit CTRL-D.
 {{{
 ssmtp username@gmail.com
 }}}
+If you encounter any problems, consult /var/log/mail.`*` for help.
 
 <br>
 
