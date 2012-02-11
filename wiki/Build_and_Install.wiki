@@ -12,6 +12,7 @@ Here is a list of the build host system requirements:
   * Other tools, libraries, etc. that are required by the packages/projects that ESOS uses should be caught by those project's configure scripts.
   * Some free disk space for building, probably around 10 GB to be safe.
   * A lot of time! Unfortunately, several larger projects (GCC, Linux kernel, glibc, etc.) are required that take quite a while to compile.
+  * Internet connectivity; packages are fetched from the dist. file repository.
 
 Using _Red Hat Enterprise Linux 6.2 Server x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
