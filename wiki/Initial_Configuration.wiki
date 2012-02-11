@@ -38,7 +38,30 @@ Once your '/etc/network' file is configured, you can start the network by using 
 sh /etc/network
 }}}
 
+<br>
 
+==== Mail Setup ====
+It is highly recommended to configure mail (SMTP) on your ESOS storage server. Email messages are sent by many daemons in ESOS to communicate informational messages, warnings, errors, etc. ESOS uses sSMTP for sendmail -- it can only send mail, you cannot receive mail in ESOS. sSMTP in ESOS supports SSL/TLS encrypted connections to your SMTP host.
+
+The two configuration files for sSMTP, `ssmtp.conf` and `revaliases` are both located in /etc (not /etc/ssmtp). An example is provided below for configuring sSMTP with a Gmail account.
+
+This is what the `/etc/ssmtp.conf` configuration file (uncommented lines shown) should look like for a Gmail account:
+{{{
+root=username@gmail.com
+mailhub=smtp.gmail.com:587
+rewriteDomain=
+hostname=_HOSTNAME_
+FromLineOverride=NO
+AuthUser=username@gmail.com
+AuthPass=password
+AuthMethod=CRAM-MD5
+UseSTARTTLS=YES
+}}}
+
+You can then test mail by using the `ssmtp` command; type a test message and then hit CTRL-D. If you encounter any problems, consult /var/log/mail.* for help.
+{{{
+ssmtp username@gmail.com
+}}}
 
 <br>
 
