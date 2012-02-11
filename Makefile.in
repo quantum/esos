@@ -89,7 +89,7 @@ clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
 
-esos_ver	:= 0.1
+esos_ver	:= 0.1-r$(shell svnversion $(CWD))
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
