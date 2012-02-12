@@ -63,6 +63,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		zlib-1.2.5.tar.bz2 \
 		lsscsi-0.25.tar.gz \
 		sg3_utils-1.33.tar.gz \
+		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
 		linux-2.6.39.4.tar.bz2 \
@@ -84,7 +85,7 @@ build_targets		:= scst_kernel busybox sysvinit grub glibc \
 			perl MegaCLI qlogic_fw scstadmin openssh \
 			vixie-cron gcc openssl zlib ncurses \
 			e2fsprogs ssmtp libibumad libibverbs \
-			srptools asm_linux lsscsi sg3_utils
+			srptools asm_linux lsscsi sg3_utils groff
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
@@ -623,6 +624,12 @@ lsscsi: glibc
 	$(TOUCH) $(@)
 
 sg3_utils: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+groff: glibc gcc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
