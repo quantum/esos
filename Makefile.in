@@ -522,27 +522,30 @@ ssmtp: glibc openssl
 libibumad: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
-	$(MKDIR) $(IMAGE_DIR)/usr/include/infiniband
-	$(INSTALL) -m 644 $(src_dir)/include/infiniband/umad.h $(IMAGE_DIR)/usr/include/infiniband/
+	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	#$(MKDIR) $(IMAGE_DIR)/usr/include/infiniband
+	#$(INSTALL) -m 644 $(src_dir)/include/infiniband/umad.h $(IMAGE_DIR)/usr/include/infiniband/
 	$(TOUCH) $(@)
 
 libibverbs: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
-	$(MKDIR) $(IMAGE_DIR)/usr/include/infiniband
-	$(INSTALL) -m 644 $(src_dir)/include/infiniband/arch.h \
-	$(src_dir)/include/infiniband/driver.h $(src_dir)/include/infiniband/kern-abi.h \
-	$(src_dir)/include/infiniband/opcode.h $(src_dir)/include/infiniband/verbs.h \
-	$(src_dir)/include/infiniband/sa-kern-abi.h $(src_dir)/include/infiniband/sa.h \
-	$(src_dir)/include/infiniband/marshall.h $(IMAGE_DIR)/usr/include/infiniband/
+	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	#$(MKDIR) $(IMAGE_DIR)/usr/include/infiniband
+	#$(INSTALL) -m 644 $(src_dir)/include/infiniband/arch.h \
+	#$(src_dir)/include/infiniband/driver.h $(src_dir)/include/infiniband/kern-abi.h \
+	#$(src_dir)/include/infiniband/opcode.h $(src_dir)/include/infiniband/verbs.h \
+	#$(src_dir)/include/infiniband/sa-kern-abi.h $(src_dir)/include/infiniband/sa.h \
+	#$(src_dir)/include/infiniband/marshall.h $(IMAGE_DIR)/usr/include/infiniband/
 	$(TOUCH) $(@)
 
 srptools: glibc libibumad libibverbs
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 asm_linux:
