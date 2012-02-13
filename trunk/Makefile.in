@@ -633,6 +633,7 @@ groff: glibc gcc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(LN) tbl $(IMAGE_DIR)/usr/bin/gtbl
 	$(TOUCH) $(@)
 
 
