@@ -163,6 +163,7 @@ install: initramfs
 	$(LN) /usr/share/zoneinfo/UTC $(MOUNT_DIR)/etc/localtime
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
+	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
 	$(TOUCH) -d "1970-01-01 00:00:00" $(MOUNT_DIR)/etc/*
 	$(CHOWN) -R root:root $(MOUNT_DIR)/*
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/shadow
