@@ -4,17 +4,11 @@
 44b3192c4c584b9be5243d9e8e7e0ed1  gcc-4.4.5.tar.bz2
 903fcfa547df2f453476800e0838fe52  glibc-2.12.2.tar.bz2
 ca9f2a2d571b57fc5c53212d1d22e2b5  grub-1.99.tar.gz
-489c567005325d68e9ea43ccf97a32b5  iscsi-scst-2.1.0.tar.gz
-a17c748c2070168f1e784e9605ca043d  linux-2.6.39.4.tar.bz2
 cce05daf61a64501ef6cd8da1f727ec6  ncurses-5.7.tar.gz
 86f5e1c23b4c4845f23b9b7b493fb53d  openssh-5.8p1.tar.gz
 7040b89c4c58c7a1016c0dfa6e821c86  openssl-1.0.0e.tar.gz
 c499a9c04d08b1424fc808104850a0cf  perl-5.12.4.tar.bz2
-b25dfc52a3b4d4a06dfa432587d22d4d  qla2x00t-2.1.0.tar.gz
 933d250a93c46050137fec561b562f1a  qlogic_fw-20120101.tar.gz
-49a70d9cb630ae2d3308d674f942a6cd  scst-2.1.0.tar.gz
-df5a914c80dfe167163a4da6f6044d86  scstadmin-2.1.0.tar.gz
-25f7b7569365e909da43a88049434266  srpt-2.1.0.tar.bz2
 65b4e0df4934a6cd08c506cabcbe584f  ssmtp-2.64.tar.bz2
 6eda8a97b86e0a6f59dabbf25202aa6f  sysvinit-2.88dsf.tar.bz2
 09dc04f9879684d27c64c910174a9536  vixie-cron-4.1.tar.bz2
@@ -26,3 +20,5 @@ b068893ffd34489495f555339a5dc2ff  asm_linux_x64_v7_30_18837.tgz
 c4e36b106624aff78527c54cf08ecbfe  lsscsi-0.25.tar.gz
 261e39f7161337330ba6bd57999be801  sg3_utils-1.33.tar.gz
 8b8cd29385b97616a0f0d96d0951c5bf  groff-1.21.tar.gz
+7f6177a2add41b553b693af838e6ac2d  linux-3.2.6.tar.bz2
+ef0b566b9cb1fac0cc126e5ecda78155  scst-trunk_r4130.tar.bz2
