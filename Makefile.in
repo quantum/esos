@@ -295,18 +295,15 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)):
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) clean
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) extraclean
 	if [ "$(@)" = "scst_kernel$(prod_suffix)" ]; then \
-	  echo prod; \
 	  $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
 	  $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2perf; \
 	fi
 	if [ "$(@)" = "scst_kernel$(debug_suffix)" ]; then \
-	  echo debug; \
 	  $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
 	  $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2debug; \
 	fi
-	echo $(kern_suffix)
 	### Build/install the Linux kernel
 	$(MAKE) --directory=$(linux_src)
 	$(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage $(IMAGE_DIR)/boot/bzImage$(kern_suffix)
