@@ -72,6 +72,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		qlogic_fw-20120101.tar.gz \
 		linux-3.2.6.tar.bz2 \
 		scst-trunk_r4130.tar.bz2 \
+		kexec-tools-2.0.3.tar.gz \
 		gcc-4.4.5.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -85,7 +86,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			busybox sysvinit grub glibc perl MegaCLI qlogic_fw \
 			scstadmin openssh vixie-cron gcc openssl zlib ncurses \
 			e2fsprogs ssmtp libibumad libibverbs srptools asm_linux \
-			lsscsi sg3_utils groff
+			lsscsi sg3_utils groff kexec-tools
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
@@ -502,6 +503,12 @@ groff: glibc gcc
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(LN) tbl $(IMAGE_DIR)/usr/bin/gtbl
+	$(TOUCH) $(@)
+
+kexec-tools: glibc
+	cd $(src_dir) && LDFLAGS="$(LDFLAGS) --static" CPPFLAGS="" ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 

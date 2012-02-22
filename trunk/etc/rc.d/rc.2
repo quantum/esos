@@ -14,6 +14,11 @@ if [ -f /etc/network ]; then
 	/bin/sh /etc/network
 fi
 
+if [ -x /etc/rc.d/rc.kdump ]; then
+	/bin/echo "Loading crash dump kernel (kexec)..."
+	/etc/rc.d/rc.kdump
+fi
+
 if [ -x /etc/rc.d/rc.sshd ]; then
 	/bin/echo "Starting sshd..."
 	/etc/rc.d/rc.sshd
