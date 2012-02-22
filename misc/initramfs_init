@@ -18,6 +18,16 @@ mount -t proc none /proc
 mount -t sysfs none /sys
 mdev -s
 
+# Catch if /proc/vmcore exists -- we capture the crash dump and reboot
+if [ -e /proc/vmcore ]; then
+	echo "It appears a crash dump kernel is running."
+	echo "Saving /proc/vmcore to ESOS log filesystem..."
+	mount $(findfs LABEL=esos_logs) /mnt/tmp || rescue_shell
+	gzip -c /proc/vmcore > /mnt/tmp/vmcore-`date +"%s"`.gz || rescue_shell
+	umount /mnt/tmp || rescue_shell
+	reboot -f || rescue_shell
+fi
+
 # Make sure we have enough physical memory
 if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3800000 ]; then
 	echo "This system doesn't have enough RAM (need at least 4 GB)!"
