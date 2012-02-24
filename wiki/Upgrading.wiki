@@ -8,7 +8,7 @@ First, the upgrade process for ESOS is disruptive and will require a small amoun
 
 While this upgrade procedure does involve some down time, it has one important benefit: It is very easy to revert to your old ESOS version if there is some type of problem when running the new version -- simply power off the storage server, and swap USB flash drives (use the old one).
 
-*It is highly recommended to label your ESOS USB flash drives with some details such host name, ESOS version, date, etc. to keep organized.*
+_It is highly recommended to label your ESOS USB flash drives with some details such host name, ESOS version, date, etc. to keep organized._
 
 Follow the steps below to upgrade ESOS.
 
@@ -19,4 +19,4 @@ The first step is to build/install the new ESOS version to an entirely new USB f
 
 After you have successfully built your new ESOS flash drive, its probably not a bad idea to try it on another computer/server to at least make sure it boots. This could save you some down time if there is a problem with the new ESOS drive.
 
-Since ESOS is a sort of memory resident operating system, you can open an ESOS shell and run `conf_sync.sh` to synchronize your configuration files. Next, remove the ESOS
+Since ESOS is a sort of memory resident operating system, you can open an ESOS shell and run `conf_sync.sh` to synchronize your configuration files. Next, remove the ESOS USB flash drive from the running, powered on ESOS storage server you are upgrading.
