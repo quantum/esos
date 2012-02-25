@@ -1,13 +1,34 @@
-#summary Learn where/how to get technical support.
+#summary Troubleshooting tips and where to get technical support.
 
-= Introduction =
+==== Debugging / Log Files ====
+All of the ESOS system log files are written to the "/var/log" directory on a running system. When ESOS reboots or shuts down, the log files are archived to the "esos_logs" filesystem; the log files are also archived automatically if they grow too large on a running ESOS storage server.
 
-Add your content here.
+The easiest way to access the archived ESOS log files is to simply mount the "esos_logs" filesystem:
+{{{
+mount /mnt/logs
+}}}
+You can then `scp` the tarballs to another machine to examine, or you can take a peek on the ESOS server itself. _Don't forget, any non-standard (eg, copying files to /root) changes made to a running ESOS will be lost on power off or reboot._
 
+Another important feature of ESOS is that there are two different kernels. You'll notice two options when booting ESOS (GRUB):
+  * ESOS - Enterprise Storage OS $VERSION <*Production*>
+  * ESOS - Enterprise Storage OS $VERISON <*Debug*>
 
-= Details =
+The "Production" kernel/mode is what you will typically run in -- its using a kernel with minimal debugging options set and SCST setup for performance.
+
+The "Debug" kernel/mode should be used when you are having problems or issues that you are unable to resolve/diagnose using the normal "Production" kernel. The "Debug" ESOS kernel has a few extra kernel debugging options set and the SCST modules are set for full debugging.
+
+The advantage is you can easily reboot and switch to debugging mode if you are having problems without re-configuring anything. All of the target/device/storage/system/etc. configuration is exactly the same as the production mode.
+
+<br>
+
+==== Kernel Panics ====
 
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
   * Headings, paragraphs, and lists
   * Automatic links to other wiki pages
+
+<br>
+
+==== Getting Help ====
+blah
