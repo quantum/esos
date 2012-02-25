@@ -56,3 +56,8 @@ umount /mnt/new_esos
 }}}
 
 You can now power off the ESOS storage server, insert the newly created (upgraded) ESOS USB flash drive and power on the machine. You can optionally replace the old USB drive into the storage server before powering off if you would like to keep the log files.
+
+<br>
+
+==== Post Update ====
+Be sure to keep your old/previous ESOS USB flash drive handy! Should you have any problems running the new version of ESOS, you will want that old, known-to-work copy of ESOS so you can revert quickly.
