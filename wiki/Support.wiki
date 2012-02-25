@@ -7,7 +7,7 @@ The easiest way to access the archived ESOS log files is to simply mount the "es
 {{{
 mount /mnt/logs
 }}}
-You can then `scp` the tarballs to another machine to examine, or you can take a peek on the ESOS server itself. _Don't forget, any non-standard (eg, copying files to /root) changes made to a running ESOS will be lost on power off or reboot._
+You can then `scp` the tarballs to another machine to examine, or you can take a peek on the ESOS server itself. _Don't forget, any non-standard changes (eg, copying files to /root) made to a running ESOS will be lost on power off or reboot._
 
 Another important feature of ESOS is that there are two different kernels. You'll notice two options when booting ESOS (GRUB):
   * ESOS - Enterprise Storage OS $VERSION <*Production*>
