@@ -15,6 +15,11 @@ passwd
 }}}
 Choose a nice hefty password, assuming this machine will be on your IP network, you don't want it to be susceptible to easy SSH brute-force attacks.
 
+Setting the system host name is also a good idea; change the default (localhost) in the file "/etc/hostname". Then append the new host name to each loopback interface (IPv4 + IPv6) line in the "/etc/hosts" file.
+
+<br>
+
+==== Networking ====
 Next, you will want to configure your network interface(s). The "network configuration file" is really just a shell script that runs any commands you put in it. The configuration file is located here: /etc/network
 
 So, to configure an interface using DHCP, you would have a line similar to this:
