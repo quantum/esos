@@ -136,7 +136,7 @@ install: initramfs
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Creating new partition table on $(usb_device)..."
 	$(DD) if=/dev/zero of=$(usb_device) bs=512 count=1
-	$(ECHO) -e "1,20,L,*\n21,100,L\n121,30,L\n151,300,L\n" | $(SFDISK) $(usb_device)
+	$(ECHO) -e "1,20,L,*\n21,100,L\n121,30,L\n151,600,L\n" | $(SFDISK) $(usb_device)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Waiting for the device nodes to appear..."
 	$(SLEEP) 15
