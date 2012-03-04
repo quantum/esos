@@ -2,4 +2,5 @@
 
 # $Id$
 
-# Put something useful here
+# Send a system startup email
+/usr/local/sbin/startup.sh
