@@ -76,12 +76,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		gcc-4.4.5.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
-no_fetch_pkg_1		= $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
-no_fetch_pkg_1_url	= http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_MegaCLI.zip
-
-no_fetch_pkg_2		= $(addprefix $(DISTFILES_DIR)/,asm_linux_x64_v7_30_18837.tgz)
-no_fetch_pkg_2_url	= http://www.adaptec.com/en-us/speed/raid/storage_manager/asm_linux_x64_v7_30_18837_tgz.htm
-
+prop_tools		:= @prop_tools@
 build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			busybox sysvinit grub glibc perl MegaCLI qlogic_fw \
 			scstadmin openssh vixie-cron gcc openssl zlib ncurses \
@@ -97,7 +92,7 @@ export CPPFLAGS = -I$(IMAGE_DIR)/usr/include
 
 # all - The default goal; complete every target except install.
 .PHONY: all
-all: fetch extract build ;
+all: fetch extract build prop_tools ;
 
 
 # install - Prompt for USB thumb-drive device node and install the distribution to it.
@@ -207,22 +202,10 @@ distclean: clean
 
 
 # fetch - Grab all required packages from distribution file repositories.
-fetch: $(distfiles) $(no_fetch_pkg_1) $(no_fetch_pkg_2) ;
+fetch: $(distfiles) ;
 
 $(distfiles):
 	$(WGET) -P $(DISTFILES_DIR) $(distfiles_repo)/$(notdir $(@))
-
-$(no_fetch_pkg_1):
-	$(QUIET) $(ECHO) "### Fetch restriction: $(notdir $(@))"
-	$(QUIET) $(ECHO) "### Please download from '$(no_fetch_pkg_1_url)'"
-	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
-	$(QUIET) exit 1
-
-$(no_fetch_pkg_2):
-	$(QUIET) $(ECHO) "### Fetch restriction: $(notdir $(@))"
-	$(QUIET) $(ECHO) "### Please download from '$(no_fetch_pkg_2_url)'"
-	$(QUIET) $(ECHO) "### and place it in '$(DISTFILES_DIR)'."
-	$(QUIET) exit 1
 
 
 # checksum - Verify checksums for all distribution files.
@@ -369,18 +352,6 @@ perl: glibc
 	$(MAKE) --directory=$(src_dir) install.perl DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
 	$(TOUCH) $(@)
 
-MegaCLI:
-	$(MKDIR) $(WORK_DIR)/$(@)
-	$(UNZIP) -o $(wildcard $(DISTFILES_DIR)/*$(@)*) -d $(WORK_DIR)/$(@)
-	$(UNZIP) -o $(WORK_DIR)/$(@)/LINUX/MegaCliLin.zip -d $(WORK_DIR)/$(@)/MegaCliLin
-	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
-	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
-	$(CP) $(WORK_DIR)/$(@)/opt/MegaRAID/MegaCli/MegaCli64 $(IMAGE_DIR)/opt/sbin/
-	$(CP) $(WORK_DIR)/$(@)/opt/lsi/3rdpartylibs/libsysfs.so.2.0.2 $(IMAGE_DIR)/opt/lib/
-	$(MKDIR) $(IMAGE_DIR)/opt/lsi/3rdpartylibs/x86_64
-	$(LN) /opt/lib/libsysfs.so.2.0.2 $(IMAGE_DIR)/opt/lsi/3rdpartylibs/x86_64/libsysfs.so.2.0.2
-	$(TOUCH) $(@)
-
 qlogic_fw:
 	$(CP) $(src_dir)/*.bin $(IMAGE_DIR)/lib/firmware/
 	$(TOUCH) $(@)
@@ -480,14 +451,6 @@ srptools: glibc libibumad libibverbs
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-asm_linux:
-	$(MKDIR) $(WORK_DIR)/$(@)
-	$(TAR) xvfz $(wildcard $(DISTFILES_DIR)/$(@)*) -C $(WORK_DIR)/$(@)
-	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/manager/StorMan-*.x86_64.rpm | $(CPIO) -idmv
-	$(CP) $(WORK_DIR)/$(@)/cmdline/arcconf $(IMAGE_DIR)/opt/sbin/
-	$(CP) $(WORK_DIR)/$(@)/usr/StorMan/libstdc++.so.5 $(IMAGE_DIR)/opt/lib/
-	$(TOUCH) $(@)
-
 lsscsi: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
@@ -511,6 +474,47 @@ kexec-tools: glibc
 	cd $(src_dir) && LDFLAGS="$(LDFLAGS) --static" CPPFLAGS="" ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+
+# prop_tools - Extract/install the proprietary tools to the image directory.
+.PHONY: prop_tools
+prop_tools: $(prop_tools) ;
+
+MegaCLI: no_fetch_pkg := $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
+MegaCLI: no_fetch_pkg_url := http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_MegaCLI.zip
+MegaCLI:
+	$(QUIET) if [ ! -f "$(no_fetch_pkg)" ]; then \
+	  $(ECHO) "### Fetch restriction: $(notdir $(no_fetch_pkg))"; \
+	  $(ECHO) "### Please download from this URL: $(no_fetch_pkg_url)"; \
+	  $(ECHO) "### Then place it in this directory: $(DISTFILES_DIR)"; \
+	  exit 1; \
+	fi
+	$(MKDIR) $(WORK_DIR)/$(@)
+	$(UNZIP) -o $(no_fetch_pkg) -d $(WORK_DIR)/$(@)
+	$(UNZIP) -o $(WORK_DIR)/$(@)/LINUX/MegaCliLin.zip -d $(WORK_DIR)/$(@)/MegaCliLin
+	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
+	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
+	$(CP) $(WORK_DIR)/$(@)/opt/MegaRAID/MegaCli/MegaCli64 $(IMAGE_DIR)/opt/sbin/
+	$(CP) $(WORK_DIR)/$(@)/opt/lsi/3rdpartylibs/libsysfs.so.2.0.2 $(IMAGE_DIR)/opt/lib/
+	$(MKDIR) $(IMAGE_DIR)/opt/lsi/3rdpartylibs/x86_64
+	$(LN) /opt/lib/libsysfs.so.2.0.2 $(IMAGE_DIR)/opt/lsi/3rdpartylibs/x86_64/libsysfs.so.2.0.2
+	$(TOUCH) $(@)
+
+asm_linux: no_fetch_pkg := $(addprefix $(DISTFILES_DIR)/,asm_linux_x64_v7_30_18837.tgz)
+asm_linux: no_fetch_pkg_url := http://www.adaptec.com/en-us/speed/raid/storage_manager/asm_linux_x64_v7_30_18837_tgz.htm
+asm_linux:
+	$(QUIET) if [ ! -f "$(no_fetch_pkg)" ]; then \
+	  $(ECHO) "### Fetch restriction: $(notdir $(no_fetch_pkg))"; \
+	  $(ECHO) "### Please download from this URL: $(no_fetch_pkg_url)"; \
+	  $(ECHO) "### Then place it in this directory: $(DISTFILES_DIR)"; \
+	  exit 1; \
+	fi
+	$(MKDIR) $(WORK_DIR)/$(@)
+	$(TAR) xvfz $(no_fetch_pkg) -C $(WORK_DIR)/$(@)
+	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/manager/StorMan-*.x86_64.rpm | $(CPIO) -idmv
+	$(CP) $(WORK_DIR)/$(@)/cmdline/arcconf $(IMAGE_DIR)/opt/sbin/
+	$(CP) $(WORK_DIR)/$(@)/usr/StorMan/libstdc++.so.5 $(IMAGE_DIR)/opt/lib/
 	$(TOUCH) $(@)
 
 

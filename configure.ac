@@ -17,6 +17,16 @@ else
 	AC_MSG_ERROR([this system must be GNU/Linux x86_64])
 fi
 
+dnl Options for disabling proprietary tools
+prop_tools=""
+AC_ARG_ENABLE([megaraid_tool],
+	AS_HELP_STRING([--disable-megaraid_tool], [Disable the inclusion of LSI MegaRAID CLI proprietary tool]))
+	AS_IF([test "x$enable_megaraid_tool" != "xno"], [prop_tools="MegaCLI $prop_tools"])
+AC_ARG_ENABLE([aacraid_tool],
+	AS_HELP_STRING([--disable-aacraid_tool], [Disable the inclusion of Adaptec AACRAID CLI proprietary tool]))
+	AS_IF([test "x$enable_aacraid_tool" != "xno"], [prop_tools="asm_linux $prop_tools"])
+AC_SUBST(prop_tools)
+
 dnl Compiler checks
 AC_PROG_CC
 AC_LANG_C
