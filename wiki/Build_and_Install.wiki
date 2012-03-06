@@ -28,10 +28,21 @@ svn checkout http://enterprise-storage-os.googlecode.com/svn/trunk esos
 cd esos
 }}}
 
-Generate the configure script and execute it:
+Generate the configure script:
 {{{
 autoconf
+}}}
+
+After you have generated the configure script above, you then need to run the configure script. There are several options you can set; use `./configure --help` to see all of them.
+
+If you would like to build ESOS with everything including any proprietary tools (eg, MegaCLI) which may require manually fetching the packages, use this:
+{{{
 ./configure
+}}}
+
+If you would like to build ESOS with only open source projects (no RAID controller CLI tools) you can run this configure:
+{{{
+./configure --disable-megaraid_tool --disable-aacraid_tool
 }}}
 
 Finally, run make, which will fetch, extract, and build everything:
@@ -39,7 +50,7 @@ Finally, run make, which will fetch, extract, and build everything:
 make
 }}}
 
-If you found you needed to install any additional tools, libraries, etc. that weren't caught by any of the configure scripts, please [http://groups.google.com/group/esos-users let us know]. The make recipe will download all required distribution files from the ESOS project home, except for a few packages that will need to be downloaded manually due to licensing restrictions.
+If you found you needed to install any additional tools, libraries, etc. that weren't caught by any of the configure scripts, please [http://groups.google.com/group/esos-users let us know]. The make recipe will download all required distribution files from the ESOS project home, except for a few packages that may need to be downloaded manually due to licensing restrictions (depending on your configure options).
 
 <br>
 
