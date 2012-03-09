@@ -8,7 +8,7 @@ There are two broad steps when configuring ESOS storage: The first is configurin
 
 <br>
 
-==== Back-Storage Setup: LSI MegaRAID ====
+=== Back-Storage Setup: LSI MegaRAID ===
 The LSI Logic "MegaCLI" utility is included with ESOS. The utility allows you to create/delete/modify volumes (logical drives) on your MegaRAID controller. Below are a few examples of using the MegaCLI tool (MegaCli64 for us). A nice handy cheat sheet is located [http://tools.rapidsoft.de/perc/perc-cheat-sheet.html here]. Or for a very in-depth document, consult the user guide available on LSI Logic's web site.
 
 Get adapter information for the first MegaRAID adapter (0):
@@ -45,7 +45,7 @@ After you have created your new volume(s) you will need to find and record the S
 
 <br>
 
-==== Back-Storage Setup: Adaptec AACRAID ====
+=== Back-Storage Setup: Adaptec AACRAID ===
 The arcconf utility is also included with ESOS for configuring Adaptec RAID controllers from inside the OS. This tool should work with most/all Adaptec SATA/SAS RAID controllers.
 
 See all controller/drive/volume information for controller # 1:
@@ -72,7 +72,7 @@ Once you've created a new volume on your Adaptec RAID controller, grab the SCSI 
 
 <br>
 
-==== Back-Storage Setup: Other ====
+=== Back-Storage Setup: Other ===
 Other RAID controllers are supported, however, not all of them necessarily have a CLI tool for configuring volumes, adapter settings, etc. from inside of ESOS. See the [Supported_Hardware] wiki page for a current list of supported controllers.
 
 You can still use these other controllers with ESOS, you will just need to configure your volumes / logical drives "outside" of ESOS -- via the BIOS.
@@ -81,7 +81,7 @@ If you find that your favorite "enterprise class" RAID controller is not support
 
 <br>
 
-==== Configuring Targets: Fibre Channel ====
+=== Configuring Targets: Fibre Channel ===
 Below is an example of configuring a BLOCKIO device using SCST. In the example we are using a Linux block device (RAID volume, etc.) as the back-storage device. There are lots of options with SCST -- instead of using a raw block device, you could partition the device and put a filesystem on and then create multiple virtual devices using files. See the SCST documentation for more information.
 
 The first step is creating the virtual disk using BLOCKIO mode (vdisk_blockio):
@@ -136,7 +136,7 @@ You should now have a brand new volume available on the initiator side. Again, p
 
 <br>
 
-==== Configuring Targets: iSCSI ====
+=== Configuring Targets: iSCSI ===
 In this example, we will be making use of SCST's BLOCKIO mode for our storage device. ESOS supports several different NIC / CNA / TCP Offload Engine (TOE) combinations; see the [Supported_Hardware] document for more information.
 
 The first step is creating the virtual disk using BLOCKIO mode (vdisk_blockio):
@@ -199,7 +199,7 @@ You can now discover the new target via your iSCSI initiator.
 
 <br>
 
-==== Configuring Targets: IB / SRP ====
+=== Configuring Targets: IB / SRP ===
 Again, in this example we will use BLOCKIO mode for our device. We start with creating the SCST device, and then move to configuring the security group, and adding the LUN. This example uses InfiniBand/SRP (ib_srpt SCST driver) as the target.
 
 The first step is creating the virtual disk using BLOCKIO mode (vdisk_blockio):
