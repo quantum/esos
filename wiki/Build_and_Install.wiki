@@ -21,7 +21,7 @@ Using _Red Hat Enterprise Linux 6.2 Server x86_64_ as your build host:
 
 <br>
 
-==== Building ESOS ====
+=== Building ESOS ===
 Grab the latest revision from trunk:
 {{{
 svn checkout http://enterprise-storage-os.googlecode.com/svn/trunk esos
@@ -54,7 +54,7 @@ If you found you needed to install any additional tools, libraries, etc. that we
 
 <br>
 
-==== Installing ESOS ====
+=== Installing ESOS ===
 To install ESOS, you need a USB flash drive that is at least 4 GB in size. After plugging in your drive to the build host, one of the easiest ways to find the drive's device node is to use the lsscsi command. Here is an example of what that looks like:
 {{{
 [root@localhost ~]# lsscsi 
@@ -74,5 +74,5 @@ You must be root to install ESOS; you will be prompted for the device node and a
 
 <br>
 
-==== Next Steps ====
+=== Next Steps ===
 Once you have successfully built and installed the ESOS image to a USB flash device, take the flash drive and plug it into your storage server. Then reboot the storage server and set USB devices to first (only) in the boot order. Then proceed to the [Initial_Configuration] page.
