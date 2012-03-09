@@ -24,9 +24,19 @@ if [ -x /etc/rc.d/rc.sshd ]; then
 	/etc/rc.d/rc.sshd
 fi
 
+if [ -f /etc/pre-scst_xtra_conf ]; then
+	/bin/echo "Pre-SCST user config. file found; running..."
+	/bin/sh /etc/pre-scst_xtra_conf
+fi
+
 if [ -x /etc/rc.d/rc.scst ]; then
 	/bin/echo "Loading and configuring SCST..."
 	/etc/rc.d/rc.scst
+fi
+
+if [ -f /etc/post-scst_xtra_conf ]; then
+	/bin/echo "Post-SCST user config. file found; running..."
+	/bin/sh /etc/post-scst_xtra_conf
 fi
 
 if [ -x /etc/rc.d/rc.local ]; then
