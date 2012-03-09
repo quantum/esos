@@ -47,6 +47,11 @@ Once your '/etc/network' file is configured, you can start the network by using 
 sh /etc/network
 }}}
 
+Synchronize your configuration:
+{{{
+conf_sync.sh
+}}}
+
 <br>
 
 === Mail Setup ===
@@ -73,6 +78,11 @@ ssmtp username@gmail.com
 }}}
 If you encounter any problems, consult /var/log/mail.`*` for help.
 
+Synchronize your configuration:
+{{{
+conf_sync.sh
+}}}
+
 <br>
 
 === Kernel Modules ===
@@ -86,6 +96,11 @@ options ib_srpt srpt_sq_size=32
 
 You can see the valid parameters for a module using the `modinfo` command. See the [http://scst.sourceforge.net SCST] documentation for possible information on tweaking any module parameters.
 
+Synchronize your configuration:
+{{{
+conf_sync.sh
+}}}
+
 <br>
 
 === Extra Configuration ===
@@ -97,6 +112,11 @@ These files can be treated as shell scripts; if either exists, they will be exec
 The first file (/etc/pre-scst_xtra_conf) will be executed (if it exists) _before_ any part of SCST is loaded. An example of something you may want to run before loading SCST is adjust the read-ahead value for a back-storage block device (eg, `blockdev --setra 2048 /dev/sdb`).
 
 The second file (/etc/post-scst_xtra_conf) will be executed (if it exists) _after_ SCST is fully loaded and configured. If you want to adjust the SMP IRQ affinity for the system, this would probably be a good place for it.
+
+Synchronize your configuration:
+{{{
+conf_sync.sh
+}}}
 
 <br>
 
