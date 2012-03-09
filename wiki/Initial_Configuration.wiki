@@ -19,7 +19,7 @@ _The only normal, interactive editor that is installed on ESOS is "vi"._ For a h
 
 Setting the system host name is also a good idea; change the default (localhost) in the file "/etc/hostname". Then append the new host name to each loopback interface (IPv4 + IPv6) line in the "/etc/hosts" file.
 
-** Since the ESOS image (binaries, config. files, etc.) is loaded into RAM on boot, *it is important that you sync your configuration* to the USB flash drive by using the `conf_sync.sh` command. There is a cron job setup to run `conf_sync.sh` every so often, but it should be good practice to always run `conf_sync.sh` after making configuration changes. **
+`*``*` Since the ESOS image (binaries, config. files, etc.) is loaded into RAM on boot, *it is important that you sync your configuration* to the USB flash drive by using the `conf_sync.sh` command. There is a cron job setup to run `conf_sync.sh` every so often, but it should be good practice to always run `conf_sync.sh` after making configuration changes. `*``*`
 
 <br>
 
