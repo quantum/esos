@@ -86,5 +86,17 @@ You can see the valid parameters for a module using the `modinfo` command. See t
 
 <br>
 
+=== Extra Configuration ===
+If you find that you need to run any extra commands on ESOS start-up, there are two files you can create/edit in /etc:
+  * /etc/pre-scst_xtra_conf
+  * /etc/post-scst_xtra_conf
+These files can be treated as shell scripts; if either exists, they will be executed during start-up with `sh`.
+
+The first file (/etc/pre-scst_xtra_conf) will be executed (if it exists) _before_ any part of SCST is loaded. An example of something you may want to run before loading SCST is adjust the read-ahead value for a back-storage block device (eg, `blockdev --setra 2048 /dev/sdb`).
+
+The second file (/etc/post-scst_xtra_conf) will be executed (if it exists) _after_ SCST is fully loaded and configured. If you want to adjust the SMP IRQ affinity for the system, this would probably be a good place for it.
+
+<br>
+
 === What's Next ===
 From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [General_Usage] document.
