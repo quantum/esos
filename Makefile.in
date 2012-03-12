@@ -471,7 +471,7 @@ kexec-tools: glibc
 prop_tools: $(prop_tools) ;
 
 MegaCLI: no_fetch_pkg := $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
-MegaCLI: no_fetch_pkg_url := http://www.lsi.com/search/Pages/downloads.aspx?k=8.02.16_MegaCLI.zip
+MegaCLI: no_fetch_pkg_url := http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.02.16_MegaCLI.zip
 MegaCLI:
 	$(QUIET) if [ ! -f "$(no_fetch_pkg)" ]; then \
 	  $(ECHO) "### Fetch restriction: $(notdir $(no_fetch_pkg))"; \
