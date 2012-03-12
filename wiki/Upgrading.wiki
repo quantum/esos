@@ -1,6 +1,6 @@
 #summary Learn how to upgrade ESOS on your system.
 
-==== About Upgrading ESOS ====
+=== About Upgrading ESOS ===
 First, the upgrade process for ESOS is disruptive and will require a small amount of down time. The upgrade procedure goes something like this:
   * You build/install the new version of ESOS to an entirely new, fresh USB flash drive.
   * Next, you copy the configuration files from the current (old) ESOS flash drive from your ESOS storage server to the new USB device.
@@ -14,7 +14,7 @@ Follow the steps below to upgrade ESOS.
 
 <br>
 
-==== Upgrade Procedure ====
+=== Upgrade Procedure ===
 The first step is to build/install the new ESOS version to an entirely new USB flash device. Follow the [Build_and_Install] guide.
 
 After you have successfully built your new ESOS flash drive, its probably not a bad idea to try it on another computer/server to at least make sure it boots. This could save you some down time if there is a problem with the new ESOS drive.
@@ -59,5 +59,5 @@ You can now power off the ESOS storage server, insert the newly created (upgrade
 
 <br>
 
-==== Post Update ====
+=== Post Update ===
 Be sure to keep your old/previous ESOS USB flash drive handy! Should you have any problems running the new version of ESOS, you will want that old, known-to-work copy of ESOS so you can revert quickly.
