@@ -15,6 +15,9 @@ MOUNT_DIR	:= $(WORK_DIR)/mnt
 QUIET		:= @
 STRIP		:= -s
 
+# Not sure if this is staying or not
+SHELL		:= /bin/bash
+
 WGET		:= @wget@ -t 5
 MKDIR		:= @mkdir@ -p
 RM		:= @rm@ -rf
@@ -54,7 +57,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		busybox-1.19.0.tar.bz2 \
 		grub-1.99.tar.gz \
 		sysvinit-2.88dsf.tar.bz2 \
-		glibc-2.12.2.tar.bz2 \
+		glibc-2.13.tar.bz2 \
 		vixie-cron-4.1.tar.bz2 \
 		libibumad-1.3.7.tar.gz \
 		libibverbs-1.1.4.tar.gz \
@@ -340,7 +343,7 @@ glibc:
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
 	cd $(WORK_DIR)/glibc-build && \
-	CFLAGS="-O2 -U_FORTIFY_SOURCE" $(src_dir)/configure --prefix=/usr
+	CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
