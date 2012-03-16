@@ -1,7 +1,6 @@
 9ad0b619bb788913b263eb53bbd659be  busybox-1.19.0.tar.bz2
 05f70470aea2ef7efbb0845b2b116720  e2fsprogs-1.41.14.tar.gz
 44b3192c4c584b9be5243d9e8e7e0ed1  gcc-4.4.5.tar.bz2
-903fcfa547df2f453476800e0838fe52  glibc-2.12.2.tar.bz2
 ca9f2a2d571b57fc5c53212d1d22e2b5  grub-1.99.tar.gz
 cce05daf61a64501ef6cd8da1f727ec6  ncurses-5.7.tar.gz
 86f5e1c23b4c4845f23b9b7b493fb53d  openssh-5.8p1.tar.gz
@@ -21,3 +20,4 @@ c4e36b106624aff78527c54cf08ecbfe  lsscsi-0.25.tar.gz
 7f6177a2add41b553b693af838e6ac2d  linux-3.2.6.tar.bz2
 ef0b566b9cb1fac0cc126e5ecda78155  scst-trunk_r4130.tar.bz2
 1b362abd2e8669171a5ba50a9cc26183  kexec-tools-2.0.3.tar.gz
+38808215a7c40aa0bb47a5e6d3d12475  glibc-2.13.tar.bz2
