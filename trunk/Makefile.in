@@ -340,10 +340,15 @@ grub: glibc
 	$(TOUCH) $(@)
 
 glibc:
+	if [ ! -d $(src_dir)/glibc-2.12.2.patch ]; \
+	then \
+	  $(PATCH) -d $(src_dir) -b -B $(src_dir)/glibc-2.12.2.patch/ \
+	  -p1 < $(CWD)/misc/glibc-2.12.2.patch; \
+	fi
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
 	cd $(WORK_DIR)/glibc-build && \
-	CFLAGS="-O2 -U_FORTIFY_SOURCE" $(src_dir)/configure --prefix=/usr
+	CFLAGS="-O2 -U_FORTIFY_SOURCE" $(src_dir)/configure --prefix=/usr --without-selinux
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
