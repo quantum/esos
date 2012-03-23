@@ -379,7 +379,7 @@ scstadmin: perl
 	$(TOUCH) $(@)
 
 openssh: glibc zlib openssl
-	cd $(src_dir) && ./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check
+	cd $(src_dir) && LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib ./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-files
 	$(TOUCH) $(@)
@@ -402,6 +402,7 @@ gcc: glibc
 
 openssl: glibc
 	cd $(src_dir) && ./config shared --prefix=/usr $(CPPFLAGS) $(LDFLAGS)
+	$(SED) -i '/LD_LIBRARY_PATH/d' $(src_dir)/Makefile.shared
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) INSTALL_PREFIX=$(IMAGE_DIR) install_sw
 	$(TOUCH) $(@)
