@@ -76,7 +76,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		linux-3.2.6.tar.bz2 \
 		scst-trunk_r4130.tar.bz2 \
 		kexec-tools-2.0.3.tar.gz \
-		gcc-4.4.5.tar.bz2)
+		gcc-4.4.5_gmp_mpfr.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
 prop_tools		:= @prop_tools@
@@ -89,7 +89,10 @@ clean_targets		:= $(addprefix clean-,$(build_targets) $(prop_tools))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
 
-export LDFLAGS = -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib
+# The 'fake_lib' directory deserves a little explanation; after glibc
+# is built, we put modified ld scripts (eg, libc.so) in this location,
+# this way our new libraries are found/used during link
+export LDFLAGS = -L$(WORK_DIR)/fake_lib -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib -Wl,-rpath-link,$(IMAGE_DIR)/lib -Wl,-rpath-link,$(IMAGE_DIR)/usr/lib
 export CPPFLAGS = -I$(IMAGE_DIR)/usr/include
 
 
@@ -187,6 +190,7 @@ initramfs:
 clean: $(clean_targets)
 	$(RM) $(INITRAMFS_DIR)
 	$(RM) $(IMAGE_DIR)
+	$(RM) $(WORK_DIR)/fake_lib
 
 $(clean_targets): target = $(subst clean-,,$(@))
 $(clean_targets):
@@ -326,12 +330,12 @@ busybox: glibc
 	$(TOUCH) $(@)
 
 sysvinit: glibc
-	$(MAKE) --directory=$(src_dir)/src SULOGINLIBS=-lcrypt
+	$(MAKE) --directory=$(src_dir)/src SULOGINLIBS=-lcrypt LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="-O2 -fomit-frame-pointer"
 	$(MAKE) --directory=$(src_dir)/src ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 grub: glibc
-	cd $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr --disable-grub-mkfont
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/grub-core DESTDIR=$(IMAGE_DIR) install-platformDATA
@@ -340,17 +344,16 @@ grub: glibc
 	$(TOUCH) $(@)
 
 glibc:
-	if [ ! -d $(src_dir)/glibc-2.12.2.patch ]; \
-	then \
-	  $(PATCH) -d $(src_dir) -b -B $(src_dir)/glibc-2.12.2.patch/ \
-	  -p1 < $(CWD)/misc/glibc-2.12.2.patch; \
-	fi
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/glibc-2.12.2.patch
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
 	cd $(WORK_DIR)/glibc-build && \
-	CFLAGS="-O2 -U_FORTIFY_SOURCE" $(src_dir)/configure --prefix=/usr --without-selinux
-	$(MAKE) --directory=$(WORK_DIR)/glibc-build
+	CFLAGS="-O2 -U_FORTIFY_SOURCE" LDFLAGS="" $(src_dir)/configure --prefix=/usr --without-selinux
+	$(MAKE) --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
+	$(MKDIR) $(WORK_DIR)/fake_lib
+	$(SED) 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libc.so > $(WORK_DIR)/fake_lib/libc.so
+	$(SED) 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libpthread.so > $(WORK_DIR)/fake_lib/libpthread.so
 	$(TOUCH) $(@)
 
 perl: glibc
@@ -391,14 +394,14 @@ gcc: glibc
 	$(MKDIR) $(WORK_DIR)/gcc-build
 	cd $(WORK_DIR)/gcc-build && $(src_dir)/configure --prefix=/usr --disable-multilib \
 	--disable-nls --disable-bootstrap --enable-languages=c,c++
-	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libgcc
+	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libgcc LDFLAGS_FOR_TARGET="$(LDFLAGS)" CPPFLAGS_FOR_TARGET="$(CPPFLAGS)" CFLAGS_FOR_TARGET="-g -O2 $(LDFLAGS)"
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libgcc
-	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libstdc++-v3
+	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libstdc++-v3 LDFLAGS_FOR_TARGET="$(LDFLAGS)" CPPFLAGS_FOR_TARGET="$(CPPFLAGS)"
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libstdc++-v3
 	$(TOUCH) $(@)
 
 openssl: glibc
-	cd $(src_dir) && ./config shared --prefix=/usr
+	cd $(src_dir) && ./config shared --prefix=/usr $(CPPFLAGS) $(LDFLAGS)
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) INSTALL_PREFIX=$(IMAGE_DIR) install_sw
 	$(TOUCH) $(@)
