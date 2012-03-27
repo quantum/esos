@@ -359,7 +359,7 @@ glibc:
 perl: glibc
 	cd $(src_dir) && CFLAGS="" ./configure.gnu --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) test
+	#$(MAKE) --directory=$(src_dir) test
 	$(MAKE) --directory=$(src_dir) install.perl DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
 	$(TOUCH) $(@)
 
@@ -423,7 +423,7 @@ e2fsprogs: glibc
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
 	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
-	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
+	#$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-progs-recursive
 	$(TOUCH) $(@)
 
