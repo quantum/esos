@@ -1,0 +1,6 @@
+A special thanks to the SCST (scst.sourceforge.net) project & development
+team -- ESOS is built around SCST, and we really owe everything to them.
+
+http://www.linuxfromscratch.org/hints/downloads/files/bsd-init.txt
+This article was very helpful in designing ESOS, specifically with the
+init setup (BSD style).
