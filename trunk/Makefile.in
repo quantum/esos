@@ -268,7 +268,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): linux_src = $(wildcard 
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): scst_src = $(wildcard $(BUILD_DIR)/scst-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kern_suffix = $(subst scst_kernel,,$(@))
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)):
+$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	### Kernel prerequisites for SCST
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
 	then \
@@ -306,7 +306,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)):
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) DESTDIR=$(IMAGE_DIR) INSTALL_DIR_H=$(IMAGE_DIR)/usr/include/scst scst_install
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) qla
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) qla_install
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) iscsi
+	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) LOCAL_LD_FLAGS="$(LDFLAGS)" iscsi
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) SBINDIR=$(IMAGE_DIR)/usr/sbin INSTALL_MOD_PATH=$(IMAGE_DIR) iscsi_install
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) srpt
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) srpt_install
@@ -385,7 +385,7 @@ openssh: glibc zlib openssl
 	$(TOUCH) $(@)
 
 vixie-cron: glibc
-	$(MAKE) --directory=$(src_dir) all
+	$(MAKE) --directory=$(src_dir) LDFLAGS="$(LDFLAGS)" all
 	$(INSTALL) $(STRIP) -m 111 $(src_dir)/cron $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) $(STRIP) -m 4111 $(src_dir)/crontab $(IMAGE_DIR)/usr/bin/
 	$(TOUCH) $(@)
