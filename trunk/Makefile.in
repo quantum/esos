@@ -314,6 +314,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(TOUCH) $(@)
 
 busybox: glibc
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/busybox-1.19.0.patch
 	$(MAKE) --directory=$(src_dir) clean
 	$(MAKE) --directory=$(src_dir) distclean
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
@@ -348,7 +349,7 @@ glibc:
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
 	cd $(WORK_DIR)/glibc-build && \
-	CFLAGS="-O2 -U_FORTIFY_SOURCE" LDFLAGS="" $(src_dir)/configure --prefix=/usr --without-selinux
+	CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" LDFLAGS="" $(src_dir)/configure --prefix=/usr --without-selinux
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(MKDIR) $(WORK_DIR)/fake_lib
@@ -394,9 +395,9 @@ gcc: glibc
 	$(MKDIR) $(WORK_DIR)/gcc-build
 	cd $(WORK_DIR)/gcc-build && $(src_dir)/configure --prefix=/usr --disable-multilib \
 	--disable-nls --disable-bootstrap --enable-languages=c,c++
-	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libgcc LDFLAGS_FOR_TARGET="$(LDFLAGS)" CPPFLAGS_FOR_TARGET="$(CPPFLAGS)" CFLAGS_FOR_TARGET="-g -O2 $(LDFLAGS)"
+	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libgcc LDFLAGS_FOR_TARGET="$(LDFLAGS)" CPPFLAGS_FOR_TARGET="$(CPPFLAGS)" CFLAGS_FOR_TARGET="-B$(IMAGE_DIR)/usr/lib -g -O2 $(LDFLAGS) $(CPPFLAGS)"
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libgcc
-	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libstdc++-v3 LDFLAGS_FOR_TARGET="$(LDFLAGS)" CPPFLAGS_FOR_TARGET="$(CPPFLAGS)"
+	$(MAKE) --directory=$(WORK_DIR)/gcc-build all-target-libstdc++-v3 LDFLAGS_FOR_TARGET="$(LDFLAGS)" CPPFLAGS_FOR_TARGET="$(CPPFLAGS)" CFLAGS_FOR_TARGET="-B$(IMAGE_DIR)/usr/lib -g -O2 $(LDFLAGS) $(CPPFLAGS)"
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) install-target-libstdc++-v3
 	$(TOUCH) $(@)
 
@@ -428,8 +429,8 @@ e2fsprogs: glibc
 	$(TOUCH) $(@)
 
 ssmtp: glibc openssl
-	cd $(src_dir) && ./configure --enable-ssl --prefix="" --exec-prefix=/usr
-	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc CC="gcc $(LDFLAGS) -lcrypto"
+	cd $(src_dir) && CFLAGS="$(CPPFLAGS) $(LDFLAGS) -lcrypto" ./configure --enable-ssl --prefix="" --exec-prefix=/usr
+	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
 	$(TOUCH) $(@)
