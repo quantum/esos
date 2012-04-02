@@ -6,7 +6,34 @@ TODO
 <br>
 
 === Included Projects ===
-TODO
+ESOS uses the open source software projects list below; you can check the Makefile for the specific versions (varies by release).
+  * Linux kernel
+  * SCST
+  * BusyBox
+  * GRUB
+  * SysVinit
+  * GLIBC
+  * vixie-cron
+  * libibumad
+  * libibverbs
+  * srptools
+  * OpenSSH
+  * sSMTP
+  * Perl
+  * OpenSSL
+  * e2fsprogs
+  * zlib
+  * lsscsi
+  * sg3_utils
+  * groff
+  * ncurses
+  * kexec-tools
+  * GCC (only libstdc++ and libgcc are installed to image)
+
+Several other proprietary pieces are include/installed and some are optional:
+  * QLogic firmware images
+  * MegaCLI (from LSI Logic)
+  * Adaptec Storage Manager (only the arcconf CLI tool is used)
 
 <br>
 
