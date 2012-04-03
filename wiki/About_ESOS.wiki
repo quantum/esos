@@ -1,7 +1,7 @@
 #summary More details on the design and internal workings.
 
 === Introduction ===
-TODO
+ESOS started with an internal need for a fully functioning SCST / Linux system that could easily be deployed to new servers. We also wanted to this Linux "distribution" to be fully optimized for SCST and include necessary RAID controller tools/utilities so new volumes could easily be provisioned/modified from inside the OS.
 
 <br>
 
