@@ -47,3 +47,5 @@ Here is a high level step-through of the ESOS boot process:
   # Control is then passed to init and the rc/init scripts are executed.
   # Running ESOS configuration is synchronized with USB flash drive.
   # Various daemons (sshd, crond, etc.) are started, HBA/HCA/CNA and SCST modules are loaded.
+
+In the hopefully rare case of kernel panics, kexec is implemented in ESOS. At boot, a crash dump kernel is loaded. If/when the kernel panics, the system loads the crash dump kernel. The initramfs init script is ran again and it looks for the '/proc/vmcore' file indicating the crash dump kernel is running, due to a kernel panic. The vmcore file is then compressed and saved onto the "esos_logs" filesystem. Finally the system does a full reboot and boots back into the normal/production ESOS kernel. The start-up scripts look for any saved vmcore files and will email an alert. This is all fully automated -- the idea is to save the kernel panic information for diagnosing at a later time and get your ESOS storage server back into production mode as quickly as possible.
