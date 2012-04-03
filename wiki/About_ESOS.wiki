@@ -38,4 +38,12 @@ Several other proprietary pieces are included/installed and some are optional:
 <br>
 
 === How It Works ===
-TODO
+ESOS boots from a USB flash drive; all of the binaries/files/directories/etc. are loaded into memory on boot. If the USB flash drive fails, the system will keep running normally until the failed flash drive can be addressed (replaced). Configuration files and settings are sync'd to a filesystem since ESOS is volatile (memory resident). Log files are also archived to the USB drive on shutdown/restart or if the filesystem grows too large. This also provides an easy and reversible upgrade procedure: You simply create a new, updated ESOS USB flash drive, copy your configuration to it, and boot the new drive -- if you happen to experience an issue with the new version, you can always boot back into your previous ESOS USB drive.
+
+Here is a high level step-through of the ESOS boot process:
+  # The ESOS USB flash drive is used as the BIOS boot device.
+  # GRUB is loaded; user can select between ESOS 'Production' or 'Debug' kernel/modules.
+  # Selected kernel (and initramfs image) is loaded; initramfs init then takes care of various prep. tasks, initializes tmpfs filesystem (RAM) and then extracts root image into newly created tmpfs filesystem.
+  # Control is then passed to init and the rc/init scripts are executed.
+  # Running ESOS configuration is synchronized with USB flash drive.
+  # Various daemons (sshd, crond, etc.) are started, HBA/HCA/CNA and SCST modules are loaded.
