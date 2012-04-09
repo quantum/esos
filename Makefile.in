@@ -417,7 +417,8 @@ zlib: glibc
 ncurses: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --with-shared
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install.libs
+	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install.libs
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 e2fsprogs: glibc
