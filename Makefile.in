@@ -488,6 +488,7 @@ sysfsutils: glibc
 	$(TOUCH) $(@)
 
 cdk: glibc ncurses
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/cdk-5.0-20120323.patch
 	cd $(src_dir) && ./configure --prefix=/usr --with-ncurses --with-libtool
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
