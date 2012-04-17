@@ -74,6 +74,8 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
 		linux-3.2.6.tar.bz2 \
+		sysfsutils-2.1.0.tar.gz \
+		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r4130.tar.bz2 \
 		kexec-tools-2.0.3.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2)
@@ -84,7 +86,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			busybox sysvinit grub glibc perl qlogic_fw \
 			scstadmin openssh vixie-cron gcc openssl zlib ncurses \
 			e2fsprogs ssmtp libibumad libibverbs srptools \
-			lsscsi sg3_utils groff kexec-tools
+			lsscsi sg3_utils groff kexec-tools sysfsutils cdk
 clean_targets		:= $(addprefix clean-,$(build_targets) $(prop_tools))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
@@ -475,6 +477,18 @@ groff: glibc gcc
 
 kexec-tools: glibc
 	cd $(src_dir) && LDFLAGS="$(LDFLAGS) --static" CPPFLAGS="" ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+sysfsutils: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+cdk: glibc ncurses
+	cd $(src_dir) && ./configure --prefix=/usr --with-ncurses --with-libtool
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
