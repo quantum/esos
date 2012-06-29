@@ -257,7 +257,8 @@ image_setup:
 	$(MKDIR) $(IMAGE_DIR)/usr/local/{bin,sbin}
 	$(MKDIR) $(IMAGE_DIR)/opt/{bin,sbin,lib}
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/tmp
-	$(MKDIR) $(IMAGE_DIR)/var/{spool,lock,run,state,cache,log,empty}
+	$(MKDIR) $(IMAGE_DIR)/var/{spool,lock,run,state,cache,log}
+	$(INSTALL) -m 755 -d $(IMAGE_DIR)/var/empty
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/var/tmp
 	$(INSTALL) -m 710 -d $(IMAGE_DIR)/var/cron
 	$(INSTALL) -m 700 -d $(IMAGE_DIR)/var/cron/tabs
