@@ -17,6 +17,7 @@ my $dhcp_prog = "udhcpc";
 my $ifconfig_prog = "ifconfig";
 my $route_prog = "route";
 my $hostname_prog = "hostname";
+my $net_if_dir = "/sys/class/net";
 my $section;
 my @sections;
 my %ini_hash;
@@ -24,176 +25,215 @@ my $hostname;
 my $domainname;
 my $fqdn;
 
-# Parse the ESOS network configuration file
-open(INI, "$ini_file") || die("Can't open $ini_file: $!");
-while (<INI>) {
-	chomp;
-	# Get the INI file section
-	if (/^\s*\[(\w+)\].*/) {
-		$section = $1;
-		push(@sections, $section);
-		#print "section: $section\n";
-		next;
-	}
-	# Get the INI file keyword/value pairs
-	if (/^(.*)\s*=\s*(.*)$/) {
-		(my $keyword, my $value) = split(/=/, $_);
-		$keyword =~ s/^\s+//;
-		$keyword =~ s/\s+$//;
-		$value =~ s/^\s+//;
-		$value =~ s/\s+$//;
-		#print "section: $section\n";
-		#print "keyword: $keyword\n";
-		#print "value: $value\n";
-		# Put them into a hash
-		$ini_hash{$section . ":" . $keyword} = $value;
-	}
-}
-close(INI);
-
-# Configure the network interfaces
-foreach my $each (@sections) {
-	if ($each =~ "eth") {
-		print "$each\n";
-		my $hash_key = $each . ":bootproto";
-		if (exists($ini_hash{$hash_key})) {
-			if (lc($ini_hash{$hash_key}) eq "dhcp") {
-				# Do DHCP configuration for interface
-				print("Running $dhcp_prog for interface $each...\n");
-				system($dhcp_prog, "-i " . $each);
-				if ($? == -1) {
-					print("ERROR: Running $dhcp_prog failed: $!\n");
-					next;
-				}
-				my $exit_status = $? >> 8;
-				if ($exit_status != 0) {
-					print("ERROR: The $dhcp_prog program exited with value $exit_status.\n");
-					next;
-				}
-				
-			} elsif (lc($ini_hash{$hash_key}) eq "static") {
-				# Do static configuration for interface
-				print("Setting static IP configuration for interface $each...\n");
-				if (!exists($ini_hash{$each . ":ipaddr"})) {
-					print("ERROR: The 'ipaddr' name is missing!\n");
-					next;
-				}
-				if (!exists($ini_hash{$each . ":netmask"})) {
-					print("ERROR: The 'netmask' name is missing!\n");
-					next;
-				}
-				if (!exists($ini_hash{$each . ":broadcast"})) {
-					print("ERROR: The 'broadcast' name is missing!\n");
-					next;
-				}
-				my $ipaddr = $ini_hash{$each . ":ipaddr"};
-				if ($ipaddr eq "") {
-					print("ERROR: The 'ipaddr' value is empty!\n");
-					next;
-				}
-				my $netmask = $ini_hash{$each . ":netmask"};
-				if ($netmask eq "") {
-					print("ERROR: The 'netmask' value is empty!\n");
-					next;
-				}
-				my $broadcast = $ini_hash{$each . ":broadcast"};
-				if ($broadcast eq "") {
-					print("ERROR: The 'broadcast' value is empty!\n");
-					next;
-				}
-				system($ifconfig_prog, $each, $ipaddr, "netmask " . $netmask, "broadcast " . $broadcast);
-				if ($? == -1) {
-					print("ERROR: Running $ifconfig_prog failed: $!\n");
-					next;
-				}
-				my $exit_status = $? >> 8;
-				if ($exit_status != 0) {
-					print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
-					next;
-				}
-
-			} else {
-				print("ERROR: Unknown 'bootproto' value ($ini_hash{$hash_key}) for interface $each!\n");
-			}
-		} else {
-			print("ERROR: The 'bootproto' name is missing for interface $each!\n");
-		}
-	}
+# Check arguments
+if ((@ARGV != 1) || (($ARGV[0] ne "start") && ($ARGV[0] ne "stop"))) {
+    print("Usage: $0 {start | stop}\n");
+    exit(1);
 }
 
-# Get/check the host name and domain name values
-if (exists($ini_hash{"general:hostname"})) {
-	$hostname = $ini_hash{"general:hostname"};
-	if ($hostname eq "") {
-		print("WARNING: The 'hostname' value is empty -- using a default value.\n");
-		$hostname = $default_hostname;
-	}
-}
-if (exists($ini_hash{"general:domainname"})) {
-	$domainname = $ini_hash{"general:domainname"};
-}
-if ($domainname eq "") {
-	$fqdn = $hostname;
-} else {
-	$fqdn = $hostname . "." . $domainname;
-}
+if ($ARGV[0] eq "start") {
+    # Parse the ESOS network configuration file
+    open(INI, "$ini_file") || die("ERROR: Can't open $ini_file: $!");
+    while (<INI>) {
+        chomp;
+        # Get the INI file section
+        if (/^\s*\[(\w+)\].*/) {
+            $section = $1;
+            push(@sections, $section);
+            #print "section: $section\n";
+            next;
+        }
+        # Get the INI file keyword/value pairs
+        if (/^(.*)\s*=\s*(.*)$/) {
+            (my $keyword, my $value) = split(/=/, $_);
+            $keyword =~ s/^\s+//;
+            $keyword =~ s/\s+$//;
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+            #print "section: $section\n";
+            #print "keyword: $keyword\n";
+            #print "value: $value\n";
+            # Put them into a hash
+            $ini_hash{$section . ":" . $keyword} = $value;
+        }
+    }
+    close(INI);
 
-# Set the host name (and DNS domain name if provided)
-print("Setting system host name: ");
-system($hostname_prog, $fqdn);
-if ($? == -1) {
-	print("ERROR: Running $hostname_prog failed: $!\n");
-} else {
-	my $exit_status = $? >> 8;
-	if ($exit_status != 0) {
-		print("ERROR: The $hostname_prog program exited with value $exit_status.\n");
-	}
-}
+    # Configure the network interfaces
+    foreach my $each (@sections) {
+        if ($each =~ "eth") {
+            my $hash_key = $each . ":bootproto";
+            if (exists($ini_hash{$hash_key})) {
+                if (lc($ini_hash{$hash_key}) eq "dhcp") {
+                    # Do DHCP configuration for interface
+                    print("Running $dhcp_prog for interface $each...\n");
+                    system($dhcp_prog, "-i " . $each);
+                    if ($? == -1) {
+                        print("ERROR: Running $dhcp_prog failed: $!\n");
+                        next;
+                    }
+                    my $exit_status = $? >> 8;
+                    if ($exit_status != 0) {
+                        print("ERROR: The $dhcp_prog program exited with value $exit_status.\n");
+                        next;
+                    }
 
-# Write the /etc/hosts file
-open(HOSTS, "> $hosts_file") || die("Can't open $hosts_file: $!");
-print(HOSTS "# This file is generated by rc.network; do not edit\n\n");
-if ($hostname eq $default_hostname) {
-	print(HOSTS "127.0.0.1\t$hostname\n");
-	print(HOSTS "::1\t\t$hostname\n");
-} else {
-	print(HOSTS "127.0.0.1\tlocalhost $hostname $fqdn\n");
-	print(HOSTS "::1\t\tlocalhost $hostname $fqdn\n");
-}
-close(HOSTS);
- 
-# Write the /etc/resolv.conf file if name servers are set
-if (exists($ini_hash{"general:nameserver1"}) && exists($ini_hash{"general:nameserver2"})) {
-	my $nameserver1 = $ini_hash{"general:nameserver1"};
-	my $nameserver2 = $ini_hash{"general:nameserver2"};
-	if ($nameserver1 ne "" || $nameserver2 ne "") {
-		open(RESOLV, "> $resolv_file") || die("Can't open $resolv_file: $!");
-		print(RESOLV "# This file is generated by rc.network; do not edit\n\n");
-		if ($domainname ne "") {
-			print(RESOLV "search $domainname\n");
-		}
-		if ($nameserver1 ne "") {
-			print(RESOLV "nameserver $nameserver1\n");
-		}
-		if ($nameserver2 ne "") {
-			print(RESOLV "nameserver $nameserver2\n");
-		}
-		close(RESOLV);
-	}
-}
+                } elsif (lc($ini_hash{$hash_key}) eq "static") {
+                    # Do static configuration for interface
+                    print("Setting static IP configuration for interface $each...\n");
+                    if (!exists($ini_hash{$each . ":ipaddr"})) {
+                        print("ERROR: The 'ipaddr' name is missing!\n");
+                        next;
+                    }
+                    if (!exists($ini_hash{$each . ":netmask"})) {
+                        print("ERROR: The 'netmask' name is missing!\n");
+                        next;
+                    }
+                    if (!exists($ini_hash{$each . ":broadcast"})) {
+                        print("ERROR: The 'broadcast' name is missing!\n");
+                        next;
+                    }
+                    my $ipaddr = $ini_hash{$each . ":ipaddr"};
+                    if ($ipaddr eq "") {
+                        print("ERROR: The 'ipaddr' value is empty!\n");
+                        next;
+                    }
+                    my $netmask = $ini_hash{$each . ":netmask"};
+                    if ($netmask eq "") {
+                        print("ERROR: The 'netmask' value is empty!\n");
+                        next;
+                    }
+                    my $broadcast = $ini_hash{$each . ":broadcast"};
+                    if ($broadcast eq "") {
+                        print("ERROR: The 'broadcast' value is empty!\n");
+                        next;
+                    }
+                    system($ifconfig_prog, $each, $ipaddr, "netmask " . $netmask, "broadcast " . $broadcast);
+                    if ($? == -1) {
+                        print("ERROR: Running $ifconfig_prog failed: $!\n");
+                        next;
+                    }
+                    my $exit_status = $? >> 8;
+                    if ($exit_status != 0) {
+                        print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                        next;
+                    }
 
-# Add default gateway route if value is set in the configuration file
-if (exists($ini_hash{"general:defaultgw"})) {
-	my $defaultgw = $ini_hash{"general:defaultgw"};
-	if ($defaultgw ne "") {
-		system($route_prog, "add", "-net", "default", "gw", $defaultgw, "netmask", "0.0.0.0");
-		if ($? == -1) {
-			print("ERROR: Running $route_prog failed: $!\n");
-		} else {
-			my $exit_status = $? >> 8;
-			if ($exit_status != 0) {
-				print("ERROR: The $route_prog program exited with value $exit_status.\n");
-			}
-		}
-	}
+                } else {
+                    print("ERROR: Unknown 'bootproto' value ($ini_hash{$hash_key}) for interface $each!\n");
+                }
+            } else {
+                print("ERROR: The 'bootproto' name is missing for interface $each!\n");
+            }
+        }
+    }
+
+    # Get/check the host name and domain name values
+    if (exists($ini_hash{"general:hostname"})) {
+        $hostname = $ini_hash{"general:hostname"};
+        if ($hostname eq "") {
+            print("WARNING: The 'hostname' value is empty -- using a default value.\n");
+            $hostname = $default_hostname;
+        }
+    }
+    if (exists($ini_hash{"general:domainname"})) {
+        $domainname = $ini_hash{"general:domainname"};
+    }
+    if ($domainname eq "") {
+        $fqdn = $hostname;
+    } else {
+        $fqdn = $hostname . "." . $domainname;
+    }
+
+    # Set the host name (and DNS domain name if provided)
+    print("Setting system host name: ");
+    system($hostname_prog, $fqdn);
+    if ($? == -1) {
+        print("ERROR: Running $hostname_prog failed: $!\n");
+    } else {
+        my $exit_status = $? >> 8;
+        if ($exit_status != 0) {
+            print("ERROR: The $hostname_prog program exited with value $exit_status.\n");
+        }
+    }
+
+    # Write the /etc/hosts file
+    open(HOSTS, "> $hosts_file") || die("ERROR: Can't open $hosts_file: $!");
+    print(HOSTS "# This file is generated by rc.network; do not edit\n\n");
+    if ($hostname eq $default_hostname) {
+        print(HOSTS "127.0.0.1\t$hostname\n");
+        print(HOSTS "::1\t\t$hostname\n");
+    } else {
+        print(HOSTS "127.0.0.1\tlocalhost $hostname $fqdn\n");
+        print(HOSTS "::1\t\tlocalhost $hostname $fqdn\n");
+    }
+    close(HOSTS);
+
+    # Write the /etc/resolv.conf file if name servers are set
+    if (exists($ini_hash{"general:nameserver1"}) && exists($ini_hash{"general:nameserver2"})) {
+        my $nameserver1 = $ini_hash{"general:nameserver1"};
+        my $nameserver2 = $ini_hash{"general:nameserver2"};
+        if ($nameserver1 ne "" || $nameserver2 ne "") {
+            open(RESOLV, "> $resolv_file") || die("ERROR: Can't open $resolv_file: $!");
+            print(RESOLV "# This file is generated by rc.network; do not edit\n\n");
+            if ($domainname ne "") {
+                print(RESOLV "search $domainname\n");
+            }
+            if ($nameserver1 ne "") {
+                print(RESOLV "nameserver $nameserver1\n");
+            }
+            if ($nameserver2 ne "") {
+                print(RESOLV "nameserver $nameserver2\n");
+            }
+            close(RESOLV);
+        }
+    }
+
+    # Add default gateway route if value is set in the configuration file
+    if (exists($ini_hash{"general:defaultgw"})) {
+        my $defaultgw = $ini_hash{"general:defaultgw"};
+        if ($defaultgw ne "") {
+            system($route_prog, "add", "-net", "default", "gw", $defaultgw, "netmask", "0.0.0.0");
+            if ($? == -1) {
+                print("ERROR: Running $route_prog failed: $!\n");
+            } else {
+                my $exit_status = $? >> 8;
+                if ($exit_status != 0) {
+                    print("ERROR: The $route_prog program exited with value $exit_status.\n");
+                }
+            }
+        }
+    }
+
+} elsif ($ARGV[0] eq "stop") {
+    # Remove the default route
+    print("Deleting the current default route...\n");
+    system($route_prog, "del", "default");
+    if ($? == -1) {
+        print("ERROR: Running $route_prog failed: $!\n");
+    } else {
+        my $exit_status = $? >> 8;
+        if ($exit_status != 0) {
+            print("ERROR: The $route_prog program exited with value $exit_status.\n");
+        }
+    }
+
+    # Unconfigure all interfaces
+    my @net_ifaces = glob($net_if_dir . "/*");
+    foreach my $each (@net_ifaces) {
+        my $iface = (split(/\//, $each))[-1];
+        if ($iface =~ "eth") {
+            print("Bringing down interface $iface...\n");
+            system($ifconfig_prog, $iface, "0.0.0.0", "down");
+            if ($? == -1) {
+                print("ERROR: Running $ifconfig_prog failed: $!\n");
+                next;
+            }
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                next;
+            }
+        }
+    }
 }
