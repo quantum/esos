@@ -82,7 +82,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
 prop_tools		:= @prop_tools@
-build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
+build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) esos_tui \
 			busybox sysvinit grub glibc perl qlogic_fw \
 			scstadmin openssh vixie-cron gcc openssl zlib ncurses \
 			e2fsprogs ssmtp libibumad libibverbs srptools \
@@ -315,6 +315,11 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) srpt
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) srpt_install
 	### Done
+	$(TOUCH) $(@)
+
+esos_tui:
+	$(MAKE) --directory=$(CWD)/tui
+	$(INSTALL) -m 755 $(CWD)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
 	$(TOUCH) $(@)
 
 busybox: glibc
