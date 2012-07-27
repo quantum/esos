@@ -74,7 +74,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
 		linux-3.2.6.tar.bz2 \
-		sysfsutils-2.1.0.tar.gz \
+		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r4130.tar.bz2 \
 		kexec-tools-2.0.3.tar.gz \
@@ -86,7 +86,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) esos_tui 
 			busybox sysvinit grub glibc perl qlogic_fw \
 			scstadmin openssh vixie-cron gcc openssl zlib ncurses \
 			e2fsprogs ssmtp libibumad libibverbs srptools \
-			lsscsi sg3_utils groff kexec-tools sysfsutils cdk
+			lsscsi sg3_utils groff kexec-tools iniparser cdk
 clean_targets		:= $(addprefix clean-,$(build_targets) $(prop_tools))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
@@ -317,7 +317,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	### Done
 	$(TOUCH) $(@)
 
-esos_tui:
+esos_tui: glibc ncurses cdk iniparser
 	$(MAKE) --directory=$(CWD)/tui
 	$(INSTALL) -m 755 $(CWD)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
 	$(TOUCH) $(@)
@@ -488,10 +488,12 @@ kexec-tools: glibc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-sysfsutils: glibc
-	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+iniparser: glibc
+	$(MAKE) --directory=$(src_dir) CFLAGS="-O2 -fPIC -Wall $(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+	$(INSTALL) -m 0644 $(src_dir)/libiniparser.a $(IMAGE_DIR)/usr/lib/
+	$(INSTALL) -m 0755 $(src_dir)/libiniparser.so.0 $(IMAGE_DIR)/usr/lib/
+	$(INSTALL) -m 0644 $(src_dir)/src/iniparser.h $(IMAGE_DIR)/usr/include/
+	$(INSTALL) -m 0644 $(src_dir)/src/dictionary.h $(IMAGE_DIR)/usr/include/
 	$(TOUCH) $(@)
 
 cdk: glibc ncurses
