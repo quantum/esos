@@ -16,7 +16,7 @@ clean:
 	$(RM) esos_tui
 
 %.o: %.c
-	$(CC) -m64 -Wall -c -g $(CPPFLAGS) $< -o $@
+	$(CC) -m64 -Wall -c -g $(CPPFLAGS) $< -D_GNU_SOURCE -o $@
 
 esos_tui: $(OBJ_FILES)
 	$(CC) -m64 -Wall $(LDFLAGS) $(OBJ_FILES) -lncurses -lcdk -liniparser -o $@
