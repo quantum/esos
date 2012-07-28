@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#include <cdk.h>
+
 #define MEGACLI "/opt/sbin/MegaCli64 2>&1"
 #define MAX_MC_LINE 120
 #define MAX_MR_ATTR_SIZE 80
@@ -20,7 +22,8 @@ extern "C" {
 #define MAX_DISKS 300
 #define MAX_LD_NAME 15
 
-typedef int boolean;
+// This is now defined in cdk.h so there isn't really a need for this; delete later after testing.
+/*typedef int boolean;*/
 
 #define TRUE 1
 #define FALSE 0

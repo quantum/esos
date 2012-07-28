@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include"main.h"
+#include "main.h"
 
 #define SCST_DEV_NAME_LEN 16
 #define SG_VPD "/usr/bin/sg_vpd 2>&1"

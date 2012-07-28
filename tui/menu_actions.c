@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cdk/cdk.h>
+#include <cdk.h>
 #include <cdk/cdkscreen.h>
 
 #include "menu_actions.h"
