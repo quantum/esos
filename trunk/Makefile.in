@@ -95,7 +95,7 @@ tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,
 # is built, we put modified ld scripts (eg, libc.so) in this location,
 # this way our new libraries are found/used during link
 export LDFLAGS = -L$(WORK_DIR)/fake_lib -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib -Wl,-rpath-link,$(IMAGE_DIR)/lib -Wl,-rpath-link,$(IMAGE_DIR)/usr/lib
-export CPPFLAGS = -I$(IMAGE_DIR)/usr/include -I$(wildcard $(BUILD_DIR)/linux-*)/include
+export CPPFLAGS = -I$(IMAGE_DIR)/usr/include -I$(shell find $(BUILD_DIR) -maxdepth 1 -name linux-* 2>&1)/include
 
 
 # all - The default goal; complete every target except install.
