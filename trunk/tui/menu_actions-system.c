@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cdk/cdk.h>
+#include <cdk.h>
 #include <cdk/cdk_objs.h>
 #include <iniparser.h>
 #include <cdk/radio.h>
