@@ -107,7 +107,7 @@ all: fetch extract build prop_tools ;
 .PHONY: install
 install: install_dev_node = $(WORK_DIR)/install_dev_node
 install: usb_device = $$($(CAT) $(install_dev_node))
-install: initramfs
+install: $(build_targets) $(prop_tools) initramfs
 	$(QUIET) if [ `whoami` != "root" ]; then \
 	  $(ECHO) "### Snap! Ya gotta be root for this part..."; \
 	  exit 1; \
