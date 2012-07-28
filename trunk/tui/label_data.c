@@ -2,8 +2,6 @@
  * $Id: label_data.c 139 2012-07-24 20:17:34Z marc.smith $
  */
 
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
