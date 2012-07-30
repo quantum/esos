@@ -1,5 +1,5 @@
 /*
- * $Id: megaraid.h 139 2012-07-24 20:17:34Z marc.smith $
+ * $Id$
  */
 
 #ifndef _MEGARAID_H
