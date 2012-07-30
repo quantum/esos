@@ -1,5 +1,5 @@
 /*
- * $Id: megaraid.c 140 2012-07-25 15:39:08Z marc.smith $
+ * $Id$
  */
 
 #ifndef _GNU_SOURCE

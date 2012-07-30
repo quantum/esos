@@ -1,5 +1,5 @@
 /*
- * $Id: main.c 142 2012-07-26 13:34:52Z marc.smith $
+ * $Id$
  */
 
 #ifndef _GNU_SOURCE

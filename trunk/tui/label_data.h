@@ -1,5 +1,5 @@
 /*
- * $Id: label_data.h 139 2012-07-24 20:17:34Z marc.smith $
+ * $Id$
  */
 
 #ifndef _LABEL_DATA_H

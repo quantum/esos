@@ -1,5 +1,5 @@
 /*
- * $Id: menu_actions.h 139 2012-07-24 20:17:34Z marc.smith $
+ * $Id$
  */
 
 #ifndef _MENU_ACTIONS_H
