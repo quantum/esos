@@ -2,10 +2,9 @@
 
 # $Id$
 
-/bin/echo "Bringing down all network interfaces..."
-for i in `/bin/ls /sys/class/net/`; do
-	/sbin/ifconfig ${i} down
-done
+if [ -x /etc/rc.d/rc.network ]; then
+	/etc/rc.d/rc.network stop
+fi
 
 /bin/echo "Sending all processes the TERM signal..."
 /sbin/killall5 -15

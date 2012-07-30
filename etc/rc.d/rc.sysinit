@@ -38,9 +38,6 @@ fi
 /bin/echo "Configuring kernel parameters..."
 /sbin/sysctl -p /etc/sysctl.conf
 
-echo "Setting up hostname..."
-/bin/hostname -F /etc/hostname
-
 if [ -f "/etc/random-seed" ]; then
 	/bin/echo "Initializing random number generator..."
 	/bin/cat /etc/random-seed > /dev/urandom

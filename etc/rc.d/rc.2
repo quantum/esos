@@ -9,9 +9,8 @@
 /sbin/ifconfig lo 127.0.0.1
 /sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
 
-if [ -f /etc/network ]; then
-	/bin/echo "Setting up network..."
-	/bin/sh /etc/network
+if [ -x /etc/rc.d/rc.network ]; then
+	/etc/rc.d/rc.network start
 fi
 
 if [ -x /etc/rc.d/rc.kdump ]; then
