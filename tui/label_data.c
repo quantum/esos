@@ -9,8 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <cdk.h>
 
 #include "label_data.h"
+#include "main.h"
 
 /*
  * Grab the sysfs data for the adapters label

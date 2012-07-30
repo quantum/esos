@@ -9,8 +9,6 @@
 extern "C" {
 #endif
 
-#include <cdk/cdk.h>
-
 #define SYSTEM_MENU 0
 #define SYSTEM_SYNC_CONF 1
 #define SYSTEM_NETWORK 2
