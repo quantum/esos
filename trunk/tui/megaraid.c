@@ -2,6 +2,10 @@
  * $Id: megaraid.c 140 2012-07-25 15:39:08Z marc.smith $
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

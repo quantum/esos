@@ -195,9 +195,12 @@ clean: $(clean_targets)
 	$(RM) $(IMAGE_DIR)
 	$(RM) $(WORK_DIR)/fake_lib
 
-$(clean_targets): target = $(subst clean-,,$(@))
-$(clean_targets):
+$(clean_targets):: target = $(subst clean-,,$(@))
+$(clean_targets)::
 	$(RM) $(target)
+
+clean-esos_tui::
+	$(MAKE) --directory=$(CWD)/tui clean
 
 
 # distclean - Remove everything including build configuration settings.

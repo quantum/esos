@@ -2,6 +2,10 @@
  * $Id$
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk.h>
@@ -609,7 +613,7 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     i = 0;
 
     /* Stop networking */
-    asprintf(&swindow_info[i], "</B>Stopping network:<!B>", line);
+    asprintf(&swindow_info[i], "</B>Stopping network:<!B>");
     addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
     i++;
     snprintf(net_rc_cmd, 100, "%s stop", RC_NETWORK);
@@ -643,10 +647,10 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Start networking */
-    asprintf(&swindow_info[i], "", line);
+    asprintf(&swindow_info[i], " ");
     addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
     i++;
-    asprintf(&swindow_info[i], "</B>Starting network:<!B>", line);
+    asprintf(&swindow_info[i], "</B>Starting network:<!B>");
     addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
     i++;
     snprintf(net_rc_cmd, 100, "%s start", RC_NETWORK);
@@ -972,7 +976,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         if (getCDKRadioSelectedItem(auth_method) == 1)
             snprintf(new_authmethod, MAX_INI_VAL, "CRAM-MD5");
         else
-            snprintf(new_authmethod, MAX_INI_VAL, "");
+            snprintf(new_authmethod, MAX_INI_VAL, " ");
         if (iniparser_set(ini_dict, ":authmethod", new_authmethod) == -1) {
             errorDialog(main_cdk_screen, "Couldn't set configuration file value!", NULL);
             goto cleanup;
@@ -1059,11 +1063,11 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Display a nice short label message while we sync */
     snprintf(email_addy, MAX_EMAIL_LEN, "%s", conf_root);
-    asprintf(&message[0], "");
-    asprintf(&message[1], "");
+    asprintf(&message[0], " ");
+    asprintf(&message[1], " ");
     asprintf(&message[2], "</B>   Sending a test email to %s...   ", email_addy);;
-    asprintf(&message[3], "");
-    asprintf(&message[4], "");
+    asprintf(&message[3], " ");
+    asprintf(&message[4], " ");
     test_email_label = newCDKLabel(main_cdk_screen, CENTER, CENTER,
             message, 5, TRUE, FALSE);
     if (!test_email_label) {
@@ -1522,7 +1526,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     addCDKSwindow(scst_info, swindow_info[1], BOTTOM);
 
      /* Loop over the SGV global statistics attribute/file in sysfs */
-    asprintf(&swindow_info[2], "");
+    asprintf(&swindow_info[2], " ");
     addCDKSwindow(scst_info, swindow_info[2], BOTTOM);
     asprintf(&swindow_info[3], "</B>Global SGV cache statistics:<!B>");
     addCDKSwindow(scst_info, swindow_info[3], BOTTOM);

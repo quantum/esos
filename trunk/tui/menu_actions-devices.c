@@ -2,6 +2,10 @@
  * $Id$
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk.h>
@@ -53,7 +57,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
             SYSFS_SCST_TGT, scst_hndlr, scst_dev);
     readAttribute(dir_name, tmp_buff);
     asprintf(&swindow_info[4], "</B>SCSI Type:<!B>\t\t%s", tmp_buff);
-    asprintf(&swindow_info[5], "");
+    asprintf(&swindow_info[5], " ");
     line_cnt = 6;
 
     /* Some extra attributes for certain device handlers */

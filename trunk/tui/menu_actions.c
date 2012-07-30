@@ -2,6 +2,10 @@
  * $Id: menu_actions.c 140 2012-07-25 15:39:08Z marc.smith $
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk.h>
@@ -23,17 +27,17 @@ void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Set the message */
     asprintf(&message[0], "<C></B>ERROR");
-    asprintf(&message[1], "");
+    asprintf(&message[1], " ");
     if (msg_line_1)
         asprintf(&message[2], "<C>%s", msg_line_1);
     else
-        asprintf(&message[2], "");
+        asprintf(&message[2], " ");
     if (msg_line_2)
          asprintf(&message[3], "<C>%s", msg_line_2);
     else
-        asprintf(&message[3], "");
-    asprintf(&message[4], "");
-    asprintf(&message[5], "");
+        asprintf(&message[3], " ");
+    asprintf(&message[4], " ");
+    asprintf(&message[5], " ");
 
     /* Display the error dialog box */
     error = newCDKDialog(screen, CENTER, CENTER, message, 6, buttons, 1,
@@ -76,17 +80,17 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Set the message */
     asprintf(&message[0], "<C></B>CONFIRM");
-    asprintf(&message[1], "");
+    asprintf(&message[1], " ");
     if (msg_line_1)
         asprintf(&message[2], "<C>%s", msg_line_1);
     else
-        asprintf(&message[2], "");
+        asprintf(&message[2], " ");
     if (msg_line_2)
          asprintf(&message[3], "<C>%s", msg_line_2);
     else
-        asprintf(&message[3], "");
-    asprintf(&message[4], "");
-    asprintf(&message[5], "");
+        asprintf(&message[3], " ");
+    asprintf(&message[4], " ");
+    asprintf(&message[5], " ");
 
     /* Display the confirmation dialog box */
     confirm = newCDKDialog(screen, CENTER, CENTER, message, 6, buttons, 2,
@@ -880,17 +884,17 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Set the message */
     asprintf(&message[0], "<C></B>QUESTION");
-    asprintf(&message[1], "");
+    asprintf(&message[1], " ");
     if (msg_line_1)
         asprintf(&message[2], "<C>%s", msg_line_1);
     else
-        asprintf(&message[2], "");
+        asprintf(&message[2], " ");
     if (msg_line_2)
          asprintf(&message[3], "<C>%s", msg_line_2);
     else
-        asprintf(&message[3], "");
-    asprintf(&message[4], "");
-    asprintf(&message[5], "");
+        asprintf(&message[3], " ");
+    asprintf(&message[4], " ");
+    asprintf(&message[5], " ");
 
     /* Display the question dialog box */
     question = newCDKDialog(screen, CENTER, CENTER, message, 6, buttons, 2,
