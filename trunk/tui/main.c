@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cdk/cdk.h>
+#include <cdk.h>
 #include <sys/wait.h>
 
 #include "main.h"

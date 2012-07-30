@@ -9,8 +9,6 @@
 extern "C" {
 #endif
 
-#include"main.h"
-
 void readAdapterData(char *label_msg[]);
 void readDeviceData(char *label_msg[]);
 void readTargetData(char *label_msg[]);
