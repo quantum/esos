@@ -84,7 +84,7 @@ distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 prop_tools		:= @prop_tools@
 build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			kernel_headers esos_tui busybox sysvinit grub glibc perl \
-			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib
+			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib \
 			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk
 clean_targets		:= $(addprefix clean-,$(build_targets) $(prop_tools))
