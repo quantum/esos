@@ -169,6 +169,7 @@ install: $(build_targets) $(prop_tools) initramfs
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
 	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/*
 	$(CHOWN) -R root:root $(MOUNT_DIR)/*
+	$(CHMOD) 4750 $(MOUNT_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/shadow
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
 	$(UMOUNT) $(MOUNT_DIR)/boot
