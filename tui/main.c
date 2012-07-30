@@ -2,18 +2,25 @@
  * $Id: main.c 142 2012-07-26 13:34:52Z marc.smith $
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk/cdk.h>
+#include <sys/wait.h>
 
 #include "main.h"
 #include "label_data.h"
+#include "menu_actions.h"
+#include "menu_actions-controllers.h"
+#include "menu_actions-devices.h"
+#include "menu_actions-hosts.h"
+#include "menu_actions-system.h"
+#include "menu_actions-targets.h"
 
-/*
- * Main screen for storage administration utility
- */
 int main(int argc, char** argv) {
-    /* Variables */
     CDKSCREEN *cdk_screen = 0;
     WINDOW *main_window = 0, *sub_window = 0;
     CDKMENU *menu = 0;
@@ -228,7 +235,7 @@ int main(int argc, char** argv) {
                 /* Fork and execute a shell */
                 if ((child_pid = fork()) < 0) {
                     /* Could not fork */
-                    errorDialog(cdk_screen, strerror(errno));
+                    errorDialog(cdk_screen, strerror(errno), NULL);
                 } else if (child_pid == 0) {
                     /* Child; fix up the terminal and execute the shell */
                     endwin();

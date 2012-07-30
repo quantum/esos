@@ -2,6 +2,10 @@
  * $Id: label_data.c 139 2012-07-24 20:17:34Z marc.smith $
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>

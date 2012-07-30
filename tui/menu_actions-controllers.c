@@ -2,6 +2,10 @@
  * $Id$
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk.h>
@@ -224,7 +228,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
 void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     MRENCL *mr_enclosures[MAX_ENCLOSURES] = {NULL};
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
-    MRDISK *mr_disks[MAX_ENCLOSURES][MAX_DISKS] = {NULL};
+    MRDISK *mr_disks[MAX_ENCLOSURES][MAX_DISKS] = {{NULL}, {NULL}};
     CDKSWINDOW *encl_swindow = 0;
     int adp_count = 0, adp_choice = 0, i = 0, encl_count = 0, j = 0, line_pos = 0;
     char *encl_title = NULL;
@@ -338,7 +342,7 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
 void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
     MRENCL *mr_enclosures[MAX_ENCLOSURES] = {NULL};
-    MRDISK *mr_disks[MAX_ENCLOSURES][MAX_DISKS] = {NULL},
+    MRDISK *mr_disks[MAX_ENCLOSURES][MAX_DISKS] = {{NULL}, {NULL}},
             *disk_selection[MAX_DISKS] = {NULL},
             *chosen_disks[MAX_DISKS] = {NULL};
     MRLDPROPS *new_ld_props = NULL;
