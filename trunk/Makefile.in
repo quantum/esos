@@ -82,20 +82,21 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
 prop_tools		:= @prop_tools@
-build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) esos_tui \
-			busybox sysvinit grub glibc perl qlogic_fw \
-			scstadmin openssh vixie-cron gcc openssl zlib ncurses \
-			e2fsprogs ssmtp libibumad libibverbs srptools \
+build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
+			kernel_headers esos_tui busybox sysvinit grub glibc perl \
+			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib
+			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk
 clean_targets		:= $(addprefix clean-,$(build_targets) $(prop_tools))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
+linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
 
 # The 'fake_lib' directory deserves a little explanation; after glibc
 # is built, we put modified ld scripts (eg, libc.so) in this location,
 # this way our new libraries are found/used during link
 export LDFLAGS = -L$(WORK_DIR)/fake_lib -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib -Wl,-rpath-link,$(IMAGE_DIR)/lib -Wl,-rpath-link,$(IMAGE_DIR)/usr/lib
-export CPPFLAGS = -I$(IMAGE_DIR)/usr/include -I$(shell find $(BUILD_DIR) -maxdepth 1 -name linux-* 2>&1)/include
+export CPPFLAGS = -I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/include
 
 
 # all - The default goal; complete every target except install.
@@ -271,7 +272,6 @@ image_setup:
 	$(MKDIR) $(INITRAMFS_DIR)/mnt/{root,tmp}
 	$(MKDIR) $(INITRAMFS_DIR)/usr/{bin,sbin}
 
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): linux_src = $(wildcard $(BUILD_DIR)/linux-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): scst_src = $(wildcard $(BUILD_DIR)/scst-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kern_suffix = $(subst scst_kernel,,$(@))
@@ -320,6 +320,11 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	### Done
 	$(TOUCH) $(@)
 
+kernel_headers:
+	$(MKDIR) $(WORK_DIR)/kernel_headers
+	$(MAKE) --directory=$(linux_src) INSTALL_HDR_PATH="$(WORK_DIR)/kernel_headers" headers_install
+	$(TOUCH) $(@)
+
 esos_tui: glibc ncurses cdk iniparser
 	$(MAKE) --directory=$(CWD)/tui
 	$(INSTALL) -m 755 $(CWD)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
@@ -356,7 +361,7 @@ grub: glibc
 	$(CHMOD) +x $(WORK_DIR)/grub-install
 	$(TOUCH) $(@)
 
-glibc:
+glibc: kernel_headers
 	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/glibc-2.12.2.patch
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
