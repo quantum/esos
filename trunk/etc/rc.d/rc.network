@@ -210,7 +210,7 @@ if ($ARGV[0] eq "start") {
 } elsif ($ARGV[0] eq "stop") {
     # Remove the default route
     print("Deleting the current default route...\n");
-    system($route_prog, "del", "default");
+    system($route_prog . " del default > /dev/null 2&>1");
     if ($? == -1) {
         print("ERROR: Running $route_prog failed: $!\n");
     } else {
