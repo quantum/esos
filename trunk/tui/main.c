@@ -38,6 +38,7 @@ int main(int argc, char** argv) {
             *devices_label_title = "SCST Devices",
             *targets_label_title = "Dynamic Targets";
     pid_t child_pid = 0;
+    uid_t saved_uid = 0;
 
     /* Initialize screen and check size */
     start:
@@ -55,7 +56,6 @@ int main(int argc, char** argv) {
     wbkgd(sub_window, COLOR_MAIN_TEXT);
     cdk_screen = initCDKScreen(sub_window);
     initCDKColor();
-    statusBar(main_window);
 
     /* Create the menu lists */
     menu_list[SYSTEM_MENU][0]                           = "</29/B/U>S<!29><!U>ystem  <!B>";
@@ -156,16 +156,18 @@ int main(int argc, char** argv) {
         setCDKLabelBackgroundAttrib(targets_label, COLOR_MAIN_TEXT);
     }
 
-    /* Draw the CDK screen */
-    refreshCDKScreen(cdk_screen);
-    
     /* We need root privileges; for the short term I don't see any other way
      around this; long term we can hopefully do something else */
-    if (seteuid(0) == -1) {
-        asprintf(&error_msg, "seteuid: %s", strerror(errno));
-        errorDialog(cdk_screen, error_msg, "Your capabilities will be reduced...");
+    saved_uid = getuid();
+    if (setresuid(0, -1, saved_uid) == -1) {
+        asprintf(&error_msg, "setresuid: %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, "Your capabilities may be reduced...");
         freeChar(error_msg);
     }
+
+    /* Draw the CDK screen */
+    statusBar(main_window);
+    refreshCDKScreen(cdk_screen);
 
     /* Loop refreshing the labels and waiting for input */
     halfdelay(REFRESH_DELAY);
@@ -241,10 +243,18 @@ int main(int argc, char** argv) {
 
             if (menu_choice == INTERFACE_MENU &&
                     submenu_choice == INTERFACE_SHELL - 1) {
+                /* Set the UID to what was saved at the start */
+                if (setresuid(saved_uid, 0, -1) == -1) {
+                    asprintf(&error_msg, "setresuid: %s", strerror(errno));
+                    errorDialog(cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                }
                 /* Fork and execute a shell */
                 if ((child_pid = fork()) < 0) {
                     /* Could not fork */
-                    errorDialog(cdk_screen, strerror(errno), NULL);
+                    asprintf(&error_msg, "fork: %s", strerror(errno));
+                    errorDialog(cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
                 } else if (child_pid == 0) {
                     /* Child; fix up the terminal and execute the shell */
                     endwin();
@@ -599,7 +609,7 @@ void statusBar(WINDOW *window) {
     char esos_ver[ESOS_VER_MAX] = {0}, esos_ver_str[ESOS_VER_MAX] = {0},
             username_str[USERNAME_MAX] = {0};
     int esos_ver_size = 0, username_size = 0, bar_space = 0, junk = 0;
-    uid_t uid = 0;
+    uid_t ruid = 0, euid = 0, suid = 0;
     struct passwd *pwd = NULL;
     char *status_msg = NULL;
     chtype *status_bar = NULL;
@@ -617,8 +627,8 @@ void statusBar(WINDOW *window) {
     esos_ver_size = strlen(esos_ver_str);
 
     /* Get username */
-    uid = getuid();
-    pwd = getpwuid(uid);
+    getresuid(&ruid, &euid, &suid);
+    pwd = getpwuid(suid);
     strncpy(username_str, pwd->pw_name, USERNAME_MAX);
     username_size = strlen(username_str);
 
