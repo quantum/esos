@@ -572,9 +572,12 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     refreshCDKScreen(main_cdk_screen);
     
     /* Ask user if they want to restart networking */
-    question = questionDialog(main_cdk_screen, "Would you like to restart networking now?", NULL);
-    if (question)
-        restartNetDialog(main_cdk_screen);
+    if (traverse_ret == 1) {
+        question = questionDialog(main_cdk_screen,
+                "Would you like to restart networking now?", NULL);
+        if (question)
+            restartNetDialog(main_cdk_screen);
+    }
     return;
 }
 
@@ -592,7 +595,9 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     boolean confirm = FALSE;
 
     /* Get confirmation (and warn user) before restarting network */
-    confirm = confirmDialog(main_cdk_screen, "Are you sure you want to restart networking?", NULL);
+    confirm = confirmDialog(main_cdk_screen,
+            "If you are connected via SSH, you may lose your session!",
+            "Are you sure you want to restart networking?");
     if (!confirm)
         return;
 
@@ -1030,9 +1035,12 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     refreshCDKScreen(main_cdk_screen);
     
     /* Ask user if they want to send a test email message */
-    question = questionDialog(main_cdk_screen, "Would you like to send a test email message?", NULL);
-    if (question)
-        testEmailDialog(main_cdk_screen);
+    if (traverse_ret == 1) {
+        question = questionDialog(main_cdk_screen,
+                "Would you like to send a test email message?", NULL);
+        if (question)
+            testEmailDialog(main_cdk_screen);
+    }
     return;
 }
 
@@ -1101,7 +1109,8 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
             if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
                 asprintf(&error_msg, "The %s command exited with %d.",
                         SSMTP_BIN, WEXITSTATUS(status));
-                errorDialog(main_cdk_screen, error_msg, NULL);
+                errorDialog(main_cdk_screen, error_msg,
+                        "Check the mail log for more information.");
                 freeChar(error_msg);
                 goto cleanup;
             }
@@ -1132,7 +1141,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
     int i = 0, traverse_ret = 0, window_y = 0, window_x = 0, ret_val = 0, exit_stat = 0;
     int add_user_window_lines = 12, add_user_window_cols = 50;
     static char *screen_title[] = {"</31/B>Adding a new ESOS user account..."};
-    char add_user_cmd[100] = {0}, chg_pass_cmd[100] = {0}, username[MAX_UNAME_LEN] = {0},
+    char add_user_cmd[200] = {0}, chg_pass_cmd[100] = {0}, username[MAX_UNAME_LEN] = {0},
             password_1[MAX_PASSWD_LEN] = {0}, password_2[MAX_PASSWD_LEN] = {0};
     char *error_msg = NULL;
     
@@ -1251,7 +1260,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Add the new user account */
-        snprintf(add_user_cmd, 100, "%s -h /tmp -g 'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
+        snprintf(add_user_cmd, 200, "%s -h /tmp -g 'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
                 ADDUSER_TOOL, TUI_BIN, ESOS_GROUP, username);
         ret_val = system(add_user_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {

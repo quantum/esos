@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
     char *adapters_label_msg[ADAPTERS_LABEL_ROWS] = {NULL};
     char *targets_label_msg[TARGETS_LABEL_ROWS] = {NULL};
     char *devices_label_msg[DEVICES_LABEL_ROWS] = {NULL};
+    char *error_msg = NULL;
     int selection = 0, key_pressed = 0, menu_choice = 0, submenu_choice = 0,
             screen_x = 0, screen_y = 0, orig_scr_x = 0, orig_scr_y = 0,
             child_status = 0, proc_status = 0;
@@ -124,13 +125,13 @@ int main(int argc, char** argv) {
      * controls the label width (using white space as padding for width) */
     asprintf(&adapters_label_msg[0], "</21/B/U>%s<!21><!B><!U>%*s",
             adapters_label_title,
-            ADAPTERS_LABEL_COLS-strlen(adapters_label_title), "");
+            (int) (ADAPTERS_LABEL_COLS-strlen(adapters_label_title)), "");
     asprintf(&devices_label_msg[0], "</21/B/U>%s<!21><!B><!U>%*s",
             devices_label_title,
-            DEVICES_LABEL_COLS-strlen(devices_label_title), "");
+            (int) (DEVICES_LABEL_COLS-strlen(devices_label_title)), "");
     asprintf(&targets_label_msg[0], "</21/B/U>%s<!21><!B><!U>%*s",
             targets_label_title,
-            TARGETS_LABEL_COLS-strlen(targets_label_title), "");
+            (int) (TARGETS_LABEL_COLS-strlen(targets_label_title)), "");
     
     /* Create the information/status labels */
     adapters_label = newCDKLabel(cdk_screen,
@@ -157,6 +158,14 @@ int main(int argc, char** argv) {
 
     /* Draw the CDK screen */
     refreshCDKScreen(cdk_screen);
+    
+    /* We need root privileges; for the short term I don't see any other way
+     around this; long term we can hopefully do something else */
+    if (seteuid(0) == -1) {
+        asprintf(&error_msg, "seteuid: %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, "Your capabilities will be reduced...");
+        freeChar(error_msg);
+    }
 
     /* Loop refreshing the labels and waiting for input */
     halfdelay(REFRESH_DELAY);
