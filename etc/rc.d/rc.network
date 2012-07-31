@@ -67,7 +67,7 @@ if ($ARGV[0] eq "start") {
                 if (lc($ini_hash{$hash_key}) eq "dhcp") {
                     # Do DHCP configuration for interface
                     print("Running $dhcp_prog for interface $each...\n");
-                    system($dhcp_prog, "-i", $each, "-n", "-q");
+                    system($dhcp_prog . " -i " . $each . " -n " . " -q 2&>1");
                     if ($? == -1) {
                         print("ERROR: Running $dhcp_prog failed: $!\n");
                         next;
