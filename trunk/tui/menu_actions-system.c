@@ -687,6 +687,12 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
             }
         }
     }
+    asprintf(&swindow_info[i], " ");
+    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+    i++;
+    asprintf(&swindow_info[i], CONTINUE_MSG);
+    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+    i++;
 
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(net_restart_info, 'g');
@@ -1301,7 +1307,7 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
     char del_user_cmd[100] = {0}, del_grp_cmd[100] = {0},
             user_acct[MAX_UNAME_LEN] = {0};
     char *error_msg = NULL, *confirm_msg = NULL;
-    uid_t uid = 0;
+    uid_t ruid = 0, euid = 0, suid = 0;
     struct passwd *passwd_entry = NULL;
     boolean confirm = FALSE;
     
@@ -1311,8 +1317,8 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
         return;
     
     /* Make sure we are not trying to delete the user that is currently logged in */
-    uid = getuid();
-    passwd_entry = getpwuid(uid);
+    getresuid(&ruid, &euid, &suid);
+    passwd_entry = getpwuid(suid);
     if (strcmp(passwd_entry->pw_name, user_acct) == 0) {
         errorDialog(main_cdk_screen, "Can't delete the user that is currently logged in!", NULL);
         return;
@@ -1555,6 +1561,12 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
         }
         fclose(sysfs_file);
     }
+    asprintf(&swindow_info[i], " ");
+    addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
+    i++;
+    asprintf(&swindow_info[i], CONTINUE_MSG);
+    addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
+    i++;
 
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(scst_info, 'g');

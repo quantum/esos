@@ -5,7 +5,7 @@
 # This script will synchronize configuration files between the ESOS USB device (esos_conf) and the root tmpfs filesystem.
 
 CONF_MNT="/mnt/conf"
-ETC_FILES="passwd group shadow network hostname hosts ssh_host_rsa_key.pub ssh_host_rsa_key ssh_host_ecdsa_key.pub ssh_host_ecdsa_key ssh_host_dsa_key.pub ssh_host_dsa_key random-seed resolv.conf revaliases ssmtp.conf scst.conf modprobe.conf pre-scst_xtra_conf post-scst_xtra_conf"
+ETC_FILES="passwd group shadow network.conf hosts resolv.conf ssh_host_rsa_key.pub ssh_host_rsa_key ssh_host_ecdsa_key.pub ssh_host_ecdsa_key ssh_host_dsa_key.pub ssh_host_dsa_key random-seed revaliases ssmtp.conf scst.conf modprobe.conf pre-scst_xtra_conf post-scst_xtra_conf"
 
 mount ${CONF_MNT} || exit 1
 mkdir -p ${CONF_MNT}/etc
