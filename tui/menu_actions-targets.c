@@ -81,7 +81,13 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
         /* Close the directory stream */
         closedir(dir_stream);
     }
-
+    
+    /* Add a message to the bottom explaining how to close the dialog */
+    asprintf(&swindow_info[line_pos], " ");
+    line_pos++;
+    asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+    line_pos++;
+    
     /* Set the scrolling window content */
     setCDKSwindowContents(tgt_info, swindow_info, line_pos);
     

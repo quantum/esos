@@ -150,6 +150,12 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
         line_cnt = 10;
     }
 
+    /* Add a message to the bottom explaining how to close the dialog */
+    asprintf(&swindow_info[line_cnt], " ");
+    line_cnt++;
+    asprintf(&swindow_info[line_cnt], CONTINUE_MSG);
+    line_cnt++;
+
     /* Set the scrolling window content */
     setCDKSwindowContents(dev_info, swindow_info, line_cnt);
     

@@ -21,6 +21,7 @@ extern "C" {
 #define SCSTADMIN_TOOL "/usr/sbin/scstadmin"
 #define SCST_CONF "/etc/scst.conf"
 #define SYNC_CONF_TOOL "/usr/local/sbin/conf_sync.sh"
+#define CONTINUE_MSG "<C></B><Press ENTER to continue...>"
 
 void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
