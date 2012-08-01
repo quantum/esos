@@ -23,8 +23,8 @@ umount ${LOGS_MNT}
 sendmail -t << _EOF_
 To: ${EMAIL_TO}
 From: ${EMAIL_FROM}
-Subject: ESOS System Startup - `hostname -f` (`date`)
-Enterprise Storage OS on host "`hostname -f`" has started. If this system startup is expected, you can probably ignore this.
+Subject: ESOS System Startup - `hostname` (`date`)
+Enterprise Storage OS on host "`hostname`" has started. If this system startup is expected, you can probably ignore this.
 
 `test "${vmcore_files}" != "" && echo "** Warning! Kernel crash dump file(s) detected:"; echo -e "${vmcore_files}"`
 
