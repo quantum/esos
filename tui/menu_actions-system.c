@@ -8,11 +8,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cdk.h>
-#include <cdk/cdk_objs.h>
 #include <iniparser.h>
-#include <cdk/radio.h>
 #include <sys/ioctl.h>
+#undef CTRL /* This is defined from ioctl.h which conflicts with cdk.h */
+#include <cdk.h>
 #include <net/if.h>
 #include <string.h>
 #include <arpa/inet.h>
@@ -43,7 +42,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     dictionary *ini_dict = NULL;
     FILE *ini_file = NULL;
-    struct ifreq ifr = {0};
+    struct ifreq ifr; /* How do we properly initialize this? */
     struct if_nameindex* if_name = NULL;
     struct ethtool_cmd edata = {0};
     unsigned char* mac_addy = NULL;
