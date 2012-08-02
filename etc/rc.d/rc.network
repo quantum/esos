@@ -59,6 +59,25 @@ if ($ARGV[0] eq "start") {
     }
     close(INI);
 
+    # Bring up all interfaces
+    my @net_ifaces = glob($net_if_dir . "/*");
+    foreach my $each (@net_ifaces) {
+        my $iface = (split(/\//, $each))[-1];
+        if ($iface =~ "eth") {
+            print("Bringing up interface $iface...\n");
+            system($ifconfig_prog . " " . $iface . " up 2&>1");
+            if ($? == -1) {
+                print("ERROR: Running $ifconfig_prog failed: $!\n");
+                next;
+            }
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                next;
+            }
+        }
+    }
+
     # Configure the network interfaces
     foreach my $each (@sections) {
         if ($each =~ "eth") {
@@ -108,7 +127,7 @@ if ($ARGV[0] eq "start") {
                         print("ERROR: The 'broadcast' value is empty!\n");
                         next;
                     }
-                    system($ifconfig_prog, $each, $ipaddr, "netmask", $netmask, "broadcast", $broadcast);
+                    system($ifconfig_prog . " " . $each . " " . $ipaddr . " netmask " . $netmask . " broadcast " . $broadcast . " 2&>1");
                     if ($? == -1) {
                         print("ERROR: Running $ifconfig_prog failed: $!\n");
                         next;
@@ -147,7 +166,7 @@ if ($ARGV[0] eq "start") {
 
     # Set the host name (and DNS domain name if provided)
     print("Setting system host name: $fqdn\n");
-    system($hostname_prog, $fqdn);
+    system($hostname_prog . " " . $fqdn . " 2&>1");
     if ($? == -1) {
         print("ERROR: Running $hostname_prog failed: $!\n");
     } else {
@@ -195,7 +214,7 @@ if ($ARGV[0] eq "start") {
     if (exists($ini_hash{"general:defaultgw"})) {
         my $defaultgw = $ini_hash{"general:defaultgw"};
         if ($defaultgw ne "") {
-            system($route_prog, "add", "-net", "default", "gw", $defaultgw, "netmask", "0.0.0.0");
+            system($route_prog . " add -net default gw " . $defaultgw . " netmask 0.0.0.0 2&>1");
             if ($? == -1) {
                 print("ERROR: Running $route_prog failed: $!\n");
             } else {
@@ -210,7 +229,7 @@ if ($ARGV[0] eq "start") {
 } elsif ($ARGV[0] eq "stop") {
     # Remove the default route
     print("Deleting the current default route...\n");
-    system($route_prog . " del default > /dev/null 2&>1");
+    system($route_prog . " del default 2&>1");
     if ($? == -1) {
         print("ERROR: Running $route_prog failed: $!\n");
     } else {
@@ -226,7 +245,7 @@ if ($ARGV[0] eq "start") {
         my $iface = (split(/\//, $each))[-1];
         if ($iface =~ "eth") {
             print("Bringing down interface $iface...\n");
-            system($ifconfig_prog, $iface, "0.0.0.0", "down");
+            system($ifconfig_prog . " " . $iface . " 0.0.0.0 down 2&>1");
             if ($? == -1) {
                 print("ERROR: Running $ifconfig_prog failed: $!\n");
                 next;
