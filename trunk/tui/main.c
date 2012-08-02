@@ -285,6 +285,8 @@ int main(int argc, char** argv) {
 
             } else if (menu_choice == INTERFACE_MENU &&
                     submenu_choice == INTERFACE_QUIT - 1) {
+                /* Synchronize the configuration */
+                syncConfig(cdk_screen);
                 /* All done -- clean up */
                 destroyCDKScreenObjects(cdk_screen);
                 destroyCDKScreen(cdk_screen);
