@@ -310,6 +310,14 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
         line_pos++;
     }
 
+    /* Add a message to the bottom explaining how to close the dialog */
+    asprintf(&swindow_info[line_pos], " ");
+    addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
+    line_pos++;
+    asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+    addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
+    line_pos++;
+
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(encl_swindow, 'g');
     activateCDKSwindow(encl_swindow, 0);
