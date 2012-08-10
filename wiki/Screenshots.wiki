@@ -1,15 +1,10 @@
-#summary One-sentence summary of this page.
+#summary Images of the ESOS text-based user interface (TUI).
 
-= Introduction =
-
-Add your content here.
-
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
-
+=== ESOS Login (console) ===
 [http://enterprise-storage-os.googlecode.com/files/tui_ss_console_login_1.png]
+
+=== TUI Main Screen (console) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_console_main_1.png]
+
+=== TUI Main Screen (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_main_1.png]
