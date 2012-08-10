@@ -11,3 +11,5 @@ Add your content here.  Format your content with:
   * Text in *bold* or _italic_
   * Headings, paragraphs, and lists
   * Automatic links to other wiki pages
+
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_console_login_1.png]
