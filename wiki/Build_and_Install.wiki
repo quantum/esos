@@ -27,7 +27,7 @@ Using _Fedora 16 Desktop Edition x86_64_ as your build host:
 Using _Ubuntu 11.10 x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * apt-get install build-essential
-  * apt-get install subversion autoconf rpm2cpio gawk flex bison gcc-multilib
+  * apt-get install subversion autoconf rpm2cpio gawk flex bison gcc-multilib unzip libtinfo-dev libtool lsscsi
 
 <br>
 
