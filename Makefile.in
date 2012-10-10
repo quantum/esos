@@ -432,7 +432,7 @@ zlib: glibc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-ncurses: glibc
+ncurses: glibc gcc
 	cd $(src_dir) && ./configure --prefix=/usr --with-shared --without-gpm
 	$(MAKE) --directory=$(src_dir)
 	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install.libs
