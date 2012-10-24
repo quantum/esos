@@ -78,6 +78,9 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r4130.tar.bz2 \
 		kexec-tools-2.0.3.tar.gz \
+		drbd-8.4.0.tar.gz \
+		LVM2-2.02.97.tar.gz \
+		xfsprogs-3.1.8.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -86,7 +89,8 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			kernel_headers esos_tui busybox sysvinit grub glibc perl \
 			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib \
 			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
-			lsscsi sg3_utils groff kexec-tools iniparser cdk
+			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
+			xfsprogs drbd
 clean_targets		:= $(addprefix clean-,$(build_targets) $(prop_tools))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -444,11 +448,14 @@ e2fsprogs: glibc
 	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
 	#$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
-	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-progs-recursive
+	#$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-progs-recursive
+	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-libs
 	$(TOUCH) $(@)
 
 ssmtp: glibc openssl
-	cd $(src_dir) && CFLAGS="$(CPPFLAGS) $(LDFLAGS) -lcrypto" ./configure --enable-ssl --prefix="" --exec-prefix=/usr
+	cd $(src_dir) && CFLAGS="$(CPPFLAGS) $(LDFLAGS) -lcrypto" ./configure \
+	--enable-ssl --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
@@ -469,7 +476,9 @@ libibverbs: glibc
 srptools: glibc libibumad libibverbs
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec-am
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-man
 	$(TOUCH) $(@)
 
 lsscsi: glibc
@@ -510,6 +519,32 @@ cdk: glibc ncurses
 	cd $(src_dir) && ./configure --prefix=/usr --with-ncurses --with-libtool
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+LVM2: glibc
+	cd $(src_dir) && ./configure --with-lvm1=none --disable-selinux --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/libdm DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/scripts DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+xfsprogs: glibc e2fsprogs
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+drbd: glibc
+	cd $(src_dir) && ./configure --prefix=/ --without-legacy_utils \
+	--without-km --without-udev --without-xen --without-pacemaker --without-heartbeat \
+	--without-rgmanager --without-bashcompletion --with-distro=generic
+	$(MAKE) --directory=$(src_dir) tools doc
+	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/user DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/documentation DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 
