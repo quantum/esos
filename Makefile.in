@@ -78,7 +78,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r4130.tar.bz2 \
 		kexec-tools-2.0.3.tar.gz \
-		drbd-8.4.0.tar.gz \
+		drbd-8.3.11.tar.gz \
 		LVM2-2.02.97.tar.gz \
 		xfsprogs-3.1.8.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2)
@@ -532,9 +532,9 @@ LVM2: glibc
 	$(TOUCH) $(@)
 
 xfsprogs: glibc e2fsprogs
-	cd $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && CFLAGS="$(CPPFLAGS) -D_LINUX_TYPES_H" ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir) DIST_ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 drbd: glibc
