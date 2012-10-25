@@ -7,12 +7,12 @@
 
 # Load a kernel (prod or debug) for use on panic
 case "`/bin/uname -r`" in
-	*prod*)
-		/usr/sbin/kexec -p /boot/bzImage*prod* --initrd=/boot/initramfs.cpio.gz --append="single irqpoll maxcpus=1 reset_devices"
-	;;
-	*debug*)
-		/usr/sbin/kexec -p /boot/bzImage*debug* --initrd=/boot/initramfs.cpio.gz --append="single irqpoll maxcpus=1 reset_devices"
-	;;
+    *prod*)
+        /usr/sbin/kexec -p /boot/bzImage*prod* --initrd=/boot/initramfs.cpio.gz --append="single irqpoll maxcpus=1 reset_devices"
+    ;;
+    *debug*)
+        /usr/sbin/kexec -p /boot/bzImage*debug* --initrd=/boot/initramfs.cpio.gz --append="single irqpoll maxcpus=1 reset_devices"
+    ;;
 esac
 
 # Done

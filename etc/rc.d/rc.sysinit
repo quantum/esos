@@ -20,16 +20,16 @@
 
 /sbin/fsck -A -T
 if [ $? -gt 1 ]; then
-	/bin/echo
-	/bin/echo "ERROR (fsck): Your filesystem appears to be severely damaged."
-	/bin/echo "ERROR (fsck): You can probably correct this problem by running e2fsck manually."
-	/bin/echo "ERROR (fsck): After you logout, the system will reboot."
-	/bin/echo
-	PS1="(Repair filesystem) # "
-	export PS1
-	/sbin/sulogin
-	/bin/umount -a -r
-	/sbin/reboot -f
+    /bin/echo
+    /bin/echo "ERROR (fsck): Your filesystem appears to be severely damaged."
+    /bin/echo "ERROR (fsck): You can probably correct this problem by running e2fsck manually."
+    /bin/echo "ERROR (fsck): After you logout, the system will reboot."
+    /bin/echo
+    PS1="(Repair filesystem) # "
+    export PS1
+    /sbin/sulogin
+    /bin/umount -a -r
+    /sbin/reboot -f
 fi
 
 /bin/echo "Performing initial configuration sync..."
@@ -39,9 +39,9 @@ fi
 /sbin/sysctl -p /etc/sysctl.conf
 
 if [ -f "/etc/random-seed" ]; then
-	/bin/echo "Initializing random number generator..."
-	/bin/cat /etc/random-seed > /dev/urandom
-	/bin/rm -f /etc/random-seed
+    /bin/echo "Initializing random number generator..."
+    /bin/cat /etc/random-seed > /dev/urandom
+    /bin/rm -f /etc/random-seed
 fi
 
 echo "Setting system time from hardware clock..."

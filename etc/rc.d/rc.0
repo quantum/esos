@@ -2,6 +2,14 @@
 
 # $Id$
 
+if [ -x /etc/rc.d/rc.drbd ]; then
+    /etc/rc.d/rc.drbd stop
+fi
+
+if [ -x /etc/rc.d/rc.network ]; then
+    /etc/rc.d/rc.network stop
+fi
+
 /bin/echo "Sending all processes the TERM signal..."
 /sbin/killall5 -15
 /bin/sleep 1
@@ -18,12 +26,12 @@
 
 # Write wtmp records
 case "$0" in
-	*6)
-		/sbin/reboot -w
-	;;
-	*0)
-		/sbin/halt -w
-	;;
+    *6)
+        /sbin/reboot -w
+    ;;
+    *0)
+        /sbin/halt -w
+    ;;
 esac
 
 /bin/echo "Synchronizing configuration..."
@@ -43,12 +51,12 @@ esac
 /bin/umount -a
 
 case "$0" in
-	*6)
-		/bin/echo "Rebooting..."
-		/sbin/reboot -d -f -i
-	;;
-	*0)
-		/bin/echo "Bye..."
-		/sbin/halt -d -f -p
-	;;
+    *6)
+        /bin/echo "Rebooting..."
+        /sbin/reboot -d -f -i
+    ;;
+    *0)
+        /bin/echo "Bye..."
+        /sbin/halt -d -f -p
+    ;;
 esac
