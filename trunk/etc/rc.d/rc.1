@@ -2,8 +2,12 @@
 
 # $Id$
 
+if [ -x /etc/rc.d/rc.drbd ]; then
+    /etc/rc.d/rc.drbd stop
+fi
+
 if [ -x /etc/rc.d/rc.network ]; then
-	/etc/rc.d/rc.network stop
+    /etc/rc.d/rc.network stop
 fi
 
 /bin/echo "Sending all processes the TERM signal..."
