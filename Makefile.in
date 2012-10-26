@@ -522,7 +522,7 @@ cdk: glibc ncurses
 	$(TOUCH) $(@)
 
 LVM2: glibc
-	cd $(src_dir) && ./configure --with-lvm1=none --disable-selinux --prefix=/usr
+	cd $(src_dir) && ./configure --with-lvm1=none --disable-selinux --prefix=/usr --with-default-system-dir=/etc
 	$(MAKE) --directory=$(src_dir)
 	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
