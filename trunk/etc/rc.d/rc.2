@@ -23,6 +23,11 @@ if [ -x /etc/rc.d/rc.sshd ]; then
     /etc/rc.d/rc.sshd
 fi
 
+if [ -x /etc/rc.d/rc.lvm2 ]; then
+    /bin/echo "Configuring the LVM subsystem..."
+    /etc/rc.d/rc.lvm2
+fi
+
 if [ -x /etc/rc.d/rc.drbd ]; then
     /etc/rc.d/rc.drbd start
 fi
