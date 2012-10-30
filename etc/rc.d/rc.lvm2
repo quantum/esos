@@ -1,0 +1,8 @@
+#! /bin/sh
+
+# $Id$
+
+# Setup LVM 2
+/usr/sbin/dmsetup mknodes
+/usr/sbin/vgscan --ignorelockingfailure
+/usr/sbin/vgchange -ay --ignorelockingfailure
