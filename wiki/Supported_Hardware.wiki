@@ -19,6 +19,7 @@ While there is support for a number of different RAID controllers, currently onl
   * Adaptec AACRAID cards (CLI tool is part of ESOS)
   * HP Smart Array cards
   * IBM ServeRAID cards
+  * Areca SATA/SAS RAID cards
 
 <br>
 
