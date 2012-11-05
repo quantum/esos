@@ -14,9 +14,9 @@ _If you have any hardware that you would like supported that is not listed below
 <br>
 
 === Local RAID Controllers ===
-While there is support for a number of different RAID controllers, currently only two brands include the CLI tools that allow creating/destroying/etc. volumes from inside ESOS. If your favorite RAID controller has a CLI tool, please let us know so we can consider including it with ESOS.
-  * LSI Logic MegaRAID cards (CLI tool is part of ESOS)
-  * Adaptec AACRAID cards (CLI tool is part of ESOS)
+While there is support for a number of different RAID controllers, not all brands include the CLI tools that allow creating/destroying/etc. volumes from inside ESOS. If your favorite RAID controller has a CLI tool, please let us know so we can consider including it with ESOS.
+  * LSI Logic MegaRAID cards (CLI tool is an install option)
+  * Adaptec AACRAID cards (CLI tool is an install option)
   * HP Smart Array cards
   * IBM ServeRAID cards
   * Areca SATA/SAS RAID cards
