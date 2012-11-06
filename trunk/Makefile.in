@@ -143,9 +143,9 @@ image: $(build_targets)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Installing image..."
 	$(MKDIR) $(MOUNT_DIR)
-	$(MOUNT) -L esos_root $(MOUNT_DIR) 
+	$(MOUNT) $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p2 $(MOUNT_DIR) 
 	$(MKDIR) $(MOUNT_DIR)/boot
-	$(MOUNT) -L esos_boot $(MOUNT_DIR)/boot
+	$(MOUNT) $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p1 $(MOUNT_DIR)/boot
 	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdvu $(IMAGE_DIR)/etc
 	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)
 	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
@@ -347,7 +347,7 @@ sysvinit: glibc
 	$(MAKE) --directory=$(src_dir)/src ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-grub: glibc
+grub: glibc LVM2
 	cd $(src_dir) && ./configure --prefix=/usr --disable-grub-mkfont --enable-device-mapper
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
