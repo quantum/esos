@@ -17,16 +17,6 @@ else
 	AC_MSG_ERROR([this system must be GNU/Linux x86_64])
 fi
 
-dnl Options for disabling proprietary tools
-prop_tools=""
-AC_ARG_ENABLE([megaraid_tool],
-	AS_HELP_STRING([--disable-megaraid_tool], [Disable the inclusion of LSI MegaRAID CLI proprietary tool]))
-	AS_IF([test "x$enable_megaraid_tool" != "xno"], [prop_tools="MegaCLI $prop_tools"])
-AC_ARG_ENABLE([aacraid_tool],
-	AS_HELP_STRING([--disable-aacraid_tool], [Disable the inclusion of Adaptec AACRAID CLI proprietary tool]))
-	AS_IF([test "x$enable_aacraid_tool" != "xno"], [prop_tools="asm_linux $prop_tools"])
-AC_SUBST(prop_tools)
-
 dnl Compiler checks
 AC_PROG_CC
 AC_LANG_C
@@ -38,7 +28,6 @@ MY_PATH_PROG([wget])
 MY_PATH_PROG([mkdir])
 MY_PATH_PROG([rm])
 MY_PATH_PROG([tar])
-MY_PATH_PROG([unzip])
 MY_PATH_PROG([cp])
 MY_PATH_PROG([find])
 MY_PATH_PROG([cpio])
@@ -56,7 +45,6 @@ MY_PATH_PROG([umount])
 MY_PATH_PROG([sed])
 MY_PATH_PROG([mknod])
 MY_PATH_PROG([touch])
-MY_PATH_PROG([rpm2cpio])
 MY_PATH_PROG([install])
 MY_PATH_PROG([patch])
 MY_PATH_PROG([chown])
@@ -64,5 +52,7 @@ MY_PATH_PROG([chmod])
 MY_PATH_PROG([md5sum])
 MY_PATH_PROG([sha256sum])
 MY_PATH_PROG([sleep])
+MY_PATH_PROG([losetup])
+MY_PATH_PROG([kpartx])
 
 AC_OUTPUT(Makefile)

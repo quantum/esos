@@ -1,3 +1,4 @@
 - Add support for Emulex FC HBAs; waiting on Emulex for updated lpfc to SCST shim (lpfc_scst) to work with newer kernels.
-- Perl and/or shell utilities for monitor ESOS system: Memory usage, disk usage, disk failures, etc.
 - Compiling gcc takes forever! All we need is libgcc and libstdc++ -- any ideas?
+- Implement TUI functions for DRBD, LVM2, and creating/mounting filesystems for vdisk_fileio.
+- Add support for high-availability, possibly via Linux-HA project.
