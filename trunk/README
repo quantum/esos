@@ -1,7 +1,8 @@
-ESOS (Enterprise Storage OS) is a sort of Linux distribution that provides
+ESOS (Enterprise Storage OS) is a Linux distribution of sorts that provides
 block-level storage targets. Its based on the Linux kernel and the SCST
 project. It also provides all of the necessary utilities/tools to configure
-your back-storage devices (eg, RAID controllers).
+your back-storage devices (eg, RAID controllers). A text user interface (TUI) is
+also included for storage provisioning and system management tasks.
 
 Currently ESOS is very, very new and probably shouldn't be used as a
 production disk array. That being said, the two core components of ESOS,
@@ -10,7 +11,7 @@ the Linux Kernel and SCST, are both quite stable.
 The project home is located here: http://code.google.com/p/enterprise-storage-os/
 
 Please visit the above URL for more documentation on ESOS, including usage,
-installation, etc. The included INSTALL document provides brief installation
+installation, etc. The included INSTALL document provides brief build/install
 instructions.
 
 All questions/comments/etc. should be directed to the "esos-users" Google Group,

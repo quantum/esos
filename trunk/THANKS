@@ -4,3 +4,7 @@ team -- ESOS is built around SCST, and we really owe everything to them.
 http://www.linuxfromscratch.org/hints/downloads/files/bsd-init.txt
 This article was very helpful in designing ESOS, specifically with the
 init setup (BSD style).
+
+http://www.sidebranch.com/papers/How%20To%20Install%20GRUB%20into%20a%20disk%20image.pdf
+Lots of information/ideas came from this document when creating the 'image'
+Makefile recipe and the disk imaging process.

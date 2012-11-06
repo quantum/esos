@@ -22,7 +22,6 @@ WGET		:= @wget@ -t 5
 MKDIR		:= @mkdir@ -p
 RM		:= @rm@ -rf
 TAR		:= @tar@
-UNZIP		:= @unzip@
 CP		:= @cp@ -L
 FIND		:= @find@
 CPIO		:= @cpio@
@@ -40,14 +39,15 @@ UMOUNT		:= @umount@
 SED		:= @sed@
 MKNOD		:= @mknod@
 TOUCH		:= @touch@
-RPM2CPIO	:= @rpm2cpio@
 INSTALL		:= @install@ -c
 PATCH		:= @patch@
 CHOWN		:= @chown@
 CHMOD		:= @chmod@
-MD5SUM		:= @md5sum@ -w
-SHA256SUM	:= @sha256sum@ -w
+MD5SUM		:= @md5sum@
+SHA256SUM	:= @sha256sum@
 SLEEP		:= @sleep@
+LOSETUP		:= @losetup@
+KPARTX		:= @kpartx@
 
 esos_ver	:= 0.1-r$(shell svnversion $(CWD))
 prod_suffix	:= -esos.prod
@@ -55,7 +55,7 @@ debug_suffix	:= -esos.debug
 
 distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		busybox-1.19.0.tar.bz2 \
-		grub-1.99.tar.gz \
+		grub-2.00.tar.gz \
 		sysvinit-2.88dsf.tar.bz2 \
 		glibc-2.12.2.tar.bz2 \
 		vixie-cron-4.1.tar.bz2 \
@@ -84,14 +84,13 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		gcc-4.4.5_gmp_mpfr.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
-prop_tools		:= @prop_tools@
 build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			kernel_headers esos_tui busybox sysvinit grub glibc perl \
 			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib \
 			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
 			xfsprogs drbd
-clean_targets		:= $(addprefix clean-,$(build_targets) $(prop_tools))
+clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
@@ -105,55 +104,42 @@ export CPPFLAGS = -I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/includ
 
 # all - The default goal; complete every target except install.
 .PHONY: all
-all: fetch extract build prop_tools ;
+all: fetch extract build ;
 
 
-# install - Prompt for USB thumb-drive device node and install the distribution to it.
-.PHONY: install
-install: install_dev_node = $(WORK_DIR)/install_dev_node
-install: usb_device = $$($(CAT) $(install_dev_node))
-install: $(build_targets) $(prop_tools) initramfs
+# image - Create the ESOS disk image file.
+.PHONY: image
+image: img_file = $(CWD)/esos-$(esos_ver).img
+image: loop_dev = $$($(CAT) $(WORK_DIR)/loop_dev)
+image: $(build_targets)
 	$(QUIET) if [ `whoami` != "root" ]; then \
 	  $(ECHO) "### Snap! Ya gotta be root for this part..."; \
 	  exit 1; \
 	fi
-	$(QUIET) $(ECHO) "### Please type the full path of your USB drive device node (eg, /dev/sdz):" &&	\
-	read dev_node && $(ECHO) -n $$dev_node > $(install_dev_node)
+	$(QUIET) $(ECHO) "### Creating initramfs image..."
+	$(RM) $(INITRAMFS_DIR)/dev/*
+	$(MKNOD) $(INITRAMFS_DIR)/dev/null c 1 3
+	$(MKNOD) $(INITRAMFS_DIR)/dev/console c 5 1
+	$(MKNOD) $(INITRAMFS_DIR)/dev/tty c 5 0
+	$(INSTALL) $(CWD)/misc/initramfs_init $(INITRAMFS_DIR)/init
+	$(LN) busybox $(INITRAMFS_DIR)/bin/sh
+	cd $(INITRAMFS_DIR) && $(FIND) . -print0 |	\
+	$(CPIO) --null -ov --format=newc |		\
+	$(GZIP) > $(IMAGE_DIR)/boot/initramfs.cpio.gz
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) if [ "$(usb_device)" = "" ] || [ ! -e $(usb_device) ]; then \
-	  $(ECHO) "### That device node doesn't seem to exist."; \
-	  exit 1; \
-	fi
-	$(QUIET) if $(GREP) $(usb_device) /proc/mounts > /dev/null; then \
-	  $(ECHO) "### It looks like that device is mounted..."; \
-	  exit 1; \
-	fi
-	$(QUIET) if [ `$(SFDISK) -s $(usb_device)` -lt 3900000 ]; then \
-	  $(ECHO) "### Your USB flash drive isn't large enough; it must be at least 4 GB."; \
-	  exit 1; \
-	fi
-	$(QUIET) $(ECHO) "### This is what '$(usb_device)' looks like..."
-	$(QUIET) $(SFDISK) -l $(usb_device)
-	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Proceeding will completely wipe the above device! Are you sure (Yes)?" &&	\
-	read confirm && $(TEST) $$confirm = "Yes"
-	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Saving MBR / partition table for $(usb_device)..."
-	$(DD) if=$(usb_device) of=$(WORK_DIR)/`basename $(usb_device)`.mbr bs=512 count=1
-	$(SFDISK) -d $(usb_device) > $(WORK_DIR)/`basename $(usb_device)`.sfdisk
-	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Creating new partition table on $(usb_device)..."
-	$(DD) if=/dev/zero of=$(usb_device) bs=512 count=1
-	$(ECHO) -e "1,20,L,*\n21,100,L\n121,30,L\n151,600,L\n" | $(SFDISK) $(usb_device)
-	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Waiting for the device nodes to appear..."
-	$(SLEEP) 15
-	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Making new filesystems on $(usb_device)..."
-	$(MKE2FS) -L esos_boot $(usb_device)1
-	$(MKE2FS) -L esos_root $(usb_device)2
-	$(MKE2FS) -L esos_conf $(usb_device)3
-	$(MKE2FS) -L esos_logs $(usb_device)4
+	$(QUIET) $(ECHO) "### Setting up ESOS image file ($(img_file))..."
+	# 4000 MB (not MiB)
+	# 4000000000 B
+	# 4000000000 B / 512 B = 7812500 sectors
+	$(DD) if=/dev/zero of=$(img_file) bs=512 count=0 seek=7812500
+	$(ECHO) -e "4097,204800,L,*\n208897,1024000,L\n1232897,204800,L\n1437697,4096000,L\n" | \
+	$(SFDISK) --no-reread -uS -L $(img_file)
+	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
+	$(KPARTX) -a $(loop_dev)
+	$(MKE2FS) -L esos_boot $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p1
+	$(MKE2FS) -L esos_root $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p2
+	$(MKE2FS) -L esos_conf $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p3
+	$(MKE2FS) -L esos_logs $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p4
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Installing image..."
 	$(MKDIR) $(MOUNT_DIR)
@@ -162,7 +148,7 @@ install: $(build_targets) $(prop_tools) initramfs
 	$(MOUNT) -L esos_boot $(MOUNT_DIR)/boot
 	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdvu $(IMAGE_DIR)/etc
 	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)
-	$(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(usb_device)
+	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.cfg > $(MOUNT_DIR)/boot/grub/grub.cfg
 	$(LN) /usr/share/zoneinfo/UTC $(MOUNT_DIR)/etc/localtime
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
@@ -178,20 +164,21 @@ install: $(build_targets) $(prop_tools) initramfs
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
+	$(KPARTX) -d $(loop_dev)
+	$(LOSETUP) -d $(loop_dev)
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### All done; your ESOS USB drive should be ready to use!"
+	$(QUIET) $(ECHO) "### All done; your ESOS disk image file is ready!"
 
-.PHONY: initramfs
-initramfs:
-	$(RM) $(INITRAMFS_DIR)/dev/*
-	$(MKNOD) $(INITRAMFS_DIR)/dev/null c 1 3
-	$(MKNOD) $(INITRAMFS_DIR)/dev/console c 5 1
-	$(MKNOD) $(INITRAMFS_DIR)/dev/tty c 5 0
-	$(INSTALL) $(CWD)/misc/initramfs_init $(INITRAMFS_DIR)/init
-	$(LN) busybox $(INITRAMFS_DIR)/bin/sh
-	cd $(INITRAMFS_DIR) && $(FIND) . -print0 |	\
-	$(CPIO) --null -ov --format=newc |		\
-	$(GZIP) > $(IMAGE_DIR)/boot/initramfs.cpio.gz
+
+# pkg_dist - Create the ESOS package distribution file (tarball).
+.PHONY: pkg_dist
+pkg_dist: img_file = $(notdir $(wildcard $(CWD)/esos-*.img))
+pkg_dist: $(img_file)
+	$(MD5SUM) $(img_file) > $(CWD)/dist_md5sum.txt
+	$(SHA256SUM) $(img_file) > $(CWD)/dist_sha256sum.txt
+	$(TAR) --transform 's,^,esos-$(esos_ver)/,' --show-transformed-names \
+	-c -v -z -f $(CWD)/esos-$(esos_ver).tar.gz $(img_file) install.sh \
+	INSTALL README COPYING dist_*.txt
 
 
 # clean - Remove all temporary files and clean/distclean each package source directory.
@@ -200,6 +187,9 @@ clean: $(clean_targets)
 	$(RM) $(INITRAMFS_DIR)
 	$(RM) $(IMAGE_DIR)
 	$(RM) $(WORK_DIR)/fake_lib
+	$(RM) $(CWD)/dist_*.txt
+	$(RM) $(CWD)/esos-*.tar.gz
+	$(RM) $(CWD)/esos-*.img
 
 $(clean_targets):: target = $(subst clean-,,$(@))
 $(clean_targets)::
@@ -231,9 +221,9 @@ $(distfiles):
 .PHONY: checksum
 checksum: fetch
 	$(QUIET) $(ECHO) "### Verifying MD5 checksums..."
-	$(QUIET) cd $(DISTFILES_DIR) && $(MD5SUM) -c $(CWD)/CHECKSUM.MD5
+	$(QUIET) cd $(DISTFILES_DIR) && $(MD5SUM) -w -c $(CWD)/CHECKSUM.MD5
 	$(QUIET) $(ECHO) "### Verifying SHA256 checksums..."
-	$(QUIET) cd $(DISTFILES_DIR) && $(SHA256SUM) -c $(CWD)/CHECKSUM.SHA256
+	$(QUIET) cd $(DISTFILES_DIR) && $(SHA256SUM) -w -c $(CWD)/CHECKSUM.SHA256
 
 
 # extract - Extract all of the previously downloaded packages/archives.
@@ -358,12 +348,13 @@ sysvinit: glibc
 	$(TOUCH) $(@)
 
 grub: glibc
-	cd $(src_dir) && ./configure --prefix=/usr --disable-grub-mkfont
+	cd $(src_dir) && ./configure --prefix=/usr --disable-grub-mkfont --enable-device-mapper
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/grub-core DESTDIR=$(IMAGE_DIR) install-platformDATA
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(IMAGE_DIR)/usr/sbin/grub-install > $(WORK_DIR)/grub-install
 	$(CHMOD) +x $(WORK_DIR)/grub-install
+	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(src_dir)/grub-mkconfig_lib > $(WORK_DIR)/grub-mkconfig_lib
 	$(TOUCH) $(@)
 
 glibc: kernel_headers
@@ -546,46 +537,3 @@ drbd: glibc
 	$(MAKE) --directory=$(src_dir)/user DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/documentation DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
-
-
-# prop_tools - Extract/install the proprietary tools to the image directory.
-.PHONY: prop_tools
-prop_tools: $(prop_tools) ;
-
-MegaCLI: no_fetch_pkg := $(addprefix $(DISTFILES_DIR)/,8.02.16_MegaCLI.zip)
-MegaCLI: no_fetch_pkg_url := http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.02.16_MegaCLI.zip
-MegaCLI:
-	$(QUIET) if [ ! -f "$(no_fetch_pkg)" ]; then \
-	  $(ECHO) "### Fetch restriction: $(notdir $(no_fetch_pkg))"; \
-	  $(ECHO) "### Please download from this URL: $(no_fetch_pkg_url)"; \
-	  $(ECHO) "### Then place it in this directory: $(DISTFILES_DIR)"; \
-	  exit 1; \
-	fi
-	$(MKDIR) $(WORK_DIR)/$(@)
-	$(UNZIP) -o $(no_fetch_pkg) -d $(WORK_DIR)/$(@)
-	$(UNZIP) -o $(WORK_DIR)/$(@)/LINUX/MegaCliLin.zip -d $(WORK_DIR)/$(@)/MegaCliLin
-	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/MegaCli-*.rpm | $(CPIO) -idmv
-	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/MegaCliLin/Lib_Utils-*.rpm | $(CPIO) -idmv
-	$(CP) $(WORK_DIR)/$(@)/opt/MegaRAID/MegaCli/MegaCli64 $(IMAGE_DIR)/opt/sbin/
-	$(CP) $(WORK_DIR)/$(@)/opt/lsi/3rdpartylibs/libsysfs.so.2.0.2 $(IMAGE_DIR)/opt/lib/
-	$(MKDIR) $(IMAGE_DIR)/opt/lsi/3rdpartylibs/x86_64
-	$(LN) /opt/lib/libsysfs.so.2.0.2 $(IMAGE_DIR)/opt/lsi/3rdpartylibs/x86_64/libsysfs.so.2.0.2
-	$(TOUCH) $(@)
-
-asm_linux: no_fetch_pkg := $(addprefix $(DISTFILES_DIR)/,asm_linux_x64_v7_30_18837.tgz)
-asm_linux: no_fetch_pkg_url := http://www.adaptec.com/en-us/speed/raid/storage_manager/asm_linux_x64_v7_30_18837_tgz.htm
-asm_linux:
-	$(QUIET) if [ ! -f "$(no_fetch_pkg)" ]; then \
-	  $(ECHO) "### Fetch restriction: $(notdir $(no_fetch_pkg))"; \
-	  $(ECHO) "### Please download from this URL: $(no_fetch_pkg_url)"; \
-	  $(ECHO) "### Then place it in this directory: $(DISTFILES_DIR)"; \
-	  exit 1; \
-	fi
-	$(MKDIR) $(WORK_DIR)/$(@)
-	$(TAR) xvfz $(no_fetch_pkg) -C $(WORK_DIR)/$(@)
-	cd $(WORK_DIR)/$(@) && $(RPM2CPIO) $(WORK_DIR)/$(@)/manager/StorMan-*.x86_64.rpm | $(CPIO) -idmv
-	$(CP) $(WORK_DIR)/$(@)/cmdline/arcconf $(IMAGE_DIR)/opt/sbin/
-	$(CP) $(WORK_DIR)/$(@)/usr/StorMan/libstdc++.so.5 $(IMAGE_DIR)/opt/lib/
-	$(TOUCH) $(@)
-
-
