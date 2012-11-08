@@ -3,6 +3,8 @@
 === Read This First ===
 Building ESOS from source is no longer the only option for installing/using ESOS; you may now download trunk snapshot packages that contain a pre-built disk image and everything you need to create a ESOS USB flash drive. If you'd still like to build ESOS from source, just for fun, or for developing ESOS, please continue...
 
+<br>
+
 === Build Prerequisites ===
 Here is a list of the build host system requirements:
   * A recent release, of a modern x86-64 Linux distribution (64-bit Linux is required since ESOS uses only 64-bit kernel/programs).
