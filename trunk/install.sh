@@ -65,7 +65,7 @@ if grep ${dev_node} /proc/mounts > /dev/null; then
     rm -rf ${TEMP_DIR}
     exit 1
 fi
-dev_sectors=`blockdev --getsz ${dev_node}`
+dev_sectors=`blockdev --getsz ${dev_node}` || exit 1
 dev_bytes=`expr ${dev_sectors} \\* 512`
 if [ ${dev_bytes} -lt 4000000000 ]; then
     echo "### Your USB flash drive isn't large enough; it must be at least 4000 MiB."

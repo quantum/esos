@@ -81,6 +81,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		drbd-8.3.11.tar.gz \
 		LVM2-2.02.97.tar.gz \
 		xfsprogs-3.1.8.tar.gz \
+		mdadm-3.2.6.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -89,7 +90,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib \
 			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
-			xfsprogs drbd
+			xfsprogs drbd mdadm
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -536,4 +537,10 @@ drbd: glibc
 	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/user DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/documentation DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+mdadm: glibc
+	#$(MAKE) --directory=$(src_dir) CXFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+	$(MAKE) --directory=$(src_dir) LDFLAGS="$(LDFLAGS)"
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
