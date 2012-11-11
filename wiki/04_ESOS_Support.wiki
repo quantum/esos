@@ -1,13 +1,36 @@
-#summary One-sentence summary of this page.
+#summary Troubleshooting tips and where to get technical support.
 
-= Introduction =
+=== Debugging / Log Files ===
+All of the ESOS system log files are written to the "/var/log" directory on a running system. When ESOS reboots or shuts down, the log files are archived to the "esos_logs" filesystem; the log files are also archived automatically if they grow too large on a running ESOS storage server.
 
-Add your content here.
+The easiest way to access the archived ESOS log files is to simply mount the "esos_logs" filesystem:
+{{{
+mount /mnt/logs
+}}}
+You can then `scp` the tarballs to another machine to examine, or you can take a peek on the ESOS server itself. _Don't forget, any non-standard changes (eg, copying files to /root) made to a running ESOS will be lost on power off or reboot._
 
+Another important feature of ESOS is that there are two different kernels. You'll notice two options when booting ESOS (GRUB):
+  * ESOS - Enterprise Storage OS $VERSION <*Production*>
+  * ESOS - Enterprise Storage OS $VERISON <*Debug*>
 
-= Details =
+The "Production" kernel/mode is what you will typically run in -- its using a kernel with minimal debugging options set and SCST setup for performance.
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+The "Debug" kernel/mode should be used when you are having problems or issues that you are unable to resolve/diagnose using the normal "Production" kernel. The "Debug" ESOS kernel has a few extra kernel debugging options set and the SCST modules are set for full debugging.
+
+The advantage is you can easily reboot and switch to debugging mode if you are having problems without re-configuring anything. All of the target/device/storage/system/etc. configuration is exactly the same as the production mode.
+
+<br>
+
+=== Kernel Panics ===
+Kdump is implemented in ESOS to capture the memory in case of a system kernel panic. When/if a kernel panic occurs, the dump-capture kernel is loaded and the old memory image (/proc/vmcore) is saved to the "esos_logs" filesystem and then the system is rebooted and the default (production) kernel will be booted like normal.
+
+If you are unlucky enough to experience a kernel panic, you can retrieve the vmcore file from the esos_logs (label) filesystem. The vmcore file is a dump of the memory, so it may be quite large; its best to `scp` it to another machine before decompressing and analyzing.
+
+<br>
+
+=== Getting Help ===
+These wiki pages should be the first stop when seeking help or getting questions answered. All of the basic information on using ESOS will be listed in that documentation. If you find some key piece of information missing from the wiki pages that is a necessity, please let us know on the [http://groups.google.com/group/esos-users esos-users] Google Group.
+
+If you have technical problems or questions, the Google Group (esos-users) is probably the best place to start. Look through the archives for previous posts/answers -- someone may have had your exact problem and may have gotten an answer. It is also worthwhile to take a look on the ESOS Issues (bug tracker) page to see if a bug has been filed, or possibly previously reported and fixed.
+
+Still don't have a solution to your problem or answer to your question? Post on the [http://groups.google.com/group/esos-users esos-users] Google Group; this group is the ESOS community. Please be clear and concise with your questions/problems when posting to the group. Be sure to do your homework before posting -- no one wants to see a simple question where the answer could be easily Google'd.
