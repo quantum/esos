@@ -1,13 +1,91 @@
-#summary One-sentence summary of this page.
+#summary Images of the ESOS text-based user interface (TUI).
 
-= Introduction =
+=== ESOS Login (console) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_console_login_1.png]
 
-Add your content here.
+<br>
 
+=== TUI - Main Screen (console) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_console_main_1.png]
 
-= Details =
+<br>
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+=== TUI - Main Screen (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_main_1.png]
+
+<br>
+
+=== TUI - Menu (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_menu_1.png]
+
+<br>
+
+=== TUI - Menu (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_menu_2.png]
+
+<br>
+
+=== TUI - Menu (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_menu_3.png]
+
+<br>
+
+=== TUI - Network Configuration (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_net_1.png]
+
+<br>
+
+=== TUI - Network Configuration (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_net_2.png]
+
+<br>
+
+=== TUI - Mail Setup (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_mail_1.png]
+
+<br>
+
+=== TUI - RAID Controller Information (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_adap_info_1.png]
+
+<br>
+
+=== TUI - RAID Controller Properties (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_adap_prop_1.png]
+
+<br>
+
+=== TUI - Add RAID Logical Drive (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_add_vol_1.png]
+
+<br>
+
+=== TUI - Pick Target (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_pick_tgt_1.png]
+
+<br>
+
+=== TUI - Enable/Disable Target (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_enbl_dsbl_tgt_1.png]
+
+<br>
+
+=== TUI - Add iSCSI Target (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_add_iscsi_1.png]
+
+<br>
+
+=== TUI - Add Initiator (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_add_init_1.png]
+
+<br>
+
+=== TUI - Add SCST Device (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_add_dev_1.png]
+
+<br>
+
+=== TUI - Add SCST Device (xterm) ===
+[http://enterprise-storage-os.googlecode.com/files/tui_ss_xterm_add_dev_2.png]
+
+<br>
