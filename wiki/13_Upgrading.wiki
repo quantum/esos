@@ -1,13 +1,63 @@
-#summary One-sentence summary of this page.
+#summary Learn how to upgrade ESOS on your system.
 
-= Introduction =
+=== About Upgrading ESOS ===
+First, the upgrade process for ESOS is disruptive and will require a small amount of down time. The upgrade procedure goes something like this:
+  * You build/install the new version of ESOS to an entirely new, fresh USB flash drive.
+  * Next, you copy the configuration files from the current (old) ESOS flash drive from your ESOS storage server to the new USB device.
+  * Finally you remove the old flash drive from the server, and replace it with the new flash drive and boot your storage server.
 
-Add your content here.
+While this upgrade procedure does involve some down time, it has one important benefit: It is very easy to revert to your old ESOS version if there is some type of problem when running the new version -- simply power off the storage server, and swap USB flash drives (use the old one).
 
+_It is highly recommended to label your ESOS USB flash drives with some details such host name, ESOS version, date, etc. to keep organized._
 
-= Details =
+Follow the steps below to upgrade ESOS.
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+<br>
+
+=== Upgrade Procedure ===
+The first step is to build/install the new ESOS version to an entirely new USB flash device. Follow the [Build_and_Install] guide.
+
+After you have successfully built your new ESOS flash drive, its probably not a bad idea to try it on another computer/server to at least make sure it boots. This could save you some down time if there is a problem with the new ESOS drive.
+
+Since ESOS is a sort of memory resident operating system, you can open an ESOS shell and run `conf_sync.sh` to synchronize your configuration files. Next, remove the ESOS USB flash drive from the running, powered on ESOS storage server you are upgrading.
+
+For the next step, you will need to make use of a Linux workstation that has accessible USB ports. First, plug in the current/old ESOS USB drive and run `lsscsi` to get the device node:
+{{{
+[2:0:0:0]    disk    ATA      ST9160412AS      D005  /dev/sda 
+[3:0:0:0]    cd/dvd  TSSTcorp DVD+-RW TS-L633C DW50  /dev/sr0 
+[9:0:0:0]    disk    Kingston DataTraveler G3  1.00  /dev/sdb 
+}}}
+
+We can see that '/dev/sdb' is the device node for our old ESOS flash drive; we can now mount the ESOS configuration filesystem:
+{{{
+mkdir /mnt/old_esos
+mount /dev/sdb3 /mnt/old_esos
+}}}
+
+Now plug in the newly created (updated) ESOS flash drive to the Linux workstation and grab the device node:
+{{{
+[2:0:0:0]    disk    ATA      ST9160412AS      D005  /dev/sda 
+[3:0:0:0]    cd/dvd  TSSTcorp DVD+-RW TS-L633C DW50  /dev/sr0 
+[9:0:0:0]    disk    Kingston DataTraveler G3  1.00  /dev/sdb 
+[10:0:0:0]   disk    Imation  Clip             PMAP  /dev/sdc 
+}}}
+
+The new/updated ESOS USB drive device node is '/dev/sdc' in this example. Mount the configuration filesystem:
+{{{
+mkdir /mnt/new_esos
+mount /dev/sdc3 /mnt/new_esos
+}}}
+
+Finally copy over everything from the old drive to the new drive:
+{{{
+cp -pR /mnt/old_esos/* /mnt/new_esos/
+umount /mnt/old_esos
+umount /mnt/new_esos
+}}}
+
+You can now power off the ESOS storage server, insert the newly created (upgraded) ESOS USB flash drive and power on the machine. You can optionally replace the old USB drive into the storage server before powering off if you would like to keep the log files.
+
+<br>
+
+=== Post Update ===
+Be sure to keep your old/previous ESOS USB flash drive handy! Should you have any problems running the new version of ESOS, you will want that old, known-to-work copy of ESOS so you can revert quickly.
