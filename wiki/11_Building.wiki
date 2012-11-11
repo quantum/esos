@@ -9,7 +9,7 @@ Building ESOS from source is no longer the only option for installing/using ESOS
 Here is a list of the build host system requirements:
   * A recent release, of a modern x86-64 Linux distribution (64-bit Linux is required since ESOS uses only 64-bit kernel/programs).
   * All of the typical software development packages (eg, GCC, GNU Make, Autoconf, Libtool, etc.) are required.
-  * A USB flash drive that is at least 4 GB -- not really required for building, but needed to install the ESOS "distribution" on (see [Installation] after completing the build).
+  * A USB flash drive that is at least 4 GB -- not really required for building, but needed to install the ESOS "distribution" on (see [12_Installation] after completing the build).
   * Subversion is required to pull the source down to your machine.
   * The configure script will check for all of the required tools/utilities that are used directly by the ESOS Makefile.
   * Other tools, libraries, etc. that are required by the packages/projects that ESOS uses should be caught by those project's configure scripts.
