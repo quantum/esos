@@ -77,4 +77,4 @@ These are the same steps that the Buildbot host/software uses to create the SVN 
 <br>
 
 === Next Steps ===
-Once you have successfully built your ESOS image/package, you can now move on to the [Installation] wiki page which will describe the install process. If you have any problems/questions building ESOS, please post to the esos-users Google Group.
+Once you have successfully built your ESOS image/package, you can now move on to the [12_Installation] wiki page which will describe the install process. If you have any problems/questions building ESOS, please post to the esos-users Google Group.
