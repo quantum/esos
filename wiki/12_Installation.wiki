@@ -47,4 +47,4 @@ If you have any installation issues, please use the esos-users Google Group.
 <br>
 
 === Next Steps ===
-Once you have successfully installed the ESOS image to a USB flash device, take the flash drive and plug it into your storage server. Then reboot the storage server and set USB devices to first (only) in the boot order. Then proceed to the [Initial_Configuration] page.
+Once you have successfully installed the ESOS image to a USB flash device, take the flash drive and plug it into your storage server. Then reboot the storage server and set USB devices to first (only) in the boot order. Then proceed to the [21_Initial_System_Configuration] page.
