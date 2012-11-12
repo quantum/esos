@@ -1499,7 +1499,7 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
 
 
 /*
- * Run the Statistics dialog
+ * Run the SCST Information dialog
  */
 void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *scst_info = 0;
@@ -1576,5 +1576,23 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     for (i = 0; i < MAX_SCST_INFO_ROWS; i++) {
         freeChar(swindow_info[i]);
     }
+    return;
+}
+
+
+/*
+ * Run the Linux-HA Status dialog
+ */
+void linuxHAStatDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    return;
+}
+
+
+/*
+ * Run the Date & Time Settings dialog
+ */
+void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
     return;
 }

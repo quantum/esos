@@ -374,7 +374,6 @@ glibc: kernel_headers
 perl: glibc
 	cd $(src_dir) && CFLAGS="" ./configure.gnu --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	#$(MAKE) --directory=$(src_dir) test
 	$(MAKE) --directory=$(src_dir) install.perl DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
 	$(TOUCH) $(@)
 
@@ -431,7 +430,6 @@ zlib: glibc
 ncurses: glibc gcc
 	cd $(src_dir) && ./configure --prefix=/usr --with-shared --without-gpm
 	$(MAKE) --directory=$(src_dir)
-	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install.libs
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -439,8 +437,6 @@ e2fsprogs: glibc
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
 	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
-	#$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build check
-	#$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-progs-recursive
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-libs
 	$(TOUCH) $(@)
@@ -468,7 +464,6 @@ libibverbs: glibc
 srptools: glibc libibumad libibverbs
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec-am
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-man
 	$(TOUCH) $(@)
@@ -516,7 +511,6 @@ cdk: glibc ncurses
 LVM2: glibc
 	cd $(src_dir) && ./configure --with-lvm1=none --disable-selinux --prefix=/usr --with-default-system-dir=/etc
 	$(MAKE) --directory=$(src_dir)
-	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/libdm DESTDIR=$(IMAGE_DIR) install
@@ -534,13 +528,11 @@ drbd: glibc
 	--without-km --without-udev --without-xen --without-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic
 	$(MAKE) --directory=$(src_dir) tools doc
-	#$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/user DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/documentation DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 mdadm: glibc
-	#$(MAKE) --directory=$(src_dir) CXFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 	$(MAKE) --directory=$(src_dir) LDFLAGS="$(LDFLAGS)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)

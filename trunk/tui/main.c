@@ -14,7 +14,7 @@
 #include "main.h"
 #include "label_data.h"
 #include "menu_actions.h"
-#include "menu_actions-controllers.h"
+#include "menu_actions-back_storage.h"
 #include "menu_actions-devices.h"
 #include "menu_actions-hosts.h"
 #include "menu_actions-system.h"
@@ -59,22 +59,31 @@ int main(int argc, char** argv) {
 
     /* Create the menu lists */
     menu_list[SYSTEM_MENU][0]                           = "</29/B/U>S<!29><!U>ystem  <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_SYNC_CONF]            = "</B>Sync. Configuration<!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_NETWORK]              = "</B>Network Settings   <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_RESTART_NET]          = "</B>Restart Networking <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_MAIL]                 = "</B>Mail Setup         <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_TEST_EMAIL]           = "</B>Send Test Email    <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_ADD_USER]             = "</B>Add User           <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_DEL_USER]             = "</B>Delete User        <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_CHG_PASSWD]           = "</B>Change Password    <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_SCST_INFO]            = "</B>SCST Information   <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_SYNC_CONF]            = "</B>Sync. Configuration <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_NETWORK]              = "</B>Network Settings    <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_RESTART_NET]          = "</B>Restart Networking  <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_MAIL]                 = "</B>Mail Setup          <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_TEST_EMAIL]           = "</B>Send Test Email     <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_ADD_USER]             = "</B>Add User            <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_DEL_USER]             = "</B>Delete User         <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_CHG_PASSWD]           = "</B>Change Password     <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_SCST_INFO]            = "</B>SCST Information    <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_LINUXHA_INFO]         = "</B>Linux-HA Status     <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_DATE_TIME]            = "</B>Date & Time Settings<!B>";
 
-    menu_list[CONTROLLERS_MENU][0]                      = "</29/B/U>C<!29><!U>ontrollers  <!B>";
-    menu_list[CONTROLLERS_MENU][CONTROLLERS_ADP_PROP]   = "</B>Adapter Properties <!B>";
-    menu_list[CONTROLLERS_MENU][CONTROLLERS_ADP_INFO]   = "</B>Adapter Information<!B>";
-    menu_list[CONTROLLERS_MENU][CONTROLLERS_ADD_VOL]    = "</B>Add Volume         <!B>";
-    menu_list[CONTROLLERS_MENU][CONTROLLERS_DEL_VOL]    = "</B>Delete Volume      <!B>";
-    menu_list[CONTROLLERS_MENU][CONTROLLERS_VOL_PROP]   = "</B>Volume Properties  <!B>";
+    menu_list[BACK_STORAGE_MENU][0]                             = "</29/B/U>B<!29><!U>ack-End Storage  <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_PROP]         = "</B>Adapter Properties      <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_INFO]         = "</B>Adapter Information     <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VOL]          = "</B>Add Volume              <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VOL]          = "</B>Delete Volume           <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VOL_PROP]         = "</B>Volume Properties       <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DRBD_STAT]        = "</B>DRBD Status             <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_SOFT_RAID_STAT]   = "</B>Software RAID Status    <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_LVM2_INFO]        = "</B>LVM2 LV Information     <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_CREATE_FS]        = "</B>Create File System      <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_REMOVE_FS]        = "</B>Remove File System      <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VDISK_FILE]   = "</B>Add Virtual Disk File   <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VDISK_FILE]   = "</B>Delete Virtual Disk File<!B>";
 
     menu_list[DEVICES_MENU][0]                          = "</29/B/U>D<!29><!U>evices  <!B>";
     menu_list[DEVICES_MENU][DEVICES_DEV_INFO]           = "</B>Device Information<!B>";
@@ -101,10 +110,10 @@ int main(int argc, char** argv) {
     menu_list[INTERFACE_MENU][INTERFACE_SHELL]          = "</B>Exit to Shell<!B>";
 
     /* Set menu sizes and locations */
-    submenu_size[SYSTEM_MENU]       = 10;
+    submenu_size[SYSTEM_MENU]       = 12;
     menu_loc[SYSTEM_MENU]           = LEFT;
-    submenu_size[CONTROLLERS_MENU]  = 6;
-    menu_loc[CONTROLLERS_MENU]      = LEFT;
+    submenu_size[BACK_STORAGE_MENU]  = 13;
+    menu_loc[BACK_STORAGE_MENU]      = LEFT;
     submenu_size[DEVICES_MENU]      = 6;
     menu_loc[DEVICES_MENU]          = LEFT;
     submenu_size[TARGETS_MENU]      = 6;
@@ -195,10 +204,10 @@ int main(int argc, char** argv) {
             setCDKMenu(menu, SYSTEM_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
-        } else if (key_pressed == 99 || key_pressed == 67) {
-            /* Start with the Controllers menu */
+        } else if (key_pressed == 98 || key_pressed == 66) {
+            /* Start with the Back-End Storage menu */
             cbreak();
-            setCDKMenu(menu, CONTROLLERS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu, BACK_STORAGE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
         } else if (key_pressed == 100 || key_pressed == 68) {
@@ -338,33 +347,78 @@ int main(int argc, char** argv) {
 
             } else if (menu_choice == SYSTEM_MENU &&
                     submenu_choice == SYSTEM_SCST_INFO - 1) {
-                /* SCST information dialog */
+                /* SCST Information dialog */
                 scstInfoDialog(cdk_screen);
 
-            } else if (menu_choice == CONTROLLERS_MENU &&
-                    submenu_choice == CONTROLLERS_ADP_PROP - 1) {
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_LINUXHA_INFO - 1) {
+                /* Linux-HA Status dialog */
+                linuxHAStatDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_DATE_TIME - 1) {
+                /* Date & Time Settings dialog */
+                dateTimeDialog(cdk_screen);
+
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_ADP_PROP - 1) {
                 /* Adapter Properties dialog */
                 adpPropsDialog(cdk_screen);
 
-            } else if (menu_choice == CONTROLLERS_MENU &&
-                    submenu_choice == CONTROLLERS_ADP_INFO - 1) {
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_ADP_INFO - 1) {
                 /* Adapter Information dialog */
                 adpInfoDialog(cdk_screen);
 
-            } else if (menu_choice == CONTROLLERS_MENU &&
-                    submenu_choice == CONTROLLERS_ADD_VOL - 1) {
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_ADD_VOL - 1) {
                 /* Add Volume dialog */
                 addVolumeDialog(cdk_screen);
 
-            } else if (menu_choice == CONTROLLERS_MENU &&
-                    submenu_choice == CONTROLLERS_DEL_VOL - 1) {
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_DEL_VOL - 1) {
                 /* Delete Volume dialog */
                 delVolumeDialog(cdk_screen);
 
-            } else if (menu_choice == CONTROLLERS_MENU &&
-                    submenu_choice == CONTROLLERS_VOL_PROP - 1) {
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_VOL_PROP - 1) {
                 /* Volume Properties dialog */
                 volPropsDialog(cdk_screen);
+                
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_DRBD_STAT - 1) {
+                /* DRBD Status dialog */
+                drbdStatDialog(cdk_screen);
+                
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_SOFT_RAID_STAT - 1) {
+                /* Software RAID Status dialog */
+                softRAIDStatDialog(cdk_screen);
+                
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_LVM2_INFO - 1) {
+                /* LVM2 LV Information dialog */
+                lvm2InfoDialog(cdk_screen);
+                
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_CREATE_FS - 1) {
+                /* Add Create File System dialog */
+                createFSDialog(cdk_screen);
+                
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_REMOVE_FS - 1) {
+                /* Remove File System dialog */
+                removeFSDialog(cdk_screen);
+                
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_ADD_VDISK_FILE - 1) {
+                /* Add Virtual Disk File dialog */
+                addVDiskFileDialog(cdk_screen);
+                
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_DEL_VDISK_FILE - 1) {
+                /* Delete Virtual Disk File dialog */
+                delVDiskFileDialog(cdk_screen);
 
             } else if (menu_choice == DEVICES_MENU &&
                     submenu_choice == DEVICES_DEV_INFO - 1) {

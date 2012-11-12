@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <cdk.h>
 
-#include "menu_actions-controllers.h"
+#include "menu_actions-back_storage.h"
 #include "menu_actions.h"
 #include "main.h"
 #include "megaraid.h"
@@ -1107,5 +1107,68 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
         destroyCDKScreen(ld_screen);
     }
     delwin(ld_window);
+    return;
+}
+
+
+/*
+ * Run the DRBD Status dialog
+ */
+void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    return;
+}
+
+
+/*
+ * Run the Software RAID Status dialog
+ */
+void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    return;
+}
+
+
+/*
+ * Run the LVM2 LV Information dialog
+ */
+void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    return;
+}
+
+
+/*
+ * Run the Create File System dialog
+ */
+void createFSDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    return;
+}
+
+
+/*
+ * Run the Remove File System dialog
+ */
+void removeFSDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    return;
+}
+
+
+/*
+ * Run the Add Virtual Disk File dialog
+ */
+void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    return;
+}
+
+
+/*
+ * Run the Delete Virtual Disk File dialog
+ */
+void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
+    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
     return;
 }
