@@ -41,6 +41,8 @@ void addUserDialog(CDKSCREEN *main_cdk_screen);
 void delUserDialog(CDKSCREEN *main_cdk_screen);
 void chgPasswdDialog(CDKSCREEN *main_cdk_screen);
 void scstInfoDialog(CDKSCREEN *main_cdk_screen);
+void linuxHAStatDialog(CDKSCREEN *main_cdk_screen);
+void dateTimeDialog(CDKSCREEN *main_cdk_screen);
 
 #ifdef	__cplusplus
 }
