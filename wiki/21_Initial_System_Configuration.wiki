@@ -121,4 +121,4 @@ conf_sync.sh
 <br>
 
 === What's Next ===
-From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [General_Usage] document.
+From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
