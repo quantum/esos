@@ -12,6 +12,13 @@ extern "C" {
 #include "megaraid.h"
 
 #define MAX_ADP_INFO_LINES 256
+#define MAX_DRBD_INFO_LINES 256
+#define PROC_DRBD "/proc/drbd"
+#define MAX_PROC_LINE 80
+#define MAX_MDSTAT_INFO_LINES 256
+#define PROC_MDSTAT "/proc/mdstat"
+#define LVDISPLAY_BIN "/usr/sbin/lvdisplay"
+#define MAX_LVM2_INFO_LINES 512
 
 void adpPropsDialog(CDKSCREEN *main_cdk_screen);
 void adpInfoDialog(CDKSCREEN *main_cdk_screen);

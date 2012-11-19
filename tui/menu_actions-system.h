@@ -32,6 +32,12 @@ extern "C" {
 #define MAX_NET_RESTART_INFO_ROWS 15
 #define MAX_NET_RESTART_INFO_COLS 60
 #define SSMTP_BIN "/usr/sbin/ssmtp"
+#define LOCALTIME "/etc/localtime"
+#define ZONEINFO "/usr/share/zoneinfo/posix"
+#define MAX_NTP_LEN 32
+#define MAX_ZONEINFO_PATH 64
+#define NTP_SERVER "/etc/ntp_server"
+#define MAX_TZ_FILES 1024
 
 void networkDialog(CDKSCREEN *main_cdk_screen);
 void restartNetDialog(CDKSCREEN *main_cdk_screen);

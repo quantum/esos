@@ -127,8 +127,9 @@ if [ -z "${install_list}" ]; then
     echo "### Your ESOS USB drive is complete, however, no RAID controller CLI tools were installed."
 else
     echo "### Installing proprietary CLI tools..."
-    mkdir -p ${MNT_DIR}
-    mount -L esos_root ${MNT_DIR}
+    mkdir -p ${MNT_DIR} || exit 1
+    blockdev --rereadpt ${dev_node} || exit 1
+    mount -L esos_root ${MNT_DIR} || exit 1
     cd ${TEMP_DIR}
     for i in ${install_list}; do
         tool_install_cmd=TOOL_INSTALL_CMD_${i}

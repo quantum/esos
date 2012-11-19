@@ -1115,7 +1115,58 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
  * Run the DRBD Status dialog
  */
 void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    CDKSWINDOW *drbd_info = 0;
+    char *swindow_info[MAX_DRBD_INFO_LINES] = {NULL};
+    char *error = NULL;
+    int i = 0, line_pos = 0;
+    char line[MAX_PROC_LINE] = {0};
+    FILE *drbd_file = NULL;
+
+    /* Open the file */
+    if ((drbd_file = fopen(PROC_DRBD, "r")) == NULL) {
+        asprintf(&error, "fopen: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error, NULL);
+        freeChar(error);
+    } else {
+        /* Setup scrolling window widget */
+        drbd_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
+                "<C></31/B>Distributed Replicated Block Device (DRBD) Information:\n",
+                MAX_DRBD_INFO_LINES, TRUE, FALSE);
+        if (!drbd_info) {
+            errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+            return;
+        }
+        setCDKSwindowBackgroundAttrib(drbd_info, COLOR_DIALOG_TEXT);
+        setCDKSwindowBoxAttribute(drbd_info, COLOR_DIALOG_BOX);
+
+        /* Add the contents to the scrolling window widget */
+        line_pos = 0;
+        while (fgets(line, sizeof (line), drbd_file) != NULL) {
+            asprintf(&swindow_info[line_pos], "%s", line);
+            line_pos++;
+        }
+        fclose(drbd_file);
+
+        /* Add a message to the bottom explaining how to close the dialog */
+        asprintf(&swindow_info[line_pos], " ");
+        line_pos++;
+        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        line_pos++;
+
+        /* Set the scrolling window content */
+        setCDKSwindowContents(drbd_info, swindow_info, line_pos);
+
+        /* The 'g' makes the swindow widget scroll to the top, then activate */
+        injectCDKSwindow(drbd_info, 'g');
+        activateCDKSwindow(drbd_info, 0);
+
+        /* We fell through -- the user exited the widget, but we don't care how */
+        destroyCDKSwindow(drbd_info);
+    }
+
+    /* Done */
+    for (i = 0; i < MAX_DRBD_INFO_LINES; i++ )
+        freeChar(swindow_info[i]);
     return;
 }
 
@@ -1124,7 +1175,58 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
  * Run the Software RAID Status dialog
  */
 void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    CDKSWINDOW *mdstat_info = 0;
+    char *swindow_info[MAX_MDSTAT_INFO_LINES] = {NULL};
+    char *error = NULL;
+    int i = 0, line_pos = 0;
+    char line[MAX_PROC_LINE] = {0};
+    FILE *mdstat_file = NULL;
+
+    /* Open the file */
+    if ((mdstat_file = fopen(PROC_MDSTAT, "r")) == NULL) {
+        asprintf(&error, "fopen: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error, NULL);
+        freeChar(error);
+    } else {
+        /* Setup scrolling window widget */
+        mdstat_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
+                "<C></31/B>Linux Software RAID (md) Status:\n",
+                MAX_MDSTAT_INFO_LINES, TRUE, FALSE);
+        if (!mdstat_info) {
+            errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+            return;
+        }
+        setCDKSwindowBackgroundAttrib(mdstat_info, COLOR_DIALOG_TEXT);
+        setCDKSwindowBoxAttribute(mdstat_info, COLOR_DIALOG_BOX);
+
+        /* Add the contents to the scrolling window widget */
+        line_pos = 0;
+        while (fgets(line, sizeof (line), mdstat_file) != NULL) {
+            asprintf(&swindow_info[line_pos], "%s", line);
+            line_pos++;
+        }
+        fclose(mdstat_file);
+
+        /* Add a message to the bottom explaining how to close the dialog */
+        asprintf(&swindow_info[line_pos], " ");
+        line_pos++;
+        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        line_pos++;
+
+        /* Set the scrolling window content */
+        setCDKSwindowContents(mdstat_info, swindow_info, line_pos);
+
+        /* The 'g' makes the swindow widget scroll to the top, then activate */
+        injectCDKSwindow(mdstat_info, 'g');
+        activateCDKSwindow(mdstat_info, 0);
+
+        /* We fell through -- the user exited the widget, but we don't care how */
+        destroyCDKSwindow(mdstat_info);
+    }
+
+    /* Done */
+    for (i = 0; i < MAX_MDSTAT_INFO_LINES; i++ )
+        freeChar(swindow_info[i]);
     return;
 }
 
@@ -1133,7 +1235,73 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
  * Run the LVM2 LV Information dialog
  */
 void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    CDKSWINDOW *lvm2_info = 0;
+    char *swindow_info[MAX_LVM2_INFO_LINES] = {NULL};
+    char *error = NULL, *lvdisplay_cmd = NULL;
+    int i = 0, line_pos = 0, status = 0, ret_val = 0;
+    char line[MAX_PROC_LINE] = {0};
+    FILE *lvdisplay_proc = NULL;
+
+    /* Run the lvdisplay command */
+    asprintf(&lvdisplay_cmd, "%s --all 2>&1", LVDISPLAY_BIN);
+    if ((lvdisplay_proc = popen(lvdisplay_cmd, "r")) == NULL) {
+        asprintf(&error, "Couldn't open process for the %s command!", LVDISPLAY_BIN);
+        errorDialog(main_cdk_screen, error, NULL);
+        freeChar(error);
+    } else {
+        /* Add the contents to the scrolling window widget */
+        line_pos = 0;
+        while (fgets(line, sizeof (line), lvdisplay_proc) != NULL) {
+            asprintf(&swindow_info[line_pos], "%s", line);
+            line_pos++;
+        }
+
+        /* Add a message to the bottom explaining how to close the dialog */
+        asprintf(&swindow_info[line_pos], " ");
+        line_pos++;
+        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        line_pos++;
+        
+        /* Close the process stream and check exit status */
+        if ((status = pclose(lvdisplay_proc)) == -1) {
+            ret_val = -1;
+        } else {
+            if (WIFEXITED(status))
+                ret_val = WEXITSTATUS(status);
+            else
+                ret_val = -1;
+        }
+        if (ret_val == 0) {
+            /* Setup scrolling window widget */
+            lvm2_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
+                    "<C></31/B>LVM2 Logical Volume Information:\n",
+                    MAX_LVM2_INFO_LINES, TRUE, FALSE);
+            if (!lvm2_info) {
+                errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+                return;
+            }
+            setCDKSwindowBackgroundAttrib(lvm2_info, COLOR_DIALOG_TEXT);
+            setCDKSwindowBoxAttribute(lvm2_info, COLOR_DIALOG_BOX);
+
+            /* Set the scrolling window content */
+            setCDKSwindowContents(lvm2_info, swindow_info, line_pos);
+
+            /* The 'g' makes the swindow widget scroll to the top, then activate */
+            injectCDKSwindow(lvm2_info, 'g');
+            activateCDKSwindow(lvm2_info, 0);
+
+            /* We fell through -- the user exited the widget, but we don't care how */
+            destroyCDKSwindow(lvm2_info);
+        } else {
+            asprintf(&error, "The %s command exited with %d.", LVDISPLAY_BIN, ret_val);
+            errorDialog(main_cdk_screen, error, NULL);
+            freeChar(error);
+        }
+    }
+
+    /* Done */
+    for (i = 0; i < MAX_LVM2_INFO_LINES; i++ )
+        freeChar(swindow_info[i]);
     return;
 }
 
