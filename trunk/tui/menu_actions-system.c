@@ -19,6 +19,7 @@
 #include <linux/sockios.h>
 #include <linux/ethtool.h>
 #include <cdk/swindow.h>
+#include <sys/time.h>
 
 #include "menu_actions-system.h"
 #include "menu_actions.h"
@@ -724,7 +725,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     int mail_window_lines = 17, mail_window_cols = 68;
     static char *no_yes[] = {"No", "Yes"};
     static char *auth_method_opts[] = {"Plain Text", "CRAM-MD5"};
-    static char *new_ld_msg[] = {"</31/B>Mail Setup"};
+    static char *mail_title_msg[] = {"</31/B>Mail Setup"};
     char temp_str[256] = {0}, new_mailhub[MAX_INI_VAL] = {0},
             new_authmethod[MAX_INI_VAL] = {0}, new_usetls[MAX_INI_VAL] = {0},
             new_usestarttls[MAX_INI_VAL] = {0};
@@ -771,7 +772,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Screen title label */
     mail_label = newCDKLabel(mail_screen, (window_x + 1), (window_y + 1),
-            new_ld_msg, 1, FALSE, FALSE);
+            mail_title_msg, 1, FALSE, FALSE);
     if (!mail_label) {
         errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
         goto cleanup;
@@ -1593,6 +1594,343 @@ void linuxHAStatDialog(CDKSCREEN *main_cdk_screen) {
  * Run the Date & Time Settings dialog
  */
 void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    WINDOW *date_window = 0;
+    CDKSCREEN *date_screen = 0;
+    CDKLABEL *date_title_label = 0;
+    CDKBUTTON *ok_button = 0, *cancel_button = 0;
+    CDKENTRY *ntp_server = 0;
+    CDKRADIO *tz_select = 0;
+    CDKCALENDAR *calendar = 0;
+    CDKUSCALE *hour = 0, *minute = 0, *second = 0;
+    tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
+    int i = 0, window_y = 0, window_x = 0, traverse_ret = 0, file_cnt = 0,
+            curr_tz_item = 0, temp_int = 0, new_day = 0, new_month = 0,
+            new_year = 0, new_hour = 0, new_minute = 0, new_second = 0,
+            curr_day = 0, curr_month = 0, curr_year = 0, curr_hour = 0,
+            curr_minute = 0, curr_second = 0;
+    int date_window_lines = 20, date_window_cols = 66;
+    static char *date_title_msg[] = {"</31/B>Date & Time Settings"};
+    char *tz_files[MAX_TZ_FILES] = {NULL};
+    char *error = NULL, *remove_me = NULL, *strstr_result = NULL;
+    char zoneinfo_path[MAX_ZONEINFO_PATH] = {0}, ntp_serv_val[MAX_NTP_LEN] = {0},
+            new_ntp_serv_val[MAX_NTP_LEN] = {0}, dir_name[MAX_ZONEINFO_PATH] = {0};
+    FILE *ntp_server_file = NULL;
+    DIR *tz_base_dir = NULL, *tz_sub_dir1 = NULL, *tz_sub_dir2 = NULL;
+    struct dirent *base_dir_entry = NULL, *sub_dir1_entry = NULL, *sub_dir2_entry = NULL;
+    struct tm *curr_date_info = NULL;
+    time_t curr_clock = 0;
+
+    /* New CDK screen for date and time settings */
+    window_y = ((LINES / 2) - (date_window_lines / 2));
+    window_x = ((COLS / 2) - (date_window_cols / 2));
+    date_window = newwin(date_window_lines, date_window_cols,
+            window_y, window_x);
+    if (date_window == NULL) {
+        errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+        goto cleanup;
+    }
+    date_screen = initCDKScreen(date_window);
+    if (date_screen == NULL) {
+        errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+        goto cleanup;
+    }
+    boxWindow(date_window, COLOR_DIALOG_BOX);
+    wbkgd(date_window, COLOR_DIALOG_TEXT);
+    wrefresh(date_window);
+
+    /* Date/time title label */
+    date_title_label = newCDKLabel(date_screen, (window_x + 1), (window_y + 1),
+            date_title_msg, 1, FALSE, FALSE);
+    if (!date_title_label) {
+        errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+        goto cleanup;
+    }
+    setCDKLabelBackgroundAttrib(date_title_label, COLOR_DIALOG_TEXT);
+
+    /* Get time zone information  -- we only traverse two directories deep */
+    file_cnt = 0;
+    if ((tz_base_dir = opendir(ZONEINFO)) == NULL) {
+        asprintf(&error, "opendir: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error, NULL);
+        freeChar(error);
+        goto cleanup;
+    }
+    while (((base_dir_entry = readdir(tz_base_dir)) != NULL) &&
+            (file_cnt < MAX_TZ_FILES)) {
+        /* We want to skip the '.' and '..' directories */
+        if ((base_dir_entry->d_type == DT_DIR) &&
+                (strcmp(base_dir_entry->d_name, ".") != 0) &&
+                (strcmp(base_dir_entry->d_name, "..") != 0)) {
+            snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s", ZONEINFO,
+                    base_dir_entry->d_name);
+            if ((tz_sub_dir1 = opendir(dir_name)) == NULL) {
+                asprintf(&error, "opendir: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error, NULL);
+                freeChar(error);
+                goto cleanup;
+            }
+            while (((sub_dir1_entry = readdir(tz_sub_dir1)) != NULL) &&
+                    (file_cnt < MAX_TZ_FILES)) {
+                /* We want to skip the '.' and '..' directories */
+                if ((sub_dir1_entry->d_type == DT_DIR) &&
+                        (strcmp(sub_dir1_entry->d_name, ".") != 0) &&
+                        (strcmp(sub_dir1_entry->d_name, "..") != 0)) {
+                    snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s/%s", ZONEINFO,
+                            base_dir_entry->d_name, sub_dir1_entry->d_name);
+                    if ((tz_sub_dir2 = opendir(dir_name)) == NULL) {
+                        asprintf(&error, "opendir: %s", strerror(errno));
+                        errorDialog(main_cdk_screen, error, NULL);
+                        freeChar(error);
+                        goto cleanup;
+                    }
+                    while (((sub_dir2_entry = readdir(tz_sub_dir2)) != NULL) &&
+                            (file_cnt < MAX_TZ_FILES)) {
+                        if (sub_dir2_entry->d_type == DT_REG) {
+                            asprintf(&tz_files[file_cnt], "%s/%s/%s",
+                                    base_dir_entry->d_name,
+                                    sub_dir1_entry->d_name,
+                                    sub_dir2_entry->d_name);
+                            file_cnt++;
+                        }
+                    }
+                    closedir(tz_sub_dir2);
+                } else if (sub_dir1_entry->d_type == DT_REG) {
+                    asprintf(&tz_files[file_cnt], "%s/%s",
+                            base_dir_entry->d_name, sub_dir1_entry->d_name);
+                    file_cnt++;
+                }
+            }
+            closedir(tz_sub_dir1);
+        } else if (base_dir_entry->d_type == DT_REG) {
+            asprintf(&tz_files[file_cnt], "%s", base_dir_entry->d_name);
+            file_cnt++;
+        }
+    }
+    closedir(tz_base_dir);
+
+    /* A radio widget for displaying/choosing time zone */
+    tz_select = newCDKRadio(date_screen, (window_x + 1), (window_y + 3),
+            NONE, 12, 34, "</B>Time Zone\n", tz_files, file_cnt,
+            '#' | COLOR_DIALOG_SELECT, 1,
+            COLOR_DIALOG_SELECT, FALSE, FALSE);
+    if (!tz_select) {
+        errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+        goto cleanup;
+    }
+    setCDKRadioBackgroundAttrib(tz_select, COLOR_DIALOG_TEXT);
+    
+    /* Get the current time zone data file path (from sym. link) */
+    if (readlink(LOCALTIME, zoneinfo_path, MAX_ZONEINFO_PATH) == -1) {
+        asprintf(&error, "readlink: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error, NULL);
+        freeChar(error);
+        goto cleanup;
+    }
+
+    /* Parse the current time zone link target path and set the radio item */
+    strstr_result = strstr(zoneinfo_path, ZONEINFO);
+    if (strstr_result) {
+        strstr_result = strstr_result + (sizeof(ZONEINFO) - 1);
+        if (*strstr_result == '/')
+            strstr_result++;
+        for (i = 0; i < MAX_TZ_FILES; i++) {
+            if (strcmp(tz_files[i], strstr_result) == 0) {
+                setCDKRadioCurrentItem(tz_select, i);
+                curr_tz_item = i;
+                break;
+            }
+        }
+    } else {
+        setCDKRadioCurrentItem(tz_select, 0);
+    }
+
+    /* Get current date/time information */
+    time(&curr_clock);
+    curr_date_info = localtime(&curr_clock);
+    curr_day = curr_date_info->tm_mday;
+    curr_month = curr_date_info->tm_mon + 1;
+    curr_year = curr_date_info->tm_year + 1900;
+    curr_hour = curr_date_info->tm_hour;
+    curr_minute = curr_date_info->tm_min;
+    curr_second = curr_date_info->tm_sec;
+
+    /* Calendar widget for displaying/setting current date */
+    calendar = newCDKCalendar(date_screen, (window_x + 39), (window_y + 3),
+            "</B>Current Date", curr_day, curr_month, curr_year,
+            COLOR_DIALOG_TEXT, COLOR_DIALOG_TEXT, COLOR_DIALOG_TEXT,
+            COLOR_DIALOG_SELECT, FALSE, FALSE);
+    if (!calendar) {
+        errorDialog(main_cdk_screen, "Couldn't create calendar widget!", NULL);
+        goto cleanup;
+    }
+    setCDKCalendarBackgroundAttrib(calendar, COLOR_DIALOG_TEXT);
+    
+    /* Hour, minute, second scale widgets */
+    hour = newCDKUScale(date_screen, (window_x + 39), (window_y + 15),
+            "</B>Hour  ", NULL, COLOR_DIALOG_INPUT, 3, curr_hour, 0, 59,
+            1, 5, FALSE, FALSE);
+    if (!hour) {
+        errorDialog(main_cdk_screen, "Couldn't create scale widget!", NULL);
+        goto cleanup;
+    }
+    setCDKUScaleBackgroundAttrib(hour, COLOR_DIALOG_TEXT);
+    minute = newCDKUScale(date_screen, (window_x + 47), (window_y + 15),
+            "</B>Minute", NULL, COLOR_DIALOG_INPUT, 3, curr_minute, 0, 59,
+            1, 5, FALSE, FALSE);
+    if (!minute) {
+        errorDialog(main_cdk_screen, "Couldn't create scale widget!", NULL);
+        goto cleanup;
+    }
+    setCDKUScaleBackgroundAttrib(minute, COLOR_DIALOG_TEXT);
+    second = newCDKUScale(date_screen, (window_x + 55), (window_y + 15),
+            "</B>Second", NULL, COLOR_DIALOG_INPUT, 3, curr_second, 0, 59,
+            1, 5, FALSE, FALSE);
+    if (!second) {
+        errorDialog(main_cdk_screen, "Couldn't create scale widget!", NULL);
+        goto cleanup;
+    }
+    setCDKUScaleBackgroundAttrib(second, COLOR_DIALOG_TEXT);
+    
+    /* NTP server */
+    ntp_server = newCDKEntry(date_screen, (window_x + 1), (window_y + 16),
+            NULL, "</B>NTP Server: ",
+            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED, 20,
+            0, MAX_NTP_LEN, FALSE, FALSE);
+    if (!ntp_server) {
+        errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+        goto cleanup;
+    }
+    setCDKEntryBoxAttribute(ntp_server, COLOR_DIALOG_INPUT);
+    
+    /* Get the current NTP server setting (if any) and set widget */
+    if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
+        /* ENOENT is okay since its possible this file doesn't exist yet */
+        if (errno != ENOENT) {
+            asprintf(&error, "fopen: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error, NULL);
+            freeChar(error);
+            goto cleanup;
+        }
+    } else {
+        fgets(ntp_serv_val, MAX_NTP_LEN, ntp_server_file);
+        fclose(ntp_server_file);
+        remove_me = strrchr(ntp_serv_val, '\n');
+        if (remove_me)
+            *remove_me = '\0';
+        setCDKEntryValue(ntp_server, ntp_serv_val);
+    }
+
+    /* Buttons */
+    ok_button = newCDKButton(date_screen, (window_x + 24), (window_y + 18),
+            "</B>   OK   ", ok_cb, FALSE, FALSE);
+    if (!ok_button) {
+        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        goto cleanup;
+    }
+    setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+    cancel_button = newCDKButton(date_screen, (window_x + 34), (window_y + 18),
+            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+    if (!cancel_button) {
+        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        goto cleanup;
+    }
+    setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+
+    /* Allow user to traverse the screen */
+    refreshCDKScreen(date_screen);
+    traverse_ret = traverseCDKScreen(date_screen);
+
+    /* User hit 'OK' button */
+    if (traverse_ret == 1) {
+        /* Check time zone radio */
+        temp_int = getCDKRadioSelectedItem(tz_select);
+        /* If the time zone setting was changed, create a new sym. link */
+        if (temp_int != curr_tz_item) {
+            if (unlink(LOCALTIME) == -1) {
+                asprintf(&error, "unlink: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error, NULL);
+                freeChar(error);
+                goto cleanup;
+            } else {
+                snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s",
+                        ZONEINFO, tz_files[temp_int]);
+                if (symlink(dir_name, LOCALTIME) == -1) {
+                    asprintf(&error, "symlink: %s", strerror(errno));
+                    errorDialog(main_cdk_screen, error, NULL);
+                    freeChar(error);
+                    goto cleanup;
+                }
+            }
+        }
+
+        /* Check NTP server setting (field entry) */
+        strncpy(new_ntp_serv_val, getCDKEntryValue(ntp_server), MAX_NTP_LEN);
+        i = 0;
+        while (new_ntp_serv_val[i] != '\0') {
+            /* If the user didn't input an acceptable value, then cancel out */
+            if (isspace(new_ntp_serv_val[i])) {
+                errorDialog(main_cdk_screen,
+                        "The NTP server field cannot contain any spaces!", NULL);
+                goto cleanup;
+            }
+            i++;
+        }
+
+        /* If the value has changed, write it to the file */
+        if (strcmp(ntp_serv_val, new_ntp_serv_val) != 0) {
+            if ((ntp_server_file = fopen(NTP_SERVER, "w+")) == NULL) {
+                asprintf(&error, "fopen: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error, NULL);
+                freeChar(error);
+                goto cleanup;
+            } else {
+                fprintf(ntp_server_file, "%s", new_ntp_serv_val);
+                if (fclose(ntp_server_file) != 0) {
+                    asprintf(&error, "fclose: %s", strerror(errno));
+                    errorDialog(main_cdk_screen, error, NULL);
+                    freeChar(error);
+                    goto cleanup;
+                }
+            }
+        }
+        
+        /* Get/check date/time settings */
+        getCDKCalendarDate(calendar, &new_day, &new_month, &new_year);
+        //new_month = new_month - 1;
+        //new_year = new_year + (2000 - 1900);
+        new_hour = getCDKUScaleValue(hour);
+        new_minute = getCDKUScaleValue(minute);
+        new_second = getCDKUScaleValue(second);
+        if (new_day != curr_day)
+            curr_date_info->tm_mday = new_day;
+        if (new_month != curr_month)
+            curr_date_info->tm_mon = new_month - 1;
+        if (new_year != curr_year)
+            curr_date_info->tm_year = new_year - 1900;
+        if (new_hour != curr_hour)
+            curr_date_info->tm_hour = new_hour;
+        if (new_minute != curr_minute)
+            curr_date_info->tm_min = new_minute;
+        if (new_second != curr_second)
+            curr_date_info->tm_sec = new_second;
+        /* Set date & time */
+        const struct timeval time_val = {mktime(curr_date_info), 0};
+        if (settimeofday(&time_val, 0) == -1) {
+            asprintf(&error, "settimeofday: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error, NULL);
+            freeChar(error);
+            goto cleanup;
+        }
+    }
+
+    /* All done -- clean up */
+    cleanup:
+    if (date_screen != NULL) {
+        destroyCDKScreenObjects(date_screen);
+        destroyCDKScreen(date_screen);
+    }
+    delwin(date_window);
+    for (i = 0; i < MAX_TZ_FILES; i++)
+        freeChar(tz_files[i]);
     return;
 }

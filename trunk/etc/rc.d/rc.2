@@ -13,6 +13,11 @@ if [ -x /etc/rc.d/rc.network ]; then
     /etc/rc.d/rc.network start
 fi
 
+if [ -s /etc/ntp_server ]; then
+    /bin/echo "Setting system date/time via NTP..."
+    /usr/sbin/ntpd -n -q -N -p `/bin/cat /etc/ntp_server`
+fi
+
 if [ -x /etc/rc.d/rc.kdump ]; then
     /bin/echo "Loading crash dump kernel (kexec)..."
     /etc/rc.d/rc.kdump

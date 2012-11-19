@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
                     echo();
                     system(CLEAR_CMD);
                     // TODO: Need to check for error if execl fails
-                    execl(SHELL, SHELL, (char *) NULL);
+                    execl(SHELL, SHELL, "--login", (char *) NULL);
                     exit(2);
                 } else {
                     /* Parent; wait for the child to finish */
