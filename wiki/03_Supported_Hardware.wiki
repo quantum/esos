@@ -20,8 +20,8 @@ While there is support for a number of different RAID controllers, not all brand
   * Adaptec AACRAID cards (CLI tool: arcconf)
     * Including re-branded AACRAID compatible adapters: IBM ServeRAID; Sun/Oracle RAID controllers 
   * HP Smart Array cards (CLI tool: hpacucli)
-  * Areca SATA/SAS RAID cards (CLI tool: )
-  * 3ware 9000-series SATA and 9700-series SATA/SAS RAID cards (CLI tool: )
+  * Areca SATA/SAS RAID cards (CLI tool: cli64)
+  * 3ware 9000-series SATA and 9700-series SATA/SAS RAID cards (CLI tool: tw_cli)
 
 <br>
 
