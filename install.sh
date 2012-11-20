@@ -5,7 +5,7 @@
 TEMP_DIR=`mktemp -d /tmp/esos_install.XXXXX` || exit 1
 MNT_DIR="${TEMP_DIR}/mnt"
 REQD_TOOLS="tar rpm2cpio cpio dd md5sum sha256sum grep blockdev unzip"
-PROP_TOOLS="MegaCLI asm_linux"
+PROP_TOOLS="MegaCLI asm_linux hpacucli linuxcli 3DM2_CLI"
 MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
 
@@ -18,6 +18,21 @@ TOOL_DESC_asm_linux="Adaptec AACRAID Controllers"
 TOOL_FILE_asm_linux="asm_linux_x64_v7_30_18837.tgz"
 TOOL_URL_asm_linux="http://www.adaptec.com/en-us/speed/raid/storage_manager/asm_linux_x64_v7_30_18837_tgz.htm"
 TOOL_INSTALL_CMD_asm_linux="tar xvfz asm_linux_*.tgz && rpm2cpio manager/StorMan-*.x86_64.rpm | cpio -idmv && cp cmdline/arcconf ${MNT_DIR}/opt/sbin/ && cp usr/StorMan/libstdc++.so.5 ${MNT_DIR}/opt/lib/"
+
+TOOL_DESC_hpacucli="HP Smart Array Controllers"
+TOOL_FILE_hpacucli="hpacucli-9.30-15.0.x86_64.rpm"
+TOOL_URL_hpacucli="http://h20000.www2.hp.com/bizsupport/TechSupport/SoftwareDescription.jsp?lang=en&cc=us&prodTypeId=18964&prodSeriesId=468780&prodNameId=468781&swEnvOID=4103&swLang=8&mode=2&taskId=135&swItem=MTX-d21212ba8dbe4147b43fd70a55"
+TOOL_INSTALL_CMD_hpacucli="rpm2cpio hpacucli-*.x86_64.rpm | cpio -idmv && cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli"
+
+TOOL_DESC_linuxcli="Areca RAID Controllers"
+TOOL_FILE_linuxcli="linuxcli_V1.10.0_120815.zip"
+TOOL_URL_linuxcli="http://www.areca.us/support/s_linux/cli/linuxcli_V1.10.0_120815.zip"
+TOOL_INSTALL_CMD_linuxcli="unzip linuxcli_*.zip && cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/"
+
+TOOL_DESC_3DM2_CLI="3ware SATA/SAS RAID Controllers"
+TOOL_FILE_3DM2_CLI="3DM2_CLI-Linux_10.2.1_9.5.4.zip"
+TOOL_URL_3DM2_CLI="http://www.lsi.com/downloads/Public/SATA/SATA%20Common%20Files/3DM2_CLI-Linux_10.2.1_9.5.4.zip"
+TOOL_INSTALL_CMD_3DM2_CLI="unzip 3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/"
 
 echo "*** Enterprise Storage OS Install Script ***" && echo
 
