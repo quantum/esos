@@ -1611,7 +1611,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     int date_window_lines = 20, date_window_cols = 66;
     static char *date_title_msg[] = {"</31/B>Date & Time Settings"};
     char *tz_files[MAX_TZ_FILES] = {NULL};
-    char *error = NULL, *remove_me = NULL, *strstr_result = NULL;
+    char *error_msg = NULL, *remove_me = NULL, *strstr_result = NULL;
     char zoneinfo_path[MAX_ZONEINFO_PATH] = {0}, ntp_serv_val[MAX_NTP_LEN] = {0},
             new_ntp_serv_val[MAX_NTP_LEN] = {0}, dir_name[MAX_ZONEINFO_PATH] = {0};
     FILE *ntp_server_file = NULL;
@@ -1650,9 +1650,9 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     /* Get time zone information  -- we only traverse two directories deep */
     file_cnt = 0;
     if ((tz_base_dir = opendir(ZONEINFO)) == NULL) {
-        asprintf(&error, "opendir: %s", strerror(errno));
-        errorDialog(main_cdk_screen, error, NULL);
-        freeChar(error);
+        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
         goto cleanup;
     }
     while (((base_dir_entry = readdir(tz_base_dir)) != NULL) &&
@@ -1664,9 +1664,9 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s", ZONEINFO,
                     base_dir_entry->d_name);
             if ((tz_sub_dir1 = opendir(dir_name)) == NULL) {
-                asprintf(&error, "opendir: %s", strerror(errno));
-                errorDialog(main_cdk_screen, error, NULL);
-                freeChar(error);
+                asprintf(&error_msg, "opendir: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
                 goto cleanup;
             }
             while (((sub_dir1_entry = readdir(tz_sub_dir1)) != NULL) &&
@@ -1678,9 +1678,9 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                     snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s/%s", ZONEINFO,
                             base_dir_entry->d_name, sub_dir1_entry->d_name);
                     if ((tz_sub_dir2 = opendir(dir_name)) == NULL) {
-                        asprintf(&error, "opendir: %s", strerror(errno));
-                        errorDialog(main_cdk_screen, error, NULL);
-                        freeChar(error);
+                        asprintf(&error_msg, "opendir: %s", strerror(errno));
+                        errorDialog(main_cdk_screen, error_msg, NULL);
+                        freeChar(error_msg);
                         goto cleanup;
                     }
                     while (((sub_dir2_entry = readdir(tz_sub_dir2)) != NULL) &&
@@ -1721,9 +1721,9 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Get the current time zone data file path (from sym. link) */
     if (readlink(LOCALTIME, zoneinfo_path, MAX_ZONEINFO_PATH) == -1) {
-        asprintf(&error, "readlink: %s", strerror(errno));
-        errorDialog(main_cdk_screen, error, NULL);
-        freeChar(error);
+        asprintf(&error_msg, "readlink: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
         goto cleanup;
     }
 
@@ -1806,9 +1806,9 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
         /* ENOENT is okay since its possible this file doesn't exist yet */
         if (errno != ENOENT) {
-            asprintf(&error, "fopen: %s", strerror(errno));
-            errorDialog(main_cdk_screen, error, NULL);
-            freeChar(error);
+            asprintf(&error_msg, "fopen: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
             goto cleanup;
         }
     } else {
@@ -1847,17 +1847,17 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         /* If the time zone setting was changed, create a new sym. link */
         if (temp_int != curr_tz_item) {
             if (unlink(LOCALTIME) == -1) {
-                asprintf(&error, "unlink: %s", strerror(errno));
-                errorDialog(main_cdk_screen, error, NULL);
-                freeChar(error);
+                asprintf(&error_msg, "unlink: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
                 goto cleanup;
             } else {
                 snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s",
                         ZONEINFO, tz_files[temp_int]);
                 if (symlink(dir_name, LOCALTIME) == -1) {
-                    asprintf(&error, "symlink: %s", strerror(errno));
-                    errorDialog(main_cdk_screen, error, NULL);
-                    freeChar(error);
+                    asprintf(&error_msg, "symlink: %s", strerror(errno));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
                     goto cleanup;
                 }
             }
@@ -1879,16 +1879,16 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         /* If the value has changed, write it to the file */
         if (strcmp(ntp_serv_val, new_ntp_serv_val) != 0) {
             if ((ntp_server_file = fopen(NTP_SERVER, "w+")) == NULL) {
-                asprintf(&error, "fopen: %s", strerror(errno));
-                errorDialog(main_cdk_screen, error, NULL);
-                freeChar(error);
+                asprintf(&error_msg, "fopen: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
                 goto cleanup;
             } else {
                 fprintf(ntp_server_file, "%s", new_ntp_serv_val);
                 if (fclose(ntp_server_file) != 0) {
-                    asprintf(&error, "fclose: %s", strerror(errno));
-                    errorDialog(main_cdk_screen, error, NULL);
-                    freeChar(error);
+                    asprintf(&error_msg, "fclose: %s", strerror(errno));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
                     goto cleanup;
                 }
             }
@@ -1916,9 +1916,9 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         /* Set date & time */
         const struct timeval time_val = {mktime(curr_date_info), 0};
         if (settimeofday(&time_val, 0) == -1) {
-            asprintf(&error, "settimeofday: %s", strerror(errno));
-            errorDialog(main_cdk_screen, error, NULL);
-            freeChar(error);
+            asprintf(&error_msg, "settimeofday: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
             goto cleanup;
         }
     }

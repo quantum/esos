@@ -8,6 +8,11 @@
 /bin/mkdir /dev/shm
 
 /bin/echo "Mounting other local filesystems..."
+for i in `/usr/bin/awk '{print $2}' /etc/fstab`; do
+    if [ ! -d "${i}" ]; then
+        /bin/mkdir -p ${i}
+    fi
+done
 /bin/mount -a
 
 /bin/echo "Populating /dev with device nodes..."
