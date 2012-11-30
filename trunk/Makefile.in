@@ -538,7 +538,7 @@ mdadm: glibc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-parted: glibc e2fsprogs
+parted: glibc e2fsprogs LVM2
 	cd $(src_dir) && CPPFLAGS="-I$(IMAGE_DIR)/usr/include" ./configure --prefix=/usr --without-readline
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
