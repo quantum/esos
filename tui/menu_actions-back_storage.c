@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk.h>
+#include <parted/parted.h>
+#include <mntent.h>
 
 #include "menu_actions-back_storage.h"
 #include "menu_actions.h"
@@ -1117,16 +1119,16 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
 void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *drbd_info = 0;
     char *swindow_info[MAX_DRBD_INFO_LINES] = {NULL};
-    char *error = NULL;
+    char *error_msg = NULL;
     int i = 0, line_pos = 0;
     char line[MAX_PROC_LINE] = {0};
     FILE *drbd_file = NULL;
 
     /* Open the file */
     if ((drbd_file = fopen(PROC_DRBD, "r")) == NULL) {
-        asprintf(&error, "fopen: %s", strerror(errno));
-        errorDialog(main_cdk_screen, error, NULL);
-        freeChar(error);
+        asprintf(&error_msg, "fopen: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
     } else {
         /* Setup scrolling window widget */
         drbd_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
@@ -1177,16 +1179,16 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
 void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *mdstat_info = 0;
     char *swindow_info[MAX_MDSTAT_INFO_LINES] = {NULL};
-    char *error = NULL;
+    char *error_msg = NULL;
     int i = 0, line_pos = 0;
     char line[MAX_PROC_LINE] = {0};
     FILE *mdstat_file = NULL;
 
     /* Open the file */
     if ((mdstat_file = fopen(PROC_MDSTAT, "r")) == NULL) {
-        asprintf(&error, "fopen: %s", strerror(errno));
-        errorDialog(main_cdk_screen, error, NULL);
-        freeChar(error);
+        asprintf(&error_msg, "fopen: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
     } else {
         /* Setup scrolling window widget */
         mdstat_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
@@ -1237,7 +1239,7 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
 void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lvm2_info = 0;
     char *swindow_info[MAX_LVM2_INFO_LINES] = {NULL};
-    char *error = NULL, *lvdisplay_cmd = NULL;
+    char *error_msg = NULL, *lvdisplay_cmd = NULL;
     int i = 0, line_pos = 0, status = 0, ret_val = 0;
     char line[MAX_PROC_LINE] = {0};
     FILE *lvdisplay_proc = NULL;
@@ -1245,9 +1247,9 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
     /* Run the lvdisplay command */
     asprintf(&lvdisplay_cmd, "%s --all 2>&1", LVDISPLAY_BIN);
     if ((lvdisplay_proc = popen(lvdisplay_cmd, "r")) == NULL) {
-        asprintf(&error, "Couldn't open process for the %s command!", LVDISPLAY_BIN);
-        errorDialog(main_cdk_screen, error, NULL);
-        freeChar(error);
+        asprintf(&error_msg, "Couldn't open process for the %s command!", LVDISPLAY_BIN);
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
     } else {
         /* Add the contents to the scrolling window widget */
         line_pos = 0;
@@ -1293,9 +1295,9 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
             /* We fell through -- the user exited the widget, but we don't care how */
             destroyCDKSwindow(lvm2_info);
         } else {
-            asprintf(&error, "The %s command exited with %d.", LVDISPLAY_BIN, ret_val);
-            errorDialog(main_cdk_screen, error, NULL);
-            freeChar(error);
+            asprintf(&error_msg, "The %s command exited with %d.", LVDISPLAY_BIN, ret_val);
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
         }
     }
 
@@ -1310,7 +1312,436 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
  * Run the Create File System dialog
  */
 void createFSDialog(CDKSCREEN *main_cdk_screen) {
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    WINDOW *fs_window = 0;
+    CDKSCREEN *fs_screen = 0;
+    CDKLABEL *new_ld_label = 0;
+    CDKBUTTON *ok_button = 0, *cancel_button = 0;
+    CDKENTRY *fs_label = 0;
+    CDKRADIO *fs_type = 0;
+    CDKSWINDOW *make_fs_info = 0;
+    tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
+    char dev_node[MAX_FS_ATTR_LEN] = {0}, fs_label_buff[MAX_FS_LABEL] = {0},
+            mkfs_cmd[100] = {0}, mount_cmd[100] = {0},
+            new_mnt_point[MAX_FS_ATTR_LEN] = {0}, new_blk_dev_node[MAX_FS_ATTR_LEN] = {0};
+    char *block_dev = NULL, *error_msg = NULL, *cmd_str = NULL, *confirm_msg = NULL,
+            *dev_node_ptr = NULL, *device_size = NULL, *tmp_str_ptr = NULL;
+    char *fs_dialog_msg[MAX_FS_DIALOG_INFO_LINES] = {NULL},
+            *swindow_info[MAX_MAKE_FS_INFO_ROWS] = {NULL};
+    static char *transport[] = {"unknown", "scsi", "ide", "dac960", "cpqarray",
+    "file", "ataraid", "i2o", "ubd", "dasd", "viodasd", "sx8", "dm"};
+    static char *fs_type_opts[] = {"xfs", "ext2", "ext3", "ext4"};
+    FILE *fstab_file = NULL, *new_fstab_file = NULL, *findfs_cmd = NULL;
+    struct mntent *fstab_entry = NULL, addtl_fstab_entry; /* Not a pointer */
+    int temp_int = 0, window_y = 0, window_x = 0, info_line_cnt = 0,
+            traverse_ret = 0, i = 0, exit_stat = 0, ret_val = 0;
+    int fs_window_lines = 21, fs_window_cols = 70;
+    PedDevice *device = NULL;
+    PedDiskType *disk_type = NULL;
+    PedDisk *disk = NULL;
+    PedPartition *partition = NULL;
+    PedFileSystemType *file_system_type = NULL;
+    PedConstraint *constraint = NULL;
+    boolean confirm = FALSE, question = FALSE;
+    
+    /* Get block device choice from user */
+    if ((block_dev = getBlockDevChoice(main_cdk_screen)) == NULL)
+        return;
+
+    /* Open the file system tab file */
+    if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
+        asprintf(&error_msg, "setmntent: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+        return;
+    }
+
+    /* Loop over fstab entries and check if our chosen block device from
+     * above matches; this check obviously isn't 100% fail-safe */
+    while ((fstab_entry = getmntent(fstab_file)) != NULL) {
+        /* We consider the FS device/name from the fstab file the haystack since 
+         * these entries would typically have a number at the end for the partition */
+        if (strstr(fstab_entry->mnt_fsname, block_dev) != NULL) {
+            errorDialog(main_cdk_screen,
+                    "It appears the selected block device already has a fstab entry.", NULL);
+            endmntent(fstab_file);
+            return;
+        } else if ((strstr(fstab_entry->mnt_fsname, "LABEL=") != NULL) ||
+                (strstr(fstab_entry->mnt_fsname, "UUID=") != NULL)) {
+            /* Look-up the block device node using the findfs tool */
+            asprintf(&cmd_str, "%s %s 2>&1", FINDFS_BIN, fstab_entry->mnt_fsname);
+            findfs_cmd = popen(cmd_str, "r");
+            while (fgets(dev_node, sizeof (dev_node), findfs_cmd) != NULL) {
+                /* This feels a bit messy -- looking for a '/' in the command output */
+                if (strstr(dev_node, "/"))
+                    dev_node_ptr = strStrip(dev_node);
+            }
+            if ((exit_stat = pclose(findfs_cmd)) == -1) {
+                ret_val = -1;
+            } else {
+                if (WIFEXITED(exit_stat))
+                    ret_val = WEXITSTATUS(exit_stat);
+                else
+                    ret_val = -1;
+            }
+            freeChar(cmd_str);
+            /* We ignore exit status 1 since this should be due to the findfs 
+             * utility simply not finding a matching file system with the specified
+             * label */
+            if ((ret_val != 0) && (ret_val != 1)) {
+                asprintf(&error_msg, "The %s command exited with %d.", FINDFS_BIN, ret_val);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                endmntent(fstab_file);
+                return;
+            }
+
+            if (strstr(dev_node_ptr, block_dev) != NULL) {
+                errorDialog(main_cdk_screen,
+                        "It appears the selected block device already has a fstab entry.", NULL);
+                endmntent(fstab_file);
+                return;
+            }
+        }
+    }
+
+    /* Close the fstab file */
+    endmntent(fstab_file);
+
+    /* Setup a new CDK screen for required input */
+    window_y = ((LINES / 2) - (fs_window_lines / 2));
+    window_x = ((COLS / 2) - (fs_window_cols / 2));
+    fs_window = newwin(fs_window_lines, fs_window_cols,
+            window_y, window_x);
+    if (fs_window == NULL) {
+        errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+        goto cleanup;
+    }
+    fs_screen = initCDKScreen(fs_window);
+    if (fs_screen == NULL) {
+        errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+        goto cleanup;
+    }
+    boxWindow(fs_window, COLOR_DIALOG_BOX);
+    wbkgd(fs_window, COLOR_DIALOG_TEXT);
+    wrefresh(fs_window);
+
+    /* Grab the device information */
+    if ((device = ped_device_get(block_dev)) == NULL) {
+        errorDialog(main_cdk_screen, "Calling ped_device_get() failed.", NULL);
+        goto cleanup;
+    }
+    if ((device_size = ped_unit_format_byte(device,
+            device->length * device->sector_size)) == NULL) {
+        errorDialog(main_cdk_screen, "Calling ped_unit_format_byte() failed.", NULL);
+        goto cleanup;
+    }
+    /* Its okay if this one returns NULL (eg, no disk label) */
+    if ((disk_type = ped_disk_probe(device)) != NULL) {
+        /* We only read the disk label if it actually has one */
+        if ((disk = ped_disk_new(device)) == NULL) {
+            errorDialog(main_cdk_screen, "Calling ped_disk_new() failed.", NULL);
+            goto cleanup;
+        }
+    }
+    
+    /* Information label */
+    asprintf(&fs_dialog_msg[0],
+            "</31/B>Creating New File System (on block device %s)", block_dev);
+    /* Using asprintf for a blank space makes it easier on clean-up (free) */
+    asprintf(&fs_dialog_msg[1], " ");
+    asprintf(&fs_dialog_msg[2], "</B>Model:<!B>\t%-20.20s</B>Transport:<!B>\t%s",
+            device->model, transport[device->type]);
+    asprintf(&fs_dialog_msg[3], "</B>Size:<!B>\t%-20.20s</B>Disk label:<!B>\t%s",
+            device_size, (disk_type) ? disk_type->name : "none");
+    asprintf(&fs_dialog_msg[4], "</B>Sector size (logical/physical):<!B>\t%lldB/%lldB",
+            device->sector_size, device->phys_sector_size);
+    asprintf(&fs_dialog_msg[5], " ");
+    /* Add partition information (if any) */
+    info_line_cnt = 6;
+    if (disk && (ped_disk_get_last_partition_num(disk) > 0)) {
+        asprintf(&fs_dialog_msg[info_line_cnt], "</B>Current layout: %5s %12s %12s %15s<!B>",
+                "No.", "Start", "Size", "FS Type");
+        info_line_cnt++;
+        for (partition = ped_disk_next_partition(disk, NULL);
+                partition && (info_line_cnt < MAX_FS_DIALOG_INFO_LINES);
+                partition = ped_disk_next_partition(disk, partition)) {
+            if (partition->num < 0)
+                continue;
+            asprintf(&fs_dialog_msg[info_line_cnt], "\t\t%5d %12lld %12lld %15.15s",
+                    partition->num, partition->geom.start, partition->geom.length,
+                    (partition->fs_type) ? partition->fs_type->name : "unknown");
+            info_line_cnt++;
+        }
+    } else {
+        asprintf(&fs_dialog_msg[info_line_cnt], "</B><No partitions found.><!B>");
+        info_line_cnt++;
+    }
+    new_ld_label = newCDKLabel(fs_screen, (window_x + 1), (window_y + 1),
+            fs_dialog_msg, info_line_cnt, FALSE, FALSE);
+    if (!new_ld_label) {
+        errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+        goto cleanup;
+    }
+    setCDKLabelBackgroundAttrib(new_ld_label, COLOR_DIALOG_TEXT);
+
+    /* Clean up the libparted stuff */
+    free(device_size);
+    if (disk != NULL)
+        ped_disk_destroy(disk);
+    ped_device_destroy(device);
+
+    /* FS label field */
+    fs_label = newCDKEntry(fs_screen, (window_x + 1), (window_y + 13),
+            "</B>File System Label", NULL,
+            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vLMIXED,
+            MAX_FS_LABEL, 0, MAX_FS_LABEL, FALSE, FALSE);
+    if (!fs_label) {
+        errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+        goto cleanup;
+    }
+    setCDKEntryBoxAttribute(fs_label, COLOR_DIALOG_INPUT);
+
+    /* FS type radio list */
+    fs_type = newCDKRadio(fs_screen, (window_x + 22), (window_y + 13),
+            NONE, 5, 10, "</B>File System Type", fs_type_opts, 4,
+            '#' | COLOR_DIALOG_SELECT, 0,
+            COLOR_DIALOG_SELECT, FALSE, FALSE);
+    if (!fs_type) {
+        errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+        goto cleanup;
+    }
+    setCDKRadioBackgroundAttrib(fs_type, COLOR_DIALOG_TEXT);
+
+    /* Buttons */
+    ok_button = newCDKButton(fs_screen, (window_x + 26), (window_y + 19),
+            "</B>   OK   ", ok_cb, FALSE, FALSE);
+    if (!ok_button) {
+        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        goto cleanup;
+    }
+    setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+    cancel_button = newCDKButton(fs_screen, (window_x + 36), (window_y + 19),
+            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+    if (!cancel_button) {
+        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        goto cleanup;
+    }
+    setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+
+    /* Allow user to traverse the screen */
+    refreshCDKScreen(fs_screen);
+    traverse_ret = traverseCDKScreen(fs_screen);
+
+    /* User hit 'OK' button */
+    if (traverse_ret == 1) {
+        /* Check FS label value (field entry) */
+        strncpy(fs_label_buff, getCDKEntryValue(fs_label), MAX_FS_LABEL);
+        i = 0;
+        while (fs_label_buff[i] != '\0') {
+            /* If the user didn't input an acceptable value, then cancel out */
+            if (isspace(fs_label_buff[i]) || !isalnum(fs_label_buff[i])) {
+                errorDialog(main_cdk_screen,
+                        "Label field must only contain alphanumeric characters!", NULL);
+                goto cleanup;
+            }
+            i++;
+        }
+        if (i == 0) {
+            errorDialog(main_cdk_screen, "A value for the FS label is required!", NULL);
+            goto cleanup;
+        }
+
+        /* We should probably also use the findfs tool to see if any devices 
+         * actually use the given file system label, but for now we only consider
+         * the fstab file as the source of truth */
+        if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
+            asprintf(&error_msg, "setmntent: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            goto cleanup;
+        }
+        while ((fstab_entry = getmntent(fstab_file)) != NULL) {
+            if (strstr(fstab_entry->mnt_fsname, "LABEL=") != NULL) {
+                /* The strchr function returns NULL if not found */
+                if ((tmp_str_ptr = strchr(fstab_entry->mnt_fsname, '=')) != NULL) {
+                    tmp_str_ptr++;
+                    if (strcmp(tmp_str_ptr, fs_label_buff) == 0) {
+                        errorDialog(main_cdk_screen,
+                                "It appears this file system label is already in use!", NULL);
+                        endmntent(fstab_file);
+                        goto cleanup;
+                    }
+                }
+            }
+        }
+        endmntent(fstab_file);
+
+        /* Get FS type choice */
+        temp_int = getCDKRadioSelectedItem(fs_type);
+
+        /* Get confirmation before applying block device changes */
+        asprintf(&confirm_msg, "You are about to write a new file system to '%s';",
+                block_dev);
+        confirm = confirmDialog(main_cdk_screen, confirm_msg,
+                "this will destroy all data on the device. Are you sure?");
+        freeChar(confirm_msg);
+        if (confirm) {
+            /* A scroll window to show progress */
+            make_fs_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+                    MAX_MAKE_FS_INFO_ROWS + 2, MAX_MAKE_FS_INFO_COLS + 2,
+                    "<C></31/B>Setting up new file system...\n",
+                    MAX_MAKE_FS_INFO_ROWS, TRUE, FALSE);
+            if (!make_fs_info) {
+                errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+                return;
+            }
+            setCDKSwindowBackgroundAttrib(make_fs_info, COLOR_DIALOG_TEXT);
+            setCDKSwindowBoxAttribute(make_fs_info, COLOR_DIALOG_BOX);
+            drawCDKSwindow(make_fs_info, TRUE);
+            i = 0;
+
+            /* Setup the new partition -- only on SCSI block devices, not the others;
+             * using the transport type may be a better check the device nodes */
+            if ((strstr(block_dev, "/dev/md") == NULL) &&
+                    (strstr(block_dev, "/dev/dm-") == NULL) &&
+                    (strstr(block_dev, "/dev/drbd") == NULL)) {
+                asprintf(&swindow_info[i], "<C>Creating new disk label and partition...");
+                addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
+                i++;
+                if ((device = ped_device_get(block_dev)) == NULL) {
+                    errorDialog(main_cdk_screen, "Calling ped_device_get() failed.", NULL);
+                    goto cleanup;
+                }
+                disk_type = ped_disk_type_get("gpt");
+                if ((disk = ped_disk_new_fresh(device, disk_type)) == NULL) {
+                    errorDialog(main_cdk_screen, "Calling ped_disk_new_fresh() failed.", NULL);
+                    goto cleanup;
+                }
+                file_system_type = ped_file_system_type_get(fs_type_opts[temp_int]);
+                if ((partition = ped_partition_new(disk, PED_PARTITION_NORMAL,
+                        file_system_type, 0, (device->length - 1))) == NULL) {
+                    errorDialog(main_cdk_screen, "Calling ped_partition_new() failed.", NULL);
+                    goto cleanup;
+                }
+                constraint = ped_constraint_new_from_max(&partition->geom);
+                if (ped_disk_add_partition(disk, partition, constraint) == 0) {
+                    errorDialog(main_cdk_screen, "Calling ped_disk_add_partition() failed.", NULL);
+                    goto cleanup;
+                }
+                if (ped_disk_commit_to_dev(disk) == 0) {
+                    errorDialog(main_cdk_screen, "Calling ped_disk_commit_to_dev() failed.", NULL);
+                    goto cleanup;
+                }
+                if (ped_disk_commit_to_os(disk) == 0) {
+                    errorDialog(main_cdk_screen, "Calling ped_disk_commit_to_os() failed.", NULL);
+                    goto cleanup;
+                }
+                ped_disk_destroy(disk);
+                snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s1", block_dev);
+            } else {
+                snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s", block_dev);
+            }
+
+            /* Create the file system */
+            asprintf(&swindow_info[i], "<C>Creating new %s file system...", fs_type_opts[temp_int]);
+            addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
+            i++;
+            snprintf(mkfs_cmd, 100, "mkfs.%s -L %s %s > /dev/null 2>&1",
+                    fs_type_opts[temp_int], fs_label_buff, new_blk_dev_node);
+            ret_val = system(mkfs_cmd);
+            if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+                asprintf(&error_msg, "Running '%s' failed; exited with %d.", mkfs_cmd, exit_stat);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                goto cleanup;
+            }
+
+            /* Add the new file system entry to the fstab file */
+            asprintf(&swindow_info[i], "<C>Adding new entry to fstab file...");
+            addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
+            i++;
+            /* Open the original file system tab file */
+            if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
+                asprintf(&error_msg, "setmntent: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                goto cleanup;
+            }
+            /* Open the new/temporary file system tab file */
+            if ((new_fstab_file = setmntent(FSTAB_TMP, "w+")) == NULL) {
+                asprintf(&error_msg, "setmntent: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                goto cleanup;
+            }
+            /* Loop over the original fstab file, and add each entry to the new file */
+            while ((fstab_entry = getmntent(fstab_file)) != NULL) {
+                addmntent(new_fstab_file, fstab_entry);
+            }
+            /* New fstab entry */
+            asprintf(&addtl_fstab_entry.mnt_fsname, "LABEL=%s", fs_label_buff);
+            asprintf(&addtl_fstab_entry.mnt_dir, "%s/%s", VDISK_MNT_BASE, fs_label_buff);
+            asprintf(&addtl_fstab_entry.mnt_type, "%s", fs_type_opts[temp_int]);
+            asprintf(&addtl_fstab_entry.mnt_opts, "defaults");
+            addtl_fstab_entry.mnt_freq = 1;
+            addtl_fstab_entry.mnt_passno = 1;
+            addmntent(new_fstab_file, &addtl_fstab_entry);
+            fflush(new_fstab_file);
+            endmntent(new_fstab_file);
+            endmntent(fstab_file);
+            freeChar(addtl_fstab_entry.mnt_fsname);
+            freeChar(addtl_fstab_entry.mnt_dir);
+            freeChar(addtl_fstab_entry.mnt_type);
+            freeChar(addtl_fstab_entry.mnt_opts);
+            if ((rename(FSTAB_TMP, FSTAB)) == -1) {
+                asprintf(&error_msg, "rename: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                goto cleanup;
+            }
+            /* Make the mount point directory */
+            snprintf(new_mnt_point, MAX_FS_ATTR_LEN, "%s/%s", VDISK_MNT_BASE, fs_label_buff);
+            if ((mkdir(new_mnt_point, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)) == -1) {
+                asprintf(&error_msg, "mkdir: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                goto cleanup;
+            }
+
+            if (make_fs_info)
+                destroyCDKSwindow(make_fs_info);
+            refreshCDKScreen(main_cdk_screen);
+
+            /* Ask if user would like to mount the new FS */
+            question = questionDialog(main_cdk_screen,
+                    "Would you like to mount the new file system now?", NULL);
+            if (question) {
+                /* Run mount */
+                snprintf(mount_cmd, 100, "%s %s > /dev/null 2>&1", MOUNT_BIN, new_mnt_point);
+                ret_val = system(mount_cmd);
+                if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+                    asprintf(&error_msg, "Running %s failed; exited with %d.", MOUNT_BIN, exit_stat);
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                    return;
+                }
+            }
+        }
+    }
+
+    /* All done */
+    cleanup:
+    if (make_fs_info)
+        destroyCDKSwindow(make_fs_info);
+    for (i = 0; i < MAX_MAKE_FS_INFO_ROWS; i++)
+        freeChar(swindow_info[i]);
+    for (i = 0; i < info_line_cnt; i++)
+        freeChar(fs_dialog_msg[i]);
+    if (fs_screen != NULL) {
+        destroyCDKScreenObjects(fs_screen);
+        destroyCDKScreen(fs_screen);
+    }
+    delwin(fs_window);
     return;
 }
 
@@ -1319,7 +1750,89 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
  * Run the Remove File System dialog
  */
 void removeFSDialog(CDKSCREEN *main_cdk_screen) {
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
+            fs_type[MAX_FS_ATTR_LEN] = {0}, umount_cmd[100] = {0};
+    char *confirm_msg = NULL, *error_msg = NULL;
+    boolean mounted = FALSE, question = FALSE, confirm = FALSE;
+    FILE *fstab_file = NULL, *new_fstab_file = NULL;
+    struct mntent *fstab_entry = NULL;
+    int ret_val = 0, exit_stat = 0;
+
+    /* Have the user select a file system to remove */
+    getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type, &mounted);
+    if (fs_name[0] == '\0')
+        return;
+
+    /* If the selected file system is mounted, ask to try un-mounting it */
+    if (mounted) {
+        question = questionDialog(main_cdk_screen,
+                "It appears that file system is mounted; would you like to try un-mounting it now?",
+                "(The file system must be un-mounted before proceeding.)");
+        if (question) {
+            /* Run umount */
+            snprintf(umount_cmd, 100, "%s %s > /dev/null 2>&1", UMOUNT_BIN, fs_path);
+            ret_val = system(umount_cmd);
+            if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+                asprintf(&error_msg, "Running %s failed; exited with %d.", UMOUNT_BIN, exit_stat);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+    
+    /* Get confirmation before removing the file system */
+    asprintf(&confirm_msg, "'%s' file system?", fs_name);
+    confirm = confirmDialog(main_cdk_screen, "Are you sure you would like to remove the", confirm_msg);
+    freeChar(confirm_msg);
+
+    /* Remove file system entry from fstab file */
+    if (confirm) {
+        /* Open the original file system tab file */
+        if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
+            asprintf(&error_msg, "setmntent: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            return;
+        }
+        /* Open the new/temporary file system tab file */
+        if ((new_fstab_file = setmntent(FSTAB_TMP, "w+")) == NULL) {
+            asprintf(&error_msg, "setmntent: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            return;
+        }
+        /* Loop over the original fstab file, and skip the entry we are removing
+         when writing out the new file */
+        while ((fstab_entry = getmntent(fstab_file)) != NULL) {
+            if (strcmp(fs_name, fstab_entry->mnt_fsname) != 0) {
+                addmntent(new_fstab_file, fstab_entry);
+            }
+        }
+        fflush(new_fstab_file);
+        endmntent(new_fstab_file);
+        endmntent(fstab_file);
+        if ((rename(FSTAB_TMP, FSTAB)) == -1) {
+            asprintf(&error_msg, "rename: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            return;
+        }
+        
+        /* Remove the mount point directory */
+        if ((rmdir(fs_path)) == -1) {
+            asprintf(&error_msg, "rmdir: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            return;
+        }
+        
+        // TODO: Should we also remove/erase the file system label from disk?
+    }
+    
+    /* Done */
     return;
 }
 

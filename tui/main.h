@@ -97,6 +97,7 @@ extern "C" {
 #define SYSFS_INFINIBAND "/sys/class/infiniband"
 #define SYSFS_SCST_TGT "/sys/kernel/scst_tgt"
 #define SYSFS_SCSI_DISK "/sys/class/scsi_disk"
+#define SYSFS_BLOCK "/sys/block"
 
 #define MAX_SYSFS_ATTR_SIZE 256
 #define MAX_SYSFS_PATH_SIZE 256

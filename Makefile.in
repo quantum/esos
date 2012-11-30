@@ -82,6 +82,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		LVM2-2.02.97.tar.gz \
 		xfsprogs-3.1.8.tar.gz \
 		mdadm-3.2.6.tar.gz \
+		parted-2.3.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -90,7 +91,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib \
 			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
-			xfsprogs drbd mdadm
+			xfsprogs drbd mdadm parted
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -251,7 +252,7 @@ build: image_setup $(build_targets) ;
 image_setup:
 	$(MKDIR) $(IMAGE_DIR)/{etc,bin,sbin,dev,proc,sys,root,home}
 	$(MKDIR) $(IMAGE_DIR)/boot/grub
-	$(MKDIR) $(IMAGE_DIR)/mnt/{root,conf,logs}
+	$(MKDIR) $(IMAGE_DIR)/mnt/{root,conf,logs,vdisks}
 	$(MKDIR) $(IMAGE_DIR)/lib/firmware
 	$(MKDIR) $(IMAGE_DIR)/usr/{bin,sbin,libexec,lib}
 	$(MKDIR) $(IMAGE_DIR)/usr/local/{bin,sbin}
@@ -321,7 +322,7 @@ kernel_headers:
 	$(MAKE) --directory=$(linux_src) INSTALL_HDR_PATH="$(WORK_DIR)/kernel_headers" headers_install
 	$(TOUCH) $(@)
 
-esos_tui: glibc ncurses cdk iniparser
+esos_tui: glibc ncurses cdk iniparser parted
 	$(MAKE) --directory=$(CWD)/tui
 	$(INSTALL) -m 755 $(CWD)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
 	$(TOUCH) $(@)
@@ -435,7 +436,7 @@ ncurses: glibc gcc
 
 e2fsprogs: glibc
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
-	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr
+	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr --enable-elf-shlibs
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-libs
@@ -534,5 +535,11 @@ drbd: glibc
 
 mdadm: glibc
 	$(MAKE) --directory=$(src_dir) LDFLAGS="$(LDFLAGS)"
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+parted: glibc e2fsprogs
+	cd $(src_dir) && CPPFLAGS="-I$(IMAGE_DIR)/usr/include" ./configure --prefix=/usr --without-readline
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)

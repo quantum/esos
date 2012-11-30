@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <cdk.h>
 #include <cdk/cdkscreen.h>
+#include <mntent.h>
 
 #include "menu_actions.h"
 #include "main.h"
@@ -134,7 +135,7 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
             *scst_tgt_driver[MAX_SCST_TGTS] = {NULL},
             *scst_tgt_info[MAX_SCST_TGTS] = {NULL},
             *drivers[MAX_SCST_DRIVERS] = {NULL};
-    char *error = NULL;
+    char *error_msg = NULL;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
 
     if (tgt_driver[0] != '\0') {
@@ -156,9 +157,9 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s",
                 SYSFS_SCST_TGT, drivers[i]);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error, "opendir: %s", strerror(errno));
-            errorDialog(cdk_screen, error, NULL);
-            freeChar(error);
+            asprintf(&error_msg, "opendir: %s", strerror(errno));
+            errorDialog(cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
             goto cleanup;
         }
 
@@ -239,16 +240,16 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[
     struct dirent *dir_entry = NULL;
     char *scst_tgt_groups[MAX_SCST_GROUPS] = {NULL},
     *scroll_grp_list[MAX_SCST_GROUPS] = {NULL};
-    char *error = NULL, *scroll_title = NULL;
+    char *error_msg = NULL, *scroll_title = NULL;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
 
     /* Open the directory */
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups",
             SYSFS_SCST_TGT, tgt_driver, tgt_name);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        asprintf(&error, "opendir: %s", strerror(errno));
-        errorDialog(cdk_screen, error, NULL);
-        freeChar(error);
+        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
         goto cleanup;
     }
 
@@ -323,7 +324,7 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
     char *scst_lun_list[MAX_SCST_LUNS] = {NULL};
-    char *error = NULL, *scroll_title = NULL;
+    char *error_msg = NULL, *scroll_title = NULL;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             link_path[MAX_SYSFS_PATH_SIZE] = {0},
             dev_path[MAX_SYSFS_PATH_SIZE] = {0};
@@ -332,9 +333,9 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/%s/luns",
             SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        asprintf(&error, "opendir: %s", strerror(errno));
-        errorDialog(cdk_screen, error, NULL);
-        freeChar(error);
+        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
         ret_val = -1;
         goto cleanup;
     }
@@ -420,7 +421,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
             *scsi_dsk_vendor[MAX_SCSI_DISKS] = {NULL},
             *scsi_dev_info[MAX_SCSI_DISKS] = {NULL};
     static char *list_title = "<C></31/B>Choose a SCSI disk:\n";
-    char *error = NULL;
+    char *error_msg = NULL;
     static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
@@ -434,9 +435,9 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
 
     /* Open the directory to get SCSI devices */
     if ((dir_stream = opendir(SYSFS_SCSI_DISK)) == NULL) {
-        asprintf(&error, "opendir: %s", strerror(errno));
-        errorDialog(cdk_screen, error, NULL);
-        freeChar(error);
+        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
         goto cleanup;
     }
 
@@ -545,7 +546,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
     char *scst_dev_name[MAX_SCST_DEVS] = {NULL},
         *scst_dev_hndlr[MAX_SCST_DEVS] = {NULL},
         *scst_dev_info[MAX_SCST_DEVS] = {NULL};
-    char *error = NULL;
+    char *error_msg = NULL;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
 
     /* Loop over each SCST handler type and grab any open device names */
@@ -555,9 +556,9 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s",
                 SYSFS_SCST_TGT, handlers[i]);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error, "opendir: %s", strerror(errno));
-            errorDialog(cdk_screen, error, NULL);
-            freeChar(error);
+            asprintf(&error_msg, "opendir: %s", strerror(errno));
+            errorDialog(cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
             goto cleanup;
         }
 
@@ -816,7 +817,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
  */
 void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
     CDKSCROLL *user_scroll = 0;
-    struct group* group_info = NULL;
+    struct group *group_info = NULL;
     char **grp_member = NULL;
     char *esos_grp_members[MAX_USERS] = {NULL}, *scroll_list[MAX_USERS] = {NULL};
     int i = 0, user_cnt = 0, user_choice = 0;
@@ -919,4 +920,253 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
         freeChar(message[i]);
     refreshCDKScreen(screen);
     return ret_val;
+}
+
+
+/*
+ * Present a list of file systems from /etc/fstab and have the user pick one.
+ */
+void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_type[], boolean *mounted) {
+    CDKSCROLL *fs_scroll = 0;
+    char *fs_names[MAX_FILE_SYSTEMS] = {NULL}, *fs_paths[MAX_FILE_SYSTEMS] = {NULL},
+            *fs_types[MAX_FILE_SYSTEMS] = {NULL}, *scroll_list[MAX_USERS] = {NULL};
+    char *error_msg = NULL;
+    static char *no_touch = "/proc /sys /dev/pts /dev/shm /boot /mnt/root /mnt/conf /mnt/logs";
+    char mnt_line_buffer[MAX_MNT_LINE_BUFFER] = {0};
+    int i = 0, fs_cnt = 0, user_choice = 0, mnt_line_size = 0, mnt_dir_size = 0;
+    boolean fs_mounted[MAX_FILE_SYSTEMS] = {FALSE};
+    FILE *fstab_file = NULL, *mtab_file = NULL;
+    struct mntent *fstab_entry = NULL, *mtab_entry = NULL;
+
+    /* Make a list of file systems that are mounted (by mount path, not device) */
+    if ((mtab_file = setmntent(MTAB, "r")) == NULL) {
+        asprintf(&error_msg, "setmntent: %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+        return;
+    }
+    while ((mtab_entry = getmntent(mtab_file)) != NULL) {
+        /* We add two extra: one for a space, and one for the null byte */
+        mnt_dir_size = strlen(mtab_entry->mnt_dir) + 2;
+        mnt_line_size = mnt_line_size + mnt_dir_size;
+        // TODO: This totes needs to be tested (strcat)
+        if (mnt_line_size >= MAX_MNT_LINE_BUFFER) {
+            errorDialog(cdk_screen, "The maximum mount line buffer size has been reached!", NULL);
+            endmntent(mtab_file);
+            return;
+        } else {
+            strcat(mnt_line_buffer, mtab_entry->mnt_dir);
+            strcat(mnt_line_buffer, " ");
+        }
+    }
+    endmntent(mtab_file);
+    
+    /* Open the file system tab file */
+    if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
+        asprintf(&error_msg, "setmntent: %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+        return;
+    }
+    
+    /* Loop over fstab entries */
+    fs_cnt = 0;
+    while ((fstab_entry = getmntent(fstab_file)) != NULL) {
+        /* We don't want to grab special entries from fstab that we shouldn't touch */
+        if (strstr(no_touch, fstab_entry->mnt_dir) == NULL) {
+            asprintf(&fs_names[fs_cnt], "%s", fstab_entry->mnt_fsname);
+            asprintf(&fs_paths[fs_cnt], "%s", fstab_entry->mnt_dir);
+            asprintf(&fs_types[fs_cnt], "%s", fstab_entry->mnt_type);
+            if (strstr(mnt_line_buffer, fstab_entry->mnt_dir) == NULL)
+                fs_mounted[fs_cnt] = FALSE;
+            else
+                fs_mounted[fs_cnt] = TRUE;
+            asprintf(&scroll_list[fs_cnt], "<C>%-25s%-20s%-5s (Mounted: %d)", fs_names[fs_cnt],
+                    fs_paths[fs_cnt], fs_types[fs_cnt], fs_mounted[fs_cnt]);
+            fs_cnt++;
+        }
+    }
+
+    /* Close up shop */
+    endmntent(fstab_file);
+
+    /* Make sure we actually have something to present */
+    if (fs_cnt == 0) {
+        errorDialog(cdk_screen, "No useful file systems were found!", NULL);
+        goto cleanup;
+    }
+
+    /* Get file system choice */
+    fs_scroll = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 70,
+            "<C></31/B>Choose a file system:\n", scroll_list, fs_cnt,
+            FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+    if (!fs_scroll) {
+        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        goto cleanup;
+    }
+    setCDKScrollBoxAttribute(fs_scroll, COLOR_DIALOG_BOX);
+    setCDKScrollBackgroundAttrib(fs_scroll, COLOR_DIALOG_TEXT);
+    user_choice = activateCDKScroll(fs_scroll, 0);
+
+    /* Check exit from widget */
+    if (fs_scroll->exitType == vESCAPE_HIT) {
+        destroyCDKScroll(fs_scroll);
+        refreshCDKScreen(cdk_screen);
+        /* User hit escape, so don't set anything for char array */
+
+    } else if (fs_scroll->exitType == vNORMAL) {
+        destroyCDKScroll(fs_scroll);
+        refreshCDKScreen(cdk_screen);
+        snprintf(fs_name, MAX_FS_ATTR_LEN, "%s", fs_names[user_choice]);
+        snprintf(fs_path, MAX_FS_ATTR_LEN, "%s", fs_paths[user_choice]);
+        snprintf(fs_type, MAX_FS_ATTR_LEN, "%s", fs_types[user_choice]);
+        *mounted = fs_mounted[user_choice];
+    }
+
+    /* Done */
+    cleanup:
+    for (i = 0; i < fs_cnt; i++) {
+        freeChar(fs_names[i]);
+        freeChar(fs_paths[i]);
+        freeChar(fs_types[i]);
+        freeChar(scroll_list[i]);
+    }
+    return;
+}
+
+
+/*
+ * Give the user a list of block devices (SCSI, etc.) and have them select one.
+ * We return a char array with the "/dev/XXX" path for the chosen device.
+ */
+char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
+    CDKSCROLL *block_dev_list = 0;
+    int blk_dev_choice = 0, i = 0, dev_cnt = 0;
+    char *blk_dev_name[MAX_BLOCK_DEVS] = {NULL}, *blk_dev_info[MAX_BLOCK_DEVS] = {NULL},
+            *blk_dev_size[MAX_BLOCK_DEVS] = {NULL}, *blk_dev_scroll_lines[MAX_BLOCK_DEVS] = {NULL};
+    static char *list_title = "<C></31/B>Choose a block device:\n";
+    char *error_msg = NULL;
+    static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
+            tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+
+    /* Went with the static char array method from this article:
+     * http://www.eskimo.com/~scs/cclass/int/sx5.html
+     * Since ret_buff is re-used between calls, we reset the first character */
+    ret_buff[0] = '\0';
+
+    /* Open the directory to get block devices */
+    if ((dir_stream = opendir(SYSFS_BLOCK)) == NULL) {
+        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+        goto cleanup;
+    }
+
+    /* Loop over each entry in the directory (block devices) */
+    while ((dir_entry = readdir(dir_stream)) != NULL) {
+        if (dir_entry->d_type == DT_LNK) {
+            /* For DRBD block devices (not sure if the /dev/drbdX format is
+             forced when using drbdadm, so this may be a problem */
+            if ((strstr(dir_entry->d_name, "drbd")) != NULL) {
+                asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                asprintf(&blk_dev_info[dev_cnt], "DRBD Device"); /* Nothing extra... yet */
+                dev_cnt++;
+            /* For software RAID (md) devices; it appears the mdadm tool forces
+             the /dev/mdX device node name format */
+            } else if ((strstr(dir_entry->d_name, "md")) != NULL) {
+                asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/md/level",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_info[dev_cnt], "Level: %s", tmp_buff);
+                dev_cnt++;
+            /* For normal SCSI block devices */
+            } else if ((strstr(dir_entry->d_name, "sd")) != NULL) {
+                asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/model",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_info[dev_cnt], "Model: %s", tmp_buff);
+                dev_cnt++;
+            /* For device mapper (eg, LVM2) block devices */
+            } else if ((strstr(dir_entry->d_name, "dm-")) != NULL) {
+                asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/dm/name",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_info[dev_cnt], "Name: %s", tmp_buff);
+                dev_cnt++;
+            }
+        }
+    }
+
+    /* Close the directory stream */
+    closedir(dir_stream);
+
+    /* Make sure we actually have something to present */
+    if (dev_cnt == 0) {
+        errorDialog(cdk_screen, "No block devices found!", NULL);
+        goto cleanup;
+    }
+
+    /* Fill the list (pretty) for our CDK label with block devices */
+    for (i = 0; i < dev_cnt; i++) {
+        asprintf(&blk_dev_scroll_lines[i], "<C>/dev/%-5.5s Size: %-12.12s %-30.30s",
+                blk_dev_name[i], blk_dev_size[i], blk_dev_info[i]);
+    }
+
+    /* Get block device choice from user */
+    block_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 65,
+            list_title, blk_dev_scroll_lines, dev_cnt,
+            FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+    if (!block_dev_list) {
+        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        goto cleanup;
+    }
+    setCDKScrollBoxAttribute(block_dev_list, COLOR_DIALOG_BOX);
+    setCDKScrollBackgroundAttrib(block_dev_list, COLOR_DIALOG_TEXT);
+    blk_dev_choice = activateCDKScroll(block_dev_list, 0);
+
+    /* Check exit from widget */
+    if (block_dev_list->exitType == vESCAPE_HIT) {
+        destroyCDKScroll(block_dev_list);
+        refreshCDKScreen(cdk_screen);
+
+    } else if (block_dev_list->exitType == vNORMAL) {
+        destroyCDKScroll(block_dev_list);
+        refreshCDKScreen(cdk_screen);
+        snprintf(ret_buff, MAX_SYSFS_ATTR_SIZE, "/dev/%s", blk_dev_name[blk_dev_choice]);
+    }
+
+    /* Done */
+    cleanup:
+    for (i = 0; i < MAX_BLOCK_DEVS; i++) {
+        freeChar(blk_dev_name[i]);
+        freeChar(blk_dev_info[i]);
+        freeChar(blk_dev_size[i]);
+        freeChar(blk_dev_scroll_lines[i]);
+    }
+    if (ret_buff[0] != '\0')
+        return ret_buff;
+    else
+        return NULL;
 }
