@@ -6,7 +6,7 @@ MAILTO=root
 HOME=/
 
 # Check all filesystems; we only want emails with output on stderr
-0 0 * * * root /sbin/fsck -A -T -p > /dev/null
+0 0 * * * root /usr/sbin/fsck -A -M -T -p > /dev/null
 
 # Configuration sync -- we cron this for a few times per day just in case
 10 0,8,16 * * * root /usr/local/sbin/conf_sync.sh

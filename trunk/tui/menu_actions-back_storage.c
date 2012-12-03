@@ -11,6 +11,10 @@
 #include <cdk.h>
 #include <parted/parted.h>
 #include <mntent.h>
+#include <sys/statvfs.h>
+#include <fcntl.h>
+#include <sys/param.h>
+#include <limits.h>
 
 #include "menu_actions-back_storage.h"
 #include "menu_actions.h"
@@ -1314,7 +1318,7 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
 void createFSDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *fs_window = 0;
     CDKSCREEN *fs_screen = 0;
-    CDKLABEL *new_ld_label = 0;
+    CDKLABEL *add_fs_info = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
     CDKENTRY *fs_label = 0;
     CDKRADIO *fs_type = 0;
@@ -1476,13 +1480,13 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
         asprintf(&fs_dialog_msg[info_line_cnt], "</B><No partitions found.><!B>");
         info_line_cnt++;
     }
-    new_ld_label = newCDKLabel(fs_screen, (window_x + 1), (window_y + 1),
+    add_fs_info = newCDKLabel(fs_screen, (window_x + 1), (window_y + 1),
             fs_dialog_msg, info_line_cnt, FALSE, FALSE);
-    if (!new_ld_label) {
+    if (!add_fs_info) {
         errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
         goto cleanup;
     }
-    setCDKLabelBackgroundAttrib(new_ld_label, COLOR_DIALOG_TEXT);
+    setCDKLabelBackgroundAttrib(add_fs_info, COLOR_DIALOG_TEXT);
 
     /* Clean up the libparted stuff */
     free(device_size);
@@ -1841,7 +1845,280 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
  * Run the Add Virtual Disk File dialog
  */
 void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    WINDOW *vdisk_window = 0;
+    CDKSCREEN *vdisk_screen = 0;
+    CDKLABEL *vdisk_label = 0;
+    CDKBUTTON *ok_button = 0, *cancel_button = 0;
+    CDKENTRY *vdisk_name = 0, *vdisk_size = 0;
+    CDKHISTOGRAM *vdisk_progress = 0;
+    tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
+    char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
+            fs_type[MAX_FS_ATTR_LEN] = {0}, mount_cmd[100] = {0},
+            vdisk_name_buff[MAX_VDISK_NAME] = {0}, gib_free_str[50] = {0},
+            gib_total_str[50] = {0}, zero_buff[VDISK_WRITE_SIZE] = {0},
+            new_vdisk_file[MAX_VDISK_PATH_LEN] = {0};
+    char *error_msg = NULL;
+    char *vdisk_dialog_msg[4] = {NULL};
+    boolean mounted = FALSE, question = FALSE;
+    struct statvfs *fs_info = NULL;
+    int window_y = 0, window_x = 0, traverse_ret = 0, i = 0, exit_stat = 0,
+            ret_val = 0, vdisk_size_int = 0, new_vdisk_fd = 0;
+    int vdisk_window_lines = 12, vdisk_window_cols = 70;
+    long long bytes_free = 0ll, bytes_total = 0ll, new_vdisk_bytes = 0ll, new_vdisk_mib = 0ll;
+    off_t position = 0;
+    ssize_t bytes_written = 0;
+    
+    /* Have the user select a file system to remove */
+    getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type, &mounted);
+    if (fs_name[0] == '\0')
+        return;
+
+    if (!mounted) {
+        question = questionDialog(main_cdk_screen,
+                "It appears that file system is not mounted; would you like to try mounting it now?",
+                "(The file system must be mounted before proceeding.)");
+        if (question) {
+            /* Run mount */
+            snprintf(mount_cmd, 100, "%s %s > /dev/null 2>&1", MOUNT_BIN, fs_path);
+            ret_val = system(mount_cmd);
+            if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+                asprintf(&error_msg, "Running %s failed; exited with %d.", MOUNT_BIN, exit_stat);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+    
+    /* Setup a new small CDK screen for virtual disk information */
+    window_y = ((LINES / 2) - (vdisk_window_lines / 2));
+    window_x = ((COLS / 2) - (vdisk_window_cols / 2));
+    vdisk_window = newwin(vdisk_window_lines, vdisk_window_cols,
+            window_y, window_x);
+    if (vdisk_window == NULL) {
+        errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+        goto cleanup;
+    }
+    vdisk_screen = initCDKScreen(vdisk_window);
+    if (vdisk_screen == NULL) {
+        errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+        goto cleanup;
+    }
+    boxWindow(vdisk_window, COLOR_DIALOG_BOX);
+    wbkgd(vdisk_window, COLOR_DIALOG_TEXT);
+    wrefresh(vdisk_window);
+
+    /* Get the file system information */
+    if (!(fs_info = (struct statvfs *) malloc(sizeof (struct statvfs)))) {
+        errorDialog(main_cdk_screen, "Calling malloc() failed.", NULL);
+        goto cleanup;
+    }
+    if ((statvfs(fs_path, fs_info)) == -1) {
+        asprintf(&error_msg, "statvfs: %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+        goto cleanup;
+    }
+    bytes_free = fs_info->f_bavail * fs_info->f_bsize;
+    snprintf(gib_free_str, 50, "%lld GiB", (bytes_free / GIBIBYTE_SIZE));
+    bytes_total = fs_info->f_blocks * fs_info->f_bsize;
+    snprintf(gib_total_str, 50, "%lld GiB", (bytes_total / GIBIBYTE_SIZE));
+    
+    /* Fill the information label */
+    asprintf(&vdisk_dialog_msg[0], "</31/B>Adding New Virtual Disk File");
+    /* Using asprintf for a blank space makes it easier on clean-up (free) */
+    asprintf(&vdisk_dialog_msg[1], " ");
+    asprintf(&vdisk_dialog_msg[2], "</B>File system:<!B>\t%-20.20s </B>Type:<!B>\t\t%s",
+            fs_path, fs_type);
+    asprintf(&vdisk_dialog_msg[3], "</B>Size:<!B>\t\t%-20.20s </B>Available space:<!B>\t%s",
+            gib_total_str, gib_free_str);
+    free(fs_info);
+    vdisk_label = newCDKLabel(vdisk_screen, (window_x + 1), (window_y + 1),
+            vdisk_dialog_msg, 4, FALSE, FALSE);
+    if (!vdisk_label) {
+        errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+        goto cleanup;
+    }
+    setCDKLabelBackgroundAttrib(vdisk_label, COLOR_DIALOG_TEXT);
+
+    /* Virtual disk file name */
+    vdisk_name = newCDKEntry(vdisk_screen, (window_x + 1), (window_y + 6),
+            "</B>Virtual Disk File Name", NULL,
+            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vLMIXED,
+            20, 0, MAX_VDISK_NAME, FALSE, FALSE);
+    if (!vdisk_name) {
+        errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+        goto cleanup;
+    }
+    setCDKEntryBoxAttribute(vdisk_name, COLOR_DIALOG_INPUT);
+
+    /* Virtual disk size */
+    vdisk_size = newCDKEntry(vdisk_screen, (window_x + 30), (window_y + 6),
+            "</B>Virtual Disk Size (GiB)", NULL,
+            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
+            12, 0, 12, FALSE, FALSE);
+    if (!vdisk_size) {
+        errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+        goto cleanup;
+    }
+    setCDKEntryBoxAttribute(vdisk_size, COLOR_DIALOG_INPUT);
+
+    /* Buttons */
+    ok_button = newCDKButton(vdisk_screen, (window_x + 26), (window_y + 10),
+            "</B>   OK   ", ok_cb, FALSE, FALSE);
+    if (!ok_button) {
+        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        goto cleanup;
+    }
+    setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+    cancel_button = newCDKButton(vdisk_screen, (window_x + 36), (window_y + 10),
+            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+    if (!cancel_button) {
+        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        goto cleanup;
+    }
+    setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+
+    /* Allow user to traverse the screen */
+    refreshCDKScreen(vdisk_screen);
+    traverse_ret = traverseCDKScreen(vdisk_screen);
+
+    /* User hit 'OK' button */
+    if (traverse_ret == 1) {
+        /* Check virtual disk name value (field entry) */
+        strncpy(vdisk_name_buff, getCDKEntryValue(vdisk_name), MAX_VDISK_NAME);
+        i = 0;
+        while (vdisk_name_buff[i] != '\0') {
+            /* If the user didn't input an acceptable value, then cancel out */
+            if (isspace(vdisk_name_buff[i]) || !isalnum(vdisk_name_buff[i])) {
+                errorDialog(main_cdk_screen,
+                        "Name field must only contain alphanumeric characters!", NULL);
+                goto cleanup;
+            }
+            i++;
+        }
+        if (i == 0) {
+            errorDialog(main_cdk_screen, "A value for the virtual disk name is required!", NULL);
+            goto cleanup;
+        }
+
+        /* Check virtual disk size value (field entry) */
+        vdisk_size_int = atoi(getCDKEntryValue(vdisk_size));
+        if (vdisk_size_int <= 0) {
+            errorDialog(main_cdk_screen, "The size value must be greater than zero.", NULL);
+            goto cleanup;
+        } 
+        new_vdisk_bytes = vdisk_size_int * GIBIBYTE_SIZE;
+        if (new_vdisk_bytes > bytes_free) {
+            errorDialog(main_cdk_screen, "The given size is greater than the available space!", NULL);
+            goto cleanup;
+        }
+
+        /* Check if the new (potential) virtual disk file exists already */
+        snprintf(new_vdisk_file, MAX_VDISK_PATH_LEN, "%s/%s", fs_path, vdisk_name_buff);
+        if (access(new_vdisk_file, F_OK) != -1) {
+            asprintf(&error_msg, "It appears the '%s'", new_vdisk_file);
+            errorDialog(main_cdk_screen, error_msg, "file already exists!");
+            freeChar(error_msg);
+            goto cleanup;
+        }
+        
+        /* Clean up the screen */
+        destroyCDKScreenObjects(vdisk_screen);
+        destroyCDKScreen(vdisk_screen);
+        vdisk_screen = NULL;
+        delwin(vdisk_window);
+        curs_set(0);
+        refreshCDKScreen(main_cdk_screen);
+
+        /* Make a new histogram widget to display the virtual disk creation progress */
+        vdisk_progress = newCDKHistogram(main_cdk_screen, CENTER, CENTER,
+                1, 50, HORIZONTAL, "<C></31/B>Writing new virtual disk file (unit = MiB):\n",
+                TRUE, FALSE);
+        if (!vdisk_progress) {
+            errorDialog(main_cdk_screen, "Couldn't create histogram widget!", NULL);
+            goto cleanup;
+        }
+        setCDKScrollBoxAttribute(vdisk_progress, COLOR_DIALOG_BOX);
+        setCDKScrollBackgroundAttrib(vdisk_progress, COLOR_DIALOG_TEXT);
+        drawCDKHistogram(vdisk_progress, TRUE);
+
+        /* We'll use mebibyte as our unit for the histogram widget; need to
+         * make sure an int can handle it, which is used by the histogram widget */
+        new_vdisk_mib = new_vdisk_bytes / MEBIBYTE_SIZE;
+        if (new_vdisk_mib > INT_MAX) {
+            errorDialog(main_cdk_screen, "An integer will not hold the virtual",
+                    "disk size (MiB) on this system!");
+            goto cleanup;
+        }
+
+        /* Zero-out the new virtual disk file to the length specified (size) */
+        memset(zero_buff, 0, VDISK_WRITE_SIZE);
+        if ((new_vdisk_fd = open(new_vdisk_file, O_WRONLY | O_CREAT)) == -1) {
+            asprintf(&error_msg, "open: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            goto cleanup;
+        }
+        for (position = 0; position < new_vdisk_bytes; position += bytes_written) {
+            bytes_written = write(new_vdisk_fd, zero_buff,
+                    MIN((new_vdisk_bytes - position), VDISK_WRITE_SIZE));
+            if (bytes_written == 0) {
+                /* We've completed writing the new file; update the progress bar */
+                setCDKHistogram(vdisk_progress, vPERCENT, CENTER, A_BOLD,
+                        0, new_vdisk_mib, new_vdisk_mib,
+                        ' ' | COLOR_PAIR(3), TRUE);
+                drawCDKHistogram(vdisk_progress, TRUE);
+                break;
+            } else if (bytes_written == -1) {
+                asprintf(&error_msg, "write: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                close(new_vdisk_fd);
+                goto cleanup;
+            }
+            /* This controls how often the progress bar is updated; it can adversely 
+             * affect performance of the write operation if its updated too frequently */
+            if ((position % (VDISK_WRITE_SIZE * 100)) == 0) {
+                /* Since our maximum size was checked above against an int type,
+                 * we'll assume we're safe if we made it this far */
+                setCDKHistogram(vdisk_progress, vPERCENT, CENTER, A_BOLD,
+                        0, new_vdisk_mib, (position / MEBIBYTE_SIZE),
+                        ' ' | COLOR_PAIR(3), TRUE);
+                drawCDKHistogram(vdisk_progress, TRUE);
+            }
+        }
+        // TODO: Do we actually need to flush to disk before returning?
+        if (fsync(new_vdisk_fd) == -1) {
+            asprintf(&error_msg, "fsync: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            close(new_vdisk_fd);
+            goto cleanup;
+        }
+        if (close(new_vdisk_fd) == -1) {
+            asprintf(&error_msg, "close: %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            goto cleanup;
+        }
+        destroyCDKHistogram(vdisk_progress);
+        vdisk_progress = NULL;
+    }
+
+    /* Done */
+    cleanup:
+    for (i = 0; i < 4; i++)
+        freeChar(vdisk_dialog_msg[i]);
+    if (vdisk_progress != NULL)
+        destroyCDKHistogram(vdisk_progress);
+    if (vdisk_screen != NULL) {
+        destroyCDKScreenObjects(vdisk_screen);
+        destroyCDKScreen(vdisk_screen);
+    }
+    delwin(vdisk_window);
     return;
 }
 
@@ -1850,6 +2127,69 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
  * Run the Delete Virtual Disk File dialog
  */
 void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+    CDKFSELECT *file_select = 0;
+    char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
+            fs_type[MAX_FS_ATTR_LEN] = {0}, mount_cmd[100] = {0};
+    char *error_msg = NULL, *selected_file = NULL, *confirm_msg = NULL;
+    boolean mounted = FALSE, question = FALSE, confirm = FALSE;
+    int exit_stat = 0, ret_val = 0;
+    
+    /* Have the user select a file system to remove */
+    getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type, &mounted);
+    if (fs_name[0] == '\0')
+        return;
+
+    if (!mounted) {
+        question = questionDialog(main_cdk_screen,
+                "It appears that file system is not mounted; would you like to try mounting it now?",
+                "(The file system must be mounted before proceeding.)");
+        if (question) {
+            /* Run mount */
+            snprintf(mount_cmd, 100, "%s %s > /dev/null 2>&1", MOUNT_BIN, fs_path);
+            ret_val = system(mount_cmd);
+            if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+                asprintf(&error_msg, "Running %s failed; exited with %d.", MOUNT_BIN, exit_stat);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+
+    /* Create the file selector widget */
+    file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER, 20, 40,
+            "<C></31/B>Choose a virtual disk file to delete:\n", "VDisk File: ",
+            COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
+            A_REVERSE, "</N>", "</B>", "</N>", "</N>", TRUE, FALSE);
+    if (!file_select) {
+        errorDialog(main_cdk_screen, "Couldn't create file selector widget!", NULL);
+        return;
+    }
+    setCDKFselectBoxAttribute(file_select, COLOR_DIALOG_BOX);
+    setCDKFselectBackgroundAttrib(file_select, COLOR_DIALOG_TEXT);
+    setCDKFselectDirectory(file_select, fs_path);
+
+    /* Activate the widget and let the user choose a file */
+    selected_file = activateCDKFselect(file_select, 0);
+    if (file_select->exitType == vNORMAL) {
+        /* Get confirmation before deleting the virtual disk file */
+        asprintf(&confirm_msg, "'%s'?", selected_file);
+        confirm = confirmDialog(main_cdk_screen,
+                "Are you sure you want to delete virtual disk file", confirm_msg);
+        freeChar(confirm_msg);
+        if (confirm) {
+            /* Delete (unlink) the virtual disk file */
+            if (unlink(selected_file) == -1) {
+                asprintf(&error_msg, "unlink: %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+            }
+        }
+    }
+
+    /* Done */
+    destroyCDKFselect(file_select);
     return;
 }

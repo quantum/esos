@@ -27,6 +27,11 @@ extern "C" {
 #define MAX_MAKE_FS_INFO_ROWS 10
 #define MAX_MAKE_FS_INFO_COLS 60
 #define VDISK_MNT_BASE "/mnt/vdisks"
+#define GIBIBYTE_SIZE 1073741824LL
+#define MEBIBYTE_SIZE 1048576LL
+#define MAX_VDISK_NAME 32
+#define VDISK_WRITE_SIZE 4096
+#define MAX_VDISK_PATH_LEN 256
 
 void adpPropsDialog(CDKSCREEN *main_cdk_screen);
 void adpInfoDialog(CDKSCREEN *main_cdk_screen);
