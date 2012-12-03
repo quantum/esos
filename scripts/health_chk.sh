@@ -70,17 +70,20 @@ else
 fi
 
 # Check physical RAM
-mem_total=`free -m | grep "Mem:" | awk '{print $2}'`
-mem_used=`free -m | grep "Mem:" | awk '{print $3}'`
-mem_free=`free -m | grep "Mem:" | awk '{print $4}'`
+mem_total=`cat /proc/meminfo | grep "^MemTotal:" | awk '{print $2}'`
+mem_free=`cat /proc/meminfo | grep "^MemFree:" | awk '{print $2}'`
+mem_cached=`cat /proc/meminfo | grep "^Cached:" | awk '{print $2}'`
+mem_mapped=`cat /proc/meminfo | grep "^Mapped:" | awk '{print $2}'`
+mem_avail=`expr ${mem_free} + ${mem_cached} - ${mem_mapped}`
+mem_used=`expr ${mem_total} - ${mem_avail}`
 echo "Physical RAM check..."
-echo -e "Total Memory:\t${mem_total} MB\nUsed Memory:\t${mem_used} MB\nFree Memory:\t${mem_free} MB"
+echo -e "Total Memory:\t\t${mem_total} kB\nUsed Memory:\t\t${mem_used} kB\nAvailable Memory:\t${mem_avail} kB"
 prct_mem_used=`echo "${mem_used} ${mem_total}" | awk '{ printf("%.1g", $1 / $2) }'`
 echo "Memory used percent: ${prct_mem_used}"
 if expr ${prct_mem_used} '>' ${MEM_PRCT_THRESH} > /dev/null; then
 	echo "** Warning! Maximum memory used threshold (${MEM_PRCT_THRESH}) has been exceeded..." 1>&2
-	echo "Total Physical RAM: ${mem_total} MB" 1>&2
-	echo "Free Physical RAM: ${mem_free} MB" 1>&2
+	echo "Total Physical RAM: ${mem_total} kB" 1>&2
+	echo "Available Physical RAM: ${mem_free} kB" 1>&2
 fi
 
 # Check disk space (well, tmpfs root FS space)

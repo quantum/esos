@@ -981,7 +981,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
                 fs_mounted[fs_cnt] = FALSE;
             else
                 fs_mounted[fs_cnt] = TRUE;
-            asprintf(&scroll_list[fs_cnt], "<C>%-25s%-20s%-5s (Mounted: %d)", fs_names[fs_cnt],
+            asprintf(&scroll_list[fs_cnt], "<C>%-25.25s%-20.20s%-5.5s (Mounted: %d)", fs_names[fs_cnt],
                     fs_paths[fs_cnt], fs_types[fs_cnt], fs_mounted[fs_cnt]);
             fs_cnt++;
         }
