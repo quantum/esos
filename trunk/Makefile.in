@@ -152,7 +152,7 @@ image: $(build_targets)
 	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)
 	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.cfg > $(MOUNT_DIR)/boot/grub/grub.cfg
-	$(LN) /usr/share/zoneinfo/UTC $(MOUNT_DIR)/etc/localtime
+	$(LN) /usr/share/zoneinfo/posix/UTC $(MOUNT_DIR)/etc/localtime
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/startup.sh $(MOUNT_DIR)/usr/local/sbin/

@@ -11,9 +11,9 @@
 #include <cdk.h>
 #include <curses.h>
 
-#include "menu_actions-hosts.h"
-#include "menu_actions.h"
-#include "main.h"
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 
 /*
  * Run the Add Group dialog

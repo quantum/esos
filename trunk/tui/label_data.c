@@ -11,8 +11,9 @@
 #include <errno.h>
 #include <cdk.h>
 
-#include "label_data.h"
-#include "main.h"
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 
 /*
  * Grab the sysfs data for the adapters label

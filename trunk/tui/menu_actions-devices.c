@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <cdk.h>
 
-#include "menu_actions-devices.h"
-#include "menu_actions.h"
-#include "main.h"
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 
 /*
  * Run the Device Information dialog
@@ -32,7 +32,8 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
         return;
     
     /* Setup scrolling window widget */
-    dev_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 20, 75,
+    dev_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+            DEV_INFO_ROWS+2, DEV_INFO_COLS+2,
             "<C></31/B>SCST Device Information:\n",
             MAX_DEV_INFO_LINES, TRUE, FALSE);
     if (!dev_info) {
@@ -151,10 +152,14 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Add a message to the bottom explaining how to close the dialog */
-    asprintf(&swindow_info[line_cnt], " ");
-    line_cnt++;
-    asprintf(&swindow_info[line_cnt], CONTINUE_MSG);
-    line_cnt++;
+    if (line_cnt < MAX_DEV_INFO_LINES) {
+        asprintf(&swindow_info[line_cnt], " ");
+        line_cnt++;
+    }
+    if (line_cnt < MAX_DEV_INFO_LINES) {
+        asprintf(&swindow_info[line_cnt], CONTINUE_MSG);
+        line_cnt++;
+    }
 
     /* Set the scrolling window content */
     setCDKSwindowContents(dev_info, swindow_info, line_cnt);

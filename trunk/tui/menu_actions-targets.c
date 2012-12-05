@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <cdk.h>
 
-#include "menu_actions-targets.h"
-#include "menu_actions.h"
-#include "main.h"
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 
 /*
  * Run the Target Information dialog
@@ -34,7 +34,8 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
         return;
     
     /* Setup scrolling window widget */
-    tgt_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
+    tgt_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+            TGT_INFO_ROWS+2, TGT_INFO_COLS+2,
             "<C></31/B>SCST Target Information:\n",
             MAX_TGT_INFO_LINES, TRUE, FALSE);
     if (!tgt_info) {
@@ -71,8 +72,10 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
             /* The group names are directories; skip '.' and '..' */
             if (dir_entry->d_type == DT_DIR) {
                 if (i > 1) {
-                    asprintf(&swindow_info[line_pos], "\t%s", dir_entry->d_name);
-                    line_pos++;
+                    if (line_pos < MAX_TGT_INFO_LINES) {
+                        asprintf(&swindow_info[line_pos], "\t%s", dir_entry->d_name);
+                        line_pos++;
+                    }
                 }
                 i++;
             }
@@ -81,12 +84,16 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
         /* Close the directory stream */
         closedir(dir_stream);
     }
-    
+
     /* Add a message to the bottom explaining how to close the dialog */
-    asprintf(&swindow_info[line_pos], " ");
-    line_pos++;
-    asprintf(&swindow_info[line_pos], CONTINUE_MSG);
-    line_pos++;
+    if (line_pos < MAX_TGT_INFO_LINES) {
+        asprintf(&swindow_info[line_pos], " ");
+        line_pos++;
+    }
+    if (line_pos < MAX_TGT_INFO_LINES) {
+        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        line_pos++;
+    }
     
     /* Set the scrolling window content */
     setCDKSwindowContents(tgt_info, swindow_info, line_pos);
@@ -243,7 +250,8 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
     struct dirent *dir_entry = NULL;
 
     /* Setup scrolling window widget */
-    lip_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 8, 46,
+    lip_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+            LIP_INFO_ROWS+2, LIP_INFO_COLS+2,
             "<C></31/B>Issuing LIP on all Fibre Channel targets:\n",
             MAX_LIP_INFO_LINES, TRUE, FALSE);
     if (!lip_info) {
@@ -268,8 +276,11 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
         while ((dir_entry = readdir(dir_stream)) != NULL) {
             /* The FC host names are links */
             if (dir_entry->d_type == DT_LNK) {
-                asprintf(&swindow_msg[i], "<C>LIP on FC host %s...", dir_entry->d_name);
-                addCDKSwindow(lip_info, swindow_msg[i], BOTTOM);
+                if (i < MAX_LIP_INFO_LINES) {
+                    asprintf(&swindow_msg[i], "<C>LIP on FC host %s...", dir_entry->d_name);
+                    addCDKSwindow(lip_info, swindow_msg[i], BOTTOM);
+                    i++;
+                }
 
                 /* Write the sysfs attribute (issue_lip) */
                 snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/%s/issue_lip",
@@ -280,7 +291,6 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     freeChar(error_msg);
                 }
-                i++;
             }
         }
 

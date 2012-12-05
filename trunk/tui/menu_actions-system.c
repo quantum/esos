@@ -21,9 +21,9 @@
 #include <cdk/swindow.h>
 #include <sys/time.h>
 
-#include "menu_actions-system.h"
-#include "menu_actions.h"
-#include "main.h"
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 
 /*
  * Run the Networking dialog
@@ -587,9 +587,9 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
  */
 void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *net_restart_info = 0;
-    char *swindow_info[MAX_NET_RESTART_INFO_ROWS] = {NULL};
+    char *swindow_info[MAX_NET_RESTART_INFO_LINES] = {NULL};
     char *error_msg = NULL;
-    char net_rc_cmd[100] = {0}, line[MAX_NET_RESTART_INFO_COLS] = {0};
+    char net_rc_cmd[MAX_SHELL_CMD_LEN] = {0}, line[NET_RESTART_INFO_COLS] = {0};
     int i = 0, status = 0;
     FILE *net_rc = NULL;
     boolean confirm = FALSE;
@@ -603,8 +603,8 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Setup scrolling window widget */
     net_restart_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-            MAX_NET_RESTART_INFO_ROWS+2, MAX_NET_RESTART_INFO_COLS+2,
-            "<C></31/B>Restarting networking services...\n", MAX_NET_RESTART_INFO_ROWS,
+            NET_RESTART_INFO_ROWS+2, NET_RESTART_INFO_COLS+2,
+            "<C></31/B>Restarting networking services...\n", MAX_NET_RESTART_INFO_LINES,
             TRUE, FALSE);
     if (!net_restart_info) {
         errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -618,10 +618,12 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     i = 0;
 
     /* Stop networking */
-    asprintf(&swindow_info[i], "</B>Stopping network:<!B>");
-    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-    i++;
-    snprintf(net_rc_cmd, 100, "%s stop", RC_NETWORK);
+    if (i < MAX_NET_RESTART_INFO_LINES) {
+        asprintf(&swindow_info[i], "</B>Stopping network:<!B>");
+        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+        i++;
+    }
+    snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s stop", RC_NETWORK);
     net_rc = popen(net_rc_cmd, "r");
     if (!net_rc) {
         asprintf(&error_msg, "popen: %s", strerror(errno));
@@ -630,9 +632,11 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     } else {
         while (fgets(line, sizeof (line), net_rc) != NULL) {
-            asprintf(&swindow_info[i], "%s", line);
-            addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-            i++;
+            if (i < MAX_NET_RESTART_INFO_LINES) {
+                asprintf(&swindow_info[i], "%s", line);
+                addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+                i++;
+            }
         }
         status = pclose(net_rc);
         if (status == -1) {
@@ -652,13 +656,17 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Start networking */
-    asprintf(&swindow_info[i], " ");
-    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-    i++;
-    asprintf(&swindow_info[i], "</B>Starting network:<!B>");
-    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-    i++;
-    snprintf(net_rc_cmd, 100, "%s start", RC_NETWORK);
+    if (i < MAX_NET_RESTART_INFO_LINES) {
+        asprintf(&swindow_info[i], " ");
+        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+        i++;
+    }
+    if (i < MAX_NET_RESTART_INFO_LINES) {
+        asprintf(&swindow_info[i], "</B>Starting network:<!B>");
+        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+        i++;
+    }
+    snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s start", RC_NETWORK);
     net_rc = popen(net_rc_cmd, "r");
     if (!net_rc) {
         asprintf(&error_msg, "popen: %s", strerror(errno));
@@ -667,9 +675,11 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     } else {
         while (fgets(line, sizeof (line), net_rc) != NULL) {
-            asprintf(&swindow_info[i], "%s", line);
-            addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-            i++;
+            if (i < MAX_NET_RESTART_INFO_LINES) {
+                asprintf(&swindow_info[i], "%s", line);
+                addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+                i++;
+            }
         }
         status = pclose(net_rc);
         if (status == -1) {
@@ -687,12 +697,16 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
             }
         }
     }
-    asprintf(&swindow_info[i], " ");
-    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-    i++;
-    asprintf(&swindow_info[i], CONTINUE_MSG);
-    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-    i++;
+    if (i < MAX_NET_RESTART_INFO_LINES) {
+        asprintf(&swindow_info[i], " ");
+        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+        i++;
+    }
+    if (i < MAX_NET_RESTART_INFO_LINES) {
+        asprintf(&swindow_info[i], CONTINUE_MSG);
+        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+        i++;
+    }
 
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(net_restart_info, 'g');
@@ -702,7 +716,7 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     cleanup:
     if (net_restart_info)
         destroyCDKSwindow(net_restart_info);
-    for (i = 0; i < MAX_NET_RESTART_INFO_ROWS; i++) {
+    for (i = 0; i < MAX_NET_RESTART_INFO_LINES; i++) {
         freeChar(swindow_info[i]);
     }
     return;
@@ -1506,16 +1520,16 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *scst_info = 0;
     char scst_ver[MAX_SYSFS_ATTR_SIZE] = {0}, scst_setup_id[MAX_SYSFS_ATTR_SIZE] = {0},
             scst_threads[MAX_SYSFS_ATTR_SIZE] = {0}, scst_sysfs_res[MAX_SYSFS_ATTR_SIZE] = {0},
-            tmp_sysfs_path[MAX_SYSFS_PATH_SIZE] = {0}, tmp_attr_line[MAX_SCST_INFO_COLS] = {0};
-    char *swindow_info[MAX_SCST_INFO_ROWS] = {NULL};
+            tmp_sysfs_path[MAX_SYSFS_PATH_SIZE] = {0}, tmp_attr_line[SCST_INFO_COLS] = {0};
+    char *swindow_info[MAX_SCST_INFO_LINES] = {NULL};
     char *temp_pstr = NULL;
     FILE *sysfs_file = NULL;
     int i = 0;
     
     /* Setup scrolling window widget */
     scst_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-            MAX_SCST_INFO_ROWS+2, MAX_SCST_INFO_COLS+2,
-            "<C></31/B>SCST Information / Statistics:\n", MAX_SCST_INFO_ROWS,
+            SCST_INFO_ROWS+2, SCST_INFO_COLS+2,
+            "<C></31/B>SCST Information / Statistics:\n", MAX_SCST_INFO_LINES,
             TRUE, FALSE);
     if (!scst_info) {
         errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -1552,21 +1566,27 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
         addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
     } else {
         while (fgets(tmp_attr_line, sizeof (tmp_attr_line), sysfs_file) != NULL) {
-            temp_pstr = strrchr(tmp_attr_line, '\n');
-            if (temp_pstr)
-                *temp_pstr = '\0';
-            asprintf(&swindow_info[i], "%s", tmp_attr_line);
-            addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
-            i++;
+            if (i < MAX_SCST_INFO_LINES) {
+                temp_pstr = strrchr(tmp_attr_line, '\n');
+                if (temp_pstr)
+                    *temp_pstr = '\0';
+                asprintf(&swindow_info[i], "%s", tmp_attr_line);
+                addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
+                i++;
+            }
         }
         fclose(sysfs_file);
     }
-    asprintf(&swindow_info[i], " ");
-    addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
-    i++;
-    asprintf(&swindow_info[i], CONTINUE_MSG);
-    addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
-    i++;
+    if (i < MAX_SCST_INFO_LINES) {
+        asprintf(&swindow_info[i], " ");
+        addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
+        i++;
+    }
+    if (i < MAX_SCST_INFO_LINES) {
+        asprintf(&swindow_info[i], CONTINUE_MSG);
+        addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
+        i++;
+    }
 
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(scst_info, 'g');
@@ -1574,7 +1594,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
 
     /* We fell through -- the user exited the widget, but we don't care how */
     destroyCDKSwindow(scst_info);
-    for (i = 0; i < MAX_SCST_INFO_ROWS; i++) {
+    for (i = 0; i < MAX_SCST_INFO_LINES; i++) {
         freeChar(swindow_info[i]);
     }
     return;
