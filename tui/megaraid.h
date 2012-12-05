@@ -11,7 +11,6 @@ extern "C" {
 
 #include <cdk.h>
 
-#define MEGACLI "/opt/sbin/MegaCli64 2>&1"
 #define MAX_MC_LINE 120
 #define MAX_MR_ATTR_SIZE 80
 #define MAX_MR_DISKS 300
@@ -22,11 +21,15 @@ extern "C" {
 #define MAX_DISKS 300
 #define MAX_LD_NAME 15
 
-// This is now defined in cdk.h so there isn't really a need for this; delete later after testing.
+/* We re-use boolean from cdk.h */
 /*typedef int boolean;*/
 
+#ifndef TRUE
 #define TRUE 1
+#endif
+#ifndef FALSE
 #define FALSE 0
+#endif
 
 typedef struct megaraid_adapter MRADAPTER;
 struct megaraid_adapter {
@@ -100,6 +103,7 @@ struct megaraid_ld_props {
     char name[MAX_MR_ATTR_SIZE];                /* Name String (no spaces) */
 };
 
+/* Function prototypes */
 char *getMegaCLIVersion();
 int getMRAdapterCount();
 MRADAPTER *getMRAdapter(int adapter_id);

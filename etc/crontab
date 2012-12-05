@@ -18,4 +18,4 @@ HOME=/
 30 * * * * root /usr/local/sbin/health_chk.sh > /dev/null
 
 # Set the system time
-40 * * * * root if [ -s "/etc/ntp_server" ]; then /usr/sbin/ntpd -n -q -N -p `/bin/cat /etc/ntp_server`; fi
+40 * * * * root if [ -s "/etc/ntp_server" ]; then /usr/sbin/ntpd -n -q -N -p `/bin/cat /etc/ntp_server`; fi > /dev/null

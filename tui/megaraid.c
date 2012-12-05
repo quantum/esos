@@ -12,8 +12,10 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 #include "megaraid.h"
-#include "main.h"
 
 /*
  * Get MegaCLI version -- just the actual number for now.

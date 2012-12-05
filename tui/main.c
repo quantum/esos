@@ -11,14 +11,9 @@
 #include <cdk.h>
 #include <sys/wait.h>
 
-#include "main.h"
-#include "label_data.h"
-#include "menu_actions.h"
-#include "menu_actions-back_storage.h"
-#include "menu_actions-devices.h"
-#include "menu_actions-hosts.h"
-#include "menu_actions-system.h"
-#include "menu_actions-targets.h"
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 
 int main(int argc, char** argv) {
     CDKSCREEN *cdk_screen = 0;
@@ -662,8 +657,8 @@ char *strStrip(char *string) {
  */
 void statusBar(WINDOW *window) {
     FILE *ver_file = NULL;
-    char esos_ver[ESOS_VER_MAX] = {0}, esos_ver_str[ESOS_VER_MAX] = {0},
-            username_str[USERNAME_MAX] = {0};
+    char esos_ver[STAT_BAR_ESOS_VER_MAX] = {0}, esos_ver_str[STAT_BAR_ESOS_VER_MAX] = {0},
+            username_str[STAT_BAR_UNAME_MAX] = {0};
     int esos_ver_size = 0, username_size = 0, bar_space = 0, junk = 0;
     uid_t ruid = 0, euid = 0, suid = 0;
     struct passwd *pwd = NULL;
@@ -673,19 +668,19 @@ void statusBar(WINDOW *window) {
     /* Open the ESOS release/version file and get version information */
     ver_file = fopen(ESOS_VER_FILE, "r");
     if (ver_file == NULL) {
-        snprintf(esos_ver, ESOS_VER_MAX, "%s: %s", ESOS_VER_FILE,
+        snprintf(esos_ver, STAT_BAR_ESOS_VER_MAX, "%s: %s", ESOS_VER_FILE,
                 strerror(errno));
     } else {
         fgets(esos_ver, sizeof(esos_ver), ver_file);
         fclose(ver_file);
     }
-    strncpy(esos_ver_str, strStrip(esos_ver), ESOS_VER_MAX);
+    strncpy(esos_ver_str, strStrip(esos_ver), STAT_BAR_ESOS_VER_MAX);
     esos_ver_size = strlen(esos_ver_str);
 
     /* Get username */
     getresuid(&ruid, &euid, &suid);
     pwd = getpwuid(suid);
-    strncpy(username_str, pwd->pw_name, USERNAME_MAX);
+    strncpy(username_str, pwd->pw_name, STAT_BAR_UNAME_MAX);
     username_size = strlen(username_str);
 
     /* Figure out spacing for status bar */

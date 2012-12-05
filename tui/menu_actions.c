@@ -12,8 +12,9 @@
 #include <cdk/cdkscreen.h>
 #include <mntent.h>
 
-#include "menu_actions.h"
-#include "main.h"
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 
 /*
  * Generic error dialog; takes an error message and displays a nice red

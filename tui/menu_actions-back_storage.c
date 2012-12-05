@@ -16,9 +16,9 @@
 #include <sys/param.h>
 #include <limits.h>
 
-#include "menu_actions-back_storage.h"
-#include "menu_actions.h"
-#include "main.h"
+#include "prototypes.h"
+#include "system.h"
+#include "dialogs.h"
 #include "megaraid.h"
 
 /*
@@ -283,8 +283,8 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     /* Setup scrolling window widget */
     asprintf(&encl_title, "<C></31/B>Enclosures/Slots on MegaRAID Adapter # %d:\n",
             adp_choice);
-    encl_swindow = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 18, 74,
-            encl_title, MAX_ADP_INFO_LINES, TRUE, FALSE);
+    encl_swindow = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+            ADP_INFO_ROWS+2, ADP_INFO_COLS+2, encl_title, MAX_ADP_INFO_LINES, TRUE, FALSE);
     if (!encl_swindow) {
         errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
         return;
@@ -295,34 +295,42 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     /* Add enclosure/disk information */
     line_pos = 0;
     for (i = 0; i < encl_count; i++) {
-        asprintf(&swindow_info[line_pos],
-                "</B>Enclosure %d (%s %s)",
-                i, mr_enclosures[i]->vendor, mr_enclosures[i]->product);
-        addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
-        line_pos++;
-        asprintf(&swindow_info[line_pos],
-                "</B>Device ID: %d, Status: %s, Slots: %d",
-                mr_enclosures[i]->device_id, mr_enclosures[i]->status,
-                mr_enclosures[i]->slots);
-        addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
-        for (j = 0; j < mr_enclosures[i]->slots; j++) {
+        if (line_pos < MAX_ADP_INFO_LINES) {
+            asprintf(&swindow_info[line_pos],
+                    "</B>Enclosure %d (%s %s)",
+                    i, mr_enclosures[i]->vendor, mr_enclosures[i]->product);
+            addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
             line_pos++;
+        }
+        if (line_pos < MAX_ADP_INFO_LINES) {
+            asprintf(&swindow_info[line_pos],
+                    "</B>Device ID: %d, Status: %s, Slots: %d",
+                    mr_enclosures[i]->device_id, mr_enclosures[i]->status,
+                    mr_enclosures[i]->slots);
+            addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
+            line_pos++;
+        }
+        for (j = 0; (j < mr_enclosures[i]->slots) && (line_pos < MAX_ADP_INFO_LINES); j++) {
             if (mr_disks[i][j]->present)
                 asprintf(&swindow_info[line_pos], "\tSlot %3d: %s", j, mr_disks[i][j]->inquiry);
             else
                 asprintf(&swindow_info[line_pos], "\tSlot %3d: Not Present", j);
             addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
+            line_pos++;
         }
-        line_pos++;
     }
 
     /* Add a message to the bottom explaining how to close the dialog */
-    asprintf(&swindow_info[line_pos], " ");
-    addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
-    line_pos++;
-    asprintf(&swindow_info[line_pos], CONTINUE_MSG);
-    addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
-    line_pos++;
+    if (line_pos < MAX_ADP_INFO_LINES) {
+        asprintf(&swindow_info[line_pos], " ");
+        addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
+        line_pos++;
+    }
+    if (line_pos < MAX_ADP_INFO_LINES) {
+        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
+        line_pos++;
+    }
 
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(encl_swindow, 'g');
@@ -1125,7 +1133,7 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
     char *swindow_info[MAX_DRBD_INFO_LINES] = {NULL};
     char *error_msg = NULL;
     int i = 0, line_pos = 0;
-    char line[MAX_PROC_LINE] = {0};
+    char line[DRBD_INFO_COLS] = {0};
     FILE *drbd_file = NULL;
 
     /* Open the file */
@@ -1135,7 +1143,8 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
         freeChar(error_msg);
     } else {
         /* Setup scrolling window widget */
-        drbd_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
+        drbd_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+                DRBD_INFO_ROWS+2, DRBD_INFO_COLS+2,
                 "<C></31/B>Distributed Replicated Block Device (DRBD) Information:\n",
                 MAX_DRBD_INFO_LINES, TRUE, FALSE);
         if (!drbd_info) {
@@ -1148,16 +1157,22 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
         /* Add the contents to the scrolling window widget */
         line_pos = 0;
         while (fgets(line, sizeof (line), drbd_file) != NULL) {
-            asprintf(&swindow_info[line_pos], "%s", line);
-            line_pos++;
+            if (line_pos < MAX_DRBD_INFO_LINES) {
+                asprintf(&swindow_info[line_pos], "%s", line);
+                line_pos++;
+            }
         }
         fclose(drbd_file);
 
         /* Add a message to the bottom explaining how to close the dialog */
-        asprintf(&swindow_info[line_pos], " ");
-        line_pos++;
-        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
-        line_pos++;
+        if (line_pos < MAX_DRBD_INFO_LINES) {
+            asprintf(&swindow_info[line_pos], " ");
+            line_pos++;
+        }
+        if (line_pos < MAX_DRBD_INFO_LINES) {
+            asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+            line_pos++;
+        }
 
         /* Set the scrolling window content */
         setCDKSwindowContents(drbd_info, swindow_info, line_pos);
@@ -1185,7 +1200,7 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
     char *swindow_info[MAX_MDSTAT_INFO_LINES] = {NULL};
     char *error_msg = NULL;
     int i = 0, line_pos = 0;
-    char line[MAX_PROC_LINE] = {0};
+    char line[MDSTAT_INFO_COLS] = {0};
     FILE *mdstat_file = NULL;
 
     /* Open the file */
@@ -1195,7 +1210,8 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
         freeChar(error_msg);
     } else {
         /* Setup scrolling window widget */
-        mdstat_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
+        mdstat_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+                MDSTAT_INFO_ROWS+2, MDSTAT_INFO_COLS+2,
                 "<C></31/B>Linux Software RAID (md) Status:\n",
                 MAX_MDSTAT_INFO_LINES, TRUE, FALSE);
         if (!mdstat_info) {
@@ -1208,16 +1224,22 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
         /* Add the contents to the scrolling window widget */
         line_pos = 0;
         while (fgets(line, sizeof (line), mdstat_file) != NULL) {
-            asprintf(&swindow_info[line_pos], "%s", line);
-            line_pos++;
+            if (line_pos < MAX_MDSTAT_INFO_LINES) {
+                asprintf(&swindow_info[line_pos], "%s", line);
+                line_pos++;
+            }
         }
         fclose(mdstat_file);
 
         /* Add a message to the bottom explaining how to close the dialog */
-        asprintf(&swindow_info[line_pos], " ");
-        line_pos++;
-        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
-        line_pos++;
+        if (line_pos < MAX_MDSTAT_INFO_LINES) {
+            asprintf(&swindow_info[line_pos], " ");
+            line_pos++;
+        }
+        if (line_pos < MAX_MDSTAT_INFO_LINES) {
+            asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+            line_pos++;
+        }
 
         /* Set the scrolling window content */
         setCDKSwindowContents(mdstat_info, swindow_info, line_pos);
@@ -1245,7 +1267,7 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
     char *swindow_info[MAX_LVM2_INFO_LINES] = {NULL};
     char *error_msg = NULL, *lvdisplay_cmd = NULL;
     int i = 0, line_pos = 0, status = 0, ret_val = 0;
-    char line[MAX_PROC_LINE] = {0};
+    char line[LVM2_INFO_COLS] = {0};
     FILE *lvdisplay_proc = NULL;
 
     /* Run the lvdisplay command */
@@ -1258,15 +1280,21 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
         /* Add the contents to the scrolling window widget */
         line_pos = 0;
         while (fgets(line, sizeof (line), lvdisplay_proc) != NULL) {
-            asprintf(&swindow_info[line_pos], "%s", line);
-            line_pos++;
+            if (line_pos < MAX_LVM2_INFO_LINES) {
+                asprintf(&swindow_info[line_pos], "%s", line);
+                line_pos++;
+            }
         }
 
         /* Add a message to the bottom explaining how to close the dialog */
-        asprintf(&swindow_info[line_pos], " ");
-        line_pos++;
-        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
-        line_pos++;
+        if (line_pos < MAX_LVM2_INFO_LINES) {
+            asprintf(&swindow_info[line_pos], " ");
+            line_pos++;
+        }
+        if (line_pos < MAX_LVM2_INFO_LINES) {
+            asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+            line_pos++;
+        }
         
         /* Close the process stream and check exit status */
         if ((status = pclose(lvdisplay_proc)) == -1) {
@@ -1279,7 +1307,8 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
         }
         if (ret_val == 0) {
             /* Setup scrolling window widget */
-            lvm2_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER, 12, 60,
+            lvm2_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+                    LVM2_INFO_ROWS+2, LVM2_INFO_COLS+2,
                     "<C></31/B>LVM2 Logical Volume Information:\n",
                     MAX_LVM2_INFO_LINES, TRUE, FALSE);
             if (!lvm2_info) {
@@ -1330,7 +1359,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     char *block_dev = NULL, *error_msg = NULL, *cmd_str = NULL, *confirm_msg = NULL,
             *dev_node_ptr = NULL, *device_size = NULL, *tmp_str_ptr = NULL;
     char *fs_dialog_msg[MAX_FS_DIALOG_INFO_LINES] = {NULL},
-            *swindow_info[MAX_MAKE_FS_INFO_ROWS] = {NULL};
+            *swindow_info[MAX_MAKE_FS_INFO_LINES] = {NULL};
     static char *transport[] = {"unknown", "scsi", "ide", "dac960", "cpqarray",
     "file", "ataraid", "i2o", "ubd", "dasd", "viodasd", "sx8", "dm"};
     static char *fs_type_opts[] = {"xfs", "ext2", "ext3", "ext4"};
@@ -1592,9 +1621,9 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
         if (confirm) {
             /* A scroll window to show progress */
             make_fs_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-                    MAX_MAKE_FS_INFO_ROWS + 2, MAX_MAKE_FS_INFO_COLS + 2,
+                    MAKE_FS_INFO_ROWS+2, MAKE_FS_INFO_COLS+2,
                     "<C></31/B>Setting up new file system...\n",
-                    MAX_MAKE_FS_INFO_ROWS, TRUE, FALSE);
+                    MAX_MAKE_FS_INFO_LINES, TRUE, FALSE);
             if (!make_fs_info) {
                 errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
                 return;
@@ -1609,9 +1638,11 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             if ((strstr(block_dev, "/dev/md") == NULL) &&
                     (strstr(block_dev, "/dev/dm-") == NULL) &&
                     (strstr(block_dev, "/dev/drbd") == NULL)) {
-                asprintf(&swindow_info[i], "<C>Creating new disk label and partition...");
-                addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
-                i++;
+                if (i < MAX_MAKE_FS_INFO_LINES) {
+                    asprintf(&swindow_info[i], "<C>Creating new disk label and partition...");
+                    addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
+                    i++;
+                }
                 if ((device = ped_device_get(block_dev)) == NULL) {
                     errorDialog(main_cdk_screen, "Calling ped_device_get() failed.", NULL);
                     goto cleanup;
@@ -1647,9 +1678,11 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             }
 
             /* Create the file system */
-            asprintf(&swindow_info[i], "<C>Creating new %s file system...", fs_type_opts[temp_int]);
-            addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
-            i++;
+            if (i < MAX_MAKE_FS_INFO_LINES) {
+                asprintf(&swindow_info[i], "<C>Creating new %s file system...", fs_type_opts[temp_int]);
+                addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
+                i++;
+            }
             snprintf(mkfs_cmd, 100, "mkfs.%s -L %s %s > /dev/null 2>&1",
                     fs_type_opts[temp_int], fs_label_buff, new_blk_dev_node);
             ret_val = system(mkfs_cmd);
@@ -1661,9 +1694,11 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             }
 
             /* Add the new file system entry to the fstab file */
-            asprintf(&swindow_info[i], "<C>Adding new entry to fstab file...");
-            addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
-            i++;
+            if (i < MAX_MAKE_FS_INFO_LINES) {
+                asprintf(&swindow_info[i], "<C>Adding new entry to fstab file...");
+                addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
+                i++;
+            }
             /* Open the original file system tab file */
             if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
                 asprintf(&error_msg, "setmntent: %s", strerror(errno));
@@ -1737,7 +1772,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     cleanup:
     if (make_fs_info)
         destroyCDKSwindow(make_fs_info);
-    for (i = 0; i < MAX_MAKE_FS_INFO_ROWS; i++)
+    for (i = 0; i < MAX_MAKE_FS_INFO_LINES; i++)
         freeChar(swindow_info[i]);
     for (i = 0; i < info_line_cnt; i++)
         freeChar(fs_dialog_msg[i]);
