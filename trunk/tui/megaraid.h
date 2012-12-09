@@ -11,15 +11,17 @@ extern "C" {
 
 #include <cdk.h>
 
-#define MAX_MC_LINE 120
-#define MAX_MR_ATTR_SIZE 80
-#define MAX_MR_DISKS 300
-#define MAX_MR_LDS 100
-#define MAX_MR_ENCLS 50
-#define MAX_ADAPTERS 10
-#define MAX_ENCLOSURES 30
-#define MAX_DISKS 300
-#define MAX_LD_NAME 15
+/* MegaRAID specific limits */
+#define MAX_MC_LINE             120
+#define MAX_MR_ATTR_SIZE        128
+#define MAX_MR_DISKS            300
+#define MAX_MR_LDS              100
+#define MAX_MR_ENCLS            50
+#define MAX_ADAPTERS            10
+#define MAX_ENCLOSURES          30
+#define MAX_DISKS               300
+#define MAX_LD_NAME             15
+#define MAX_MR_PD_LIST_BUFF     512
 
 /* We re-use boolean from cdk.h */
 /*typedef int boolean;*/
@@ -31,6 +33,7 @@ extern "C" {
 #define FALSE 0
 #endif
 
+/* Structure to hold MegaRAID adapter data */
 typedef struct megaraid_adapter MRADAPTER;
 struct megaraid_adapter {
     int adapter_id;
@@ -46,6 +49,7 @@ struct megaraid_adapter {
     char cluster_on[MAX_MR_ATTR_SIZE];      /* Cluster Active */
 };
 
+/* Structure to hold MegaRAID disk data */
 typedef struct megaraid_disk MRDISK;
 struct megaraid_disk {
     int adapter_id;
@@ -60,6 +64,7 @@ struct megaraid_disk {
     boolean part_of_ld;                 /* Belongs to an LD, or no */
 };
 
+/* Structure to hold MegaRAID logical drive (LD) data */
 typedef struct megaraid_logical_drive MRLDRIVE;
 struct megaraid_logical_drive {
     int adapter_id;
@@ -71,6 +76,7 @@ struct megaraid_logical_drive {
     int drive_cnt;                      /* Number Of Drives */
 };
 
+/* Structure to hold MegaRAID enclosure data */
 typedef struct megaraid_enclosure MRENCL;
 struct megaraid_enclosure {
     int adapter_id;
@@ -83,6 +89,7 @@ struct megaraid_enclosure {
     char product[MAX_MR_ATTR_SIZE]; /* Product Identification */
 };
 
+/* Structure to hold MegaRAID adapter properties */
 typedef struct megaraid_adp_props MRADPPROPS;
 struct megaraid_adp_props {
     int adapter_id;
@@ -92,6 +99,7 @@ struct megaraid_adp_props {
     boolean ncq;        /* Enable/Disable native command queueing. */
 };
 
+/* Structure to hold MegaRAID logical drive (LD) properties */
 typedef struct megaraid_ld_props MRLDPROPS;
 struct megaraid_ld_props {
     int adapter_id;

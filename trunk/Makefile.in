@@ -429,6 +429,7 @@ zlib: glibc
 	$(TOUCH) $(@)
 
 ncurses: glibc gcc
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/ncurses-5.7.patch
 	cd $(src_dir) && ./configure --prefix=/usr --with-shared --without-gpm
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install

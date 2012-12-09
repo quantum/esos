@@ -64,7 +64,7 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups",
             SYSFS_SCST_TGT, tgt_driver, scst_tgt);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        asprintf(&swindow_info[line_pos], "opendir: %s", strerror(errno));
+        asprintf(&swindow_info[line_pos], "opendir(): %s", strerror(errno));
     } else {
         /* Loop over each entry in the directory */
         i = 0;
@@ -119,10 +119,10 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
 void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *tgt_name_entry = 0;
     char temp_str[SCST_ISCSI_TGT_LEN] = {0},
-        attr_path[MAX_SYSFS_PATH_SIZE] = {0},
-        attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
-        nice_date[20] = {0}, hostname[20] = {0}, rand_str[5] = {0},
-        def_iqn[SCST_ISCSI_TGT_LEN] = {0};
+            attr_path[MAX_SYSFS_PATH_SIZE] = {0},
+            attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
+            nice_date[MISC_STRING_LEN] = {0}, hostname[MISC_STRING_LEN] = {0},
+            rand_str[MISC_STRING_LEN] = {0}, def_iqn[SCST_ISCSI_TGT_LEN] = {0};
     static char hex_str[] = "0123456789abcdef";
     char *entry_title = NULL, *target_name = NULL, *error_msg = NULL, *tmp_pstr = NULL;
     int i = 0, temp_int = 0;
@@ -139,9 +139,11 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
     if (tmp_pstr)
         *tmp_pstr = '\0';
     srand(time(NULL));
-    snprintf(rand_str, 5, "%c%c%c%c%c", hex_str[rand()%16], hex_str[rand()%16],
-            hex_str[rand()%16], hex_str[rand()%16], hex_str[rand()%16]);
-    snprintf(def_iqn, SCST_ISCSI_TGT_LEN, "iqn.%s.esos.%s:%s", nice_date, hostname, rand_str);
+    snprintf(rand_str, MISC_STRING_LEN, "%c%c%c%c%c",
+            hex_str[rand()%16], hex_str[rand()%16],hex_str[rand()%16],
+            hex_str[rand()%16], hex_str[rand()%16]);
+    snprintf(def_iqn, SCST_ISCSI_TGT_LEN, "iqn.%s.esos.%s:%s",
+            nice_date, hostname, rand_str);
 
     /* Get new target name (entry widget) */
     asprintf(&entry_title, "<C></31/B>Adding a new iSCSI target...\n");
@@ -267,7 +269,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Open the Fibre Channel sysfs directory */
     if ((dir_stream = opendir(SYSFS_FC_HOST)) == NULL) {
-        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
     } else {
@@ -324,11 +326,10 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
             dir_name[MAX_SYSFS_PATH_SIZE] = {0};
     static char *dsbl_enbl[] = {"Disabled (0)", "Enabled (1)"};
     char *error_msg = NULL, *confirm_msg = NULL;
-    char *tgt_info_msg[5] = {NULL};
+    char *tgt_info_msg[TGT_ON_OFF_INFO_LINES] = {NULL};
     boolean confirm = FALSE;
-    int tgt_window_lines = 14, tgt_window_cols = 50;
-    int window_y = 0, window_x = 0, temp_int = 0, i = 0,
-            traverse_ret = 0, curr_state = 0, new_state = 0;
+    int tgt_window_lines = 0, tgt_window_cols = 0, window_y = 0, window_x = 0,
+            temp_int = 0, i = 0, traverse_ret = 0, curr_state = 0, new_state = 0;
     
     /* Have the user choose a SCST target */
     getSCSTTgtChoice(main_cdk_screen, scst_tgt, tgt_driver);
@@ -342,6 +343,8 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     curr_state = atoi(attr_value);
 
     /* New CDK screen */
+    tgt_window_lines = 14;
+    tgt_window_cols = 50;
     window_y = ((LINES / 2) - (tgt_window_lines / 2));
     window_x = ((COLS / 2) - (tgt_window_cols / 2));
     tgt_window = newwin(tgt_window_lines, tgt_window_cols, window_y, window_x);
@@ -368,7 +371,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     else if (curr_state == 1)
         asprintf(&tgt_info_msg[4], "Current state: Enabled");
     tgt_info = newCDKLabel(tgt_screen, (window_x + 1), (window_y + 1),
-            tgt_info_msg, 5, FALSE, FALSE);
+            tgt_info_msg, TGT_ON_OFF_INFO_LINES, FALSE, FALSE);
     if (!tgt_info) {
         errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
         goto cleanup;
@@ -409,23 +412,39 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
-        new_state = getCDKRadioSelectedItem(enbl_dsbl_radio);
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
 
         /* Check if we are actually changing anything */
+        new_state = getCDKRadioSelectedItem(enbl_dsbl_radio);
         if (new_state != curr_state) {
-            snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/enabled",
-                    SYSFS_SCST_TGT, tgt_driver, scst_tgt);
             if (new_state == 0) {
                 /* Enabled -> Disabled (we need a warning) */
-                asprintf(&confirm_msg, "Are you sure you want to disable SCST target %s (%s)?",
-                        scst_tgt, tgt_driver);
-                confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
+                asprintf(&confirm_msg, "%s (%s)?", scst_tgt, tgt_driver);
+                confirm = confirmDialog(main_cdk_screen,
+                        "Are you sure you want to disable SCST target",
+                        confirm_msg);
                 freeChar(confirm_msg);
                 if (!confirm)
                     goto cleanup;
             }
 
+            /* Make sure iSCSI targets are a possibility (driver level?) */
+            if (((strcmp(tgt_driver, "iscsi")) == 0) && (new_state == 1)) {
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/iscsi/enabled",
+                        SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d", new_state);
+                if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
+                    asprintf(&error_msg, "Couldn't enable iSCSI target support: %s",
+                            strerror(temp_int));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                }
+            }
+
             /* Set the new state for the target */
+            snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/enabled",
+                    SYSFS_SCST_TGT, tgt_driver, scst_tgt);
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d", new_state);
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
                 asprintf(&error_msg, "Couldn't set SCST target state: %s", strerror(temp_int));
@@ -437,9 +456,8 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
 
     /* All done */
     cleanup:
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < TGT_ON_OFF_INFO_LINES; i++)
         freeChar(tgt_info_msg[i]);
-    }
     if (tgt_screen != NULL) {
         destroyCDKScreenObjects(tgt_screen);
         destroyCDKScreen(tgt_screen);

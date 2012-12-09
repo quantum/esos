@@ -45,7 +45,7 @@ void readAdapterData(char *label_msg[]) {
     /* Fibre Channel HBA information */
     if ((dir_stream = opendir(SYSFS_FC_HOST)) == NULL) {
         if (row_cnt < ADAPTERS_LABEL_ROWS) {
-            snprintf(line_buffer, ADAPTERS_LABEL_COLS, "opendir: %s", strerror(errno));
+            snprintf(line_buffer, ADAPTERS_LABEL_COLS, "opendir(): %s", strerror(errno));
             asprintf(&label_msg[row_cnt], "%s", line_buffer);
         }
         return;
@@ -94,7 +94,7 @@ void readAdapterData(char *label_msg[]) {
     /* InfiniBand HCA information */
     if ((dir_stream = opendir(SYSFS_INFINIBAND)) == NULL) {
         if (row_cnt < ADAPTERS_LABEL_ROWS) {
-            snprintf(line_buffer, ADAPTERS_LABEL_COLS, "opendir: %s", strerror(errno));
+            snprintf(line_buffer, ADAPTERS_LABEL_COLS, "opendir(): %s", strerror(errno));
             asprintf(&label_msg[row_cnt], "%s", line_buffer);
         }
         return;
@@ -163,7 +163,7 @@ void readDeviceData(char *label_msg[]) {
                 SYSFS_SCST_TGT, handlers[i]);
         if ((dir_stream = opendir(dir_name)) == NULL) {
             if (row_cnt < DEVICES_LABEL_ROWS) {
-                snprintf(line_buffer, DEVICES_LABEL_COLS, "opendir: %s", strerror(errno));
+                snprintf(line_buffer, DEVICES_LABEL_COLS, "opendir(): %s", strerror(errno));
                 asprintf(&label_msg[row_cnt], "%s", line_buffer);
             }
             return;
@@ -213,7 +213,7 @@ void readTargetData(char *label_msg[]) {
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/iscsi", SYSFS_SCST_TGT);
     if ((dir_stream = opendir(dir_name)) == NULL) {
         if (row_cnt < TARGETS_LABEL_ROWS) {
-            snprintf(line_buffer, TARGETS_LABEL_COLS, "opendir: %s", strerror(errno));
+            snprintf(line_buffer, TARGETS_LABEL_COLS, "opendir(): %s", strerror(errno));
             asprintf(&label_msg[row_cnt], "%s", line_buffer);
         }
         return;

@@ -16,6 +16,7 @@ extern "C" {
 #define MAX_LABEL_LENGTH        50
 #define STAT_BAR_ESOS_VER_MAX   50
 #define STAT_BAR_UNAME_MAX      20
+#define CDK_MENU_MAX_SIZE       32
 
 /* Misc. ESOS system-wide settings */
 #define ESOS_SUPERUSER  "root"
@@ -23,6 +24,8 @@ extern "C" {
 #define MAX_USERS       32
 #define MAX_UNAME_LEN   20
 #define MAX_PASSWD_LEN  64
+#define ESOS_BOOT_PART  "esos_boot"
+#define DEFAULT_IF_MTU  "1500"
 
 /* System menu layout */
 #define SYSTEM_MENU             0
@@ -84,8 +87,9 @@ extern "C" {
 /* Misc. limits */
 #define GIBIBYTE_SIZE           1073741824LL
 #define MEBIBYTE_SIZE           1048576LL
-#define VDISK_WRITE_SIZE        4096
-#define MAX_SHELL_CMD_LEN       128
+#define VDISK_WRITE_SIZE        32768
+#define MAX_SHELL_CMD_LEN       256
+#define MISC_STRING_LEN         128
 
 /* Main screen information labels */
 #define ADAPTERS_LABEL_ROWS     8
@@ -96,62 +100,61 @@ extern "C" {
 #define TARGETS_LABEL_COLS      37
 
 /* System tools and utilities (binaries and scripts) */
-#define CLEAR_CMD "clear"
-#define SHELL "/bin/bash"
-#define MOUNT_BIN "/bin/mount"
-#define UMOUNT_BIN "/bin/umount"
-#define FINDFS_BIN "/usr/sbin/findfs"
-#define LVDISPLAY_BIN "/usr/sbin/lvdisplay"
-#define SG_VPD "/usr/bin/sg_vpd 2>&1"
-#define SCSTADMIN_TOOL "/usr/sbin/scstadmin"
-#define SYNC_CONF_TOOL "/usr/local/sbin/conf_sync.sh"
-#define MEGACLI "/opt/sbin/MegaCli64 2>&1"
-#define CHPASSWD_TOOL "/usr/sbin/chpasswd"
-#define ADDUSER_TOOL "/bin/adduser"
-#define DELUSER_TOOL "/bin/deluser"
-#define DELGROUP_TOOL "/bin/delgroup"
-#define TUI_BIN "/usr/local/bin/esos_tui"
-#define RC_NETWORK "/etc/rc.d/rc.network"
-#define SSMTP_BIN "/usr/sbin/ssmtp"
+#define CLEAR_BIN       "clear"
+#define SHELL           "/bin/bash"
+#define MOUNT_BIN       "/bin/mount"
+#define UMOUNT_BIN      "/bin/umount"
+#define LVDISPLAY_BIN   "/usr/sbin/lvdisplay"
+#define SG_VPD_BIN      "/usr/bin/sg_vpd"
+#define SCSTADMIN_TOOL  "/usr/sbin/scstadmin"
+#define SYNC_CONF_TOOL  "/usr/local/sbin/conf_sync.sh"
+#define MEGACLI_BIN     "/opt/sbin/MegaCli64"
+#define CHPASSWD_BIN    "/usr/sbin/chpasswd"
+#define ADDUSER_BIN     "/bin/adduser"
+#define DELUSER_BIN     "/bin/deluser"
+#define DELGROUP_BIN    "/bin/delgroup"
+#define TUI_BIN         "/usr/local/bin/esos_tui"
+#define RC_NETWORK      "/etc/rc.d/rc.network"
+#define SSMTP_BIN       "/usr/sbin/ssmtp"
 
 /* A few sysfs settings */
-#define SYSFS_FC_HOST "/sys/class/fc_host"
-#define SYSFS_INFINIBAND "/sys/class/infiniband"
-#define SYSFS_SCST_TGT "/sys/kernel/scst_tgt"
-#define SYSFS_SCSI_DISK "/sys/class/scsi_disk"
-#define SYSFS_BLOCK "/sys/block"
-#define MAX_SYSFS_ATTR_SIZE 256
-#define MAX_SYSFS_PATH_SIZE 256
+#define SYSFS_FC_HOST           "/sys/class/fc_host"
+#define SYSFS_INFINIBAND        "/sys/class/infiniband"
+#define SYSFS_SCST_TGT          "/sys/kernel/scst_tgt"
+#define SYSFS_SCSI_DISK         "/sys/class/scsi_disk"
+#define SYSFS_BLOCK             "/sys/block"
+#define MAX_SYSFS_ATTR_SIZE     256
+#define MAX_SYSFS_PATH_SIZE     256
 
 /* System files (configuration, etc.) */
-#define PROC_DRBD "/proc/drbd"
-#define PROC_MDSTAT "/proc/mdstat"
-#define SSMTP_CONF "/etc/ssmtp.conf"
-#define NETWORK_CONF "/etc/network.conf"
-#define NTP_SERVER "/etc/ntp_server"
-#define SCST_CONF "/etc/scst.conf"
-#define FSTAB "/etc/fstab"
-#define FSTAB_TMP "/etc/fstab.new"
-#define MTAB "/proc/mounts"
-#define ESOS_VER_FILE "/etc/esos-release"
+#define PROC_DRBD       "/proc/drbd"
+#define PROC_MDSTAT     "/proc/mdstat"
+#define SSMTP_CONF      "/etc/ssmtp.conf"
+#define NETWORK_CONF    "/etc/network.conf"
+#define NTP_SERVER      "/etc/ntp_server"
+#define SCST_CONF       "/etc/scst.conf"
+#define FSTAB           "/etc/fstab"
+#define FSTAB_TMP       "/etc/fstab.new"
+#define MTAB            "/proc/mounts"
+#define ESOS_VER_FILE   "/etc/esos-release"
 
 /* Misc. path settings */
-#define VDISK_MNT_BASE "/mnt/vdisks"
-#define LOCALTIME "/etc/localtime"
-#define ZONEINFO "/usr/share/zoneinfo/posix"
+#define VDISK_MNT_BASE  "/mnt/vdisks"
+#define LOCALTIME       "/etc/localtime"
+#define ZONEINFO        "/usr/share/zoneinfo/posix"
 
 /* SCST specific limits */
-#define MAX_SCST_TGTS 256
-#define MAX_SCST_GROUPS 128
-#define MAX_SCST_LUNS 256
-#define MAX_SCSI_DISKS 128
-#define MAX_SCST_DEVS 128
-#define MAX_SCST_INITS 128
-#define MAX_SCST_DRIVERS 16
-#define SCST_ISCSI_TGT_LEN 32
-#define SCST_DEV_NAME_LEN 16
-#define SCST_GRP_NAME_LEN 16
-#define SCST_INITIATOR_LEN 64
+#define MAX_SCST_TGTS           256
+#define MAX_SCST_GROUPS         128
+#define MAX_SCST_LUNS           256
+#define MAX_SCSI_DISKS          128
+#define MAX_SCST_DEVS           128
+#define MAX_SCST_INITS          128
+#define MAX_SCST_DRIVERS        16
+#define SCST_ISCSI_TGT_LEN      32
+#define SCST_DEV_NAME_LEN       16
+#define SCST_GRP_NAME_LEN       16
+#define SCST_INITIATOR_LEN      64
 
 #ifdef	__cplusplus
 }

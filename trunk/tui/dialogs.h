@@ -59,6 +59,18 @@ extern "C" {
 
 /* Other window/screen/label/etc. sizing limits */
 #define MAX_FS_DIALOG_INFO_LINES        11
+#define ADD_DEV_INFO_LINES              3
+#define LD_PROPS_INFO_LINES             9
+#define NEW_LD_INFO_LINES               3
+#define ADD_VDISK_INFO_LINES            4
+#define CONFIRM_DIAG_MSG_SIZE           6
+#define ERROR_DIAG_MSG_SIZE             6
+#define QUEST_DIAG_MSG_SIZE             6
+#define MAP_DEV_INFO_LINES              8
+#define CHG_PASSWD_INFO_LINES           1
+#define TGT_ON_OFF_INFO_LINES           5
+#define MAX_NET_INFO_LINES              10
+#define NET_SHORT_INFO_LINES            1
     
 /* Field/entry/name/value sizing limits */
 #define MAX_EMAIL_LEN           32
@@ -82,7 +94,7 @@ extern "C" {
 #define MAX_BLOCK_DEVS          64
 #define MAX_ZONEINFO_PATH       64
 #define MAX_TZ_FILES            1024
-//#define MAX_PROC_LINE           80
+#define MAX_PD_INFO_LINE_BUFF   4096
 
 #ifdef	__cplusplus
 }
