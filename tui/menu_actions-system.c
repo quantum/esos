@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <iniparser.h>
 #include <sys/ioctl.h>
-#undef CTRL /* This is defined from ioctl.h which conflicts with cdk.h */
+#undef CTRL /* This is defined in sys/ioctl.h which conflicts with cdk.h */
 #include <cdk.h>
 #include <net/if.h>
 #include <string.h>
@@ -36,7 +36,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *net_label = 0, *short_label = 0;
     CDKENTRY *host_name = 0, *domain_name = 0, *default_gw = 0,
             *name_server_1 = 0, *name_server_2 = 0, *ip_addy = 0, *netmask = 0,
-            *broadcast = 0;
+            *broadcast = 0, *iface_mtu = 0;
     CDKRADIO *ip_config = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
     WINDOW *net_window = 0;
@@ -48,19 +48,20 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     struct ethtool_cmd edata = {0};
     unsigned char* mac_addy = NULL;
     int sock = 0, i = 0, j = 0, net_conf_choice = 0, window_y = 0, window_x = 0,
-            traverse_ret = 0;
-    int net_window_lines = 16, net_window_cols = 70;
+            traverse_ret = 0, net_window_lines = 0, net_window_cols = 0;
     char *net_scroll_msg[MAX_NET_IFACE] = {NULL},
             *net_if_name[MAX_NET_IFACE] = {NULL},
             *net_if_mac[MAX_NET_IFACE] = {NULL},
             *net_if_speed[MAX_NET_IFACE] = {NULL},
-            *net_if_duplex[MAX_NET_IFACE] = {NULL}, *net_info_msg[10] = {NULL},
-            *short_label_msg[1] = {NULL};
+            *net_if_duplex[MAX_NET_IFACE] = {NULL}, *net_info_msg[MAX_NET_INFO_LINES] = {NULL},
+            *short_label_msg[NET_SHORT_INFO_LINES] = {NULL};
     char *conf_hostname = NULL, *conf_domainname = NULL, *conf_defaultgw = NULL,
-            *conf_nameserver1 = NULL, *conf_nameserver2 = NULL, *conf_bootproto = NULL,
-            *conf_ipaddr = NULL, *conf_netmask = NULL, *conf_broadcast = NULL, *error_msg = NULL;
+            *conf_nameserver1 = NULL, *conf_nameserver2 = NULL,
+            *conf_bootproto = NULL, *conf_ipaddr = NULL, *conf_netmask = NULL,
+            *conf_broadcast = NULL, *error_msg = NULL, *conf_if_mtu = NULL;
     static char *ip_opts[] = {"Disabled", "Static", "DHCP"};
-    char eth_duplex[20] = {0}, temp_str[100] = {0}, temp_ini_str[MAX_INI_VAL] = {0};
+    char eth_duplex[MISC_STRING_LEN] = {0}, temp_str[MISC_STRING_LEN] = {0},
+            temp_ini_str[MAX_INI_VAL] = {0};
     __be16 eth_speed = 0;
     boolean question = FALSE;
 
@@ -122,13 +123,13 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 } else {
                     switch (edata.duplex) {
                         case DUPLEX_HALF:
-                            snprintf(eth_duplex, 20, "Half Duplex");
+                            snprintf(eth_duplex, MISC_STRING_LEN, "Half Duplex");
                             break;
                         case DUPLEX_FULL:
-                            snprintf(eth_duplex, 20, "Full Duplex");
+                            snprintf(eth_duplex, MISC_STRING_LEN, "Full Duplex");
                             break;
                         default:
-                            snprintf(eth_duplex, 20, "Unknown Duplex");
+                            snprintf(eth_duplex, MISC_STRING_LEN, "Unknown Duplex");
                             break;
                     }
                     asprintf(&net_if_speed[j], "%u Mb/s", eth_speed);
@@ -169,6 +170,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Setup a new CDK screen for one of two network dialogs below */
+    net_window_lines = 16;
+    net_window_cols = 70;
     window_y = ((LINES / 2) - (net_window_lines / 2));
     window_x = ((COLS / 2) - (net_window_cols / 2));
     net_window = newwin(net_window_lines, net_window_cols,
@@ -251,7 +254,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         /* A very small label for instructions */
         asprintf(&short_label_msg[0], "</B>Name Servers (leave blank if using DHCP)");
         short_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 9),
-                short_label_msg, 1, FALSE, FALSE);
+                short_label_msg, NET_SHORT_INFO_LINES, FALSE, FALSE);
         if (!short_label) {
             errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
             goto cleanup;
@@ -304,11 +307,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
         /* User hit 'OK' button */
         if (traverse_ret == 1) {
+            /* Turn the cursor off (pretty) */
+            curs_set(0);
+
             /* Check the field entry widgets for spaces */
             for (i = 0; i < net_screen->objectCount; i++) {
                 CDKOBJS *obj = net_screen->object[i];
                 if (obj != 0 && ObjTypeOf(obj) == vENTRY) {
-                    strncpy(temp_str, getCDKEntryValue((CDKENTRY *) obj), 100);
+                    strncpy(temp_str, getCDKEntryValue((CDKENTRY *) obj), MISC_STRING_LEN);
                     j = 0;
                     while (temp_str[j] != '\0') {
                         if (isspace(temp_str[j])) {
@@ -385,6 +391,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         conf_netmask = iniparser_getstring(ini_dict, temp_ini_str, "");
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast", net_if_name[net_conf_choice]);
         conf_broadcast = iniparser_getstring(ini_dict, temp_ini_str, "");
+        snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name[net_conf_choice]);
+        conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_IF_MTU);
 
         /* Information label */
         net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
@@ -415,7 +423,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         /* A very small label for instructions */
         asprintf(&short_label_msg[0], "</B>Static IP Settings (leave blank if using DHCP)");
         short_label = newCDKLabel(net_screen, (window_x + 20), (window_y + 6),
-                short_label_msg, 1, FALSE, FALSE);
+                short_label_msg, NET_SHORT_INFO_LINES, FALSE, FALSE);
         if (!short_label) {
             errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
             goto cleanup;
@@ -458,6 +466,18 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKEntryBoxAttribute(broadcast, COLOR_DIALOG_INPUT);
         setCDKEntryValue(broadcast, conf_broadcast);
 
+        /* Interface MTU field */
+        iface_mtu = newCDKEntry(net_screen, (window_x + 1), (window_y + 11),
+                NULL, "</B>Interface MTU:  ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
+                12, 0, 12, FALSE, FALSE);
+        if (!iface_mtu) {
+            errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+            goto cleanup;
+        }
+        setCDKEntryBoxAttribute(iface_mtu, COLOR_DIALOG_INPUT);
+        setCDKEntryValue(iface_mtu, conf_if_mtu);
+
         /* Buttons */
         ok_button = newCDKButton(net_screen, (window_x + 26), (window_y + 14),
                 "</B>   OK   ", ok_cb, FALSE, FALSE);
@@ -480,11 +500,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
         /* User hit 'OK' button */
         if (traverse_ret == 1) {
+            /* Turn the cursor off (pretty) */
+            curs_set(0);
+
             /* Check the field entry widgets for spaces */
             for (i = 0; i < net_screen->objectCount; i++) {
                 CDKOBJS *obj = net_screen->object[i];
                 if (obj != 0 && ObjTypeOf(obj) == vENTRY) {
-                    strncpy(temp_str, getCDKEntryValue((CDKENTRY *) obj), 100);
+                    strncpy(temp_str, getCDKEntryValue((CDKENTRY *) obj), MISC_STRING_LEN);
                     j = 0;
                     while (temp_str[j] != '\0') {
                         if (isspace(temp_str[j])) {
@@ -507,6 +530,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(temp_ini_str, MAX_INI_VAL, "%s:netmask", net_if_name[net_conf_choice]);
                 iniparser_unset(ini_dict, temp_ini_str);
                 snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast", net_if_name[net_conf_choice]);
+                iniparser_unset(ini_dict, temp_ini_str);
+                snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name[net_conf_choice]);
                 iniparser_unset(ini_dict, temp_ini_str);
             } else {
                 /* Network interface should be configured (static or DHCP) */
@@ -531,6 +556,11 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast", net_if_name[net_conf_choice]);
                 if (iniparser_set(ini_dict, temp_ini_str, getCDKEntryValue(broadcast)) == -1) {
+                    errorDialog(main_cdk_screen, "Couldn't set configuration file value!", NULL);
+                    goto cleanup;
+                }
+                snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name[net_conf_choice]);
+                if (iniparser_set(ini_dict, temp_ini_str, getCDKEntryValue(iface_mtu)) == -1) {
                     errorDialog(main_cdk_screen, "Couldn't set configuration file value!", NULL);
                     goto cleanup;
                 }
@@ -563,10 +593,10 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         destroyCDKScreenObjects(net_screen);
         destroyCDKScreen(net_screen);
     }
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < MAX_NET_INFO_LINES; i++)
         freeChar(net_info_msg[i]);
-    }
-    freeChar(short_label_msg[0]);
+    for (i = 0; i < NET_SHORT_INFO_LINES; i++)
+        freeChar(short_label_msg[i]);
     delwin(net_window);
     curs_set(0);
     refreshCDKScreen(main_cdk_screen);
@@ -626,7 +656,7 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s stop", RC_NETWORK);
     net_rc = popen(net_rc_cmd, "r");
     if (!net_rc) {
-        asprintf(&error_msg, "popen: %s", strerror(errno));
+        asprintf(&error_msg, "popen(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
@@ -640,7 +670,7 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
         }
         status = pclose(net_rc);
         if (status == -1) {
-            asprintf(&error_msg, "pclose: %s", strerror(errno));
+            asprintf(&error_msg, "pclose(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -669,7 +699,7 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s start", RC_NETWORK);
     net_rc = popen(net_rc_cmd, "r");
     if (!net_rc) {
-        asprintf(&error_msg, "popen: %s", strerror(errno));
+        asprintf(&error_msg, "popen(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
@@ -683,7 +713,7 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
         }
         status = pclose(net_rc);
         if (status == -1) {
-            asprintf(&error_msg, "pclose: %s", strerror(errno));
+            asprintf(&error_msg, "pclose(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -735,14 +765,16 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             *auth_user = 0, *auth_pass = 0;
     CDKRADIO *use_tls = 0, *use_starttls = 0, *auth_method = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
-    int i = 0, traverse_ret = 0, window_y = 0, window_x = 0;
-    int mail_window_lines = 17, mail_window_cols = 68;
+    int i = 0, traverse_ret = 0, window_y = 0, window_x = 0,
+            mail_window_lines = 0, mail_window_cols = 0;
     static char *no_yes[] = {"No", "Yes"};
     static char *auth_method_opts[] = {"Plain Text", "CRAM-MD5"};
     static char *mail_title_msg[] = {"</31/B>Mail Setup"};
-    char temp_str[256] = {0}, new_mailhub[MAX_INI_VAL] = {0},
-            new_authmethod[MAX_INI_VAL] = {0}, new_usetls[MAX_INI_VAL] = {0},
-            new_usestarttls[MAX_INI_VAL] = {0};
+    char tmp_email_addr[MAX_EMAIL_LEN] = {0}, tmp_smtp_host[MAX_SMTP_LEN] = {0},
+            tmp_auth_user[MAX_SMTP_USER_LEN] = {0},
+            tmp_auth_pass[MAX_SMTP_PASS_LEN] = {0},
+            new_mailhub[MAX_INI_VAL] = {0}, new_authmethod[MAX_INI_VAL] = {0},
+            new_usetls[MAX_INI_VAL] = {0}, new_usestarttls[MAX_INI_VAL] = {0};
     char *conf_root = NULL, *conf_mailhub = NULL, *conf_authuser = NULL,
             *conf_authpass = NULL, *conf_authmethod = NULL,
             *conf_usetls = NULL, *conf_usestarttls = NULL,
@@ -767,6 +799,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     conf_usestarttls = iniparser_getstring(ini_dict, ":usestarttls", "");
 
     /* Setup a new CDK screen for mail setup */
+    mail_window_lines = 17;
+    mail_window_cols = 68;
     window_y = ((LINES / 2) - (mail_window_lines / 2));
     window_x = ((COLS / 2) - (mail_window_cols / 2));
     mail_window = newwin(mail_window_lines, mail_window_cols,
@@ -928,12 +962,15 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
+
         /* Check email address (field entry) */
-        strncpy(temp_str, getCDKEntryValue(email_addr), MAX_EMAIL_LEN);
+        strncpy(tmp_email_addr, getCDKEntryValue(email_addr), MAX_EMAIL_LEN);
         i = 0;
-        while (temp_str[i] != '\0') {
+        while (tmp_email_addr[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(temp_str[i])) {
+            if (isspace(tmp_email_addr[i])) {
                 errorDialog(main_cdk_screen,
                         "The email address field cannot contain any spaces!", NULL);
                 goto cleanup;
@@ -942,11 +979,11 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Check SMTP host (field entry) */
-        strncpy(temp_str, getCDKEntryValue(smtp_host), MAX_SMTP_LEN);
+        strncpy(tmp_smtp_host, getCDKEntryValue(smtp_host), MAX_SMTP_LEN);
         i = 0;
-        while (temp_str[i] != '\0') {
+        while (tmp_smtp_host[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(temp_str[i])) {
+            if (isspace(tmp_smtp_host[i])) {
                 errorDialog(main_cdk_screen,
                         "The SMTP host field cannot contain any spaces!", NULL);
                 goto cleanup;
@@ -955,11 +992,11 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Check auth. user (field entry) */
-        strncpy(temp_str, getCDKEntryValue(auth_user), MAX_SMTP_USER_LEN);
+        strncpy(tmp_auth_user, getCDKEntryValue(auth_user), MAX_SMTP_USER_LEN);
         i = 0;
-        while (temp_str[i] != '\0') {
+        while (tmp_auth_user[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(temp_str[i])) {
+            if (isspace(tmp_auth_user[i])) {
                 errorDialog(main_cdk_screen,
                         "The auth. user field cannot contain any spaces!", NULL);
                 goto cleanup;
@@ -968,11 +1005,11 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Check auth. password (field entry) */
-        strncpy(temp_str, getCDKEntryValue(auth_pass), MAX_SMTP_PASS_LEN);
+        strncpy(tmp_auth_pass, getCDKEntryValue(auth_pass), MAX_SMTP_PASS_LEN);
         i = 0;
-        while (temp_str[i] != '\0') {
+        while (tmp_auth_pass[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(temp_str[i])) {
+            if (isspace(tmp_auth_pass[i])) {
                 errorDialog(main_cdk_screen,
                         "The auth. password field cannot contain any spaces!", NULL);
                 goto cleanup;
@@ -1070,7 +1107,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
  */
 void testEmailDialog(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *test_email_label = 0;
-    char ssmtp_cmd[100] = {0}, email_addy[MAX_EMAIL_LEN] = {0};
+    char ssmtp_cmd[MAX_SHELL_CMD_LEN] = {0}, email_addy[MAX_EMAIL_LEN] = {0};
     char *message[5] = {NULL};
     char *error_msg = NULL, *conf_root = NULL;
     int i = 0, status = 0;
@@ -1107,10 +1144,10 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
     refreshCDKScreen(main_cdk_screen);
 
     /* Send the test email message */
-    snprintf(ssmtp_cmd, 100, "%s %s > /dev/null 2>&1", SSMTP_BIN, email_addy);
+    snprintf(ssmtp_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1", SSMTP_BIN, email_addy);
     ssmtp = popen(ssmtp_cmd, "w");
     if (!ssmtp) {
-        asprintf(&error_msg, "popen: %s", strerror(errno));
+        asprintf(&error_msg, "popen(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
@@ -1121,7 +1158,7 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
         fprintf(ssmtp, "This is an email from ESOS to verify/confirm your email settings.");
         status = pclose(ssmtp);
         if (status == -1) {
-            asprintf(&error_msg, "pclose: %s", strerror(errno));
+            asprintf(&error_msg, "pclose(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -1158,14 +1195,17 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
     CDKENTRY *uname_field = 0, *pass_1_field = 0, *pass_2_field = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
-    int i = 0, traverse_ret = 0, window_y = 0, window_x = 0, ret_val = 0, exit_stat = 0;
-    int add_user_window_lines = 12, add_user_window_cols = 50;
+    int i = 0, traverse_ret = 0, window_y = 0, window_x = 0, ret_val = 0,
+            exit_stat = 0, add_user_window_lines = 0, add_user_window_cols = 0;
     static char *screen_title[] = {"</31/B>Adding a new ESOS user account..."};
-    char add_user_cmd[200] = {0}, chg_pass_cmd[100] = {0}, username[MAX_UNAME_LEN] = {0},
+    char add_user_cmd[MAX_SHELL_CMD_LEN] = {0},
+            chg_pass_cmd[MAX_SHELL_CMD_LEN] = {0}, username[MAX_UNAME_LEN] = {0},
             password_1[MAX_PASSWD_LEN] = {0}, password_2[MAX_PASSWD_LEN] = {0};
     char *error_msg = NULL;
     
     /* Setup a new CDK screen for adding a new user account */
+    add_user_window_lines = 12;
+    add_user_window_cols = 50;
     window_y = ((LINES / 2) - (add_user_window_lines / 2));
     window_x = ((COLS / 2) - (add_user_window_cols / 2));
     add_user_window = newwin(add_user_window_lines, add_user_window_cols,
@@ -1249,6 +1289,9 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
+
         /* Check username (field entry) */
         strncpy(username, getCDKEntryValue(uname_field), MAX_UNAME_LEN);
         i = 0;
@@ -1280,22 +1323,22 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Add the new user account */
-        snprintf(add_user_cmd, 200, "%s -h /tmp -g 'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
-                ADDUSER_TOOL, TUI_BIN, ESOS_GROUP, username);
+        snprintf(add_user_cmd, MAX_SHELL_CMD_LEN, "%s -h /tmp -g 'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
+                ADDUSER_BIN, TUI_BIN, ESOS_GROUP, username);
         ret_val = system(add_user_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.", ADDUSER_TOOL, exit_stat);
+            asprintf(&error_msg, "Running %s failed; exited with %d.", ADDUSER_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
         }
         
         /* Set the password for the new account */
-        snprintf(chg_pass_cmd, 100, "echo '%s:%s' | %s > /dev/null 2>&1",
-                username, password_1, CHPASSWD_TOOL);
+        snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN, "echo '%s:%s' | %s > /dev/null 2>&1",
+                username, password_1, CHPASSWD_BIN);
         ret_val = system(chg_pass_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.", CHPASSWD_TOOL, exit_stat);
+            asprintf(&error_msg, "Running %s failed; exited with %d.", CHPASSWD_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -1318,7 +1361,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
  */
 void delUserDialog(CDKSCREEN *main_cdk_screen) {
     int ret_val = 0, exit_stat = 0;
-    char del_user_cmd[100] = {0}, del_grp_cmd[100] = {0},
+    char del_user_cmd[MAX_SHELL_CMD_LEN] = {0}, del_grp_cmd[MAX_SHELL_CMD_LEN] = {0},
             user_acct[MAX_UNAME_LEN] = {0};
     char *error_msg = NULL, *confirm_msg = NULL;
     uid_t ruid = 0, euid = 0, suid = 0;
@@ -1350,20 +1393,24 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
     freeChar(confirm_msg);
     if (confirm) {
         /* Remove the user from the ESOS users group (deluser doesn't seem to do this) */
-        snprintf(del_grp_cmd, 100, "%s %s %s > /dev/null 2>&1", DELGROUP_TOOL, user_acct, ESOS_GROUP);
+        snprintf(del_grp_cmd, MAX_SHELL_CMD_LEN, "%s %s %s > /dev/null 2>&1",
+                DELGROUP_BIN, user_acct, ESOS_GROUP);
         ret_val = system(del_grp_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.", DELGROUP_TOOL, exit_stat);
+            asprintf(&error_msg, "Running %s failed; exited with %d.",
+                    DELGROUP_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             return;
         }
 
         /* Delete the user account */
-        snprintf(del_user_cmd, 100, "%s %s > /dev/null 2>&1", DELUSER_TOOL, user_acct);
+        snprintf(del_user_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1",
+                DELUSER_BIN, user_acct);
         ret_val = system(del_user_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.", DELUSER_TOOL, exit_stat);
+            asprintf(&error_msg, "Running %s failed; exited with %d.",
+                    DELUSER_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             return;
@@ -1385,10 +1432,10 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
     CDKENTRY *new_pass_1 = 0, *new_pass_2 = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
-    int i = 0, traverse_ret = 0, window_y = 0, window_x = 0, ret_val = 0, exit_stat = 0;
-    int chg_pass_window_lines = 10, chg_pass_window_cols = 45;
-    char *screen_title[1] = {NULL};
-    char chg_pass_cmd[100] = {0}, password_1[MAX_PASSWD_LEN] = {0},
+    int i = 0, traverse_ret = 0, window_y = 0, window_x = 0, ret_val = 0,
+            exit_stat = 0, chg_pass_window_lines = 0, chg_pass_window_cols = 0;
+    char *screen_title[CHG_PASSWD_INFO_LINES] = {NULL};
+    char chg_pass_cmd[MAX_SHELL_CMD_LEN] = {0}, password_1[MAX_PASSWD_LEN] = {0},
             password_2[MAX_PASSWD_LEN] = {0}, user_acct[MAX_UNAME_LEN] = {0};
     char *error_msg = NULL;
     
@@ -1398,6 +1445,8 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
         return;
     
     /* Setup a new CDK screen for password change */
+    chg_pass_window_lines = 10;
+    chg_pass_window_cols = 45;
     window_y = ((LINES / 2) - (chg_pass_window_lines / 2));
     window_x = ((COLS / 2) - (chg_pass_window_cols / 2));
     chg_pass_window = newwin(chg_pass_window_lines, chg_pass_window_cols,
@@ -1418,7 +1467,7 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
     /* Screen title label */
     asprintf(&screen_title[0], "</31/B>Changing password for user %s...", user_acct);
     passwd_label = newCDKLabel(chg_pass_screen, (window_x + 1), (window_y + 1),
-            screen_title, 1, FALSE, FALSE);
+            screen_title, CHG_PASSWD_INFO_LINES, FALSE, FALSE);
     if (!passwd_label) {
         errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
         goto cleanup;
@@ -1471,6 +1520,9 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
+
         /* Make sure the password fields match */
         strncpy(password_1, getCDKEntryValue(new_pass_1), MAX_PASSWD_LEN);
         strncpy(password_2, getCDKEntryValue(new_pass_2), MAX_PASSWD_LEN);
@@ -1490,11 +1542,11 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Set the new password */
-        snprintf(chg_pass_cmd, 100, "echo '%s:%s' | %s > /dev/null 2>&1",
-                user_acct, password_1, CHPASSWD_TOOL);
+        snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN, "echo '%s:%s' | %s > /dev/null 2>&1",
+                user_acct, password_1, CHPASSWD_BIN);
         ret_val = system(chg_pass_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.", CHPASSWD_TOOL, exit_stat);
+            asprintf(&error_msg, "Running %s failed; exited with %d.", CHPASSWD_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -1503,7 +1555,8 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Done */
     cleanup:
-    freeChar(screen_title[0]);
+    for (i = 0; i < CHG_PASSWD_INFO_LINES; i++)
+        freeChar(screen_title[i]);
     if (chg_pass_screen != NULL) {
         destroyCDKScreenObjects(chg_pass_screen);
         destroyCDKScreen(chg_pass_screen);
@@ -1562,7 +1615,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     i = 4;
     snprintf(tmp_sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/sgv/global_stats", SYSFS_SCST_TGT);
     if ((sysfs_file = fopen(tmp_sysfs_path, "r")) == NULL) {
-        asprintf(&swindow_info[i], "fopen: %s", strerror(errno));
+        asprintf(&swindow_info[i], "fopen(): %s", strerror(errno));
         addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
     } else {
         while (fgets(tmp_attr_line, sizeof (tmp_attr_line), sysfs_file) != NULL) {
@@ -1605,6 +1658,10 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
  * Run the Linux-HA Status dialog
  */
 void linuxHAStatDialog(CDKSCREEN *main_cdk_screen) {
+    char *blah = NULL;
+    if ((blah = getenv("TERM")) != NULL) {
+        errorDialog(main_cdk_screen, blah, NULL);
+    }
     errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
     return;
 }
@@ -1627,8 +1684,8 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             curr_tz_item = 0, temp_int = 0, new_day = 0, new_month = 0,
             new_year = 0, new_hour = 0, new_minute = 0, new_second = 0,
             curr_day = 0, curr_month = 0, curr_year = 0, curr_hour = 0,
-            curr_minute = 0, curr_second = 0;
-    int date_window_lines = 20, date_window_cols = 66;
+            curr_minute = 0, curr_second = 0, date_window_lines = 0,
+            date_window_cols = 0;
     static char *date_title_msg[] = {"</31/B>Date & Time Settings"};
     char *tz_files[MAX_TZ_FILES] = {NULL};
     char *error_msg = NULL, *remove_me = NULL, *strstr_result = NULL;
@@ -1641,6 +1698,8 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     time_t curr_clock = 0;
 
     /* New CDK screen for date and time settings */
+    date_window_lines = 20;
+    date_window_cols = 66;
     window_y = ((LINES / 2) - (date_window_lines / 2));
     window_x = ((COLS / 2) - (date_window_cols / 2));
     date_window = newwin(date_window_lines, date_window_cols,
@@ -1670,7 +1729,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     /* Get time zone information  -- we only traverse two directories deep */
     file_cnt = 0;
     if ((tz_base_dir = opendir(ZONEINFO)) == NULL) {
-        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
@@ -1684,7 +1743,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s", ZONEINFO,
                     base_dir_entry->d_name);
             if ((tz_sub_dir1 = opendir(dir_name)) == NULL) {
-                asprintf(&error_msg, "opendir: %s", strerror(errno));
+                asprintf(&error_msg, "opendir(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
                 goto cleanup;
@@ -1698,7 +1757,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                     snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s/%s", ZONEINFO,
                             base_dir_entry->d_name, sub_dir1_entry->d_name);
                     if ((tz_sub_dir2 = opendir(dir_name)) == NULL) {
-                        asprintf(&error_msg, "opendir: %s", strerror(errno));
+                        asprintf(&error_msg, "opendir(): %s", strerror(errno));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         freeChar(error_msg);
                         goto cleanup;
@@ -1741,7 +1800,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Get the current time zone data file path (from sym. link) */
     if (readlink(LOCALTIME, zoneinfo_path, MAX_ZONEINFO_PATH) == -1) {
-        asprintf(&error_msg, "readlink: %s", strerror(errno));
+        asprintf(&error_msg, "readlink(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
@@ -1826,7 +1885,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
         /* ENOENT is okay since its possible this file doesn't exist yet */
         if (errno != ENOENT) {
-            asprintf(&error_msg, "fopen: %s", strerror(errno));
+            asprintf(&error_msg, "fopen(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -1862,12 +1921,15 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
+
         /* Check time zone radio */
         temp_int = getCDKRadioSelectedItem(tz_select);
         /* If the time zone setting was changed, create a new sym. link */
         if (temp_int != curr_tz_item) {
             if (unlink(LOCALTIME) == -1) {
-                asprintf(&error_msg, "unlink: %s", strerror(errno));
+                asprintf(&error_msg, "unlink(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
                 goto cleanup;
@@ -1875,7 +1937,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s",
                         ZONEINFO, tz_files[temp_int]);
                 if (symlink(dir_name, LOCALTIME) == -1) {
-                    asprintf(&error_msg, "symlink: %s", strerror(errno));
+                    asprintf(&error_msg, "symlink(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     freeChar(error_msg);
                     goto cleanup;
@@ -1899,14 +1961,14 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         /* If the value has changed, write it to the file */
         if (strcmp(ntp_serv_val, new_ntp_serv_val) != 0) {
             if ((ntp_server_file = fopen(NTP_SERVER, "w+")) == NULL) {
-                asprintf(&error_msg, "fopen: %s", strerror(errno));
+                asprintf(&error_msg, "fopen(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
                 goto cleanup;
             } else {
                 fprintf(ntp_server_file, "%s", new_ntp_serv_val);
                 if (fclose(ntp_server_file) != 0) {
-                    asprintf(&error_msg, "fclose: %s", strerror(errno));
+                    asprintf(&error_msg, "fclose(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     freeChar(error_msg);
                     goto cleanup;
@@ -1936,7 +1998,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         /* Set date & time */
         const struct timeval time_val = {mktime(curr_date_info), 0};
         if (settimeofday(&time_val, 0) == -1) {
-            asprintf(&error_msg, "settimeofday: %s", strerror(errno));
+            asprintf(&error_msg, "settimeofday(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;

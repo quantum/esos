@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <sys/param.h>
 #include <limits.h>
+#include <blkid/blkid.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -35,10 +36,10 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     CDKRADIO *cluster_radio = 0, *ncq_radio = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     int adp_count = 0, adp_choice = 0, i = 0, window_y = 0, window_x = 0,
-            traverse_ret = 0, temp_int = 0;
-    int adp_window_lines = 20, adp_window_cols = 60;
+            traverse_ret = 0, temp_int = 0, adp_window_lines = 0,
+            adp_window_cols = 0;
     static char *dsbl_enbl[] = {"Disabled", "Enabled"};
-    char temp_str[10] = {0};
+    char temp_str[MAX_MR_ATTR_SIZE] = {0};
     char *error_msg = NULL;
     char *adp_info_msg[9] = {NULL};
 
@@ -49,6 +50,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get the number of adapters */
+    // TODO: We assume MegaCLI works at this point if we got this far (probably bad)
     adp_count = getMRAdapterCount();
 
     /* Get the adapter properties */
@@ -59,6 +61,8 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* New CDK screen for selected adapter */
+    adp_window_lines = 20;
+    adp_window_cols = 60;
     window_y = ((LINES / 2) - (adp_window_lines / 2));
     window_x = ((COLS / 2) - (adp_window_cols / 2));
     adapter_window = newwin(adp_window_lines, adp_window_cols,
@@ -113,7 +117,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     setCDKEntryBoxAttribute(cache_flush, COLOR_DIALOG_INPUT);
-    sprintf(temp_str, "%d", mr_adp_props->cache_flush);
+    snprintf(temp_str, MAX_MR_ATTR_SIZE, "%d", mr_adp_props->cache_flush);
     setCDKEntryValue(cache_flush, temp_str);
     rebuild_rate = newCDKEntry(adapter_screen, (window_x + 1), (window_y + 12),
             NULL, "</B>Rebuild Rate (0 to 100): ",
@@ -124,7 +128,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     setCDKEntryBoxAttribute(rebuild_rate, COLOR_DIALOG_INPUT);
-    sprintf(temp_str, "%d", mr_adp_props->rebuild_rate);
+    snprintf(temp_str, MAX_MR_ATTR_SIZE, "%d", mr_adp_props->rebuild_rate);
     setCDKEntryValue(rebuild_rate, temp_str);
 
     /* Radio lists */
@@ -171,6 +175,9 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
+        
         /* Check entry inputs */
         temp_int = atoi(getCDKEntryValue(cache_flush));
         if (temp_int != mr_adp_props->cache_flush) {
@@ -248,6 +255,7 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get the number of adapters */
+    // TODO: We assume MegaCLI works at this point if we got this far (probably bad)
     adp_count = getMRAdapterCount();
 
     /* Get enclosures / disks (slots) */
@@ -373,26 +381,25 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     CDKSCREEN *new_ld_screen = 0;
     CDKLABEL *new_ld_label = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
-    CDKENTRY *name_field = 0;
     CDKRADIO *cache_policy = 0, *write_cache = 0, *read_cache = 0,
             *bbu_cache = 0, *raid_lvl = 0, *strip_size = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     int adp_choice = 0, adp_count = 0, i = 0, j = 0, encl_count = 0,
             selection_size = 0, chosen_disk_cnt = 0, traverse_ret = 0,
-            temp_int = 0, window_y = 0, window_x = 0;
-    int new_ld_window_lines = 20, new_ld_window_cols = 70;
-    static char *choice_char[] = {" ", "*"};
+            temp_int = 0, window_y = 0, window_x = 0, new_ld_window_lines = 0,
+            new_ld_window_cols = 0, pd_info_size = 0, pd_info_line_size = 0;
+    static char *choice_char[] = {"[ ] ", "[*] "};
     static char *cache_opts[] = {"Cached", "Direct"};
     static char *write_opts[] = {"WT", "WB"};
     static char *read_opts[] = {"NORA", "RA", "ADRA"};
     static char *bbu_opts[] = {"CachedBadBBU", "NoCachedBadBBU"};
     static char *raid_opts[] = {"0", "1", "5", "6"};
     static char *strip_opts[] = {"8", "16", "32", "64", "128", "256", "512", "1024"};
-    char temp_str[20] = {0}, new_ld_disks[120] = {0},
-            new_ld_raid_lvl[MAX_MR_ATTR_SIZE] = {0},
-            new_ld_strip_size[MAX_MR_ATTR_SIZE] = {0};
+    char new_ld_raid_lvl[MAX_MR_ATTR_SIZE] = {0},
+            new_ld_strip_size[MAX_MR_ATTR_SIZE] = {0},
+            pd_info_line_buffer[MAX_PD_INFO_LINE_BUFF] = {0};
     char *error_msg = NULL, *dsk_select_title = NULL, *temp_pstr = NULL;
-    char *selection_list[MAX_DISKS] = {NULL}, *new_ld_msg[3] = {NULL};
+    char *selection_list[MAX_DISKS] = {NULL}, *new_ld_msg[NEW_LD_INFO_LINES] = {NULL};
 
     /* Prompt for adapter choice */
     adp_choice = getAdpChoice(main_cdk_screen, mr_adapters);
@@ -401,6 +408,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get the number of adapters */
+    // TODO: We assume MegaCLI works at this point if we got this far (probably bad)
     adp_count = getMRAdapterCount();
 
     /* Get enclosures / disks (slots) and fill selection list */
@@ -435,7 +443,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
                             mr_disks[i][j]->part_of_ld == FALSE) {
                             /* Fill selection list */
                             asprintf(&selection_list[selection_size],
-                                    "Enclosure %d, Slot %d: %s", i, j,
+                                    "<C>Enclosure %3.3d, Slot %3.3d: %40.40s", i, j,
                                     mr_disks[i][j]->inquiry);
                             disk_selection[selection_size] = mr_disks[i][j];
                             selection_size++;
@@ -497,6 +505,8 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Setup a new CDK screen for required input (to create new LD) */
+    new_ld_window_lines = 18;
+    new_ld_window_cols = 70;
     window_y = ((LINES / 2) - (new_ld_window_lines / 2));
     window_x = ((COLS / 2) - (new_ld_window_cols / 2));
     new_ld_window = newwin(new_ld_window_lines, new_ld_window_cols,
@@ -521,9 +531,19 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
                     chosen_disks[i]->slot_num);
         else
             asprintf(&temp_pstr, "[%d:%d], ", chosen_disks[i]->enclosure_id,
-                    chosen_disks[i]->slot_num);
-        strcat(new_ld_disks, temp_pstr);
-        freeChar(temp_pstr);
+                chosen_disks[i]->slot_num);
+        /* We add one extra for the null byte */
+        pd_info_size = strlen(temp_pstr) + 1;
+        pd_info_line_size = pd_info_line_size + pd_info_size;
+        // TODO: This totes needs to be tested (strcat)
+        if (pd_info_line_size >= MAX_PD_INFO_LINE_BUFF) {
+            errorDialog(main_cdk_screen, "The maximum PD info. line buffer size has been reached!", NULL);
+            freeChar(temp_pstr);
+            goto cleanup;
+        } else {
+            strcat(pd_info_line_buffer, temp_pstr);
+            freeChar(temp_pstr);
+        }
     }
 
     /* Make a new label for the add-logical-drive screen */
@@ -532,28 +552,17 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
             adp_choice);
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&new_ld_msg[1], " ");
-    asprintf(&new_ld_msg[2], "Selected Disks [ENCL:SLOT] - %s", new_ld_disks);
+    asprintf(&new_ld_msg[2], "Selected Disks [ENCL:SLOT] - %.60s", pd_info_line_buffer);
     new_ld_label = newCDKLabel(new_ld_screen, (window_x + 1), (window_y + 1),
-            new_ld_msg, 3, FALSE, FALSE);
+            new_ld_msg, NEW_LD_INFO_LINES, FALSE, FALSE);
     if (!new_ld_label) {
         errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
         goto cleanup;
     }
     setCDKLabelBackgroundAttrib(new_ld_label, COLOR_DIALOG_TEXT);
 
-    /* Name field */
-    name_field = newCDKEntry(new_ld_screen, (window_x + 1), (window_y + 5),
-            NULL, "</B>Logical drive name (no spaces): ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vUMIXED,
-            MAX_LD_NAME, 0, MAX_LD_NAME, FALSE, FALSE);
-    if (!name_field) {
-        errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(name_field, COLOR_DIALOG_INPUT);
-
     /* RAID level radio list */
-    raid_lvl = newCDKRadio(new_ld_screen, (window_x + 1), (window_y + 7),
+    raid_lvl = newCDKRadio(new_ld_screen, (window_x + 1), (window_y + 5),
             NONE, 5, 10, "</B>RAID Level", raid_opts, 4,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -565,7 +574,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     setCDKRadioCurrentItem(raid_lvl, 0);
 
     /* Strip size radio list */
-    strip_size = newCDKRadio(new_ld_screen, (window_x + 15), (window_y + 7),
+    strip_size = newCDKRadio(new_ld_screen, (window_x + 15), (window_y + 5),
             NONE, 9, 10, "</B>Strip Size", strip_opts, 8,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -577,7 +586,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     setCDKRadioCurrentItem(strip_size, 3);
 
     /* Write cache radio list */
-    write_cache = newCDKRadio(new_ld_screen, (window_x + 30), (window_y + 7),
+    write_cache = newCDKRadio(new_ld_screen, (window_x + 30), (window_y + 5),
             NONE, 3, 11, "</B>Write Cache", write_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -589,7 +598,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     setCDKRadioCurrentItem(write_cache, 1);
 
     /* Read cache radio list */
-    read_cache = newCDKRadio(new_ld_screen, (window_x + 30), (window_y + 11),
+    read_cache = newCDKRadio(new_ld_screen, (window_x + 30), (window_y + 9),
             NONE, 4, 10, "</B>Read Cache", read_opts, 3,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -601,7 +610,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     setCDKRadioCurrentItem(read_cache, 2);
 
     /* Cache policy radio list */
-    cache_policy = newCDKRadio(new_ld_screen, (window_x + 46), (window_y + 7),
+    cache_policy = newCDKRadio(new_ld_screen, (window_x + 46), (window_y + 5),
             NONE, 3, 12, "</B>Cache Policy", cache_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -613,7 +622,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     setCDKRadioCurrentItem(cache_policy, 1);
 
     /* BBU cache policy radio list */
-    bbu_cache = newCDKRadio(new_ld_screen, (window_x + 46), (window_y + 11),
+    bbu_cache = newCDKRadio(new_ld_screen, (window_x + 46), (window_y + 9),
             NONE, 3, 16, "</B>BBU Cache Policy", bbu_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -625,14 +634,14 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     setCDKRadioCurrentItem(bbu_cache, 1);
 
     /* Buttons */
-    ok_button = newCDKButton(new_ld_screen, (window_x + 26), (window_y + 18),
+    ok_button = newCDKButton(new_ld_screen, (window_x + 26), (window_y + 16),
             "</B>   OK   ", ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-    cancel_button = newCDKButton(new_ld_screen, (window_x + 36), (window_y + 18),
+    cancel_button = newCDKButton(new_ld_screen, (window_x + 36), (window_y + 16),
             "</B> Cancel ", cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
@@ -646,38 +655,27 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
-        /* Check name (field entry) */
-        strncpy(temp_str, getCDKEntryValue(name_field), MAX_LD_NAME);
-        i = 0;
-        while (temp_str[i] != '\0') {
-            /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(temp_str[i]) || !isalnum(temp_str[i])) {
-                errorDialog(main_cdk_screen,
-                        "Name field must only contain alphanumeric characters!", NULL);
-                goto cleanup;
-            }
-            i++;
-        }
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
 
         /* Set new LD properties */
         new_ld_props = (MRLDPROPS *) calloc(1, sizeof(MRLDPROPS));
-        strcpy(new_ld_props->name, getCDKEntryValue(name_field));
         new_ld_props->adapter_id = adp_choice;
         temp_int = getCDKRadioSelectedItem(cache_policy);
-        strcpy(new_ld_props->cache_policy, cache_opts[temp_int]);
+        strncpy(new_ld_props->cache_policy, cache_opts[temp_int], MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(write_cache);
-        strcpy(new_ld_props->write_policy, write_opts[temp_int]);
+        strncpy(new_ld_props->write_policy, write_opts[temp_int], MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(read_cache);
-        strcpy(new_ld_props->read_policy, read_opts[temp_int]);
+        strncpy(new_ld_props->read_policy, read_opts[temp_int], MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(bbu_cache);
-        strcpy(new_ld_props->bbu_cache_policy, bbu_opts[temp_int]);
+        strncpy(new_ld_props->bbu_cache_policy, bbu_opts[temp_int], MAX_MR_ATTR_SIZE);
 
-        /* Check that the given RAID level and number of disks is
-         * a valid combination */
+        /* RAID level and stripe size */
+        // TODO: Should we check for a valid RAID level + disk combination?
         temp_int = getCDKRadioSelectedItem(raid_lvl);
-        strcpy(new_ld_raid_lvl, raid_opts[temp_int]);
+        strncpy(new_ld_raid_lvl, raid_opts[temp_int], MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(strip_size);
-        strcpy(new_ld_strip_size, strip_opts[temp_int]);
+        strncpy(new_ld_strip_size, strip_opts[temp_int], MAX_MR_ATTR_SIZE);
 
         /* Create the new logical drive */
         temp_int = addMRLogicalDrive(new_ld_props, chosen_disk_cnt,
@@ -686,6 +684,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
             asprintf(&error_msg, "Error creating new logical drive; MegaCLI exited with %d.", temp_int);
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
+            goto cleanup;
         }
     }
 
@@ -696,7 +695,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     for (i = 0; i < MAX_DISKS; i++) {
         freeChar(selection_list[i]);
     }
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < NEW_LD_INFO_LINES; i++) {
         freeChar(new_ld_msg[i]);
     }
     for (i = 0; i < MAX_ADAPTERS; i++) {
@@ -740,6 +739,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get the number of adapters */
+    // TODO: We assume MegaCLI works at this point if we got this far (probably bad)
     adp_count = getMRAdapterCount();
 
     /* Get MegaRAID logical drives */
@@ -776,7 +776,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get logical drive choice from user */
-    ld_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 8, 50,
+    ld_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 12, 50,
             ld_list_title, logical_drives, ld_count,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!ld_list) {
@@ -798,10 +798,9 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg,
-            "Are you sure you want to delete logical drive # %d on adapter %d?",
+    asprintf(&confirm_msg, "logical drive # %d on adapter %d?",
             mr_ldrives[ld_choice]->ldrive_id, adp_choice);
-    confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
+    confirm = confirmDialog(main_cdk_screen, "Are you sure you want to delete", confirm_msg);
     freeChar(confirm_msg);
     if (confirm) {
         temp_int = delMRLogicalDrive(adp_choice, mr_ldrives[ld_choice]->ldrive_id);
@@ -841,18 +840,22 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     CDKRADIO *cache_policy = 0, *write_cache = 0, *read_cache = 0,
             *bbu_cache = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
-    int ld_window_lines = 20, ld_window_cols = 70;
-    int window_y = 0, window_x = 0, traverse_ret = 0, temp_int = 0,
-            adp_count = 0, adp_choice = 0, i = 0, ld_count = 0, ld_choice = 0;
-    int ld_encl_ids[MAX_MR_DISKS], ld_slots[MAX_MR_DISKS], mr_ld_ids[MAX_MR_LDS];
+    int ld_window_lines = 0, ld_window_cols = 0, window_y = 0, window_x = 0,
+            traverse_ret = 0, temp_int = 0, adp_count = 0, adp_choice = 0,
+            i = 0, ld_count = 0, ld_choice = 0, pd_info_size = 0,
+            pd_info_line_size = 0;
+    int ld_encl_ids[MAX_MR_DISKS] = {0}, ld_slots[MAX_MR_DISKS] = {0},
+            mr_ld_ids[MAX_MR_LDS] = {0};
     static char *ld_list_title = "<C></31/B>Choose a logical drive:\n";
     static char *cache_opts[] = {"Cached", "Direct"};
     static char *write_opts[] = {"WT", "WB"};
     static char *read_opts[] = {"NORA", "RA", "ADRA"};
     static char *bbu_opts[] = {"CachedBadBBU", "NoCachedBadBBU"};
-    char temp_str[20] = {0}, ld_disks[120] = {0};
+    char ld_name_buff[MAX_MR_ATTR_SIZE] = {0},
+            pd_info_line_buffer[MAX_PD_INFO_LINE_BUFF] = {0};
     char *temp_pstr = NULL, *error_msg = NULL;
-    char *logical_drives[MAX_MR_LDS] = {NULL}, *ld_info_msg[9] = {NULL};
+    char *logical_drives[MAX_MR_LDS] = {NULL},
+            *ld_info_msg[LD_PROPS_INFO_LINES] = {NULL};
 
     /* Prompt for adapter choice */
     adp_choice = getAdpChoice(main_cdk_screen, mr_adapters);
@@ -861,6 +864,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get the number of adapters */
+    // TODO: We assume MegaCLI works at this point if we got this far (probably bad)
     adp_count = getMRAdapterCount();
 
     /* Get MegaRAID logical drives */
@@ -897,7 +901,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get logical drive choice from user */
-    ld_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 8, 50,
+    ld_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 12, 50,
             ld_list_title, logical_drives, ld_count,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!ld_list) {
@@ -926,6 +930,8 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* New CDK screen for selected LD */
+    ld_window_lines = 20;
+    ld_window_cols = 70;
     window_y = ((LINES / 2) - (ld_window_lines / 2));
     window_x = ((COLS / 2) - (ld_window_cols / 2));
     ld_window = newwin(ld_window_lines, ld_window_cols, window_y, window_x);
@@ -949,8 +955,18 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             asprintf(&temp_pstr, "[%d:%d]", ld_encl_ids[i], ld_slots[i]);
         else
             asprintf(&temp_pstr, "[%d:%d], ", ld_encl_ids[i], ld_slots[i]);
-        strcat(ld_disks, temp_pstr);
-        freeChar(temp_pstr);
+        /* We add one extra for the null byte */
+        pd_info_size = strlen(temp_pstr) + 1;
+        pd_info_line_size = pd_info_line_size + pd_info_size;
+        // TODO: This totes needs to be tested (strcat)
+        if (pd_info_line_size >= MAX_PD_INFO_LINE_BUFF) {
+            errorDialog(main_cdk_screen, "The maximum PD info. line buffer size has been reached!", NULL);
+            freeChar(temp_pstr);
+            goto cleanup;
+        } else {
+            strcat(pd_info_line_buffer, temp_pstr);
+            freeChar(temp_pstr);
+        }
     }
 
     /* Logical drive info. label */
@@ -968,9 +984,9 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&ld_info_msg[6], "Drive Count:\t%d",
             mr_ldrives[ld_choice]->drive_cnt);
     asprintf(&ld_info_msg[7], " ");
-    asprintf(&ld_info_msg[8], "Disks [ENCL:SLOT] - %s", ld_disks);
+    asprintf(&ld_info_msg[8], "Disks [ENCL:SLOT] - %.60s", pd_info_line_buffer);
     ld_info = newCDKLabel(ld_screen, (window_x + 1), (window_y + 1),
-            ld_info_msg, 9, FALSE, FALSE);
+            ld_info_msg, LD_PROPS_INFO_LINES, FALSE, FALSE);
     if (!ld_info) {
         errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
         goto cleanup;
@@ -1070,29 +1086,32 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
+
         /* Check name (field entry) */
-        strncpy(temp_str, getCDKEntryValue(name_field), MAX_LD_NAME);
+        strncpy(ld_name_buff, getCDKEntryValue(name_field), MAX_MR_ATTR_SIZE);
         i = 0;
-        while (temp_str[i] != '\0') {
+        while (ld_name_buff[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(temp_str[i]) || !isalnum(temp_str[i])) {
+            if (isspace(ld_name_buff[i]) || !isalnum(ld_name_buff[i])) {
                 errorDialog(main_cdk_screen,
                         "Name field must only contain alphanumeric characters!", NULL);
                 goto cleanup;
             }
             i++;
         }
-        strncpy(mr_ld_props->name, getCDKEntryValue(name_field), MAX_LD_NAME);
+        strncpy(mr_ld_props->name, getCDKEntryValue(name_field), MAX_MR_ATTR_SIZE);
 
         /* Set radio inputs */
         temp_int = getCDKRadioSelectedItem(cache_policy);
-        strcpy(mr_ld_props->cache_policy, cache_opts[temp_int]);
+        strncpy(mr_ld_props->cache_policy, cache_opts[temp_int], MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(write_cache);
-        strcpy(mr_ld_props->write_policy, write_opts[temp_int]);
+        strncpy(mr_ld_props->write_policy, write_opts[temp_int], MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(read_cache);
-        strcpy(mr_ld_props->read_policy, read_opts[temp_int]);
+        strncpy(mr_ld_props->read_policy, read_opts[temp_int], MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(bbu_cache);
-        strcpy(mr_ld_props->bbu_cache_policy, bbu_opts[temp_int]);
+        strncpy(mr_ld_props->bbu_cache_policy, bbu_opts[temp_int], MAX_MR_ATTR_SIZE);
 
         /* Set logical drive properties */
         temp_int = setMRLDProps(mr_ld_props);
@@ -1113,7 +1132,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
         free(mr_ldrives[i]);
         freeChar(logical_drives[i]);
     }
-    for (i = 0; i < 9; i++) {
+    for (i = 0; i < LD_PROPS_INFO_LINES; i++) {
         freeChar(ld_info_msg[i]);
     }
     if (ld_screen != NULL) {
@@ -1138,7 +1157,7 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Open the file */
     if ((drbd_file = fopen(PROC_DRBD, "r")) == NULL) {
-        asprintf(&error_msg, "fopen: %s", strerror(errno));
+        asprintf(&error_msg, "fopen(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
     } else {
@@ -1205,7 +1224,7 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Open the file */
     if ((mdstat_file = fopen(PROC_MDSTAT, "r")) == NULL) {
-        asprintf(&error_msg, "fopen: %s", strerror(errno));
+        asprintf(&error_msg, "fopen(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
     } else {
@@ -1353,21 +1372,23 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     CDKRADIO *fs_type = 0;
     CDKSWINDOW *make_fs_info = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
-    char dev_node[MAX_FS_ATTR_LEN] = {0}, fs_label_buff[MAX_FS_LABEL] = {0},
-            mkfs_cmd[100] = {0}, mount_cmd[100] = {0},
-            new_mnt_point[MAX_FS_ATTR_LEN] = {0}, new_blk_dev_node[MAX_FS_ATTR_LEN] = {0};
-    char *block_dev = NULL, *error_msg = NULL, *cmd_str = NULL, *confirm_msg = NULL,
-            *dev_node_ptr = NULL, *device_size = NULL, *tmp_str_ptr = NULL;
+    char fs_label_buff[MAX_FS_LABEL] = {0}, mkfs_cmd[MAX_SHELL_CMD_LEN] = {0},
+            mount_cmd[MAX_SHELL_CMD_LEN] = {0},
+            new_mnt_point[MAX_FS_ATTR_LEN] = {0},
+            new_blk_dev_node[MAX_FS_ATTR_LEN] = {0};
+    char *block_dev = NULL, *error_msg = NULL, *confirm_msg = NULL,
+            *dev_node = NULL, *device_size = NULL, *tmp_str_ptr = NULL;
     char *fs_dialog_msg[MAX_FS_DIALOG_INFO_LINES] = {NULL},
             *swindow_info[MAX_MAKE_FS_INFO_LINES] = {NULL};
     static char *transport[] = {"unknown", "scsi", "ide", "dac960", "cpqarray",
     "file", "ataraid", "i2o", "ubd", "dasd", "viodasd", "sx8", "dm"};
     static char *fs_type_opts[] = {"xfs", "ext2", "ext3", "ext4"};
-    FILE *fstab_file = NULL, *new_fstab_file = NULL, *findfs_cmd = NULL;
-    struct mntent *fstab_entry = NULL, addtl_fstab_entry; /* Not a pointer */
+    FILE *fstab_file = NULL, *new_fstab_file = NULL;
+    struct mntent *fstab_entry = NULL,
+            addtl_fstab_entry; /* Not a pointer */
     int temp_int = 0, window_y = 0, window_x = 0, info_line_cnt = 0,
-            traverse_ret = 0, i = 0, exit_stat = 0, ret_val = 0;
-    int fs_window_lines = 21, fs_window_cols = 70;
+            traverse_ret = 0, i = 0, exit_stat = 0, ret_val = 0,
+            fs_window_lines = 0, fs_window_cols = 0;
     PedDevice *device = NULL;
     PedDiskType *disk_type = NULL;
     PedDisk *disk = NULL;
@@ -1382,7 +1403,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Open the file system tab file */
     if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-        asprintf(&error_msg, "setmntent: %s", strerror(errno));
+        asprintf(&error_msg, "setmntent(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         return;
@@ -1400,35 +1421,11 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             return;
         } else if ((strstr(fstab_entry->mnt_fsname, "LABEL=") != NULL) ||
                 (strstr(fstab_entry->mnt_fsname, "UUID=") != NULL)) {
-            /* Look-up the block device node using the findfs tool */
-            asprintf(&cmd_str, "%s %s 2>&1", FINDFS_BIN, fstab_entry->mnt_fsname);
-            findfs_cmd = popen(cmd_str, "r");
-            while (fgets(dev_node, sizeof (dev_node), findfs_cmd) != NULL) {
-                /* This feels a bit messy -- looking for a '/' in the command output */
-                if (strstr(dev_node, "/"))
-                    dev_node_ptr = strStrip(dev_node);
+            /* Find the device node for the given file system */
+            if ((dev_node = blkid_get_devname(NULL, fstab_entry->mnt_fsname, NULL)) == NULL) {
+                // TODO: It seems this function returns NULL for an error AND if the FS wasn't found
             }
-            if ((exit_stat = pclose(findfs_cmd)) == -1) {
-                ret_val = -1;
-            } else {
-                if (WIFEXITED(exit_stat))
-                    ret_val = WEXITSTATUS(exit_stat);
-                else
-                    ret_val = -1;
-            }
-            freeChar(cmd_str);
-            /* We ignore exit status 1 since this should be due to the findfs 
-             * utility simply not finding a matching file system with the specified
-             * label */
-            if ((ret_val != 0) && (ret_val != 1)) {
-                asprintf(&error_msg, "The %s command exited with %d.", FINDFS_BIN, ret_val);
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                freeChar(error_msg);
-                endmntent(fstab_file);
-                return;
-            }
-
-            if (strstr(dev_node_ptr, block_dev) != NULL) {
+            if ((strstr(dev_node, block_dev) != NULL)) {
                 errorDialog(main_cdk_screen,
                         "It appears the selected block device already has a fstab entry.", NULL);
                 endmntent(fstab_file);
@@ -1441,6 +1438,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     endmntent(fstab_file);
 
     /* Setup a new CDK screen for required input */
+    fs_window_lines = 21;
+    fs_window_cols = 70;
     window_y = ((LINES / 2) - (fs_window_lines / 2));
     window_x = ((COLS / 2) - (fs_window_cols / 2));
     fs_window = newwin(fs_window_lines, fs_window_cols,
@@ -1482,9 +1481,9 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             "</31/B>Creating New File System (on block device %s)", block_dev);
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&fs_dialog_msg[1], " ");
-    asprintf(&fs_dialog_msg[2], "</B>Model:<!B>\t%-20.20s</B>Transport:<!B>\t%s",
+    asprintf(&fs_dialog_msg[2], "</B>Model:<!B>\t%-20.20s </B>Transport:<!B>\t%s",
             device->model, transport[device->type]);
-    asprintf(&fs_dialog_msg[3], "</B>Size:<!B>\t%-20.20s</B>Disk label:<!B>\t%s",
+    asprintf(&fs_dialog_msg[3], "</B>Size:<!B>\t%-20.20s </B>Disk label:<!B>\t%s",
             device_size, (disk_type) ? disk_type->name : "none");
     asprintf(&fs_dialog_msg[4], "</B>Sector size (logical/physical):<!B>\t%lldB/%lldB",
             device->sector_size, device->phys_sector_size);
@@ -1567,6 +1566,9 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
+
         /* Check FS label value (field entry) */
         strncpy(fs_label_buff, getCDKEntryValue(fs_label), MAX_FS_LABEL);
         i = 0;
@@ -1588,7 +1590,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
          * actually use the given file system label, but for now we only consider
          * the fstab file as the source of truth */
         if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-            asprintf(&error_msg, "setmntent: %s", strerror(errno));
+            asprintf(&error_msg, "setmntent(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -1683,7 +1685,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                 addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
                 i++;
             }
-            snprintf(mkfs_cmd, 100, "mkfs.%s -L %s %s > /dev/null 2>&1",
+            snprintf(mkfs_cmd, MAX_SHELL_CMD_LEN, "mkfs.%s -L %s %s > /dev/null 2>&1",
                     fs_type_opts[temp_int], fs_label_buff, new_blk_dev_node);
             ret_val = system(mkfs_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
@@ -1701,14 +1703,14 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             }
             /* Open the original file system tab file */
             if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-                asprintf(&error_msg, "setmntent: %s", strerror(errno));
+                asprintf(&error_msg, "setmntent(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
                 goto cleanup;
             }
             /* Open the new/temporary file system tab file */
             if ((new_fstab_file = setmntent(FSTAB_TMP, "w+")) == NULL) {
-                asprintf(&error_msg, "setmntent: %s", strerror(errno));
+                asprintf(&error_msg, "setmntent(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
                 goto cleanup;
@@ -1733,7 +1735,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             freeChar(addtl_fstab_entry.mnt_type);
             freeChar(addtl_fstab_entry.mnt_opts);
             if ((rename(FSTAB_TMP, FSTAB)) == -1) {
-                asprintf(&error_msg, "rename: %s", strerror(errno));
+                asprintf(&error_msg, "rename(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
                 goto cleanup;
@@ -1741,7 +1743,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             /* Make the mount point directory */
             snprintf(new_mnt_point, MAX_FS_ATTR_LEN, "%s/%s", VDISK_MNT_BASE, fs_label_buff);
             if ((mkdir(new_mnt_point, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)) == -1) {
-                asprintf(&error_msg, "mkdir: %s", strerror(errno));
+                asprintf(&error_msg, "mkdir(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
                 goto cleanup;
@@ -1756,7 +1758,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                     "Would you like to mount the new file system now?", NULL);
             if (question) {
                 /* Run mount */
-                snprintf(mount_cmd, 100, "%s %s > /dev/null 2>&1", MOUNT_BIN, new_mnt_point);
+                snprintf(mount_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1", MOUNT_BIN, new_mnt_point);
                 ret_val = system(mount_cmd);
                 if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
                     asprintf(&error_msg, "Running %s failed; exited with %d.", MOUNT_BIN, exit_stat);
@@ -1790,7 +1792,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
  */
 void removeFSDialog(CDKSCREEN *main_cdk_screen) {
     char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
-            fs_type[MAX_FS_ATTR_LEN] = {0}, umount_cmd[100] = {0};
+            fs_type[MAX_FS_ATTR_LEN] = {0}, umount_cmd[MAX_SHELL_CMD_LEN] = {0};
     char *confirm_msg = NULL, *error_msg = NULL;
     boolean mounted = FALSE, question = FALSE, confirm = FALSE;
     FILE *fstab_file = NULL, *new_fstab_file = NULL;
@@ -1809,7 +1811,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
                 "(The file system must be un-mounted before proceeding.)");
         if (question) {
             /* Run umount */
-            snprintf(umount_cmd, 100, "%s %s > /dev/null 2>&1", UMOUNT_BIN, fs_path);
+            snprintf(umount_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1", UMOUNT_BIN, fs_path);
             ret_val = system(umount_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
                 asprintf(&error_msg, "Running %s failed; exited with %d.", UMOUNT_BIN, exit_stat);
@@ -1831,14 +1833,14 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
     if (confirm) {
         /* Open the original file system tab file */
         if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-            asprintf(&error_msg, "setmntent: %s", strerror(errno));
+            asprintf(&error_msg, "setmntent(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             return;
         }
         /* Open the new/temporary file system tab file */
         if ((new_fstab_file = setmntent(FSTAB_TMP, "w+")) == NULL) {
-            asprintf(&error_msg, "setmntent: %s", strerror(errno));
+            asprintf(&error_msg, "setmntent(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             return;
@@ -1854,7 +1856,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
         endmntent(new_fstab_file);
         endmntent(fstab_file);
         if ((rename(FSTAB_TMP, FSTAB)) == -1) {
-            asprintf(&error_msg, "rename: %s", strerror(errno));
+            asprintf(&error_msg, "rename(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             return;
@@ -1862,7 +1864,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
         
         /* Remove the mount point directory */
         if ((rmdir(fs_path)) == -1) {
-            asprintf(&error_msg, "rmdir: %s", strerror(errno));
+            asprintf(&error_msg, "rmdir(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             return;
@@ -1888,18 +1890,19 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     CDKHISTOGRAM *vdisk_progress = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
-            fs_type[MAX_FS_ATTR_LEN] = {0}, mount_cmd[100] = {0},
-            vdisk_name_buff[MAX_VDISK_NAME] = {0}, gib_free_str[50] = {0},
-            gib_total_str[50] = {0}, zero_buff[VDISK_WRITE_SIZE] = {0},
+            fs_type[MAX_FS_ATTR_LEN] = {0}, mount_cmd[MAX_SHELL_CMD_LEN] = {0},
+            vdisk_name_buff[MAX_VDISK_NAME] = {0}, gib_free_str[MISC_STRING_LEN] = {0},
+            gib_total_str[MISC_STRING_LEN] = {0}, zero_buff[VDISK_WRITE_SIZE] = {0},
             new_vdisk_file[MAX_VDISK_PATH_LEN] = {0};
     char *error_msg = NULL;
-    char *vdisk_dialog_msg[4] = {NULL};
+    char *vdisk_dialog_msg[ADD_VDISK_INFO_LINES] = {NULL};
     boolean mounted = FALSE, question = FALSE;
     struct statvfs *fs_info = NULL;
     int window_y = 0, window_x = 0, traverse_ret = 0, i = 0, exit_stat = 0,
-            ret_val = 0, vdisk_size_int = 0, new_vdisk_fd = 0;
-    int vdisk_window_lines = 12, vdisk_window_cols = 70;
-    long long bytes_free = 0ll, bytes_total = 0ll, new_vdisk_bytes = 0ll, new_vdisk_mib = 0ll;
+            ret_val = 0, vdisk_size_int = 0, new_vdisk_fd = 0,
+            vdisk_window_lines = 0, vdisk_window_cols = 0;
+    long long bytes_free = 0ll, bytes_total = 0ll, new_vdisk_bytes = 0ll,
+            new_vdisk_mib = 0ll;
     off_t position = 0;
     ssize_t bytes_written = 0;
     
@@ -1914,7 +1917,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                 "(The file system must be mounted before proceeding.)");
         if (question) {
             /* Run mount */
-            snprintf(mount_cmd, 100, "%s %s > /dev/null 2>&1", MOUNT_BIN, fs_path);
+            snprintf(mount_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1", MOUNT_BIN, fs_path);
             ret_val = system(mount_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
                 asprintf(&error_msg, "Running %s failed; exited with %d.", MOUNT_BIN, exit_stat);
@@ -1928,6 +1931,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     }
     
     /* Setup a new small CDK screen for virtual disk information */
+    vdisk_window_lines = 12;
+    vdisk_window_cols = 70;
     window_y = ((LINES / 2) - (vdisk_window_lines / 2));
     window_x = ((COLS / 2) - (vdisk_window_cols / 2));
     vdisk_window = newwin(vdisk_window_lines, vdisk_window_cols,
@@ -1951,15 +1956,15 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     if ((statvfs(fs_path, fs_info)) == -1) {
-        asprintf(&error_msg, "statvfs: %s", strerror(errno));
+        asprintf(&error_msg, "statvfs(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
     }
     bytes_free = fs_info->f_bavail * fs_info->f_bsize;
-    snprintf(gib_free_str, 50, "%lld GiB", (bytes_free / GIBIBYTE_SIZE));
+    snprintf(gib_free_str, MISC_STRING_LEN, "%lld GiB", (bytes_free / GIBIBYTE_SIZE));
     bytes_total = fs_info->f_blocks * fs_info->f_bsize;
-    snprintf(gib_total_str, 50, "%lld GiB", (bytes_total / GIBIBYTE_SIZE));
+    snprintf(gib_total_str, MISC_STRING_LEN, "%lld GiB", (bytes_total / GIBIBYTE_SIZE));
     
     /* Fill the information label */
     asprintf(&vdisk_dialog_msg[0], "</31/B>Adding New Virtual Disk File");
@@ -1971,7 +1976,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             gib_total_str, gib_free_str);
     free(fs_info);
     vdisk_label = newCDKLabel(vdisk_screen, (window_x + 1), (window_y + 1),
-            vdisk_dialog_msg, 4, FALSE, FALSE);
+            vdisk_dialog_msg, ADD_VDISK_INFO_LINES, FALSE, FALSE);
     if (!vdisk_label) {
         errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
         goto cleanup;
@@ -2022,6 +2027,9 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
     /* User hit 'OK' button */
     if (traverse_ret == 1) {
+        /* Turn the cursor off (pretty) */
+        curs_set(0);
+
         /* Check virtual disk name value (field entry) */
         strncpy(vdisk_name_buff, getCDKEntryValue(vdisk_name), MAX_VDISK_NAME);
         i = 0;
@@ -2065,12 +2073,11 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
         destroyCDKScreen(vdisk_screen);
         vdisk_screen = NULL;
         delwin(vdisk_window);
-        curs_set(0);
         refreshCDKScreen(main_cdk_screen);
 
         /* Make a new histogram widget to display the virtual disk creation progress */
         vdisk_progress = newCDKHistogram(main_cdk_screen, CENTER, CENTER,
-                1, 50, HORIZONTAL, "<C></31/B>Writing new virtual disk file (unit = MiB):\n",
+                1, 50, HORIZONTAL, "<C></31/B>Writing new virtual disk file (units = MiB):\n",
                 TRUE, FALSE);
         if (!vdisk_progress) {
             errorDialog(main_cdk_screen, "Couldn't create histogram widget!", NULL);
@@ -2092,7 +2099,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
         /* Zero-out the new virtual disk file to the length specified (size) */
         memset(zero_buff, 0, VDISK_WRITE_SIZE);
         if ((new_vdisk_fd = open(new_vdisk_file, O_WRONLY | O_CREAT)) == -1) {
-            asprintf(&error_msg, "open: %s", strerror(errno));
+            asprintf(&error_msg, "open(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -2102,13 +2109,13 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                     MIN((new_vdisk_bytes - position), VDISK_WRITE_SIZE));
             if (bytes_written == 0) {
                 /* We've completed writing the new file; update the progress bar */
-                setCDKHistogram(vdisk_progress, vPERCENT, CENTER, A_BOLD,
+                setCDKHistogram(vdisk_progress, vPERCENT, CENTER, COLOR_DIALOG_TEXT,
                         0, new_vdisk_mib, new_vdisk_mib,
-                        ' ' | COLOR_PAIR(3), TRUE);
+                        ' ' | A_REVERSE, TRUE);
                 drawCDKHistogram(vdisk_progress, TRUE);
                 break;
             } else if (bytes_written == -1) {
-                asprintf(&error_msg, "write: %s", strerror(errno));
+                asprintf(&error_msg, "write(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
                 close(new_vdisk_fd);
@@ -2116,25 +2123,25 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             }
             /* This controls how often the progress bar is updated; it can adversely 
              * affect performance of the write operation if its updated too frequently */
-            if ((position % (VDISK_WRITE_SIZE * 100)) == 0) {
+            if ((position % (VDISK_WRITE_SIZE * 1000)) == 0) {
                 /* Since our maximum size was checked above against an int type,
                  * we'll assume we're safe if we made it this far */
-                setCDKHistogram(vdisk_progress, vPERCENT, CENTER, A_BOLD,
+                setCDKHistogram(vdisk_progress, vPERCENT, CENTER, COLOR_DIALOG_TEXT,
                         0, new_vdisk_mib, (position / MEBIBYTE_SIZE),
-                        ' ' | COLOR_PAIR(3), TRUE);
+                        ' ' | A_REVERSE, TRUE);
                 drawCDKHistogram(vdisk_progress, TRUE);
             }
         }
         // TODO: Do we actually need to flush to disk before returning?
         if (fsync(new_vdisk_fd) == -1) {
-            asprintf(&error_msg, "fsync: %s", strerror(errno));
+            asprintf(&error_msg, "fsync(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             close(new_vdisk_fd);
             goto cleanup;
         }
         if (close(new_vdisk_fd) == -1) {
-            asprintf(&error_msg, "close: %s", strerror(errno));
+            asprintf(&error_msg, "close(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -2145,7 +2152,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Done */
     cleanup:
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < ADD_VDISK_INFO_LINES; i++)
         freeChar(vdisk_dialog_msg[i]);
     if (vdisk_progress != NULL)
         destroyCDKHistogram(vdisk_progress);
@@ -2164,7 +2171,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     CDKFSELECT *file_select = 0;
     char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
-            fs_type[MAX_FS_ATTR_LEN] = {0}, mount_cmd[100] = {0};
+            fs_type[MAX_FS_ATTR_LEN] = {0}, mount_cmd[MAX_SHELL_CMD_LEN] = {0};
     char *error_msg = NULL, *selected_file = NULL, *confirm_msg = NULL;
     boolean mounted = FALSE, question = FALSE, confirm = FALSE;
     int exit_stat = 0, ret_val = 0;
@@ -2180,7 +2187,7 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                 "(The file system must be mounted before proceeding.)");
         if (question) {
             /* Run mount */
-            snprintf(mount_cmd, 100, "%s %s > /dev/null 2>&1", MOUNT_BIN, fs_path);
+            snprintf(mount_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1", MOUNT_BIN, fs_path);
             ret_val = system(mount_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
                 asprintf(&error_msg, "Running %s failed; exited with %d.", MOUNT_BIN, exit_stat);
@@ -2217,7 +2224,7 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
         if (confirm) {
             /* Delete (unlink) the virtual disk file */
             if (unlink(selected_file) == -1) {
-                asprintf(&error_msg, "unlink: %s", strerror(errno));
+                asprintf(&error_msg, "unlink(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 freeChar(error_msg);
             }
@@ -2226,5 +2233,11 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Done */
     destroyCDKFselect(file_select);
+    /* Using the file selector widget changes the CWD -- fix it */
+    if ((chdir(getenv("HOME"))) == -1) {
+        asprintf(&error_msg, "chdir(): %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+    }
     return;
 }

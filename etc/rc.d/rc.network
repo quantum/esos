@@ -40,7 +40,6 @@ if ($ARGV[0] eq "start") {
         if (/^\s*\[(\w+)\].*/) {
             $section = $1;
             push(@sections, $section);
-            #print "section: $section\n";
             next;
         }
         # Get the INI file keyword/value pairs
@@ -50,9 +49,6 @@ if ($ARGV[0] eq "start") {
             $keyword =~ s/\s+$//;
             $value =~ s/^\s+//;
             $value =~ s/\s+$//;
-            #print "section: $section\n";
-            #print "keyword: $keyword\n";
-            #print "value: $value\n";
             # Put them into a hash
             $ini_hash{$section . ":" . $keyword} = $value;
         }
@@ -84,6 +80,27 @@ if ($ARGV[0] eq "start") {
             my $hash_key = $each . ":bootproto";
             if (exists($ini_hash{$hash_key})) {
                 if (lc($ini_hash{$hash_key}) eq "dhcp") {
+                    if (!exists($ini_hash{$each . ":mtu"})) {
+                        print("ERROR: The 'mtu' name is missing!\n");
+                        next;
+                    }
+                    my $mtu = $ini_hash{$each . ":mtu"};
+                    if ($mtu eq "") {
+                        print("ERROR: The 'mtu' value is empty!\n");
+                        next;
+                    }
+                    # Set MTU for interface
+                    print("Setting MTU for interface $each...\n");
+                    system($ifconfig_prog . " " . $each . " mtu " . $mtu . " 2>&1");
+                    if ($? == -1) {
+                        print("ERROR: Running $ifconfig_prog failed: $!\n");
+                        next;
+                    }
+                    my $exit_status = $? >> 8;
+                    if ($exit_status != 0) {
+                        print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                        next;
+                    }
                     # Do DHCP configuration for interface
                     print("Running $dhcp_prog for interface $each...\n");
                     system($dhcp_prog . " -i " . $each . " -n " . " -q 2>&1");
@@ -112,6 +129,10 @@ if ($ARGV[0] eq "start") {
                         print("ERROR: The 'broadcast' name is missing!\n");
                         next;
                     }
+                    if (!exists($ini_hash{$each . ":mtu"})) {
+                        print("ERROR: The 'mtu' name is missing!\n");
+                        next;
+                    }
                     my $ipaddr = $ini_hash{$each . ":ipaddr"};
                     if ($ipaddr eq "") {
                         print("ERROR: The 'ipaddr' value is empty!\n");
@@ -127,7 +148,12 @@ if ($ARGV[0] eq "start") {
                         print("ERROR: The 'broadcast' value is empty!\n");
                         next;
                     }
-                    system($ifconfig_prog . " " . $each . " " . $ipaddr . " netmask " . $netmask . " broadcast " . $broadcast . " 2>&1");
+                    my $mtu = $ini_hash{$each . ":mtu"};
+                    if ($mtu eq "") {
+                        print("ERROR: The 'mtu' value is empty!\n");
+                        next;
+                    }
+                    system($ifconfig_prog . " " . $each . " " . $ipaddr . " netmask " . $netmask . " broadcast " . $broadcast . " mtu " . $mtu . " 2>&1");
                     if ($? == -1) {
                         print("ERROR: Running $ifconfig_prog failed: $!\n");
                         next;

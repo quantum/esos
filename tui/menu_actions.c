@@ -11,6 +11,7 @@
 #include <cdk.h>
 #include <cdk/cdkscreen.h>
 #include <mntent.h>
+#include <blkid/blkid.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -24,7 +25,7 @@
 void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     CDKDIALOG *error = 0;
     static char *buttons[] = {"</B>   OK   "};
-    char *message[6] = {NULL};
+    char *message[ERROR_DIAG_MSG_SIZE] = {NULL};
     int i = 0;
 
     /* Set the message */
@@ -50,7 +51,7 @@ void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
         activateCDKDialog(error, 0);
         destroyCDKDialog(error);
     }
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < ERROR_DIAG_MSG_SIZE; i++)
         freeChar(message[i]);
     refreshCDKScreen(screen);
     return;
@@ -76,7 +77,7 @@ void cancelButtonCB(CDKBUTTON *button) {
 boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     CDKDIALOG *confirm = 0;
     static char *buttons[] = {"</B>   OK   ", "</B> Cancel "};
-    char *message[6] = {NULL};
+    char *message[CONFIRM_DIAG_MSG_SIZE] = {NULL};
     int selection = 0, i = 0;
     boolean ret_val = FALSE;
 
@@ -114,7 +115,7 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
         }
         destroyCDKDialog(confirm);
     }
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < CONFIRM_DIAG_MSG_SIZE; i++)
         freeChar(message[i]);
     refreshCDKScreen(screen);
     return ret_val;
@@ -158,7 +159,7 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s",
                 SYSFS_SCST_TGT, drivers[i]);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir: %s", strerror(errno));
+            asprintf(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -240,7 +241,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
     char *scst_tgt_groups[MAX_SCST_GROUPS] = {NULL},
-    *scroll_grp_list[MAX_SCST_GROUPS] = {NULL};
+            *scroll_grp_list[MAX_SCST_GROUPS] = {NULL};
     char *error_msg = NULL, *scroll_title = NULL;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
 
@@ -248,7 +249,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups",
             SYSFS_SCST_TGT, tgt_driver, tgt_name);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
@@ -262,7 +263,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[
         if (dir_entry->d_type == DT_DIR) {
             if (i > 1) {
                 asprintf(&scst_tgt_groups[j], "%s", dir_entry->d_name);
-                asprintf(&scroll_grp_list[j], "<C>%s", scst_tgt_groups[j]);
+                asprintf(&scroll_grp_list[j], "<C>%.30s", scst_tgt_groups[j]);
                 j++;
             }
             i++;
@@ -334,7 +335,7 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/%s/luns",
             SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         ret_val = -1;
@@ -422,7 +423,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
             *scsi_dsk_vendor[MAX_SCSI_DISKS] = {NULL},
             *scsi_dev_info[MAX_SCSI_DISKS] = {NULL};
     static char *list_title = "<C></31/B>Choose a SCSI disk:\n";
-    char *error_msg = NULL;
+    char *error_msg = NULL, *boot_dev_node = NULL;
     static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
@@ -434,16 +435,23 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
      * Since ret_buff is re-used between calls, we reset the first character */
     ret_buff[0] = '\0';
 
+    /* Get the ESOS boot device node */
+    // TODO: This needs to be tested -- does it return NULL even if nothing was found?
+    if ((boot_dev_node = blkid_get_devname(NULL, "LABEL", ESOS_BOOT_PART)) == NULL) {
+        errorDialog(cdk_screen, "Calling blkid_get_devname() failed.", NULL);
+        goto cleanup;
+    }
+
     /* Open the directory to get SCSI devices */
     if ((dir_stream = opendir(SYSFS_SCSI_DISK)) == NULL) {
-        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
     }
 
     /* Loop over each entry in the directory (SCSI devices) */
-    while ((dir_entry = readdir(dir_stream)) != NULL) {
+    while (((dir_entry = readdir(dir_stream)) != NULL) && (dev_cnt < MAX_SCSI_DISKS)) {
         if (dir_entry->d_type == DT_LNK) {
             asprintf(&scsi_dsk_dev[dev_cnt], "%s", dir_entry->d_name);
             dev_cnt++;
@@ -454,11 +462,12 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
     closedir(dir_stream);
 
     /* Loop over our list of SCSI devices */
-    for (i = 0; i < dev_cnt; i++) {
+    i = 0;
+    while (i < dev_cnt) {
         /* Get the SCSI block device node */
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/block", SYSFS_SCSI_DISK, scsi_dsk_dev[i]);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&scsi_dsk_node[i], "opendir: %s", strerror(errno));
+            asprintf(&scsi_dsk_node[i], "opendir(): %s", strerror(errno));
         } else {
             j = 0;
             while ((dir_entry = readdir(dir_stream)) != NULL) {
@@ -474,6 +483,19 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
             }
             closedir(dir_stream);
         }
+        /* Make sure this isn't the ESOS boot device (USB); if it is, clean-up 
+         * anything allocated, shift the elements, and decrement device count */
+        if ((strstr(boot_dev_node, scsi_dsk_node[i])) != NULL) {
+            freeChar(scsi_dsk_node[i]);
+            scsi_dsk_node[i] = NULL;
+            freeChar(scsi_dsk_dev[i]);
+            scsi_dsk_dev[i] = NULL;
+            // TODO: This needs to be checked for safeness.
+            for (j = i; j < dev_cnt; j++)
+                scsi_dsk_dev[j] = scsi_dsk_dev[j+1];
+            dev_cnt--;
+            continue;
+        }
         /* Read SCSI disk attributes */
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/model",
                 SYSFS_SCSI_DISK, scsi_dsk_dev[i]);
@@ -486,6 +508,8 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
         /* Fill the list (pretty) for our CDK label with SCSI devices */
         asprintf(&scsi_dev_info[i], "<C>[%s] %s %s (/dev/%s)", scsi_dsk_dev[i],
                 scsi_dsk_vendor[i], scsi_dsk_model[i], scsi_dsk_node[i]);
+        /* Next */
+        i++;
     }
 
     /* Make sure we actually have something to present */
@@ -557,7 +581,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s",
                 SYSFS_SCST_TGT, handlers[i]);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir: %s", strerror(errno));
+            asprintf(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
@@ -685,7 +709,8 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
  * have them choose one. The driver / target / group name combination is passed
  * in and we fill the initiator char array.
  */
-void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], char tgt_group[], char initiator[]) {
+void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
+        char tgt_driver[], char tgt_group[], char initiator[]) {
     CDKSCROLL *lun_scroll = 0;
     int lun_choice = 0, i = 0;
     DIR *dir_stream = NULL;
@@ -699,7 +724,7 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[]
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/%s/initiators",
             SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
@@ -712,7 +737,7 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[]
         if ((dir_entry->d_type == DT_REG) &&
                 (strcmp(dir_entry->d_name, "mgmt") != 0)) {
             asprintf(&init_list[i], "%s", dir_entry->d_name);
-            asprintf(&scroll_init_list[i], "<C>%s", init_list[i]);
+            asprintf(&scroll_init_list[i], "<C>%.40s", init_list[i]);
             i++;
         }
     }
@@ -768,7 +793,8 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[]
  */
 void syncConfig(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *sync_msg = 0;
-    char scstadmin_cmd[100] = {0}, sync_conf_cmd[100] = {0};
+    char scstadmin_cmd[MAX_SHELL_CMD_LEN] = {0},
+            sync_conf_cmd[MAX_SHELL_CMD_LEN] = {0};
     static char *message[] = {"", "",
                 "</B>   Synchronizing ESOS configuration...   ", "", ""};
     char *error_msg = NULL;
@@ -786,7 +812,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
     refreshCDKScreen(main_cdk_screen);
     
     /* Dump the SCST configuration to a file */
-    snprintf(scstadmin_cmd, 100, "%s -nonkey -write_config %s > /dev/null 2>&1", SCSTADMIN_TOOL, SCST_CONF);
+    snprintf(scstadmin_cmd, MAX_SHELL_CMD_LEN, "%s -nonkey -write_config %s > /dev/null 2>&1", SCSTADMIN_TOOL, SCST_CONF);
     ret_val = system(scstadmin_cmd);
     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
         asprintf(&error_msg, "Running %s failed; exited with %d.", SCSTADMIN_TOOL, exit_stat);
@@ -796,7 +822,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
     }
     
     /* Synchronize the ESOS configuration */
-    snprintf(sync_conf_cmd, 100, "%s > /dev/null 2>&1", SYNC_CONF_TOOL);
+    snprintf(sync_conf_cmd, MAX_SHELL_CMD_LEN, "%s > /dev/null 2>&1", SYNC_CONF_TOOL);
     ret_val = system(sync_conf_cmd);
     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
         asprintf(&error_msg, "Running %s failed; exited with %d.", SYNC_CONF_TOOL, exit_stat);
@@ -834,7 +860,7 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
     user_cnt = 0;
     for (grp_member = group_info->gr_mem; *grp_member; grp_member++) {
         asprintf(&esos_grp_members[user_cnt], "%s", *grp_member);
-        asprintf(&scroll_list[user_cnt], "<C>%s", *grp_member);
+        asprintf(&scroll_list[user_cnt], "<C>%.25s", *grp_member);
         user_cnt++;
     }
 
@@ -875,12 +901,12 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
 /*
  * Question dialog with a message and two buttons (OK/Cancel). Typically
  * used as a convenience to run some function after another dialog. Accepts
- * mutliple lines; caller should pass NULL for lines that shouldn't be set.
+ * multiple lines; caller should pass NULL for lines that shouldn't be set.
  */
 boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     CDKDIALOG *question = 0;
     static char *buttons[] = {"</B>   Yes   ", "</B>   No   "};
-    char *message[6] = {NULL};
+    char *message[QUEST_DIAG_MSG_SIZE] = {NULL};
     int selection = 0, i = 0;
     boolean ret_val = FALSE;
 
@@ -917,7 +943,7 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
         }
         destroyCDKDialog(question);
     }
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < QUEST_DIAG_MSG_SIZE; i++)
         freeChar(message[i]);
     refreshCDKScreen(screen);
     return ret_val;
@@ -941,7 +967,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
 
     /* Make a list of file systems that are mounted (by mount path, not device) */
     if ((mtab_file = setmntent(MTAB, "r")) == NULL) {
-        asprintf(&error_msg, "setmntent: %s", strerror(errno));
+        asprintf(&error_msg, "setmntent(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         return;
@@ -964,7 +990,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
     
     /* Open the file system tab file */
     if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-        asprintf(&error_msg, "setmntent: %s", strerror(errno));
+        asprintf(&error_msg, "setmntent(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         return;
@@ -1046,7 +1072,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     char *blk_dev_name[MAX_BLOCK_DEVS] = {NULL}, *blk_dev_info[MAX_BLOCK_DEVS] = {NULL},
             *blk_dev_size[MAX_BLOCK_DEVS] = {NULL}, *blk_dev_scroll_lines[MAX_BLOCK_DEVS] = {NULL};
     static char *list_title = "<C></31/B>Choose a block device:\n";
-    char *error_msg = NULL;
+    char *error_msg = NULL, *boot_dev_node = NULL;
     static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
@@ -1058,9 +1084,16 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
      * Since ret_buff is re-used between calls, we reset the first character */
     ret_buff[0] = '\0';
 
+    /* Get the ESOS boot device node */
+    // TODO: This needs to be tested -- does it return NULL even if nothing was found?
+    if ((boot_dev_node = blkid_get_devname(NULL, "LABEL", ESOS_BOOT_PART)) == NULL) {
+        errorDialog(cdk_screen, "Calling blkid_get_devname() failed.", NULL);
+        goto cleanup;
+    }
+
     /* Open the directory to get block devices */
     if ((dir_stream = opendir(SYSFS_BLOCK)) == NULL) {
-        asprintf(&error_msg, "opendir: %s", strerror(errno));
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;
@@ -1069,9 +1102,13 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     /* Loop over each entry in the directory (block devices) */
     while ((dir_entry = readdir(dir_stream)) != NULL) {
         if (dir_entry->d_type == DT_LNK) {
+            /* We don't want to show the ESOS boot block device (USB drive) */
+            if (strstr(boot_dev_node, dir_entry->d_name) != NULL) {
+                freeChar(boot_dev_node);
+                continue;
             /* For DRBD block devices (not sure if the /dev/drbdX format is
              forced when using drbdadm, so this may be a problem */
-            if ((strstr(dir_entry->d_name, "drbd")) != NULL) {
+            } else if ((strstr(dir_entry->d_name, "drbd")) != NULL) {
                 asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);

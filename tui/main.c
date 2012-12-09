@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     CDKMENU *menu = 0;
     CDKLABEL *adapters_label = 0, *targets_label = 0, *devices_label = 0;
     const char *menu_list[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}};
-    int submenu_size[10] = {0}, menu_loc[10] = {0};
+    int submenu_size[CDK_MENU_MAX_SIZE] = {0}, menu_loc[CDK_MENU_MAX_SIZE] = {0};
     char *adapters_label_msg[ADAPTERS_LABEL_ROWS] = {NULL};
     char *targets_label_msg[TARGETS_LABEL_ROWS] = {NULL};
     char *devices_label_msg[DEVICES_LABEL_ROWS] = {NULL};
@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
      around this; long term we can hopefully do something else */
     saved_uid = getuid();
     if (setresuid(0, -1, saved_uid) == -1) {
-        asprintf(&error_msg, "setresuid: %s", strerror(errno));
+        asprintf(&error_msg, "setresuid(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, "Your capabilities may be reduced...");
         freeChar(error_msg);
     }
@@ -249,14 +249,14 @@ int main(int argc, char** argv) {
                     submenu_choice == INTERFACE_SHELL - 1) {
                 /* Set the UID to what was saved at the start */
                 if (setresuid(saved_uid, 0, -1) == -1) {
-                    asprintf(&error_msg, "setresuid: %s", strerror(errno));
+                    asprintf(&error_msg, "setresuid(): %s", strerror(errno));
                     errorDialog(cdk_screen, error_msg, NULL);
                     freeChar(error_msg);
                 }
                 /* Fork and execute a shell */
                 if ((child_pid = fork()) < 0) {
                     /* Could not fork */
-                    asprintf(&error_msg, "fork: %s", strerror(errno));
+                    asprintf(&error_msg, "fork(): %s", strerror(errno));
                     errorDialog(cdk_screen, error_msg, NULL);
                     freeChar(error_msg);
                 } else if (child_pid == 0) {
@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
                     endwin();
                     curs_set(1);
                     echo();
-                    system(CLEAR_CMD);
+                    system(CLEAR_BIN);
                     // TODO: Need to check for error if execl fails
                     execl(SHELL, SHELL, "--login", (char *) NULL);
                     exit(2);
@@ -297,7 +297,7 @@ int main(int argc, char** argv) {
                 endCDK();
                 delwin(sub_window);
                 delwin(main_window);
-                system(CLEAR_CMD);
+                system(CLEAR_BIN);
                 exit(EXIT_SUCCESS);
 
             } else if (menu_choice == SYSTEM_MENU &&
@@ -711,7 +711,7 @@ void readAttribute(char sysfs_attr[], char attr_value[]) {
 
      /* Open the file and retrieve the value */
      if ((sysfs_file = fopen(sysfs_attr, "r")) == NULL) {
-         sprintf(attr_value, "fopen: %s", strerror(errno));
+         sprintf(attr_value, "fopen(): %s", strerror(errno));
          return;
      } else {
          fgets(attr_value, MAX_SYSFS_ATTR_SIZE, sysfs_file);
