@@ -96,6 +96,18 @@ extern "C" {
 #define MAX_TZ_FILES            1024
 #define MAX_PD_INFO_LINE_BUFF   4096
 
+/* Character validation */
+#define VALID_NAME_CHAR(c)      ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.')) ? 1 : 0)
+#define VALID_NAME_CHAR_MSG     "Only these characters are valid: a-z A-Z 0-9 _ - ."
+#define VALID_IP_ADDR_CHAR(c)   ((isascii(c) && (isdigit(c) || c == '.')) ? 1 : 0)
+#define VALID_IP_ADDR_CHAR_MSG  "Only these characters are valid: 0-9 ."
+#define VALID_EMAIL_CHAR(c)     ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.' || c == '@')) ? 1 : 0)
+#define VALID_EMAIL_CHAR_MSG    "Only these characters are valid: a-z A-Z 0-9 _ - . @"
+#define VALID_ASCII_CHAR(c)     ((isascii(c)) ? 1 : 0)
+#define VALID_ASCII_CHAR_MSG    "Only ASCII characters are valid."
+#define VALID_INIT_CHAR(c)     ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.' || c == ':')) ? 1 : 0)
+#define VALID_INIT_CHAR_MSG    "Only these characters are valid: a-z A-Z 0-9 _ - . :"
+
 #ifdef	__cplusplus
 }
 #endif

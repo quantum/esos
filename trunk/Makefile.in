@@ -48,6 +48,7 @@ SHA256SUM	:= @sha256sum@
 SLEEP		:= @sleep@
 LOSETUP		:= @losetup@
 KPARTX		:= @kpartx@
+XARGS		:= @xargs@
 
 esos_ver	:= 0.1-r$(shell svnversion $(CWD))
 prod_suffix	:= -esos.prod
@@ -150,7 +151,10 @@ image: $(build_targets)
 	$(MOUNT) $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p1 $(MOUNT_DIR)/boot
 	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdvu $(IMAGE_DIR)/etc
 	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)
-	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install --root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
+	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install \
+	--grub-setup=$(WORK_DIR)/grub-bios-setup --grub-mkimage=$(WORK_DIR)/grub-mkimage \
+	--grub-mkrelpath=$(WORK_DIR)/grub-mkrelpath --grub-probe=$(WORK_DIR)/grub-probe \
+	--root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.cfg > $(MOUNT_DIR)/boot/grub/grub.cfg
 	$(LN) /usr/share/zoneinfo/posix/UTC $(MOUNT_DIR)/etc/localtime
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
@@ -161,9 +165,14 @@ image: $(build_targets)
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
 	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/*
 	$(CHOWN) -R root:root $(MOUNT_DIR)/*
+	$(FIND) $(MOUNT_DIR)/ -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
+	$(FIND) $(MOUNT_DIR)/ -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(MOUNT_DIR)/etc/rc.d/ -type f -print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(CHMOD) 4750 $(MOUNT_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/shadow
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
+	$(CHMOD) 1777 $(MOUNT_DIR)/tmp
+	$(CHMOD) 1777 $(MOUNT_DIR)/var/tmp
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
@@ -357,6 +366,14 @@ grub: glibc LVM2
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(IMAGE_DIR)/usr/sbin/grub-install > $(WORK_DIR)/grub-install
 	$(CHMOD) +x $(WORK_DIR)/grub-install
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(src_dir)/grub-mkconfig_lib > $(WORK_DIR)/grub-mkconfig_lib
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/sbin/grub-bios-setup \"\044\0100\"\n" > $(WORK_DIR)/grub-bios-setup
+	$(CHMOD) +x $(WORK_DIR)/grub-bios-setup
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/grub-mkimage \"\044\0100\"\n" > $(WORK_DIR)/grub-mkimage
+	$(CHMOD) +x $(WORK_DIR)/grub-mkimage
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/grub-mkrelpath \"\044\0100\"\n" > $(WORK_DIR)/grub-mkrelpath
+	$(CHMOD) +x $(WORK_DIR)/grub-mkrelpath
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/sbin/grub-probe \"\044\0100\"\n" > $(WORK_DIR)/grub-probe
+	$(CHMOD) +x $(WORK_DIR)/grub-probe
 	$(TOUCH) $(@)
 
 glibc: kernel_headers
@@ -512,7 +529,7 @@ cdk: glibc ncurses
 
 LVM2: glibc
 	cd $(src_dir) && ./configure --with-lvm1=none --disable-selinux --prefix=/usr --with-default-system-dir=/etc
-	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) CLDFLAGS+="$(LDFLAGS)"
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/libdm DESTDIR=$(IMAGE_DIR) install

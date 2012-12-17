@@ -1094,9 +1094,10 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (ld_name_buff[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(ld_name_buff[i]) || !isalnum(ld_name_buff[i])) {
+            if (!VALID_NAME_CHAR(ld_name_buff[i])) {
                 errorDialog(main_cdk_screen,
-                        "Name field must only contain alphanumeric characters!", NULL);
+                        "The name entry field contains invalid characters!",
+                        VALID_NAME_CHAR_MSG);
                 goto cleanup;
             }
             i++;
@@ -1574,9 +1575,10 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (fs_label_buff[i] != '\0') {
             /* If the user didn't input an acceptable value, then cancel out */
-            if (isspace(fs_label_buff[i]) || !isalnum(fs_label_buff[i])) {
+            if (!VALID_NAME_CHAR(fs_label_buff[i])) {
                 errorDialog(main_cdk_screen,
-                        "Label field must only contain alphanumeric characters!", NULL);
+                        "The label entry field contains invalid characters!",
+                        VALID_NAME_CHAR_MSG);
                 goto cleanup;
             }
             i++;
@@ -2035,9 +2037,10 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (vdisk_name_buff[i] != '\0') {
             /* If the user didn't input an acceptable value, then cancel out */
-            if (isspace(vdisk_name_buff[i]) || !isalnum(vdisk_name_buff[i])) {
+            if (!VALID_NAME_CHAR(vdisk_name_buff[i])) {
                 errorDialog(main_cdk_screen,
-                        "Name field must only contain alphanumeric characters!", NULL);
+                        "The name entry field contains invalid characters!",
+                        VALID_NAME_CHAR_MSG);
                 goto cleanup;
             }
             i++;

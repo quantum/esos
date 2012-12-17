@@ -485,9 +485,10 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 i = 0;
                 while (temp_str[i] != '\0') {
                     /* If the user didn't input an acceptable name, then cancel out */
-                    if (isspace(temp_str[i])) {
+                    if (!VALID_NAME_CHAR(temp_str[i])) {
                         errorDialog(main_cdk_screen,
-                                "The device name field cannot contain any spaces!", NULL);
+                                "The name entry field contains invalid characters!",
+                                VALID_NAME_CHAR_MSG);
                         goto cleanup;
                     }
                     i++;
@@ -577,7 +578,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Information label */
             asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_fileio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "Virtual Disk File: %s", fileio_file);
+            asprintf(&dev_info_msg[2], "Virtual Disk File: %.25s", fileio_file);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
@@ -696,9 +697,10 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 i = 0;
                 while (temp_str[i] != '\0') {
                     /* If the user didn't input an acceptable name, then cancel out */
-                    if (isspace(temp_str[i]) || !isalnum(temp_str[i])) {
+                    if (!VALID_NAME_CHAR(temp_str[i])) {
                         errorDialog(main_cdk_screen,
-                                "Device name field must only contain alphanumeric characters!", NULL);
+                                "The name entry field contains invalid characters!",
+                                VALID_NAME_CHAR_MSG);
                         goto cleanup;
                     }
                     i++;
@@ -847,9 +849,10 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 i = 0;
                 while (temp_str[i] != '\0') {
                     /* If the user didn't input an acceptable name, then cancel out */
-                    if (isspace(temp_str[i]) || !isalnum(temp_str[i])) {
+                    if (!VALID_NAME_CHAR(temp_str[i])) {
                         errorDialog(main_cdk_screen,
-                                "Device name field must only contain alphanumeric characters!", NULL);
+                                "The name entry field contains invalid characters!",
+                                VALID_NAME_CHAR_MSG);
                         goto cleanup;
                     }
                     i++;

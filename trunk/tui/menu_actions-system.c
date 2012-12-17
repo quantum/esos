@@ -310,20 +310,79 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             /* Turn the cursor off (pretty) */
             curs_set(0);
 
-            /* Check the field entry widgets for spaces */
-            for (i = 0; i < net_screen->objectCount; i++) {
-                CDKOBJS *obj = net_screen->object[i];
-                if (obj != 0 && ObjTypeOf(obj) == vENTRY) {
-                    strncpy(temp_str, getCDKEntryValue((CDKENTRY *) obj), MISC_STRING_LEN);
-                    j = 0;
-                    while (temp_str[j] != '\0') {
-                        if (isspace(temp_str[j])) {
-                            errorDialog(main_cdk_screen, "The entry fields cannot contain any spaces!", NULL);
-                            goto cleanup;
-                        }
-                        j++;
-                    }
+            /* Check the host name value (field entry) */
+            strncpy(temp_str, getCDKEntryValue(host_name), MISC_STRING_LEN);
+            i = 0;
+            while (temp_str[i] != '\0') {
+                /* If the user didn't input an acceptable name, then cancel out */
+                if (!VALID_NAME_CHAR(temp_str[i])) {
+                    errorDialog(main_cdk_screen,
+                            "The host name entry field contains invalid characters!",
+                            VALID_NAME_CHAR_MSG);
+                    traverse_ret = 0; /* Skip the prompt */
+                    goto cleanup;
                 }
+                i++;
+            }
+
+            /* Check the domain name value (field entry) */
+            strncpy(temp_str, getCDKEntryValue(domain_name), MISC_STRING_LEN);
+            i = 0;
+            while (temp_str[i] != '\0') {
+                /* If the user didn't input an acceptable name, then cancel out */
+                if (!VALID_NAME_CHAR(temp_str[i])) {
+                    errorDialog(main_cdk_screen,
+                            "The domain name entry field contains invalid characters!",
+                            VALID_NAME_CHAR_MSG);
+                    traverse_ret = 0; /* Skip the prompt */
+                    goto cleanup;
+                }
+                i++;
+            }
+
+            /* Check the default gateway value (field entry) */
+            strncpy(temp_str, getCDKEntryValue(default_gw), MISC_STRING_LEN);
+            i = 0;
+            while (temp_str[i] != '\0') {
+                /* If the user didn't input an acceptable name, then cancel out */
+                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
+                    errorDialog(main_cdk_screen,
+                            "The default gateway entry field contains invalid characters!",
+                            VALID_IP_ADDR_CHAR_MSG);
+                    traverse_ret = 0; /* Skip the prompt */
+                    goto cleanup;
+                }
+                i++;
+            }
+
+            /* Check the name server (1) value (field entry) */
+            strncpy(temp_str, getCDKEntryValue(name_server_1), MISC_STRING_LEN);
+            i = 0;
+            while (temp_str[i] != '\0') {
+                /* If the user didn't input an acceptable name, then cancel out */
+                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
+                    errorDialog(main_cdk_screen,
+                            "The name server (1) entry field contains invalid characters!",
+                            VALID_IP_ADDR_CHAR_MSG);
+                    traverse_ret = 0; /* Skip the prompt */
+                    goto cleanup;
+                }
+                i++;
+            }
+
+            /* Check the name server (2) value (field entry) */
+            strncpy(temp_str, getCDKEntryValue(name_server_2), MISC_STRING_LEN);
+            i = 0;
+            while (temp_str[i] != '\0') {
+                /* If the user didn't input an acceptable name, then cancel out */
+                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
+                    errorDialog(main_cdk_screen,
+                            "The name server (2) entry field contains invalid characters!",
+                            VALID_IP_ADDR_CHAR_MSG);
+                    traverse_ret = 0; /* Skip the prompt */
+                    goto cleanup;
+                }
+                i++;
             }
 
             /* Write to network config. file */
@@ -503,20 +562,49 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             /* Turn the cursor off (pretty) */
             curs_set(0);
 
-            /* Check the field entry widgets for spaces */
-            for (i = 0; i < net_screen->objectCount; i++) {
-                CDKOBJS *obj = net_screen->object[i];
-                if (obj != 0 && ObjTypeOf(obj) == vENTRY) {
-                    strncpy(temp_str, getCDKEntryValue((CDKENTRY *) obj), MISC_STRING_LEN);
-                    j = 0;
-                    while (temp_str[j] != '\0') {
-                        if (isspace(temp_str[j])) {
-                            errorDialog(main_cdk_screen, "The entry fields cannot contain any spaces!", NULL);
-                            goto cleanup;
-                        }
-                        j++;
-                    }
+            /* Check the IP address value (field entry) */
+            strncpy(temp_str, getCDKEntryValue(ip_addy), MISC_STRING_LEN);
+            i = 0;
+            while (temp_str[i] != '\0') {
+                /* If the user didn't input an acceptable name, then cancel out */
+                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
+                    errorDialog(main_cdk_screen,
+                            "The IP address entry field contains invalid characters!",
+                            VALID_IP_ADDR_CHAR_MSG);
+                    traverse_ret = 0; /* Skip the prompt */
+                    goto cleanup;
                 }
+                i++;
+            }
+
+            /* Check the netmask value (field entry) */
+            strncpy(temp_str, getCDKEntryValue(netmask), MISC_STRING_LEN);
+            i = 0;
+            while (temp_str[i] != '\0') {
+                /* If the user didn't input an acceptable name, then cancel out */
+                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
+                    errorDialog(main_cdk_screen,
+                            "The netmask entry field contains invalid characters!",
+                            VALID_IP_ADDR_CHAR_MSG);
+                    traverse_ret = 0; /* Skip the prompt */
+                    goto cleanup;
+                }
+                i++;
+            }
+
+            /* Check the broadcast value (field entry) */
+            strncpy(temp_str, getCDKEntryValue(broadcast), MISC_STRING_LEN);
+            i = 0;
+            while (temp_str[i] != '\0') {
+                /* If the user didn't input an acceptable name, then cancel out */
+                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
+                    errorDialog(main_cdk_screen,
+                            "The broadcast entry field contains invalid characters!",
+                            VALID_IP_ADDR_CHAR_MSG);
+                    traverse_ret = 0; /* Skip the prompt */
+                    goto cleanup;
+                }
+                i++;
             }
 
             if (getCDKRadioCurrentItem(ip_config) == 0) {
@@ -970,9 +1058,11 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (tmp_email_addr[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(tmp_email_addr[i])) {
+            if (!VALID_EMAIL_CHAR(tmp_email_addr[i])) {
                 errorDialog(main_cdk_screen,
-                        "The email address field cannot contain any spaces!", NULL);
+                        "The email address entry field contains invalid characters!",
+                        VALID_EMAIL_CHAR_MSG);
+                traverse_ret = 0; /* Skip the prompt */
                 goto cleanup;
             }
             i++;
@@ -983,9 +1073,11 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (tmp_smtp_host[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(tmp_smtp_host[i])) {
+            if (!VALID_NAME_CHAR(tmp_smtp_host[i])) {
                 errorDialog(main_cdk_screen,
-                        "The SMTP host field cannot contain any spaces!", NULL);
+                        "The SMTP host entry field contains invalid characters!",
+                        VALID_NAME_CHAR_MSG);
+                traverse_ret = 0; /* Skip the prompt */
                 goto cleanup;
             }
             i++;
@@ -996,9 +1088,11 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (tmp_auth_user[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(tmp_auth_user[i])) {
+            if (!VALID_EMAIL_CHAR(tmp_auth_user[i])) {
                 errorDialog(main_cdk_screen,
-                        "The auth. user field cannot contain any spaces!", NULL);
+                        "The auth. user entry field contains invalid characters!",
+                        VALID_EMAIL_CHAR_MSG);
+                traverse_ret = 0; /* Skip the prompt */
                 goto cleanup;
             }
             i++;
@@ -1009,9 +1103,11 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (tmp_auth_pass[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(tmp_auth_pass[i])) {
+            if (!VALID_ASCII_CHAR(tmp_auth_pass[i])) {
                 errorDialog(main_cdk_screen,
-                        "The auth. password field cannot contain any spaces!", NULL);
+                        "The auth. password entry field contains invalid characters!",
+                        VALID_ASCII_CHAR_MSG);
+                traverse_ret = 0; /* Skip the prompt */
                 goto cleanup;
             }
             i++;
@@ -1297,8 +1393,10 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (username[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(username[i])) {
-                errorDialog(main_cdk_screen, "The username field cannot contain any spaces!", NULL);
+            if (!VALID_NAME_CHAR(username[i])) {
+                errorDialog(main_cdk_screen,
+                        "The username entry field contains invalid characters!",
+                        VALID_NAME_CHAR_MSG);
                 goto cleanup;
             }
             i++;
@@ -1315,8 +1413,10 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         /* Check first password field (we assume both match if we got this far) */
         i = 0;
         while (password_1[i] != '\0') {
-            if (isspace(password_1[i])) {
-                errorDialog(main_cdk_screen, "The password cannot contain any spaces!", NULL);
+            if (!VALID_ASCII_CHAR(password_1[i])) {
+                errorDialog(main_cdk_screen,
+                        "The password entry field contains invalid characters!",
+                        VALID_ASCII_CHAR_MSG);
                 goto cleanup;
             }
             i++;
@@ -1324,7 +1424,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Add the new user account */
         snprintf(add_user_cmd, MAX_SHELL_CMD_LEN, "%s -h /tmp -g 'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
-                ADDUSER_BIN, TUI_BIN, ESOS_GROUP, username);
+                ADDUSER_BIN, SHELL_BIN, ESOS_GROUP, username);
         ret_val = system(add_user_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
             asprintf(&error_msg, "Running %s failed; exited with %d.", ADDUSER_BIN, exit_stat);
@@ -1534,8 +1634,10 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
         /* Check first password field (we assume both match if we got this far) */
         i = 0;
         while (password_1[i] != '\0') {
-            if (isspace(password_1[i])) {
-                errorDialog(main_cdk_screen, "The new password cannot contain any spaces!", NULL);
+            if (!VALID_ASCII_CHAR(password_1[i])) {
+                errorDialog(main_cdk_screen,
+                        "The new password entry field contains invalid characters!",
+                        VALID_ASCII_CHAR_MSG);
                 goto cleanup;
             }
             i++;
@@ -1950,9 +2052,10 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (new_ntp_serv_val[i] != '\0') {
             /* If the user didn't input an acceptable value, then cancel out */
-            if (isspace(new_ntp_serv_val[i])) {
+            if (!VALID_NAME_CHAR(new_ntp_serv_val[i])) {
                 errorDialog(main_cdk_screen,
-                        "The NTP server field cannot contain any spaces!", NULL);
+                        "The NTP server entry field contains invalid characters!",
+                        VALID_NAME_CHAR_MSG);
                 goto cleanup;
             }
             i++;

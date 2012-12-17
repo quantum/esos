@@ -35,6 +35,9 @@ int main(int argc, char** argv) {
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
 
+    /* Make sure the umask is something sane (per the man page, this call always succeeds) */
+    umask(0022);
+
     /* Initialize screen and check size */
     start:
     main_window = initscr();
@@ -266,7 +269,7 @@ int main(int argc, char** argv) {
                     echo();
                     system(CLEAR_BIN);
                     // TODO: Need to check for error if execl fails
-                    execl(SHELL, SHELL, "--login", (char *) NULL);
+                    execl(SHELL_BIN, SHELL_BIN, (char *) NULL);
                     exit(2);
                 } else {
                     /* Parent; wait for the child to finish */
