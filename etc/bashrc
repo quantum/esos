@@ -1,0 +1,14 @@
+# $Id$
+
+# Environment settings
+export PATH="${PATH}:/usr/local/bin:/usr/local/sbin:/opt/bin:/opt/sbin"
+export EDITOR="/bin/vi"
+export VISUAL="/bin/vi"
+export MANPATH="/usr/share/man"
+
+# Set the prompt
+if [ "`whoami`" == "root" ]; then
+    export PS1="[\u@\h \W]\# "
+else
+    export PS1="[\u@\h \W]\$ "
+fi

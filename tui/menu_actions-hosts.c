@@ -58,9 +58,10 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(temp_str[i]) || !isalnum(temp_str[i])) {
+            if (!VALID_NAME_CHAR(temp_str[i])) {
                 errorDialog(main_cdk_screen,
-                        "Group name field must only contain alphanumeric characters!", NULL);
+                        "The group name entry field contains invalid characters!",
+                        VALID_NAME_CHAR_MSG);
                 goto cleanup;
             }
             i++;
@@ -184,9 +185,10 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable string, then cancel out */
-            if (isspace(temp_str[i])) {
+            if (!VALID_INIT_CHAR(temp_str[i])) {
                 errorDialog(main_cdk_screen,
-                        "The initiator field cannot contain any spaces!", NULL);
+                        "The initiator entry field contains invalid characters!",
+                        VALID_INIT_CHAR_MSG);
                 goto cleanup;
             }
             i++;

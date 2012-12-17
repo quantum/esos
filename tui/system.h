@@ -101,7 +101,7 @@ extern "C" {
 
 /* System tools and utilities (binaries and scripts) */
 #define CLEAR_BIN       "clear"
-#define SHELL           "/bin/bash"
+#define SHELL_BIN       "/bin/bash"
 #define MOUNT_BIN       "/bin/mount"
 #define UMOUNT_BIN      "/bin/umount"
 #define LVDISPLAY_BIN   "/usr/sbin/lvdisplay"
@@ -113,7 +113,6 @@ extern "C" {
 #define ADDUSER_BIN     "/bin/adduser"
 #define DELUSER_BIN     "/bin/deluser"
 #define DELGROUP_BIN    "/bin/delgroup"
-#define TUI_BIN         "/usr/local/bin/esos_tui"
 #define RC_NETWORK      "/etc/rc.d/rc.network"
 #define SSMTP_BIN       "/usr/sbin/ssmtp"
 
@@ -137,6 +136,7 @@ extern "C" {
 #define FSTAB_TMP       "/etc/fstab.new"
 #define MTAB            "/proc/mounts"
 #define ESOS_VER_FILE   "/etc/esos-release"
+#define BASHRC_FILE     "/etc/bashrc"
 
 /* Misc. path settings */
 #define VDISK_MNT_BASE  "/mnt/vdisks"

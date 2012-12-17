@@ -1,7 +1,11 @@
 # $Id$
 
-export PATH="${PATH}:/usr/local/bin:/usr/local/sbin:/opt/bin:/opt/sbin"
-export PS1="\u@\h ${PS1}"
-export EDITOR="/bin/vi"
-export VISUAL="/bin/vi"
-export MANPATH="/usr/share/man"
+# A few settings (include the "real" profile)
+ulimit -n 10240
+source /etc/bashrc
+
+# Run the TUI binary and if it doesn't exit cleanly, fall through to the shell
+/usr/local/bin/esos_tui
+if [ $? -eq 0 ]; then
+    exit 0
+fi

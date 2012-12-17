@@ -54,5 +54,6 @@ MY_PATH_PROG([sha256sum])
 MY_PATH_PROG([sleep])
 MY_PATH_PROG([losetup])
 MY_PATH_PROG([kpartx])
+MY_PATH_PROG([xargs])
 
 AC_OUTPUT(Makefile)

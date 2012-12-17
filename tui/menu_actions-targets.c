@@ -170,9 +170,10 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
         i = 0;
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
-            if (isspace(temp_str[i])) {
+            if (!VALID_INIT_CHAR(temp_str[i])) {
                 errorDialog(main_cdk_screen,
-                        "The target name field cannot contain any spaces!", NULL);
+                        "The target name entry field contains invalid characters!",
+                        VALID_INIT_CHAR_MSG);
                 goto cleanup;
             }
             i++;
