@@ -8,6 +8,6 @@
 
 scsi_id=`sg_vpd -i -q /dev/${MDEV} 2>&1`
 if [ $? = "0" ]; then
-	mkdir -p /dev/disk-by-id
+	mkdir -m 0755 -p /dev/disk-by-id
 	ln -s /dev/${MDEV} /dev/disk-by-id/${scsi_id}
 fi

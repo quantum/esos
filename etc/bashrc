@@ -1,7 +1,7 @@
 # $Id$
 
 # Environment settings
-export PATH="${PATH}:/usr/local/bin:/usr/local/sbin:/opt/bin:/opt/sbin"
+export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:/opt/bin:/opt/sbin"
 export EDITOR="/bin/vi"
 export VISUAL="/bin/vi"
 export MANPATH="/usr/share/man"
