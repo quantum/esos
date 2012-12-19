@@ -10,7 +10,7 @@ TMP_DIR="/tmp"
 
 mount ${LOGS_MNT} || exit 1
 archive_prefix="`hostname`_`date +%F`_`date +%s`"
-mkdir -p ${TMP_DIR}/${archive_prefix} || exit 1
+mkdir -m 0755 -p ${TMP_DIR}/${archive_prefix} || exit 1
 
 # Move log files to temp. location and archive to USB
 mv -f /var/log/* ${TMP_DIR}/${archive_prefix}/

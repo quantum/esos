@@ -84,7 +84,8 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		xfsprogs-3.1.8.tar.gz \
 		mdadm-3.2.6.tar.gz \
 		parted-2.3.tar.gz \
-		gcc-4.4.5_gmp_mpfr.tar.bz2)
+		gcc-4.4.5_gmp_mpfr.tar.bz2 \
+		opensm-3.3.15.tar.gz)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
 build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
@@ -92,7 +93,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib \
 			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
-			xfsprogs drbd mdadm parted
+			xfsprogs drbd mdadm parted opensm
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -165,8 +166,8 @@ image: $(build_targets)
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
 	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/*
 	$(CHOWN) -R root:root $(MOUNT_DIR)/*
-	$(FIND) $(MOUNT_DIR)/ -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
-	$(FIND) $(MOUNT_DIR)/ -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(MOUNT_DIR)/etc/ -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
+	$(FIND) $(MOUNT_DIR)/etc/ -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(MOUNT_DIR)/etc/rc.d/ -type f -print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(CHMOD) 4750 $(MOUNT_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/shadow
@@ -185,6 +186,7 @@ image: $(build_targets)
 .PHONY: pkg_dist
 pkg_dist: img_file = $(notdir $(wildcard $(CWD)/esos-*.img))
 pkg_dist: $(img_file)
+	$(CHMOD) +x $(CWD)/install.sh
 	$(MD5SUM) $(img_file) > $(CWD)/dist_md5sum.txt
 	$(SHA256SUM) $(img_file) > $(CWD)/dist_sha256sum.txt
 	$(TAR) --transform 's,^,esos-$(esos_ver)/,' --show-transformed-names \
@@ -454,7 +456,8 @@ ncurses: glibc gcc
 
 e2fsprogs: glibc
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
-	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr --enable-elf-shlibs
+	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr \
+	--enable-elf-shlibs --sysconfdir=/etc
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-libs
@@ -561,3 +564,13 @@ parted: glibc e2fsprogs LVM2
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
+
+opensm: glibc gcc libibumad libibverbs
+	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--with-opensm-conf-sub-dir="" --disable-shared
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-data
+	$(MAKE) --directory=$(src_dir)/opensm DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir)/osmtest DESTDIR=$(IMAGE_DIR) install-exec
+	$(TOUCH) $(@)
+
