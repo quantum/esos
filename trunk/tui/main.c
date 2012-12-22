@@ -104,8 +104,11 @@ int main(int argc, char** argv) {
     menu_list[HOSTS_MENU][HOSTS_REM_INIT]               = "</B>Remove Initiator<!B>";
 
     menu_list[INTERFACE_MENU][0]                        = "</29/B/U>I<!29><!U>nterface<!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_QUIT]           = "</B>Quit         <!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_SHELL]          = "</B>Exit to Shell<!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_QUIT]           = "</B>Quit          <!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_SHELL]          = "</B>Exit to Shell <!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_HELP]           = "</B>Help          <!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_SUPPORT_PKG]    = "</B>Support Bundle<!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_ABOUT]          = "</B>About         <!B>";
 
     /* Set menu sizes and locations */
     submenu_size[SYSTEM_MENU]       = 12;
@@ -118,7 +121,7 @@ int main(int argc, char** argv) {
     menu_loc[TARGETS_MENU]          = LEFT;
     submenu_size[HOSTS_MENU]        = 5;
     menu_loc[HOSTS_MENU]            = LEFT;
-    submenu_size[INTERFACE_MENU]    = 3;
+    submenu_size[INTERFACE_MENU]    = 6;
     menu_loc[INTERFACE_MENU]        = RIGHT;
 
     /* Create the menu */
@@ -302,6 +305,21 @@ int main(int argc, char** argv) {
                 delwin(main_window);
                 system(CLEAR_BIN);
                 exit(EXIT_SUCCESS);
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_HELP - 1) {
+                /* Help dialog */
+                helpDialog(cdk_screen);
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_SUPPORT_PKG - 1) {
+                /* Support Bundle dialog */
+                supportArchDialog(cdk_screen);
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_ABOUT - 1) {
+                /* About dialog */
+                aboutDialog(cdk_screen);
 
             } else if (menu_choice == SYSTEM_MENU &&
                     submenu_choice == SYSTEM_SYNC_CONF - 1) {

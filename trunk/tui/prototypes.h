@@ -87,7 +87,12 @@ void createFSDialog(CDKSCREEN *main_cdk_screen);
 void removeFSDialog(CDKSCREEN *main_cdk_screen);
 void addVDiskFileDialog(CDKSCREEN *main_cdk_screen);
 void delVDiskFileDialog(CDKSCREEN *main_cdk_screen);
-    
+
+/* menu_actions-interface.c */
+void helpDialog(CDKSCREEN *main_cdk_screen);
+void supportArchDialog(CDKSCREEN *main_cdk_screen);
+void aboutDialog(CDKSCREEN *main_cdk_screen);
+
 #ifdef	__cplusplus
 }
 #endif

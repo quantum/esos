@@ -80,9 +80,12 @@ extern "C" {
 #define HOSTS_REM_INIT  4
 
 /* Interface menu layout */
-#define INTERFACE_MENU  5
-#define INTERFACE_QUIT  1
-#define INTERFACE_SHELL 2
+#define INTERFACE_MENU          5
+#define INTERFACE_QUIT          1
+#define INTERFACE_SHELL         2
+#define INTERFACE_HELP          3
+#define INTERFACE_SUPPORT_PKG   4
+#define INTERFACE_ABOUT         5
 
 /* Misc. limits */
 #define GIBIBYTE_SIZE           1073741824LL

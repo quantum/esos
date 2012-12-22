@@ -657,9 +657,10 @@ int getMRLDDisks(int adapter_id, int ldrive_id, int encl_ids[], int slots[]) {
     /* Loop until LD is found -- then count PDs (and get data) */
     asprintf(&vdrive_line, "Virtual Drive: %d", ldrive_id);
     while (fgets(line, sizeof (line), megacli) != NULL) {
-        if (strstr(line, vdrive_line)) {
+        if ((ld_start == FALSE) && (strstr(line, vdrive_line) != NULL)) {
             ld_start = TRUE;
             freeChar(vdrive_line);
+            vdrive_line = NULL;
 
         } else if (ld_start && strstr(line, "Number Of Drives    :") &&
                 ld_drv_cnt == 0) {

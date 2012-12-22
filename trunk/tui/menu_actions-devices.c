@@ -201,7 +201,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
     char attr_path[MAX_SYSFS_PATH_SIZE] = {0}, attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
             fileio_file[MAX_SYSFS_ATTR_SIZE] = {0}, temp_str[SCST_DEV_NAME_LEN] = {0},
             device_id[MAX_SYSFS_ATTR_SIZE] = {0}, fs_name[MAX_FS_ATTR_LEN] = {0},
-            fs_path[MAX_FS_ATTR_LEN] = {0}, fs_type[MAX_FS_ATTR_LEN] = {0};
+            fs_path[MAX_FS_ATTR_LEN] = {0}, fs_type[MAX_FS_ATTR_LEN] = {0},
+            real_blk_dev[MAX_SYSFS_PATH_SIZE] = {0};
     char *scsi_disk = NULL, *error_msg = NULL, *selected_file = NULL,
             *iso_file_name = NULL, *dev_id_ptr = NULL, *cmd_str = NULL,
             *block_dev = NULL;
@@ -319,34 +320,40 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             if ((block_dev = getBlockDevChoice(main_cdk_screen)) == NULL)
                 break;
 
-            /* Get a unique ID for the device using the sg_vpd utility; this
-             * is then used for the device node link that exists in /dev */
-            asprintf(&cmd_str, "%s -i -q %s 2>&1", SG_VPD_BIN, block_dev);
-            sg_vpd_cmd = popen(cmd_str, "r");
-            while (fgets(device_id, sizeof(device_id), sg_vpd_cmd) != NULL) {
-                if (strstr(device_id, "0x")) {
-                    dev_id_ptr = strStrip(device_id);
+            if ((strstr(block_dev, "/dev/sd")) != NULL) {
+                /* Get a unique ID for the device using the sg_vpd utility; this
+                 * is then used for the device node link that exists in /dev */
+                asprintf(&cmd_str, "%s -i -q %s 2>&1", SG_VPD_BIN, block_dev);
+                sg_vpd_cmd = popen(cmd_str, "r");
+                while (fgets(device_id, sizeof (device_id), sg_vpd_cmd) != NULL) {
+                    if (strstr(device_id, "0x")) {
+                        dev_id_ptr = strStrip(device_id);
+                    }
                 }
-            }
-            if ((exit_stat = pclose(sg_vpd_cmd)) == -1) {
-                ret_val = -1;
-            } else {
-                if (WIFEXITED(exit_stat))
-                    ret_val = WEXITSTATUS(exit_stat);
-                else
+                if ((exit_stat = pclose(sg_vpd_cmd)) == -1) {
                     ret_val = -1;
-            }
-            freeChar(cmd_str);
-            if (ret_val != 0) {
-                asprintf(&error_msg, "The %s command exited with %d.", SG_VPD_BIN, ret_val);
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                freeChar(error_msg);
-                break;
+                } else {
+                    if (WIFEXITED(exit_stat))
+                        ret_val = WEXITSTATUS(exit_stat);
+                    else
+                        ret_val = -1;
+                }
+                freeChar(cmd_str);
+                if (ret_val != 0) {
+                    asprintf(&error_msg, "The %s command exited with %d.", SG_VPD_BIN, ret_val);
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                    break;
+                }
+                snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "/dev/disk-by-id/%s", dev_id_ptr);
+            } else {
+                /* Not a normal SCSI disk block device (md, dm, etc.) */
+                snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "%s", block_dev);
             }
 
             /* New CDK screen */
             dev_window_lines = 18;
-            dev_window_cols = 50;
+            dev_window_cols = 60;
             window_y = ((LINES / 2) - (dev_window_lines / 2));
             window_x = ((COLS / 2) - (dev_window_cols / 2));
             dev_window = newwin(dev_window_lines, dev_window_cols, window_y, window_x);
@@ -366,7 +373,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Information label */
             asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_blockio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "SCSI Block Device: %s", block_dev);
+            asprintf(&dev_info_msg[2], "SCSI Block Device: %.35s", real_blk_dev);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
@@ -456,14 +463,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             setCDKRadioCurrentItem(rotational, 1);
 
             /* Buttons */
-            ok_button = newCDKButton(dev_screen, (window_x + 16), (window_y + 16),
+            ok_button = newCDKButton(dev_screen, (window_x + 21), (window_y + 16),
                     "</B>   OK   ", ok_cb, FALSE, FALSE);
             if (!ok_button) {
                 errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-            cancel_button = newCDKButton(dev_screen, (window_x + 26), (window_y + 16),
+            cancel_button = newCDKButton(dev_screen, (window_x + 31), (window_y + 16),
                     "</B> Cancel ", cancel_cb, FALSE, FALSE);
             if (!cancel_button) {
                 errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
@@ -503,8 +510,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/vdisk_blockio/mgmt",
                         SYSFS_SCST_TGT);
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
-                        "add_device %s filename=/dev/disk-by-id/%s; blocksize=%s; write_through=%d; nv_cache=%d; read_only=%d; removable=%d; rotational=%d",
-                        getCDKEntryValue(dev_name_field), dev_id_ptr,
+                        "add_device %s filename=%s; blocksize=%s; write_through=%d; nv_cache=%d; read_only=%d; removable=%d; rotational=%d",
+                        getCDKEntryValue(dev_name_field), real_blk_dev,
                         bs_list[getCDKItemlistCurrentItem(block_size)],
                         getCDKRadioSelectedItem(write_through),
                         getCDKRadioSelectedItem(nv_cache),
@@ -558,7 +565,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* New CDK screen */
             dev_window_lines = 18;
-            dev_window_cols = 50;
+            dev_window_cols = 60;
             window_y = ((LINES / 2) - (dev_window_lines / 2));
             window_x = ((COLS / 2) - (dev_window_cols / 2));
             dev_window = newwin(dev_window_lines, dev_window_cols, window_y, window_x);
@@ -578,7 +585,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Information label */
             asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_fileio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "Virtual Disk File: %.25s", fileio_file);
+            asprintf(&dev_info_msg[2], "Virtual Disk File: %.35s", fileio_file);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
@@ -668,14 +675,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             setCDKRadioCurrentItem(rotational, 1);
 
             /* Buttons */
-            ok_button = newCDKButton(dev_screen, (window_x + 16), (window_y + 16),
+            ok_button = newCDKButton(dev_screen, (window_x + 21), (window_y + 16),
                     "</B>   OK   ", ok_cb, FALSE, FALSE);
             if (!ok_button) {
                 errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-            cancel_button = newCDKButton(dev_screen, (window_x + 26), (window_y + 16),
+            cancel_button = newCDKButton(dev_screen, (window_x + 31), (window_y + 16),
                     "</B> Cancel ", cancel_cb, FALSE, FALSE);
             if (!cancel_button) {
                 errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
