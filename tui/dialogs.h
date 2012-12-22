@@ -71,6 +71,7 @@ extern "C" {
 #define TGT_ON_OFF_INFO_LINES           5
 #define MAX_NET_INFO_LINES              10
 #define NET_SHORT_INFO_LINES            1
+#define HELP_MSG_SIZE                   17
     
 /* Field/entry/name/value sizing limits */
 #define MAX_EMAIL_LEN           32

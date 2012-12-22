@@ -552,7 +552,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
             adp_choice);
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&new_ld_msg[1], " ");
-    asprintf(&new_ld_msg[2], "Selected Disks [ENCL:SLOT] - %.60s", pd_info_line_buffer);
+    asprintf(&new_ld_msg[2], "Selected Disks [ENCL:SLOT] - %.35s", pd_info_line_buffer);
     new_ld_label = newCDKLabel(new_ld_screen, (window_x + 1), (window_y + 1),
             new_ld_msg, NEW_LD_INFO_LINES, FALSE, FALSE);
     if (!new_ld_label) {

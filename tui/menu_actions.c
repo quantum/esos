@@ -43,8 +43,8 @@ void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     asprintf(&message[5], " ");
 
     /* Display the error dialog box */
-    error = newCDKDialog(screen, CENTER, CENTER, message, 6, buttons, 1,
-            COLOR_ERROR_SELECT, TRUE, TRUE, FALSE);
+    error = newCDKDialog(screen, CENTER, CENTER, message, ERROR_DIAG_MSG_SIZE,
+            buttons, 1, COLOR_ERROR_SELECT, TRUE, TRUE, FALSE);
     if (error) {
         setCDKDialogBackgroundAttrib(error, COLOR_ERROR_TEXT);
         setCDKDialogBoxAttribute(error, COLOR_ERROR_BOX);
@@ -96,8 +96,8 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     asprintf(&message[5], " ");
 
     /* Display the confirmation dialog box */
-    confirm = newCDKDialog(screen, CENTER, CENTER, message, 6, buttons, 2,
-            COLOR_ERROR_SELECT, TRUE, TRUE, FALSE);
+    confirm = newCDKDialog(screen, CENTER, CENTER, message, CONFIRM_DIAG_MSG_SIZE,
+            buttons, 2, COLOR_ERROR_SELECT, TRUE, TRUE, FALSE);
     if (confirm) {
         setCDKDialogBackgroundAttrib(confirm, COLOR_ERROR_TEXT);
         setCDKDialogBoxAttribute(confirm, COLOR_ERROR_BOX);
@@ -925,8 +925,8 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     asprintf(&message[5], " ");
 
     /* Display the question dialog box */
-    question = newCDKDialog(screen, CENTER, CENTER, message, 6, buttons, 2,
-            COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
+    question = newCDKDialog(screen, CENTER, CENTER, message, QUEST_DIAG_MSG_SIZE,
+            buttons, 2, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
     if (question) {
         setCDKDialogBackgroundAttrib(question, COLOR_DIALOG_TEXT);
         setCDKDialogBoxAttribute(question, COLOR_DIALOG_BOX);
