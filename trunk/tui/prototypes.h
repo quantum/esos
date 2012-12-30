@@ -73,6 +73,7 @@ void delDeviceDialog(CDKSCREEN *main_cdk_screen);
 void devInfoDialog(CDKSCREEN *main_cdk_screen);
 void mapDeviceDialog(CDKSCREEN *main_cdk_screen);
 void unmapDeviceDialog(CDKSCREEN *main_cdk_screen);
+void lunLayoutDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_actions-back_storage.c */
 void adpPropsDialog(CDKSCREEN *main_cdk_screen);

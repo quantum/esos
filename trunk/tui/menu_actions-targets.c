@@ -20,11 +20,11 @@
 void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *tgt_info = 0;
     char scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},
-        tgt_driver[MAX_SYSFS_ATTR_SIZE] = {0};
+            tgt_driver[MAX_SYSFS_ATTR_SIZE] = {0},
+            dir_name[MAX_SYSFS_PATH_SIZE] = {0},
+            tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char *swindow_info[MAX_TGT_INFO_LINES] = {NULL};
     int i = 0, line_pos = 0;
-    char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
-        tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
     

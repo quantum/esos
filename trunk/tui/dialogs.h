@@ -56,6 +56,9 @@ extern "C" {
 #define LIP_INFO_ROWS                   6
 #define LIP_INFO_COLS                   44
 #define MAX_LIP_INFO_LINES              32
+#define LUN_LAYOUT_ROWS                 12
+#define LUN_LAYOUT_COLS                 62
+#define MAX_LUN_LAYOUT_LINES            128
 
 /* Other window/screen/label/etc. sizing limits */
 #define MAX_FS_DIALOG_INFO_LINES        11
@@ -72,6 +75,8 @@ extern "C" {
 #define MAX_NET_INFO_LINES              10
 #define NET_SHORT_INFO_LINES            1
 #define HELP_MSG_SIZE                   17
+#define SUPPORT_PKG_MSG_SIZE            7
+#define ABOUT_MSG_SIZE                  10
     
 /* Field/entry/name/value sizing limits */
 #define MAX_EMAIL_LEN           32

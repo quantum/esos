@@ -166,9 +166,10 @@ image: $(build_targets)
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
 	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/*
 	$(CHOWN) -R root:root $(MOUNT_DIR)/*
-	$(FIND) $(MOUNT_DIR)/etc/ -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
-	$(FIND) $(MOUNT_DIR)/etc/ -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
-	$(FIND) $(MOUNT_DIR)/etc/rc.d/ -type f -print0 | $(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(MOUNT_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
+	$(FIND) $(MOUNT_DIR)/etc -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(MOUNT_DIR)/etc/rc.d -type f -print0 | $(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(MOUNT_DIR) -type d -name .svn -print0 | $(XARGS) -0 $(RM)
 	$(CHMOD) 4750 $(MOUNT_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/shadow
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
@@ -399,6 +400,7 @@ perl: glibc
 
 qlogic_fw:
 	$(CP) $(src_dir)/*.bin $(IMAGE_DIR)/lib/firmware/
+	$(CP) $(src_dir)/LICENSE $(IMAGE_DIR)/lib/firmware/QLOGIC_FW_LICENSE
 	$(TOUCH) $(@)
 
 scstadmin: scst_src = $(wildcard $(BUILD_DIR)/scst-*)
@@ -525,7 +527,7 @@ iniparser: glibc
 
 cdk: glibc ncurses
 	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/cdk-5.0-20120323.patch
-	cd $(src_dir) && ./configure --prefix=/usr --with-ncurses --with-libtool
+	cd $(src_dir) && NCURSES_CONFIG="$(IMAGE_DIR)/usr/bin/ncurses5-config" ./configure --prefix=/usr --with-ncurses --with-libtool
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
