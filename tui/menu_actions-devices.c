@@ -1149,3 +1149,195 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
     /* All done */
     return;
 }
+
+/*
+ * Run the LUN Layout dialog
+ */
+void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
+    CDKSWINDOW *lun_info = 0;
+    char *swindow_info[MAX_LUN_LAYOUT_LINES] = {NULL};
+    int i = 0, line_pos = 0;
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
+            link_path[MAX_SYSFS_PATH_SIZE] = {0},
+            dev_path[MAX_SYSFS_PATH_SIZE] = {0};
+    DIR *driver_dir_stream = NULL, *tgt_dir_stream = NULL,
+            *group_dir_stream = NULL, *init_dir_stream = NULL,
+            *lun_dir_stream = NULL;
+    struct dirent *driver_dir_entry = NULL, *tgt_dir_entry = NULL,
+            *group_dir_entry = NULL, *init_dir_entry = NULL,
+            *lun_dir_entry = NULL;
+
+    /* Setup scrolling window widget */
+    lun_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+            LUN_LAYOUT_ROWS + 2, LUN_LAYOUT_COLS + 2,
+            "<C></31/B>SCST LUN Layout\n",
+            MAX_LUN_LAYOUT_LINES, TRUE, FALSE);
+    if (!lun_info) {
+        errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+        return;
+    }
+    setCDKSwindowBackgroundAttrib(lun_info, COLOR_DIALOG_TEXT);
+    setCDKSwindowBoxAttribute(lun_info, COLOR_DIALOG_BOX);
+
+    /* Loop over each target driver type */
+    line_pos = 0;
+    snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets", SYSFS_SCST_TGT);
+    if ((driver_dir_stream = opendir(dir_name)) == NULL) {
+        asprintf(&swindow_info[line_pos], "opendir(): %s", strerror(errno));
+        line_pos++;
+    } else {
+        while ((driver_dir_entry = readdir(driver_dir_stream)) != NULL) {
+            /* The target driver names are directories; skip '.' and '..' */
+            if ((driver_dir_entry->d_type == DT_DIR) &&
+                    (strcmp(driver_dir_entry->d_name, ".") != 0) &&
+                    (strcmp(driver_dir_entry->d_name, "..") != 0)) {
+                /* Loop over each target for current driver type */
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s",
+                        SYSFS_SCST_TGT, driver_dir_entry->d_name);
+                if ((tgt_dir_stream = opendir(dir_name)) == NULL) {
+                    if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                        asprintf(&swindow_info[line_pos], "opendir(): %s", strerror(errno));
+                        line_pos++;
+                    }
+                    break;
+                }
+                while ((tgt_dir_entry = readdir(tgt_dir_stream)) != NULL) {
+                    /* The target names are directories; skip '.' and '..' */
+                    if ((tgt_dir_entry->d_type == DT_DIR) &&
+                            (strcmp(tgt_dir_entry->d_name, ".") != 0) &&
+                            (strcmp(tgt_dir_entry->d_name, "..") != 0)) {
+                        if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                            asprintf(&swindow_info[line_pos], "</B>Target:<!B> %s (%s)",
+                                    tgt_dir_entry->d_name, driver_dir_entry->d_name);
+                            line_pos++;
+                        }
+                        /* Loop over each security group for the current target */
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/targets/%s/%s/ini_groups",
+                                SYSFS_SCST_TGT, driver_dir_entry->d_name,
+                                tgt_dir_entry->d_name);
+                        if ((group_dir_stream = opendir(dir_name)) == NULL) {
+                            if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                                asprintf(&swindow_info[line_pos], "opendir(): %s",
+                                        strerror(errno));
+                                line_pos++;
+                            }
+                            break;
+                        }
+                        while ((group_dir_entry = readdir(group_dir_stream)) != NULL) {
+                            /* The group names are directories; skip '.' and '..' */
+                            if ((group_dir_entry->d_type == DT_DIR) &&
+                                    (strcmp(group_dir_entry->d_name, ".") != 0) &&
+                                    (strcmp(group_dir_entry->d_name, "..") != 0)) {
+                                if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                                    asprintf(&swindow_info[line_pos], "\t</B>Group:<!B> %s",
+                                            group_dir_entry->d_name);
+                                    line_pos++;
+                                }
+ 
+                                /* Loop over each initiator for the current group */
+                                snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                        "%s/targets/%s/%s/ini_groups/%s/initiators",
+                                        SYSFS_SCST_TGT, driver_dir_entry->d_name,
+                                        tgt_dir_entry->d_name,
+                                        group_dir_entry->d_name);
+                                if ((init_dir_stream = opendir(dir_name)) == NULL) {
+                                    if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                                        asprintf(&swindow_info[line_pos],
+                                                "opendir(): %s", strerror(errno));
+                                        line_pos++;
+                                    }
+                                    break;
+                                }
+                                while ((init_dir_entry = readdir(init_dir_stream)) != NULL) {
+                                    /* The initiators are files; skip 'mgmt' */
+                                    if ((init_dir_entry->d_type == DT_REG) &&
+                                            (strcmp(init_dir_entry->d_name, "mgmt") != 0)) {
+                                        if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                                            asprintf(&swindow_info[line_pos],
+                                                    "\t\t</B>Initiator:<!B> %s",
+                                                    init_dir_entry->d_name);
+                                            line_pos++;
+                                        }
+                                    }
+                                }
+                                closedir(init_dir_stream);
+
+                                /* Loop over each LUN for the current group */
+                                snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                        "%s/targets/%s/%s/ini_groups/%s/luns",
+                                        SYSFS_SCST_TGT, driver_dir_entry->d_name,
+                                        tgt_dir_entry->d_name,
+                                        group_dir_entry->d_name);
+                                if ((lun_dir_stream = opendir(dir_name)) == NULL) {
+                                    if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                                        asprintf(&swindow_info[line_pos],
+                                                "opendir(): %s", strerror(errno));
+                                        line_pos++;
+                                    }
+                                    break;
+                                }
+                                while ((lun_dir_entry = readdir(lun_dir_stream)) != NULL) {
+                                    /* The LUNs are directories; skip '.' and '..' */
+                                    if ((lun_dir_entry->d_type == DT_DIR) &&
+                                            (strcmp(lun_dir_entry->d_name, ".") != 0) &&
+                                            (strcmp(lun_dir_entry->d_name, "..") != 0)) {
+                                        /* We need to get the device name (link) */
+                                        snprintf(link_path, MAX_SYSFS_PATH_SIZE,
+                                                "%s/targets/%s/%s/ini_groups/%s/luns/%s/device",
+                                                SYSFS_SCST_TGT, driver_dir_entry->d_name,
+                                                tgt_dir_entry->d_name, group_dir_entry->d_name,
+                                                lun_dir_entry->d_name);
+                                        readlink(link_path, dev_path, MAX_SYSFS_PATH_SIZE);
+                                        if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                                            asprintf(&swindow_info[line_pos],
+                                                    "\t\t</B>LUN:<!B> %s (%s)",
+                                                    lun_dir_entry->d_name,
+                                                    (strrchr(dev_path, '/') + 1));
+                                            line_pos++;
+                                        }
+                                    }
+                                }
+                                closedir(lun_dir_stream);
+                            }
+                        }
+                        closedir(group_dir_stream);
+                        /* Print a blank line to separate targets */
+                        if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                            asprintf(&swindow_info[line_pos], " ");
+                            line_pos++;
+                        }
+                    }
+                }
+                closedir(tgt_dir_stream);
+            }
+        }
+        closedir(driver_dir_stream);
+    }
+
+    /* Add a message to the bottom explaining how to close the dialog */
+    if (line_pos < MAX_LUN_LAYOUT_LINES) {
+        asprintf(&swindow_info[line_pos], " ");
+        line_pos++;
+    }
+    if (line_pos < MAX_LUN_LAYOUT_LINES) {
+        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        line_pos++;
+    }
+    
+    /* Set the scrolling window content */
+    setCDKSwindowContents(lun_info, swindow_info, line_pos);
+    
+    /* The 'g' makes the swindow widget scroll to the top, then activate */
+    injectCDKSwindow(lun_info, 'g');
+    activateCDKSwindow(lun_info, 0);
+
+    /* We fell through -- the user exited the widget, but we don't care how */
+    destroyCDKSwindow(lun_info);
+
+    /* Done */
+    for (i = 0; i < MAX_LUN_LAYOUT_LINES; i++ ) {
+        freeChar(swindow_info[i]);
+    }
+    return;
+}

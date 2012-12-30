@@ -58,11 +58,12 @@ extern "C" {
 
 /* Devices menu layout */
 #define DEVICES_MENU            2
-#define DEVICES_DEV_INFO        1
-#define DEVICES_ADD_DEV         2
-#define DEVICES_DEL_DEV         3
-#define DEVICES_MAP_TO          4
-#define DEVICES_UNMAP_FROM      5
+#define DEVICES_LUN_LAYOUT      1
+#define DEVICES_DEV_INFO        2
+#define DEVICES_ADD_DEV         3
+#define DEVICES_DEL_DEV         4
+#define DEVICES_MAP_TO          5
+#define DEVICES_UNMAP_FROM      6
 
 /* Targets menu layout */
 #define TARGETS_MENU            3
@@ -118,6 +119,7 @@ extern "C" {
 #define DELGROUP_BIN    "/bin/delgroup"
 #define RC_NETWORK      "/etc/rc.d/rc.network"
 #define SSMTP_BIN       "/usr/sbin/ssmtp"
+#define TAR_BIN         "/bin/tar"
 
 /* A few sysfs settings */
 #define SYSFS_FC_HOST           "/sys/class/fc_host"
@@ -140,6 +142,7 @@ extern "C" {
 #define MTAB            "/proc/mounts"
 #define ESOS_VER_FILE   "/etc/esos-release"
 #define BASHRC_FILE     "/etc/bashrc"
+#define QLA_FW_LICENSE  "/lib/firmware/QLOGIC_FW_LICENSE"
 
 /* Misc. path settings */
 #define VDISK_MNT_BASE  "/mnt/vdisks"

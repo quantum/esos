@@ -84,6 +84,7 @@ int main(int argc, char** argv) {
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VDISK_FILE]   = "</B>Delete Virtual Disk File<!B>";
 
     menu_list[DEVICES_MENU][0]                          = "</29/B/U>D<!29><!U>evices  <!B>";
+    menu_list[DEVICES_MENU][DEVICES_LUN_LAYOUT]         = "</B>LUN Layout        <!B>";
     menu_list[DEVICES_MENU][DEVICES_DEV_INFO]           = "</B>Device Information<!B>";
     menu_list[DEVICES_MENU][DEVICES_ADD_DEV]            = "</B>Add Device        <!B>";
     menu_list[DEVICES_MENU][DEVICES_DEL_DEV]            = "</B>Delete Device     <!B>";
@@ -115,7 +116,7 @@ int main(int argc, char** argv) {
     menu_loc[SYSTEM_MENU]           = LEFT;
     submenu_size[BACK_STORAGE_MENU]  = 13;
     menu_loc[BACK_STORAGE_MENU]      = LEFT;
-    submenu_size[DEVICES_MENU]      = 6;
+    submenu_size[DEVICES_MENU]      = 7;
     menu_loc[DEVICES_MENU]          = LEFT;
     submenu_size[TARGETS_MENU]      = 6;
     menu_loc[TARGETS_MENU]          = LEFT;
@@ -435,6 +436,11 @@ int main(int argc, char** argv) {
                     submenu_choice == BACK_STORAGE_DEL_VDISK_FILE - 1) {
                 /* Delete Virtual Disk File dialog */
                 delVDiskFileDialog(cdk_screen);
+
+            } else if (menu_choice == DEVICES_MENU &&
+                    submenu_choice == DEVICES_LUN_LAYOUT - 1) {
+                /* LUN Layout dialog */
+                lunLayoutDialog(cdk_screen);
 
             } else if (menu_choice == DEVICES_MENU &&
                     submenu_choice == DEVICES_DEV_INFO - 1) {
