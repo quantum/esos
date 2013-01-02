@@ -1,4 +1,4 @@
-#summary Configuring your back-storage, setting up target devices, etc.
+#summary Configuring your back-storage: RAID volumes, SCSI disks, etc.
 
 ESOS is based on the SCST project, and it really is the core of ESOS. SCST provides a number of different features and I/O modes (pass-through, FILEIO, BLOCKIO, etc.). ESOS documentation will really focus on just one of these I/O modes, BLOCKIO, since it generally works quite well with high-end storage HBAs found in enterprise environments. Please refer to the SCST documentation for more in-depth configuration, or if you'd like to use I/O modes other than BLOCKIO (it should all work on ESOS, let us know if that's not the case).
 
