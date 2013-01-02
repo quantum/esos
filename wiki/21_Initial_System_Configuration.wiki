@@ -85,8 +85,11 @@ You can also send a test email message at any time after: System -> Send Test Em
 <br>
 
 === Date & Time ===
-blah
-blah
+Setting the date and time in ESOS is a good idea; this will help with log entry correlation when/if tracking down issues. Open the date & time dialog: System -> Date & Time Settings
+
+The default timezone for ESOS is UTC. Choose your local timezone if desired, or keep it UTC. You can then setting the current date and time (24-hour format) if needed.
+
+Setting a NTP server is the easiest way to keep your ESOS system time up to date. The date/time will be set via NTP on ESOS host boot-up and periodically via cron.
 
 <br>
 
