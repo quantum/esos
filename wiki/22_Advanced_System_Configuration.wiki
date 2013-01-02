@@ -1,4 +1,4 @@
-#summary Extra and advanced system configuration options.
+#summary Extra and advanced system configuration options (SCST settings, HA, etc.).
 
 === Kernel Modules ===
 The ESOS kernels (production / debug) are built with most drivers built-in. Generally the HBA, HCA, etc. drivers are left as modules in case the user would like to tweak any parameters via module options. The SCST core, device handlers, and target drivers are also modules.
@@ -32,6 +32,11 @@ Synchronize your configuration:
 {{{
 conf_sync.sh
 }}}
+
+<br>
+
+=== Linux-HA (High Availability) ===
+TODO
 
 <br>
 
