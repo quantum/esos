@@ -5,9 +5,75 @@
 Add your content here.
 
 
-= Details =
+=== Local RAID Controller: LSI MegaRAID (CLI) ===
+The LSI Logic "MegaCLI" utility is included with ESOS. The utility allows you to create/delete/modify volumes (logical drives) on your MegaRAID controller. Below are a few examples of using the MegaCLI tool (MegaCli64 for us). A nice handy cheat sheet is located [http://tools.rapidsoft.de/perc/perc-cheat-sheet.html here]. Or for a very in-depth document, consult the user guide available on LSI Logic's web site.
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Get adapter information for the first MegaRAID adapter (0):
+{{{
+MegaCli64 -AdpAllInfo -a0
+}}}
+
+A list of all the adapter's physical drives:
+{{{
+MegaCli64 -PDList -a0
+}}}
+
+All of the logical drives for the adapter:
+{{{
+MegaCli64 -LDInfo -Lall -a0
+}}}
+
+Delete logical drive 0:
+{{{
+MegaCli64 -CfgLdDel -L0 -a0
+}}}
+
+Create a new RAID5 logical drive, with three physical disks, adaptive read-ahead (ADRA) and write cache enabled (WB):
+{{{
+MegaCli64 -CfgLDAdd -R5[8:0,8:1,8:2] WB ADRA -a0
+}}}
+
+Create a new RAID0 logical drive, with two physical disks, no read-ahead (NORA) and write cache disabled (WT):
+{{{
+MegaCli64 -CfgLDAdd -R0[8:0,8:1] WT NORA -a0
+}}}
+
+After you have created your new volume(s) you will need to find and record the SCSI device node (eg, /dev/sdz). You can easily find this using `lsscsi` or checking `dmesg`. You can now move on to configuring your front-side targets.
+
+<br>
+
+=== Local RAID Controller: Adaptec AACRAID (CLI) ===
+The arcconf utility is also included with ESOS for configuring Adaptec RAID controllers from inside the OS. This tool should work with most/all Adaptec SATA/SAS RAID controllers.
+
+See all controller/drive/volume information for controller # 1:
+{{{
+arcconf GETCONFIG 1
+}}}
+
+Delete logical device(volume) 1 on controller 1:
+{{{
+arcconf DELETE 1 LOGICALDRIVE 1
+}}}
+
+Make a new RAID5 volume on controller 1 using three disks (channel 0, device numbers 2, 3, 4) with read cache enabled and write cache enabled:
+{{{
+arcconf CREATE 1 LOGICALDRIVE Rcache RON Wcache WB MAX 5 0 2 0 3 0 4
+}}}
+
+Make a new RAID0 volume on controller 1 using two disks (channel 0, device numbers 2, 3) with read cache disabled and write cache disabled:
+{{{
+arcconf CREATE 1 LOGICALDRIVE Rcache ROFF Wcache WT MAX 0 0 2 0 3
+}}}
+
+Once you've created a new volume on your Adaptec RAID controller, grab the SCSI device node (`lsscsi` works well) and continue with one of the target configuration sections below.
+
+<br>
+
+=== Local RAID Controller: Other ===
+Other RAID controllers are supported, however, not all of them necessarily have a CLI tool for configuring volumes, adapter settings, etc. from inside of ESOS. See the [Supported_Hardware] wiki page for a current list of supported controllers and possible corresponding CLI utilities.
+
+You can still use these other controllers with ESOS, you will just need to configure your volumes / logical drives "outside" of ESOS -- via the BIOS.
+
+If you find that your favorite "enterprise class" RAID controller is not supported by ESOS, please let us know on the esos-users Google Group. It would also be helpful to know if there are any CLI management tools that can be used to configure these controllers from inside the OS.
+
+<br>
