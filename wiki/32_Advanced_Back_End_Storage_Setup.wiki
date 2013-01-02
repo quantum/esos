@@ -16,7 +16,7 @@ TODO
 <br>
 
 === Local RAID Controller: LSI MegaRAID (CLI) ===
-The LSI Logic "MegaCLI" utility is included with ESOS. The utility allows you to create/delete/modify volumes (logical drives) on your MegaRAID controller. Below are a few examples of using the MegaCLI tool (MegaCli64 for us). A nice handy cheat sheet is located [http://tools.rapidsoft.de/perc/perc-cheat-sheet.html here]. Or for a very in-depth document, consult the user guide available on LSI Logic's web site.
+The LSI Logic "MegaCLI" utility is an install option with ESOS (during the installation script). The utility allows you to create/delete/modify volumes (logical drives) on your MegaRAID controller. Below are a few examples of using the MegaCLI tool (MegaCli64 for us). A nice handy cheat sheet is located [http://tools.rapidsoft.de/perc/perc-cheat-sheet.html here]. Or for a very in-depth document, consult the user guide available on LSI Logic's web site.
 
 Get adapter information for the first MegaRAID adapter (0):
 {{{
@@ -48,12 +48,12 @@ Create a new RAID0 logical drive, with two physical disks, no read-ahead (NORA) 
 MegaCli64 -CfgLDAdd -R0[8:0,8:1] WT NORA -a0
 }}}
 
-After you have created your new volume(s) you will need to find and record the SCSI device node (eg, /dev/sdz). You can easily find this using `lsscsi` or checking `dmesg`. You can now move on to configuring your front-side targets.
+After you have created your new volume(s) you will need to find and record the SCSI device node (eg, /dev/sdz). You can easily find this using `lsscsi` or checking `dmesg`.
 
 <br>
 
 === Local RAID Controller: Adaptec AACRAID (CLI) ===
-The arcconf utility is also included with ESOS for configuring Adaptec RAID controllers from inside the OS. This tool should work with most/all Adaptec SATA/SAS RAID controllers.
+The arcconf utility is also an install option with ESOS for configuring Adaptec RAID controllers from inside the OS. This tool should work with most/all Adaptec SATA/SAS RAID controllers.
 
 See all controller/drive/volume information for controller # 1:
 {{{
@@ -89,7 +89,9 @@ If you find that your favorite "enterprise class" RAID controller is not support
 <br>
 
 === File Systems & Virtual Disk Files ===
-After you have setup/configured your advanced back-end storage, it will still appear as a block device, just as described in the basic back-storage wiki document. With this logical block device, you can now create a file system on it and create virtual disk files, if desired. Follow the same steps as described in the [31_Basic_Back_End_Storage_Setup] document for making file systems and adding virtual disk files, but with the advanced back-storage, you'll select your DRBD block device (eg, /dev/drbd0) or whatever block device you configured instead of the standard logical SCSI disk block devices.
+After you have setup/configured your advanced back-end storage, it will still appear as a block device, just as described in the basic back-storage wiki document.
+
+With this logical block device, you can now create a file system on it and create virtual disk files, if desired. Follow the same steps as described in the [31_Basic_Back_End_Storage_Setup] document for making file systems and adding virtual disk files, but with the advanced back-storage, you'll select your DRBD block device (eg, /dev/drbd0) or whatever advanced block device you configured.
 
 <br>
 
