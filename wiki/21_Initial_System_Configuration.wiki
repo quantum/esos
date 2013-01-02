@@ -5,83 +5,74 @@ At this point its assumed you have already inserted your USB flash drive into yo
 
 On the first boot, you may get messages saying something like "Superblock last write time is in the future." -- just hit 'y' to fix it. This happens typically because the time on your build machine is different than your ESOS storage server machine.
 
-The first item on your agenda will be to login as root and change the root password.
+The first item on your agenda will be to login as root and change the password.
   * Superuser account: root
   * Default password: esos
 
-Next, *this is important*, you need to change the default root password:
-{{{
-passwd
-}}}
+Next, *this is important*, you need to change the default root password: Hit 's' for the System menu, and then choose Change Password.
+
 Choose a nice hefty password, assuming this machine will be on your IP network, you don't want it to be susceptible to easy SSH brute-force attacks.
+
+<br>
+
+=== TUI Basics ===
+blah
+blah
+blah
+
+<br>
+
+=== Using the CLI ===
+After logging into ESOS, you will be in the text-based user interface. You can then exit to the shell (CLI) if you choose: Interface -> Exit to Shell
+
+You can then return to the TUI by hitting CTRL-D or the `exit` command.
 
 _The only normal, interactive editor that is installed on ESOS is "vi"._ For a handy `vi` cheat sheet, see [http://www.lagmonster.org/docs/vi.html this] page.
 
-Setting the system host name is also a good idea; change the default (localhost) in the file "/etc/hostname". Then append the new host name to each loopback interface (IPv4 + IPv6) line in the "/etc/hosts" file.
-
-`*``*` Since the ESOS image (binaries, config. files, etc.) is loaded into RAM on boot, *it is important that you sync your configuration* to the USB flash drive by using the `conf_sync.sh` command. There is a cron job setup to run `conf_sync.sh` every so often, but it should be good practice to always run `conf_sync.sh` after making configuration changes. `*``*`
+`*``*` Since the ESOS image (binaries, config. files, etc.) is loaded into RAM on boot, *it is important that you sync your configuration* to the USB flash drive by using the `conf_sync.sh` command. There is a cron job setup to run `conf_sync.sh` every so often, but it should be good practice to always run `conf_sync.sh` after making configuration changes via the shell. When using the TUI, it will automatically sync the configuration when you exit. `*``*`
 
 <br>
 
 === Networking ===
-Next, you will want to configure your network interface(s). The "network configuration file" is really just a shell script that runs any commands you put in it. The configuration file is located here: /etc/network
+Next, you will want to configure your network interface(s), system host/domain names, resolver, etc. First, access the network configuration dialog: System -> Network Settings
 
-So, to configure an interface using DHCP, you would have a line similar to this:
-{{{
-udhcpc -i eth0
-}}}
-To configure a network interface with a static IP and default gateway, use this:
-{{{
-ifconfig eth0 192.168.0.10 broadcast 192.168.0.255 netmask 255.255.255.0
-route add -net default gw 192.168.0.1 netmask 0.0.0.0
-}}}
-If you are using static IPs, be sure to edit '/etc/resolv.conf' for your environment:
-{{{
-search host.domain
-nameserver 192.168.0.11
-nameserver 192.168.0.12
-}}}
+Then choose General Network Settings. In this dialog, you can set the system host name, domain name, and if you're not using DHCP, the default gateway and name servers.
 
-Once your '/etc/network' file is configured, you can start the network by using this command:
-{{{
-sh /etc/network
-}}}
+Now you can configure your network interfaces (if desired). Go to the network settings dialog (System -> Network Settings) and the choose the desired network interface (eg, ethX).
 
-Synchronize your configuration:
-{{{
-conf_sync.sh
-}}}
+If you are using DHCP for an interface, choose the DHCP option in the radio widget, and change the default MTU if desired. When using DHCP, leave all of the other (eg, IP address, netmask, etc.) entry fields empty.
+
+If you are configuring an interface statically, choose the Static option and set the IP address, netmask, and broadcast addresses (all required). You may also change the default interface MTU if desired.
+
+After all networking settings have been configured appropriately, you can then restart the network services manually if you haven't already been prompted to do so: System -> Restart Networking
+
+If you are re-configuring network settings via SSH, please be careful when restarting the network services as you may lose connectivity if anything is not configured correctly.
 
 <br>
 
 === Mail Setup ===
 It is highly recommended to configure mail (SMTP) on your ESOS storage server. Email messages are sent by many daemons in ESOS to communicate informational messages, warnings, errors, etc. ESOS uses sSMTP for sendmail -- it can only send mail, you cannot receive mail in ESOS. sSMTP in ESOS supports SSL/TLS encrypted connections to your SMTP host.
 
-The two configuration files for sSMTP, `ssmtp.conf` and `revaliases` are both located in /etc (not /etc/ssmtp). An example is provided below for configuring sSMTP with a Gmail account.
+Access the mail settings dialog: System -> Mail Setup
 
-This is what the `/etc/ssmtp.conf` configuration file (uncommented lines shown) should look like for a Gmail account:
+All of the configurable options in the mail settings dialog should be self-explanatory. These settings will all be dependent on your SMTP service; please consult them for the appropriate settings. The alert email address field is the email address of the user that should receive the ESOS email alerts.
+
+Here are example settings for using Gmail SMTP:
 {{{
-root=username@gmail.com
-mailhub=smtp.gmail.com:587
-rewriteDomain=
-hostname=_HOSTNAME_
-FromLineOverride=NO
-AuthUser=username@gmail.com
-AuthPass=password
-AuthMethod=CRAM-MD5
-UseSTARTTLS=YES
+SMTP host: smtp.gmail.com
+SMTP port: 587
+Use TLS: Yes
+Use STARTTLS: Yes
+Auth. Method: CRAM-MD5
+Auth. User: username@gmail.com
+Auth. Password: password
 }}}
 
-You can then test mail by using the `ssmtp` command; type a test message and then hit CTRL-D.
-{{{
-ssmtp username@gmail.com
-}}}
-If you encounter any problems, consult /var/log/mail.`*` for help.
+After applying the ESOS mail settings (hitting 'OK') you will be prompted to send a test email message; choose 'Yes' and be sure your email setup is working.
 
-Synchronize your configuration:
-{{{
-conf_sync.sh
-}}}
+If you encounter any problems or errors when sending a test email message, consult /var/log/mail.log for help.
+
+You can also send a test email message at any time after: System -> Send Test Email
 
 <br>
 
