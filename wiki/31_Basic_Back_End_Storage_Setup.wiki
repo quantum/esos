@@ -1,6 +1,4 @@
-#summary Configuring your back-storage: RAID volumes, SCSI disks, etc.
-
-ESOS is based on the SCST project, and it really is the core of ESOS. SCST provides a number of different features and I/O modes (pass-through, FILEIO, BLOCKIO, etc.). ESOS documentation will really focus on just one of these I/O modes, BLOCKIO, since it generally works quite well with high-end storage HBAs found in enterprise environments. Please refer to the SCST documentation for more in-depth configuration, or if you'd like to use I/O modes other than BLOCKIO (it should all work on ESOS, let us know if that's not the case).
+#summary Configuring your back-storage: RAID volumes, file systems, virtual disk files, etc.
 
 There are two broad steps when configuring ESOS storage: The first is configuring your back-storage device which is typically a high-end RAID controller, or can be anything else that appears as a SCSI block device in Linux. The second step is configuring your front side target devices, the targets that are made available via your SAN. Please see below for examples -- pick your back-storage type, and then pick your SAN (target) type.
 
