@@ -84,4 +84,5 @@ blah
 
 === What's Next ===
 From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
+
 If you have any extra settings, or non-standard configuration items, see the [22_Advanced_System_Configuration] wiki page for guidance.
