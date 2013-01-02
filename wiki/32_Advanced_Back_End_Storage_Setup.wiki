@@ -60,7 +60,7 @@ See all controller/drive/volume information for controller # 1:
 arcconf GETCONFIG 1
 }}}
 
-Delete logical device(volume) 1 on controller 1:
+Delete logical device (volume) 1 on controller 1:
 {{{
 arcconf DELETE 1 LOGICALDRIVE 1
 }}}
