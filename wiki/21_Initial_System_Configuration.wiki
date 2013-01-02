@@ -16,9 +16,17 @@ Choose a nice hefty password, assuming this machine will be on your IP network, 
 <br>
 
 === TUI Basics ===
-blah
-blah
-blah
+The ESOS text-based user interface (TUI) should be useful in any basic system setup, or storage provisioning functions depending on your hardware (RAID controller). Use the CLI (shell) for advanced configurations.
+
+When at the main menu (no dialogs or other widgets active) you can use the main menu hot keys to activate the main menu widget. These are first letter of each main menu option at the top of the screen: *S* -> System; *B* -> Back-End Storage; *D* -> Devices; *T* -> Targets; *H* -> Hosts; *I* -> Interface
+
+Pressing any of the hot keys will activate the main menu starting in the corresponding main menu heading. Use the arrow keys to navigate between main menu headings and sub-menu items. Use ENTER to select a function/dialog and ESCAPE to get out of the menu widget.
+
+When using selector/choice/list widgets (eg, selecting a logical drive), use ENTER or TAB to make a choice, ESCAPE to cancel/exit, and the arrow keys to navigate.
+
+Use the arrow keys to scroll up/down on scrolling window widgets which are typically used to display information/data on the screen (eg, DRBD Status). Use ENTER or ESCAPE to close these types of windows.
+
+On dialogs/screens that contain more than one widget, use TAB and SHIFT+TAB to traverse through the widgets. Use the OK button to confirm/accept/apply settings and Cancel to close/exit the dialog.
 
 <br>
 
