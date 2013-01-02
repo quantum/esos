@@ -39,7 +39,7 @@ You can then return to the TUI by hitting CTRL-D or the `exit` command.
 
 _The only normal, interactive editor that is installed on ESOS is "vi"._ For a handy `vi` cheat sheet, see [http://www.lagmonster.org/docs/vi.html this] page.
 
-`*``*` Since the ESOS image (binaries, config. files, etc.) is loaded into RAM on boot, *it is important that you sync your configuration* to the USB flash drive by using the `conf_sync.sh` command. There is a cron job setup to run `conf_sync.sh` every so often, but it should be good practice to always run `conf_sync.sh` after making configuration changes via the shell. When using the TUI, it will automatically sync the configuration when you exit. `*``*`
+*`*``*` Warning: Since the ESOS image (binaries, config. files, etc.) is loaded into RAM on boot, _it is important that you sync your configuration_ to the USB flash drive by using the `conf_sync.sh` command. There is a cron job setup to run `conf_sync.sh` every so often, but it should be good practice to always run `conf_sync.sh` after making configuration changes via the shell. When using the TUI, it will automatically sync the configuration when you exit. `*``*`*
 
 <br>
 
