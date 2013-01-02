@@ -1,8 +1,26 @@
 #summary Configuring your back-storage: RAID volumes, file systems, virtual disk files, etc.
 
 === Getting Started ===
-There are two broad steps when provisioning storage with ESOS: The first is configuring your back-storage device which is typically a high-end RAID controller, or virtual disk files on file systems, or can be anything else that appears as a SCSI block device in Linux. Enterprise Storage OS includes a number of different Linux block device subsystems such as DRBD, Linux software RAID (md), and LVM2 so the possibilities are quite endless.
+There are two broad steps when provisioning storage with ESOS: The first is configuring your back-end storage device which is typically a high-end RAID controller, or virtual disk files on file systems, or can be anything else that appears as a SCSI block device in Linux. Enterprise Storage OS includes a number of different Linux block device subsystems such as DRBD, Linux software RAID (md), and LVM2 so the possibilities are quite endless.
 
-The second step is configuring your front side target devices, the targets that are made available via your SAN. This will be covered in the subsequent ESOS wiki pages (devices, targets, and hosts/initiators).
+The second step is configuring your front side target devices, the targets that are made available via your SAN. _This will be covered in the subsequent ESOS wiki pages (devices, targets, and hosts/initiators)._
 
 <br>
+
+=== RAID Controller TUI Functions ===
+TODO
+
+<br>
+
+=== Back-End Storage File Systems ===
+TODO
+
+<br>
+
+=== Virtual Disk Files ===
+TODO
+
+<br>
+
+=== What's Next ===
+TODO
