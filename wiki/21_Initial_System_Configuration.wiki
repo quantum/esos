@@ -76,40 +76,11 @@ You can also send a test email message at any time after: System -> Send Test Em
 
 <br>
 
-=== Kernel Modules ===
-The ESOS kernels (production / debug) are built with most drivers built-in. Generally the HBA, HCA, etc. drivers are left as modules in case the user would like to tweak any parameters via module options. The SCST core, device handlers, and target drivers are also modules.
-
-If you do find you would like to customize any of the module parameters, you can create the file `/etc/modprobe.conf` (which will be sync'd to USB if it exists). Below is an example to see the format of the file, we are not recommending you use these settings, its just a sample.
-{{{
-options scst scst_threads=20
-options ib_srpt srpt_sq_size=32
-}}}
-
-You can see the valid parameters for a module using the `modinfo` command. See the [http://scst.sourceforge.net SCST] documentation for possible information on tweaking any module parameters.
-
-Synchronize your configuration:
-{{{
-conf_sync.sh
-}}}
-
-<br>
-
-=== Extra Configuration ===
-If you find that you need to run any extra commands on ESOS start-up, there are two files you can create/edit in /etc:
-  * /etc/pre-scst_xtra_conf
-  * /etc/post-scst_xtra_conf
-These files can be treated as shell scripts; if either exists, they will be executed during start-up with `sh`.
-
-The first file (/etc/pre-scst_xtra_conf) will be executed (if it exists) _before_ any part of SCST is loaded. An example of something you may want to run before loading SCST is adjust the read-ahead value for a back-storage block device (eg, `blockdev --setra 2048 /dev/sdb`).
-
-The second file (/etc/post-scst_xtra_conf) will be executed (if it exists) _after_ SCST is fully loaded and configured. If you want to adjust the SMP IRQ affinity for the system, this would probably be a good place for it.
-
-Synchronize your configuration:
-{{{
-conf_sync.sh
-}}}
+=== Date & Time ===
+blah
+blah
 
 <br>
 
 === What's Next ===
-From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
+From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document. If you have any extra settings, or non-standard configuration items, see the [22_Advanced_System_Configuration] wiki page for guidance.
