@@ -1,9 +1,19 @@
 #summary One-sentence summary of this page.
 
-= Introduction =
+=== Distributed Replicated Block Device (DRBD) ===
+TODO
 
-Add your content here.
+<br>
 
+=== Linux Software RAID (md) ===
+TODO
+
+<br>
+
+=== Logical Volume Manager (LVM2) ===
+TODO
+
+<br>
 
 === Local RAID Controller: LSI MegaRAID (CLI) ===
 The LSI Logic "MegaCLI" utility is included with ESOS. The utility allows you to create/delete/modify volumes (logical drives) on your MegaRAID controller. Below are a few examples of using the MegaCLI tool (MegaCli64 for us). A nice handy cheat sheet is located [http://tools.rapidsoft.de/perc/perc-cheat-sheet.html here]. Or for a very in-depth document, consult the user guide available on LSI Logic's web site.
@@ -70,10 +80,18 @@ Once you've created a new volume on your Adaptec RAID controller, grab the SCSI 
 <br>
 
 === Local RAID Controller: Other ===
-Other RAID controllers are supported, however, not all of them necessarily have a CLI tool for configuring volumes, adapter settings, etc. from inside of ESOS. See the [Supported_Hardware] wiki page for a current list of supported controllers and possible corresponding CLI utilities.
+Other RAID controllers are supported, however, not all of them necessarily have a CLI tool for configuring volumes, adapter settings, etc. from inside of ESOS. See the [03_Supported_Hardware] wiki page for a current list of supported controllers and possible corresponding CLI utilities.
 
-You can still use these other controllers with ESOS, you will just need to configure your volumes / logical drives "outside" of ESOS -- via the BIOS.
+You can still use these other controllers with ESOS, you will just need to configure your volumes / logical drives "outside" of ESOS -- via the BIOS. Or seek the documentation for using the CLI tools on your own.
 
 If you find that your favorite "enterprise class" RAID controller is not supported by ESOS, please let us know on the esos-users Google Group. It would also be helpful to know if there are any CLI management tools that can be used to configure these controllers from inside the OS.
 
 <br>
+
+=== File Systems & Virtual Disk Files ===
+After you have setup/configured your advanced back-end storage, it will still appear as a block device, just as described in the basic back-storage wiki document. With this logical block device, you can now create a file system on it and create virtual disk files, if desired. Follow the same steps as described in the [31_Basic_Back_End_Storage_Setup] document for making file systems and adding virtual disk files, but with the advanced back-storage, you'll select your DRBD block device (eg, /dev/drbd0) or whatever block device you configured instead of the standard logical SCSI disk block devices.
+
+<br>
+
+=== Next Steps ===
+You should now continue on to the [41_Device_Configuration] wiki page which will guide you through configuring your SCST device(s).
