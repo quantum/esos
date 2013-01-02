@@ -28,6 +28,8 @@ Use the arrow keys to scroll up/down on scrolling window widgets which are typic
 
 On dialogs/screens that contain more than one widget, use TAB and SHIFT+TAB to traverse through the widgets. Use the OK button to confirm/accept/apply settings and Cancel to close/exit the dialog.
 
+*`*``*` Warning: The ESOS TUI provides _minimal_ human-error checking when configuring storage in ESOS (eg, deleting a volume that is mapped to a LUN). It is up to the end-user to make responsible decisions when administering ESOS hosts. `*``*`*
+
 <br>
 
 === Using the CLI ===
