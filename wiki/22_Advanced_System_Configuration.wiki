@@ -52,7 +52,7 @@ The following OpenSM configuration file locations should be used with ESOS (they
   * /etc/per-module-logging.conf
   * /etc/torus-2QoS.conf
 
-For additional OpenSM IB subnet manager, please see the related OFED documentation.
+For additional OpenSM IB subnet manager help/information, please see the related OFED documentation.
 
 <br>
 
