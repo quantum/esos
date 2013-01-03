@@ -40,5 +40,21 @@ TODO
 
 <br>
 
+=== InfiniBand Subnet Manager ===
+The OpenSM IB subnet manager software is also included with ESOS. It is disabled by default, but can be enabled by adding the binary (`/usr/sbin/opensm`) and associated configuration options to the pre-SCST configuration file: /etc/pre-scst_xtra_conf
+
+The following OpenSM configuration file locations should be used with ESOS (they'll be synchronized to the USB flash drive):
+  * /etc/opensm.conf
+  * /etc/ib-node-name-map
+  * /etc/partitions.conf
+  * /etc/qos-policy.conf
+  * /etc/prefix-routes.conf
+  * /etc/per-module-logging.conf
+  * /etc/torus-2QoS.conf
+
+For additional OpenSM IB subnet manager, please see the related OFED documentation.
+
+<br>
+
 === What's Next ===
 From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
