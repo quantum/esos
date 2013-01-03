@@ -1,6 +1,35 @@
 #summary Configuring SCST devices on your ESOS storage server.
 
-=== Introduction ===
-ESOS is based on the SCST project, and it really is the core of ESOS. SCST provides a number of different features and I/O modes (pass-through, FILEIO, BLOCKIO, etc.). ESOS documentation will really focus on just one of these I/O modes, BLOCKIO, since it generally works quite well with high-end storage HBAs found in enterprise environments. Please refer to the SCST documentation for more in-depth configuration, or if you'd like to use I/O modes other than BLOCKIO (it should all work on ESOS, let us know if that's not the case).
+=== SCST I/O Modes ===
+ESOS is based on the SCST project, and it really is the core of ESOS. SCST provides a number of different features and I/O modes (pass-through, FILEIO, BLOCKIO, etc.). At the time of writing this document, ESOS supports (6) SCST device I/O modes.
+
+Here is a list and description of each supported I/O mode:
+  * *Pass-Through SCSI Disk (dev_disk)*: SCSI commands coming from initiators on your SAN are passed to the local SCSI disks on the ESOS storage server as is, without any modifications. One-to-many is supported in this mode in which several initiators can safely connect to a single device.
+  * *Pass-Through SCSI Disk, Performance (dev_disk_perf)*: Similar to the mode described above except no data is transferred to/from the underlying SCSI device; used for measuring performance.
+  * *VDISK CDROM (vcdrom)*:
+  * *VDISK BLOCKIO (vdisk_blockio)*:
+  * *VDISK FILEIO (vdisk_fileio)*:
+  * *VDISK NULLIO (vdisk_nullio)*:
+
+
+ESOS documentation will really focus on just one of these I/O modes, BLOCKIO, since it generally works quite well with high-end storage HBAs found in enterprise environments. Please refer to the SCST documentation for more in-depth configuration, or if you'd like to use I/O modes other than BLOCKIO (it should all work on ESOS, let us know if that's not the case).
 
 <br>
+
+=== Adding/Removing Devices ===
+TODO
+
+<br>
+
+=== Mapping & Unmapping Devices ===
+TODO
+
+<br>
+
+=== Getting Device/LUN Information ===
+TODO
+
+<br>
+
+=== What's Next ===
+TODO
