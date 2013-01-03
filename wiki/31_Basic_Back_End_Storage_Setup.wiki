@@ -52,4 +52,4 @@ When you no longer need a virtual disk, use the TUI to delete it (Back-End Stora
 <br>
 
 === What's Next ===
-TODO
+Now that you have setup and configured your basic back-end storage, you can continue on to the [41_Device_Configuration] wiki document to setup your SCST device(s). Or if you have advanced back-end storage needs, use the [32_Advanced_Back_End_Storage_Setup] page for additional information.
