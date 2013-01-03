@@ -43,7 +43,11 @@ You can also easily remove/delete file systems in the TUI (Back-End Storage -> R
 <br>
 
 === Virtual Disk Files ===
-TODO
+Now that you have a file system created/mounted and available (described in the section above) you can create virtual disk files. These virtual disk files are independent storage volumes that can be shared with initiators, which is described in the subsequent ESOS wiki pages.
+
+Adding virtual disks is quite easy; in the TUI open the dialog (Back-End Storage -> Add Virtual Disk File). You'll be shown the total disk space on the file system, and the available disk space. You'll need to pick a meaningful name for the virtual disk file and the new virtual disk size -- this will be the actual virtual disk size that is presented to the initiators. Hit 'OK' can your new virtual disk will be created; the file needs to be zero'd out, so it may take a while depending on the speed of your back-end storage and the size of the new file.
+
+When you no longer need a virtual disk, use the TUI to delete it (Back-End Storage -> Remove Virtual Disk File). _Be sure to end all I/O associated with the virtual disk and remove the SCST device first._
 
 <br>
 
