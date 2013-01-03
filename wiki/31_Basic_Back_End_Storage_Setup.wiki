@@ -23,7 +23,7 @@ After you have configured your RAID logical drive(s), you can now proceed to the
 <br>
 
 === Back-End Storage File Systems ===
-TODO
+Once you have your back-end storage block device
 
 <br>
 
