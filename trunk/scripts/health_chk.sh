@@ -10,6 +10,10 @@ MEGACLI="/opt/sbin/MegaCli64"
 ARCCONF="/opt/sbin/arcconf"
 MEM_PRCT_THRESH=0.75
 DISK_PRCT_THRESH=0.80
+CHK_FS_LABEL="esos_root"
+EMAIL_TO="root"
+EMAIL_FROM="root"
+TMP_PATH="/tmp"
 
 # Check MegaRAID logical drives (if any)
 if [ -x "${MEGACLI}" ]; then
@@ -100,3 +104,24 @@ if expr ${prct_disk_used} '>' ${DISK_PRCT_THRESH} > /dev/null; then
 	echo "Avail. Disk Space: ${disk_avail} MB" 1>&2
 fi
 
+# Check if the USB drive is available/working via one of the FS labels (no indentation for if statement)
+if ! findfs LABEL=${CHK_FS_LABEL} > /dev/null 2>&1; then
+# Create a archive of the configuration files
+arch_pkg_file="esos_conf_pkg-`date +%s`.tgz"
+arch_pkg_path="${TMP_PATH}/${arch_pkg_file}"
+tar cpfz ${arch_pkg_path} --exclude='rc.d' --exclude='ssh_host_*' --exclude='shadow*' /etc > /dev/null 2>&1
+# Send an email with the archive file attachment (uuencode'd)
+sendmail -t << _EOF_
+To: ${EMAIL_TO}
+From: ${EMAIL_FROM}
+Subject: ESOS USB Flash Drive Failure - `hostname` (`date`)
+A possible USB flash drive failure has been detected on Enterprise Storage OS host "`hostname`".
+
+The findfs utility exited non-zero when attempting to resolve file system label "${CHK_FS_LABEL}". This may be due to a failed ESOS USB flash drive, or because the device was removed, or some other reason.
+
+We're attaching a tar ball archive of the ESOS configuration files for this host just incase.
+
+`uuencode ${arch_pkg_path} ${arch_pkg_file}`
+_EOF_
+rm -f ${arch_pkg_path}
+fi

@@ -2,10 +2,18 @@
 
 # $Id$
 
-# This script will synchronize configuration files between the ESOS USB device (esos_conf) and the root tmpfs filesystem.
+# This script will synchronize configuration files between the ESOS USB
+# device (esos_conf) and the root tmpfs filesystem.
 
 CONF_MNT="/mnt/conf"
-ETC_FILES="passwd group shadow network.conf hosts resolv.conf ssh_host_rsa_key.pub ssh_host_rsa_key ssh_host_ecdsa_key.pub ssh_host_ecdsa_key ssh_host_dsa_key.pub ssh_host_dsa_key random-seed revaliases ssmtp.conf scst.conf modprobe.conf pre-scst_xtra_conf post-scst_xtra_conf drbd.conf lvm.conf mdadm.conf localtime ntp_server fstab opensm.conf ib-node-name-map partitions.conf qos-policy.conf prefix-routes.conf per-module-logging.conf torus-2QoS.conf"
+ETC_FILES="passwd group shadow network.conf hosts resolv.conf \
+ssh/ssh_host_rsa_key.pub ssh/ssh_host_rsa_key ssh/ssh_host_ecdsa_key.pub \
+ssh/ssh_host_ecdsa_key ssh/ssh_host_dsa_key.pub ssh/ssh_host_dsa_key \
+random-seed ssmtp/revaliases ssmtp/ssmtp.conf scst.conf modprobe.conf \
+pre-scst_xtra_conf post-scst_xtra_conf drbd.conf lvm/lvm.conf mdadm.conf \
+localtime ntp_server fstab opensm/opensm.conf opensm/ib-node-name-map \
+opensm/partitions.conf opensm/qos-policy.conf opensm/prefix-routes.conf \
+opensm/per-module-logging.conf opensm/torus-2QoS.conf"
 
 mount ${CONF_MNT} || exit 1
 mkdir -m 0755 -p ${CONF_MNT}/etc
@@ -21,14 +29,16 @@ for i in ${ETC_FILES}; do
 	fi
 	# Case 2, local file does not exist, but USB does
 	if [ ! -f "${local_file}" ] && [ -f "${usb_file}" ]; then
-		# Copy USB file to local filesystem
-		cp -a ${usb_file} /etc/
+		# Copy USB file to local file system
+		mkdir -p `dirname ${local_file}`
+		cp -a ${usb_file} ${local_file}
 		continue
 	fi
 	# Case 3, local file exists, but USB does not
 	if [ -f "${local_file}" ] && [ ! -f "${usb_file}" ]; then
-		# Copy local file to USB filesystem
-		cp -a ${local_file} ${CONF_MNT}/etc/
+		# Copy local file to USB file system
+		mkdir -p `dirname ${usb_file}`
+		cp -a ${local_file} ${usb_file}
 		continue
 	fi
 	# Case 4, the file exists locally and on USB drive
@@ -36,11 +46,11 @@ for i in ${ETC_FILES}; do
 		# Check and see which version is the newest
 		if [ "${local_file}" -nt "${usb_file}" ]; then
 			# Update the USB file with the local copy
-			cp -a ${local_file} ${CONF_MNT}/etc/
+			cp -af ${local_file} ${usb_file}
 			continue
 		else
 			# Update the local file with the USB copy
-			cp -a ${usb_file} /etc/
+			cp -af ${usb_file} ${local_file}
 			continue
 		fi
 	fi

@@ -85,6 +85,15 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		mdadm-3.2.6.tar.gz \
 		parted-2.3.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2 \
+		libqb-0.14.3.tar.xz \
+		pacemaker-1.1.8.tar.gz \
+		corosync-2.1.0.tar.gz \
+		nss-3.14.1.tar.gz \
+		glib-2.16.6.tar.bz2 \
+		libxml2-2.9.0.tar.gz \
+		libxslt-1.1.28.tar.gz \
+		libtool-2.4.2.tar.xz \
+		bzip2-1.0.6.tar.gz \
 		opensm-3.3.15.tar.gz)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -93,11 +102,12 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib \
 			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
-			xfsprogs drbd mdadm parted opensm
+			xfsprogs drbd mdadm parted opensm libqb pacemaker \
+			corosync nss glib libxml2 libxslt libtool bzip2
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
-tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles)))))
+tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.xz,,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles))))))
 
 # The 'fake_lib' directory deserves a little explanation; after glibc
 # is built, we put modified ld scripts (eg, libc.so) in this location,
@@ -150,8 +160,8 @@ image: $(build_targets)
 	$(MOUNT) $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p2 $(MOUNT_DIR) 
 	$(MKDIR) $(MOUNT_DIR)/boot
 	$(MOUNT) $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p1 $(MOUNT_DIR)/boot
-	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdvu $(IMAGE_DIR)/etc
 	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)
+	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)/etc
 	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install \
 	--grub-setup=$(WORK_DIR)/grub-bios-setup --grub-mkimage=$(WORK_DIR)/grub-mkimage \
 	--grub-mkrelpath=$(WORK_DIR)/grub-mkrelpath --grub-probe=$(WORK_DIR)/grub-probe \
@@ -250,6 +260,8 @@ $(tarball_src_dirs):
 	  $(TAR) xvfz $(src_file) -C $(BUILD_DIR); \
 	elif [ "$(suffix $(src_file))" = ".bz2" ]; then \
 	  $(TAR) xvfj $(src_file) -C $(BUILD_DIR); \
+	elif [ "$(suffix $(src_file))" = ".xz" ]; then \
+	  $(TAR) xvfJ $(src_file) -C $(BUILD_DIR); \
 	else \
 	  $(ECHO) "### Unhandled file extension: $(suffix $(src_file))"; \
 	  exit 1; \
@@ -415,9 +427,11 @@ scstadmin: perl
 	$(TOUCH) $(@)
 
 openssh: glibc zlib openssl
-	cd $(src_dir) && LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib ./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check
+	cd $(src_dir) && LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
+	./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-files
+	$(INSTALL) -D -m 644 $(src_dir)/moduli.out $(IMAGE_DIR)/etc/ssh/moduli
 	$(TOUCH) $(@)
 
 vixie-cron: glibc
@@ -468,7 +482,7 @@ e2fsprogs: glibc
 ssmtp: glibc openssl
 	cd $(src_dir) && CFLAGS="$(CPPFLAGS) $(LDFLAGS) -lcrypto" ./configure \
 	--enable-ssl --prefix="" --exec-prefix=/usr
-	$(MAKE) --directory=$(src_dir) SSMTPCONFDIR=/etc
+	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
 	$(TOUCH) $(@)
@@ -533,7 +547,7 @@ cdk: glibc ncurses
 	$(TOUCH) $(@)
 
 LVM2: glibc
-	cd $(src_dir) && ./configure --with-lvm1=none --disable-selinux --prefix=/usr --with-default-system-dir=/etc
+	cd $(src_dir) && ./configure --with-lvm1=none --disable-selinux --prefix=/usr
 	$(MAKE) --directory=$(src_dir) CLDFLAGS+="$(LDFLAGS)"
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
@@ -569,10 +583,123 @@ parted: glibc e2fsprogs LVM2
 
 opensm: glibc gcc libibumad libibverbs
 	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
-	--with-opensm-conf-sub-dir="" --disable-shared
+	--disable-shared
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-data
 	$(MAKE) --directory=$(src_dir)/opensm DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/osmtest DESTDIR=$(IMAGE_DIR) install-exec
+	$(TOUCH) $(@)
+
+libqb: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync libxslt
+	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  cd $(src_dir) && ./autogen.sh; \
+	fi
+	cd $(src_dir) && \
+	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
+	XML2CONFIG="$(IMAGE_DIR)/usr/bin/xml2-config --prefix=$(IMAGE_DIR)/usr" \
+	cpg_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+	cpg_LIBS="$(LDFLAGS) -lcpg" cfg_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+	cfg_LIBS="$(LDFLAGS) -lcfg" libqb_CFLAGS="-I$(IMAGE_DIR)/usr/include/qb" \
+	libqb_LIBS="$(LDFLAGS) -lqb" cmap_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+	cmap_LIBS="$(LDFLAGS) -lcmap" quorum_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+	quorum_LIBS="$(LDFLAGS) -lquorum" \
+	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	CPPFLAGS="-I$(IMAGE_DIR)/usr/include" LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
+	./configure --prefix=/usr --disable-upstart --disable-systemd \
+	--without-heartbeat --without-snmp --without-esmtp \
+	--disable-fatal-warnings --disable-ansi --disable-silent-rules \
+	--sysconfdir=/etc --localstatedir=/var
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir)/replace DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/include DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/lib DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/mcp DESTDIR=/tmp/pacemaker install-exec
+	$(MAKE) --directory=$(src_dir)/pengine DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/cib DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/crmd DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/fencing DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/lrmd DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/tools DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/xml DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/cts DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/doc DESTDIR=/tmp/pacemaker install
+	$(TOUCH) $(@)
+
+corosync: glibc libqb nss
+	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  cd $(src_dir) && ./autogen.sh; \
+	fi
+	cd $(src_dir) && nss_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
+	nss_LIBS="$(LDFLAGS) -lnss3" LIBQB_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/qb" \
+	LIBQB_LIBS="$(LDFLAGS) -lqb" ./configure --prefix=/usr --sysconfdir=/etc \
+	--localstatedir=/var
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/common_lib DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/lib DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/exec DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/test DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/cts DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/pkgconfig DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/qdevices DESTDIR=$(IMAGE_DIR) install
+	$(RM) $(IMAGE_DIR)/usr/lib/libcpg.la
+	$(RM) $(IMAGE_DIR)/usr/lib/libcfg.la
+	$(RM) $(IMAGE_DIR)/usr/lib/libcmap.la
+	$(RM) $(IMAGE_DIR)/usr/lib/libquorum.la
+	$(TOUCH) $(@)
+
+nss: glibc
+	BUILD_OPT=1 USE_64=1 $(MAKE) --directory=$(src_dir)/mozilla/security/nss nss_build_all
+	$(INSTALL) -v -m755 $(src_dir)/mozilla/dist/Linux*/lib/*.so $(IMAGE_DIR)/usr/lib
+	$(INSTALL) -v -m644 $(src_dir)/mozilla/dist/Linux*/lib/{*.chk,libcrmf.a} $(IMAGE_DIR)/usr/lib
+	$(INSTALL) -v -m755 -d $(IMAGE_DIR)/usr/include/nss
+	$(CP) -v -RL $(src_dir)/mozilla/dist/{public,private}/nss/* $(IMAGE_DIR)/usr/include/nss
+	$(CP) -v -RL $(src_dir)/mozilla/dist/Linux*/include/* $(IMAGE_DIR)/usr/include/nss
+	$(CHMOD) 644 $(IMAGE_DIR)/usr/include/nss/*.h
+	$(INSTALL) -v -m755 $(src_dir)/mozilla/dist/Linux*/bin/{certutil,pk12util} $(IMAGE_DIR)/usr/bin
+	$(TOUCH) $(@)
+
+glib: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+libxml2: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+libxslt: glibc libxml2
+	cd $(src_dir) && ./configure --prefix=/usr --with-libxml-prefix="$(IMAGE_DIR)/usr" \
+	--with-libxml-include-prefix="$(IMAGE_DIR)/usr/include/libxml2" \
+	--with-libxml-libs-prefix="$(IMAGE_DIR)/usr/lib"
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(RM) $(IMAGE_DIR)/usr/lib/libxslt.la
+	$(TOUCH) $(@)
+
+libtool: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+bzip2: glibc
+	$(MAKE) --file=$(src_dir)/Makefile-libbz2_so --directory=$(src_dir)
+	$(INSTALL) -v $(src_dir)/libbz2.so.1.0.6 $(IMAGE_DIR)/usr/lib
+	$(LN) libbz2.so.1.0.6 $(IMAGE_DIR)/usr/lib/libbz2.so.1.0
+	$(LN) libbz2.so.1.0.6 $(IMAGE_DIR)/usr/lib/libbz2.so
+	$(INSTALL) -v -m644 $(src_dir)/bzlib.h $(IMAGE_DIR)/usr/include
 	$(TOUCH) $(@)
 

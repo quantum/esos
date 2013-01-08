@@ -133,7 +133,7 @@ extern "C" {
 /* System files (configuration, etc.) */
 #define PROC_DRBD       "/proc/drbd"
 #define PROC_MDSTAT     "/proc/mdstat"
-#define SSMTP_CONF      "/etc/ssmtp.conf"
+#define SSMTP_CONF      "/etc/ssmtp/ssmtp.conf"
 #define NETWORK_CONF    "/etc/network.conf"
 #define NTP_SERVER      "/etc/ntp_server"
 #define SCST_CONF       "/etc/scst.conf"
