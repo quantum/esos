@@ -658,7 +658,8 @@ corosync: glibc libqb nss
 	$(TOUCH) $(@)
 
 nss: glibc
-	BUILD_OPT=1 USE_64=1 $(MAKE) --directory=$(src_dir)/mozilla/security/nss nss_build_all
+	$(MAKE) --directory=$(src_dir)/mozilla/security/nss BUILD_OPT=1 USE_64=1 USE_SYSTEM_ZLIB=1 \
+	ZLIB_LIBS="-lz -L$(IMAGE_DIR)/usr/lib" CC="gcc -I$(src_dir)/mozilla/security/nss/lib/zlib" nss_build_all
 	$(INSTALL) -v -m755 $(src_dir)/mozilla/dist/Linux*/lib/*.so $(IMAGE_DIR)/usr/lib
 	$(INSTALL) -v -m644 $(src_dir)/mozilla/dist/Linux*/lib/{*.chk,libcrmf.a} $(IMAGE_DIR)/usr/lib
 	$(INSTALL) -v -m755 -d $(IMAGE_DIR)/usr/include/nss
