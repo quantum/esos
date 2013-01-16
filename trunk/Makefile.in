@@ -94,6 +94,10 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		libxslt-1.1.28.tar.gz \
 		libtool-2.4.2.tar.xz \
 		bzip2-1.0.6.tar.gz \
+		Python-2.7.3.tar.bz2 \
+		crmsh-1.2.4.tar.bz2 \
+		libaio-0.3.109.tar.bz2 \
+		glue-1.0.11.tar.bz2 \
 		opensm-3.3.15.tar.gz)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -103,7 +107,8 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
 			xfsprogs drbd mdadm parted opensm libqb pacemaker \
-			corosync nss glib libxml2 libxslt libtool bzip2
+			corosync nss glib libxml2 libxslt libtool bzip2 Python \
+			crmsh libaio glue
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -428,7 +433,7 @@ scstadmin: perl
 
 openssh: glibc zlib openssl
 	cd $(src_dir) && LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
-	./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check
+	./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check --sysconfdir=/etc/ssh
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-files
 	$(INSTALL) -D -m 644 $(src_dir)/moduli.out $(IMAGE_DIR)/etc/ssh/moduli
@@ -617,19 +622,19 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	--disable-fatal-warnings --disable-ansi --disable-silent-rules \
 	--sysconfdir=/etc --localstatedir=/var
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir)/replace DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/include DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/lib DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/mcp DESTDIR=/tmp/pacemaker install-exec
-	$(MAKE) --directory=$(src_dir)/pengine DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/cib DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/crmd DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/fencing DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/lrmd DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/tools DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/xml DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/cts DESTDIR=/tmp/pacemaker install
-	$(MAKE) --directory=$(src_dir)/doc DESTDIR=/tmp/pacemaker install
+	$(MAKE) --directory=$(src_dir)/replace DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/lib DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/mcp DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir)/pengine DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/cib DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/crmd DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/fencing DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/lrmd DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/xml DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/cts DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 corosync: glibc libqb nss
@@ -702,5 +707,47 @@ bzip2: glibc
 	$(LN) libbz2.so.1.0.6 $(IMAGE_DIR)/usr/lib/libbz2.so.1.0
 	$(LN) libbz2.so.1.0.6 $(IMAGE_DIR)/usr/lib/libbz2.so
 	$(INSTALL) -v -m644 $(src_dir)/bzlib.h $(IMAGE_DIR)/usr/include
+	$(TOUCH) $(@)
+
+Python: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+crmsh: glibc Python glue pacemaker
+	cd $(src_dir) && \
+	CFLAGS="-I$(IMAGE_DIR)/usr/include/pacemaker -I$(IMAGE_DIR)/usr/include/heartbeat $(CPPFLAGS)" \
+	PYTHON="$(IMAGE_DIR)/usr/bin/python" \
+	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+libaio: glibc
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) prefix=$(IMAGE_DIR)/usr install
+	$(TOUCH) $(@)
+
+glue: glibc libaio libxml2 bzip2
+	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  cd $(src_dir) && ./autogen.sh; \
+	fi
+	cd $(src_dir) && \
+	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
+	XML2CONFIG="$(IMAGE_DIR)/usr/bin/xml2-config --prefix=$(IMAGE_DIR)/usr" \
+	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	./configure --prefix=/usr --disable-ansi --disable-fatal-warnings \
+	--sysconfdir=/etc --localstatedir=/var
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/replace DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/lib DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/lrm DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/logd DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir)/hb_report DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/config DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
