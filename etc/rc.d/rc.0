@@ -2,6 +2,14 @@
 
 # $Id$
 
+if [ -x /etc/rc.d/rc.pacemaker ]; then
+    /etc/rc.d/rc.pacemaker stop
+fi
+
+if [ -x /etc/rc.d/rc.corosync ]; then
+    /etc/rc.d/rc.corosync stop
+fi
+
 if [ -x /etc/rc.d/rc.drbd ]; then
     /etc/rc.d/rc.drbd stop
 fi

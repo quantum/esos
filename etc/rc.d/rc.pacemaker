@@ -1,0 +1,25 @@
+# $Id$
+
+PACEMAKERD="/usr/sbin/pacemakerd"
+LOCK_FILE="/var/lock/pacemakerd"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Starting pacemakerd..."
+    ${PACEMAKERD} &
+    /bin/touch ${LOCK_FILE}
+}
+
+stop() {
+    /bin/echo "Stopping pacemakerd..."
+    /bin/kill -TERM $(/bin/pidof ${PACEMAKERD})
+    /bin/rm -f ${LOCK_FILE}
+}
+
+# Perform specified action
+${1}

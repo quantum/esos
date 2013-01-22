@@ -190,6 +190,11 @@ image: $(build_targets)
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
 	$(CHMOD) 1777 $(MOUNT_DIR)/tmp
 	$(CHMOD) 1777 $(MOUNT_DIR)/var/tmp
+	$(CHOWN) 101:101 $(MOUNT_DIR)/var/lib/corosync
+	$(CHOWN) 101:101 $(MOUNT_DIR)/var/log/cluster
+	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/pacemaker
+	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/heartbeat
+	$(CHOWN) 101:101 $(MOUNT_DIR)/var/run/crm
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
@@ -292,6 +297,11 @@ image_setup:
 	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/var/tmp
 	$(INSTALL) -m 710 -d $(IMAGE_DIR)/var/cron
 	$(INSTALL) -m 700 -d $(IMAGE_DIR)/var/cron/tabs
+	$(MKDIR) $(IMAGE_DIR)/var/lib/corosync
+	$(MKDIR) $(IMAGE_DIR)/var/log/cluster
+	$(MKDIR) $(IMAGE_DIR)/var/lib/pacemaker/{cores,pengine,cib,blackbox}
+	$(MKDIR) $(IMAGE_DIR)/var/run/crm
+	$(MKDIR) $(IMAGE_DIR)/var/lib/heartbeat/{cores,lrm}
 	$(LN) lib $(IMAGE_DIR)/lib64
 	$(LN) lib $(IMAGE_DIR)/usr/lib64
 	$(MKDIR) $(INITRAMFS_DIR)/{bin,sbin,proc,sys,dev}
@@ -601,7 +611,7 @@ libqb: glibc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync libxslt
+pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync libxslt glue
 	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
 	  cd $(src_dir) && ./autogen.sh; \
 	fi
@@ -617,6 +627,7 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	quorum_LIBS="$(LDFLAGS) -lquorum" \
 	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	CPPFLAGS="-I$(IMAGE_DIR)/usr/include" LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
+	PYTHON="$(IMAGE_DIR)/usr/bin/python" \
 	./configure --prefix=/usr --disable-upstart --disable-systemd \
 	--without-heartbeat --without-snmp --without-esmtp \
 	--disable-fatal-warnings --disable-ansi --disable-silent-rules \
@@ -681,13 +692,14 @@ glib: glibc
 	$(TOUCH) $(@)
 
 libxml2: glibc
-	cd $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && PYTHON="$(IMAGE_DIR)/usr/bin/python" ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 libxslt: glibc libxml2
-	cd $(src_dir) && ./configure --prefix=/usr --with-libxml-prefix="$(IMAGE_DIR)/usr" \
+	cd $(src_dir) && PYTHON="$(IMAGE_DIR)/usr/bin/python" \
+	./configure --prefix=/usr --with-libxml-prefix="$(IMAGE_DIR)/usr" \
 	--with-libxml-include-prefix="$(IMAGE_DIR)/usr/include/libxml2" \
 	--with-libxml-libs-prefix="$(IMAGE_DIR)/usr/lib"
 	$(MAKE) --directory=$(src_dir)
@@ -709,10 +721,12 @@ bzip2: glibc
 	$(INSTALL) -v -m644 $(src_dir)/bzlib.h $(IMAGE_DIR)/usr/include
 	$(TOUCH) $(@)
 
-Python: glibc
+Python: glibc bzip2
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir) \
+	RUNSHARED="LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib" \
+	DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 crmsh: glibc Python glue pacemaker
@@ -749,5 +763,7 @@ glue: glibc libaio libxml2 bzip2
 	$(MAKE) --directory=$(src_dir)/hb_report DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/config DESTDIR=$(IMAGE_DIR) install
+	$(RM) $(IMAGE_DIR)/usr/lib/libpils.la
+	$(RM) $(IMAGE_DIR)/usr/lib/libplumb.la
 	$(TOUCH) $(@)
 

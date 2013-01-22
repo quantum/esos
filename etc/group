@@ -30,3 +30,4 @@ nogroup::65533:
 nobody::65534:
 sshd:x:22:
 cron:x:16:
+haclient:x:101:hacluster

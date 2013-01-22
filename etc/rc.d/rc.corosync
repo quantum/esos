@@ -1,0 +1,35 @@
+#! /bin/sh
+
+# $Id$
+
+COROSYNC="/usr/sbin/corosync"
+COROSYNC_NOTIFYD="/usr/sbin/corosync-notifyd"
+COROSYNC_LOCK="/var/lock/corosync"
+COROSYNC_NOTIFYD_LOCK="/var/lock/corosync-notifyd"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Starting corosync..."
+    ${COROSYNC} || exit 1
+    /bin/touch ${COROSYNC_LOCK}
+    /bin/echo "Starting corosync-notifyd..."
+    ${COROSYNC_NOTIFYD} -l || exit 1
+    /bin/touch ${COROSYNC_NOTIFYD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping corosync-notifyd..."
+    /bin/kill -TERM $(/bin/pidof ${COROSYNC_NOTIFYD})
+    /bin/rm -f ${COROSYNC_NOTIFYD_LOCK}
+    /bin/echo "Stopping corosync..."
+    /bin/kill -TERM $(/bin/pidof ${COROSYNC})
+    /bin/rm -f ${COROSYNC_LOCK}
+}
+
+# Perform specified action
+${1}
