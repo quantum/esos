@@ -37,6 +37,14 @@ if [ -x /etc/rc.d/rc.drbd ]; then
     /etc/rc.d/rc.drbd start
 fi
 
+if [ -x /etc/rc.d/rc.corosync ]; then
+    /etc/rc.d/rc.corosync start
+fi
+
+if [ -x /etc/rc.d/rc.pacemaker ]; then
+    /etc/rc.d/rc.pacemaker start
+fi
+
 if [ -f /etc/pre-scst_xtra_conf ]; then
     /bin/echo "Pre-SCST user config. file found; running..."
     /bin/sh /etc/pre-scst_xtra_conf
