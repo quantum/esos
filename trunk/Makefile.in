@@ -627,11 +627,10 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	quorum_LIBS="$(LDFLAGS) -lquorum" \
 	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	CPPFLAGS="-I$(IMAGE_DIR)/usr/include" LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
-	PYTHON="$(IMAGE_DIR)/usr/bin/python" \
 	./configure --prefix=/usr --disable-upstart --disable-systemd \
 	--without-heartbeat --without-snmp --without-esmtp \
 	--disable-fatal-warnings --disable-ansi --disable-silent-rules \
-	--sysconfdir=/etc --localstatedir=/var
+	--sysconfdir=/etc --localstatedir=/var --without-python
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir)/replace DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
@@ -727,12 +726,14 @@ Python: glibc bzip2
 	$(MAKE) --directory=$(src_dir) \
 	RUNSHARED="LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib" \
 	DESTDIR=$(IMAGE_DIR) install
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/python \"\044\0100\"\n" > $(WORK_DIR)/python
+	$(CHMOD) +x $(WORK_DIR)/python
 	$(TOUCH) $(@)
 
 crmsh: glibc Python glue pacemaker
 	cd $(src_dir) && \
 	CFLAGS="-I$(IMAGE_DIR)/usr/include/pacemaker -I$(IMAGE_DIR)/usr/include/heartbeat $(CPPFLAGS)" \
-	PYTHON="$(IMAGE_DIR)/usr/bin/python" \
+	PYTHON="$(WORK_DIR)/python" \
 	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
