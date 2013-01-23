@@ -611,7 +611,7 @@ libqb: glibc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync libxslt glue
+pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync libxslt glue Python
 	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
 	  cd $(src_dir) && ./autogen.sh; \
 	fi
@@ -692,16 +692,16 @@ glib: glibc
 	$(TOUCH) $(@)
 
 libxml2: glibc
-	cd $(src_dir) && PYTHON="$(IMAGE_DIR)/usr/bin/python" ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr --without-python
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 libxslt: glibc libxml2
-	cd $(src_dir) && PYTHON="$(IMAGE_DIR)/usr/bin/python" \
+	cd $(src_dir) && \
 	./configure --prefix=/usr --with-libxml-prefix="$(IMAGE_DIR)/usr" \
 	--with-libxml-include-prefix="$(IMAGE_DIR)/usr/include/libxml2" \
-	--with-libxml-libs-prefix="$(IMAGE_DIR)/usr/lib"
+	--with-libxml-libs-prefix="$(IMAGE_DIR)/usr/lib" --without-python
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(RM) $(IMAGE_DIR)/usr/lib/libxslt.la
@@ -722,7 +722,7 @@ bzip2: glibc
 	$(TOUCH) $(@)
 
 Python: glibc bzip2
-	cd $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) \
 	RUNSHARED="LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib" \
