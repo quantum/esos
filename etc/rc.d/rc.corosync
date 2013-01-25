@@ -17,6 +17,7 @@ start() {
     /bin/echo "Starting corosync..."
     ${COROSYNC} || exit 1
     /bin/touch ${COROSYNC_LOCK}
+    /bin/sleep 1
     /bin/echo "Starting corosync-notifyd..."
     ${COROSYNC_NOTIFYD} -l || exit 1
     /bin/touch ${COROSYNC_NOTIFYD_LOCK}
