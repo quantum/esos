@@ -191,7 +191,6 @@ image: $(build_targets)
 	$(CHMOD) 1777 $(MOUNT_DIR)/tmp
 	$(CHMOD) 1777 $(MOUNT_DIR)/var/tmp
 	$(CHOWN) 101:101 $(MOUNT_DIR)/var/lib/corosync
-	$(CHOWN) 101:101 $(MOUNT_DIR)/var/log/cluster
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/pacemaker
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/heartbeat
 	$(CHOWN) 101:101 $(MOUNT_DIR)/var/run/crm
@@ -300,6 +299,7 @@ image_setup:
 	$(MKDIR) $(IMAGE_DIR)/var/lib/corosync
 	$(MKDIR) $(IMAGE_DIR)/var/log/cluster
 	$(MKDIR) $(IMAGE_DIR)/var/lib/pacemaker/{cores,pengine,cib,blackbox}
+	$(MKDIR) $(IMAGE_DIR)/var/lib/pacemaker/cores/{root,hacluster}
 	$(MKDIR) $(IMAGE_DIR)/var/run/crm
 	$(MKDIR) $(IMAGE_DIR)/var/lib/heartbeat/{cores,lrm}
 	$(LN) lib $(IMAGE_DIR)/lib64
@@ -734,6 +734,7 @@ crmsh: glibc Python glue pacemaker
 	cd $(src_dir) && \
 	CFLAGS="-I$(IMAGE_DIR)/usr/include/pacemaker -I$(IMAGE_DIR)/usr/include/heartbeat $(CPPFLAGS)" \
 	PYTHON="$(WORK_DIR)/python" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
 	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
