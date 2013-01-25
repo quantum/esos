@@ -17,7 +17,7 @@ opensm/per-module-logging.conf opensm/torus-2QoS.conf corosync/corosync.conf"
 VAR_DIRS="lib/scst lib/drbd lib/pacemaker lib/corosync lib/heartbeat"
 MKDIR="mkdir -m 0755 -p"
 CP="cp -af"
-CPIO="cpio -pvdum"
+CPIO="cpio -pdum --quiet"
 
 mount ${CONF_MNT} || exit 1
 
@@ -51,10 +51,11 @@ for i in ${ETC_FILES}; do
 		if [ "${local_file}" -nt "${usb_file}" ]; then
 			# Update the USB file with the local copy
 			${CP} ${local_file} ${usb_file}
-			continue
-		else
+		elif [ "${local_file}" -ot "${usb_file}" ]; then
 			# Update the local file with the USB copy
 			${CP} ${usb_file} ${local_file}
+		else
+			# The files are the same; do nothing
 			continue
 		fi
 	fi
@@ -91,10 +92,11 @@ for i in ${VAR_DIRS}; do
 			if [ "${local_file}" -nt "${usb_file}" ]; then
 				# Update the USB file with the local copy
 				${CP} ${local_file} ${usb_file}
-				continue
-			else
+			elif [ "${local_file}" -ot "${usb_file}" ]; then
 				# Update the local file with the USB copy
 				${CP} ${usb_file} ${local_file}
+			else
+				# The files are the same; do nothing
 				continue
 			fi
 		fi
@@ -103,18 +105,18 @@ for i in ${VAR_DIRS}; do
 	usb_var_base="${CONF_MNT}/var/${i}"
 	for j in `test -d ${usb_var_base} && find ${usb_var_base} -type d`; do
 		usb_dir=${j}
-		local_dir=`echo "${usb_dir}" | sed -e 's@${CONF_MNT}@@'`
+		local_dir=`echo "${usb_dir}" | sed -e s@${CONF_MNT}@@`
 		# The directory doesn't exist on the local file system
 		if [ ! -d "${local_dir}" ]; then
 			# Create the directory
-			cd ${CONF_MNT} && echo ${usb_dir} | sed -e 's@${CONF_MNT}/@@' | ${CPIO} / && cd -
+			cd ${CONF_MNT} && echo ${usb_dir} | sed -e s@${CONF_MNT}/@@ | ${CPIO} / && cd -
 			continue
 		fi
 	done
 	# Make sure all of the USB files exist locally
 	for j in `test -d ${usb_var_base} && find ${usb_var_base} -type f`; do
 		usb_file=${j}
-		local_file=`echo "${usb_file}" | sed -e 's@${CONF_MNT}@@'`
+		local_file=`echo "${usb_file}" | sed -e s@${CONF_MNT}@@`
 		# The file doesn't exist on the local file system
 		if [ ! -f "${local_file}" ]; then
 			# Copy the USB file to the local FS
@@ -127,10 +129,11 @@ for i in ${VAR_DIRS}; do
 			if [ "${usb_file}" -nt "${local_file}" ]; then
 				# Update the local file with the USB copy
 				${CP} ${usb_file} ${local_file}
-				continue
-			else
+			elif [ "${usb_file}" -ot "${local_file}" ]; then
 				# Update the USB file with the local copy
 				${CP} ${local_file} ${usb_file}
+			else
+				# The files are the same; do nothing
 				continue
 			fi
 		fi

@@ -94,7 +94,7 @@ echo
 if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
     image_file=`ls esos-*.img`
     echo "### Writing ${image_file} to ${dev_node}; this may take a while..."
-    dd if=./${image_file} of=${dev_node} bs=1M
+    dd if=./${image_file} of=${dev_node} bs=1M || exit 1
     echo
     echo "### It appears the image was successfully written to disk (no errors reported)!"
 else

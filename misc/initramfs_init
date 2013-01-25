@@ -39,7 +39,14 @@ mount -t tmpfs -o size=1024m tmpfs /mnt/root || rescue_shell
 mount -o ro $(findfs LABEL=esos_root) /mnt/tmp || rescue_shell
 
 # Setup the root filesystem
-cd /mnt/tmp && find . -depth | cpio -pmd /mnt/root
+cd /mnt/tmp
+spinner="/-\|"
+spin_pos=0
+find . -depth | cpio -pmdv --quiet /mnt/root | while read i; do
+	printf "\b"${spinner:$spin_pos:1}
+	spin_pos=$(( ( ${spin_pos} + 1 ) % 4 ))
+done
+printf "\b"
 cd /
 cp -a /dev/* /mnt/root/dev/
 mkdir -p /dev/pts
