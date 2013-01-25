@@ -645,6 +645,7 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	$(MAKE) --directory=$(src_dir)/xml DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/cts DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/extra DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 corosync: glibc libqb nss
