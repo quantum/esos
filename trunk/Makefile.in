@@ -98,6 +98,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		crmsh-1.2.4.tar.bz2 \
 		libaio-0.3.109.tar.bz2 \
 		glue-1.0.11.tar.bz2 \
+		readline-6.2.tar.gz \
 		opensm-3.3.15.tar.gz)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -108,7 +109,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
 			xfsprogs drbd mdadm parted opensm libqb pacemaker \
 			corosync nss glib libxml2 libxslt libtool bzip2 Python \
-			crmsh libaio glue
+			crmsh libaio glue readline
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -722,7 +723,7 @@ bzip2: glibc
 	$(INSTALL) -v -m644 $(src_dir)/bzlib.h $(IMAGE_DIR)/usr/include
 	$(TOUCH) $(@)
 
-Python: glibc bzip2
+Python: glibc bzip2 readline
 	cd $(src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) \
@@ -769,5 +770,11 @@ glue: glibc libaio libxml2 bzip2
 	$(MAKE) --directory=$(src_dir)/config DESTDIR=$(IMAGE_DIR) install
 	$(RM) $(IMAGE_DIR)/usr/lib/libpils.la
 	$(RM) $(IMAGE_DIR)/usr/lib/libplumb.la
+	$(TOUCH) $(@)
+
+readline: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
