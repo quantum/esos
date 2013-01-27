@@ -59,6 +59,9 @@ extern "C" {
 #define LUN_LAYOUT_ROWS                 12
 #define LUN_LAYOUT_COLS                 62
 #define MAX_LUN_LAYOUT_LINES            128
+#define CRM_INFO_ROWS                   10
+#define CRM_INFO_COLS                   58
+#define MAX_CRM_INFO_LINES              512
 
 /* Other window/screen/label/etc. sizing limits */
 #define MAX_FS_DIALOG_INFO_LINES        11
