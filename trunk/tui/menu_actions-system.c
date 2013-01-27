@@ -1757,14 +1757,83 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
 
 
 /*
- * Run the Linux-HA Status dialog
+ * Run the CRM Status dialog
  */
-void linuxHAStatDialog(CDKSCREEN *main_cdk_screen) {
-    char *blah = NULL;
-    if ((blah = getenv("TERM")) != NULL) {
-        errorDialog(main_cdk_screen, blah, NULL);
+void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
+    CDKSWINDOW *crm_info = 0;
+    char *swindow_info[MAX_CRM_INFO_LINES] = {NULL};
+    char *error_msg = NULL, *crm_cmd = NULL;
+    int i = 0, line_pos = 0, status = 0, ret_val = 0;
+    char line[CRM_INFO_COLS] = {0};
+    FILE *crm_proc = NULL;
+
+    /* Run the crm command */
+    asprintf(&crm_cmd, "%s status 2>&1", CRM_TOOL);
+    if ((crm_proc = popen(crm_cmd, "r")) == NULL) {
+        asprintf(&error_msg, "Couldn't open process for the %s command!", CRM_TOOL);
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+    } else {
+        /* Add the contents to the scrolling window widget */
+        line_pos = 0;
+        while (fgets(line, sizeof (line), crm_proc) != NULL) {
+            if (line_pos < MAX_CRM_INFO_LINES) {
+                asprintf(&swindow_info[line_pos], "%s", line);
+                line_pos++;
+            }
+        }
+
+        /* Add a message to the bottom explaining how to close the dialog */
+        if (line_pos < MAX_CRM_INFO_LINES) {
+            asprintf(&swindow_info[line_pos], " ");
+            line_pos++;
+        }
+        if (line_pos < MAX_CRM_INFO_LINES) {
+            asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+            line_pos++;
+        }
+        
+        /* Close the process stream and check exit status */
+        if ((status = pclose(crm_proc)) == -1) {
+            ret_val = -1;
+        } else {
+            if (WIFEXITED(status))
+                ret_val = WEXITSTATUS(status);
+            else
+                ret_val = -1;
+        }
+        if (ret_val == 0) {
+            /* Setup scrolling window widget */
+            crm_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+                    CRM_INFO_ROWS+2, CRM_INFO_COLS+2,
+                    "<C></31/B>CRM Status:\n",
+                    MAX_CRM_INFO_LINES, TRUE, FALSE);
+            if (!crm_info) {
+                errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+                return;
+            }
+            setCDKSwindowBackgroundAttrib(crm_info, COLOR_DIALOG_TEXT);
+            setCDKSwindowBoxAttribute(crm_info, COLOR_DIALOG_BOX);
+
+            /* Set the scrolling window content */
+            setCDKSwindowContents(crm_info, swindow_info, line_pos);
+
+            /* The 'g' makes the swindow widget scroll to the top, then activate */
+            injectCDKSwindow(crm_info, 'g');
+            activateCDKSwindow(crm_info, 0);
+
+            /* We fell through -- the user exited the widget, but we don't care how */
+            destroyCDKSwindow(crm_info);
+        } else {
+            asprintf(&error_msg, "The %s command exited with %d.", CRM_TOOL, ret_val);
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+        }
     }
-    errorDialog(main_cdk_screen, NULL, "This feature has not been implemented yet.");
+
+    /* Done */
+    for (i = 0; i < MAX_CRM_INFO_LINES; i++ )
+        freeChar(swindow_info[i]);
     return;
 }
 

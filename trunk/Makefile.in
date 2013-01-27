@@ -626,13 +626,13 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	cfg_LIBS="$(LDFLAGS) -lcfg" libqb_CFLAGS="-I$(IMAGE_DIR)/usr/include/qb" \
 	libqb_LIBS="$(LDFLAGS) -lqb" cmap_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
 	cmap_LIBS="$(LDFLAGS) -lcmap" quorum_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
-	quorum_LIBS="$(LDFLAGS) -lquorum" \
+	quorum_LIBS="$(LDFLAGS) -lquorum" PYTHON="$(WORK_DIR)/python" \
 	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	CPPFLAGS="-I$(IMAGE_DIR)/usr/include" LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
 	./configure --prefix=/usr --disable-upstart --disable-systemd \
 	--without-heartbeat --without-snmp --without-esmtp \
 	--disable-fatal-warnings --disable-ansi --disable-silent-rules \
-	--sysconfdir=/etc --localstatedir=/var --without-python
+	--sysconfdir=/etc --localstatedir=/var --with-python
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir)/replace DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install

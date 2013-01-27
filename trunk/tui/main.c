@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     menu_list[SYSTEM_MENU][SYSTEM_DEL_USER]             = "</B>Delete User         <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_CHG_PASSWD]           = "</B>Change Password     <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_SCST_INFO]            = "</B>SCST Information    <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_LINUXHA_INFO]         = "</B>Linux-HA Status     <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_CRM_STATUS]           = "</B>CRM Status          <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_DATE_TIME]            = "</B>Date & Time Settings<!B>";
 
     menu_list[BACK_STORAGE_MENU][0]                             = "</29/B/U>B<!29><!U>ack-End Storage  <!B>";
@@ -368,9 +368,9 @@ int main(int argc, char** argv) {
                 scstInfoDialog(cdk_screen);
 
             } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_LINUXHA_INFO - 1) {
-                /* Linux-HA Status dialog */
-                linuxHAStatDialog(cdk_screen);
+                    submenu_choice == SYSTEM_CRM_STATUS - 1) {
+                /* CRM Status dialog */
+                crmStatusDialog(cdk_screen);
 
             } else if (menu_choice == SYSTEM_MENU &&
                     submenu_choice == SYSTEM_DATE_TIME - 1) {

@@ -38,7 +38,7 @@ extern "C" {
 #define SYSTEM_DEL_USER         7
 #define SYSTEM_CHG_PASSWD       8
 #define SYSTEM_SCST_INFO        9
-#define SYSTEM_LINUXHA_INFO     10
+#define SYSTEM_CRM_STATUS       10
 #define SYSTEM_DATE_TIME        11
 
 /* Back-End Storage menu layout */
@@ -120,6 +120,7 @@ extern "C" {
 #define RC_NETWORK      "/etc/rc.d/rc.network"
 #define SSMTP_BIN       "/usr/sbin/ssmtp"
 #define TAR_BIN         "/bin/tar"
+#define CRM_TOOL        "/usr/sbin/crm"
 
 /* A few sysfs settings */
 #define SYSFS_FC_HOST           "/sys/class/fc_host"
