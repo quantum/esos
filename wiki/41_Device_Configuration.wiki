@@ -11,6 +11,7 @@ Here is a list and description of each supported I/O mode:
   * *VDISK FILEIO (vdisk_fileio)*: Use files on file systems that are on your back-end storage devices (RAID volumes, etc.) and benefits from the Linux page cache. The back-end files act as "virtual disks" which can be manipulated offline like normal files (moved, copied, etc.). Sparse files are supported, which can act as a "thin provisioned" storage volume.
   * *VDISK NULLIO (vdisk_nullio)*: The NULLIO mode is used to create virtual devices. In this mode, no real I/O is done, but success is returned to the initiators. Its intended to be used for performance measurements similar to the dev_disk_perf mode described above.
 
+Your specific use/needs will determine the appropriate SCST I/O mode to select and you may use a combination of these for different devices; please see the SCST documentation and SCST mailing list archives for additional information and other use scenarios regarding the SCST I/O modes.
 <br>
 
 === Adding/Removing Devices ===
