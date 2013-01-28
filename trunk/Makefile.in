@@ -580,11 +580,12 @@ xfsprogs: glibc e2fsprogs
 
 drbd: glibc
 	cd $(src_dir) && ./configure --prefix=/ --without-legacy_utils \
-	--without-km --without-udev --without-xen --without-pacemaker --without-heartbeat \
+	--without-km --without-udev --without-xen --with-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic
 	$(MAKE) --directory=$(src_dir) tools doc
 	$(MAKE) --directory=$(src_dir)/user DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/documentation DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/scripts DESTDIR=$(IMAGE_DIR) install-pacemaker
 	$(TOUCH) $(@)
 
 mdadm: glibc
