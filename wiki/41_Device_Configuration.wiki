@@ -16,7 +16,7 @@ Your specific use/needs will determine the appropriate SCST I/O mode to select a
 <br>
 
 === Adding/Removing Devices ===
-TODO
+To add a new device in ESOS, 
 
 <br>
 
