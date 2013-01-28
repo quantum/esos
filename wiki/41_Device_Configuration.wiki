@@ -31,7 +31,9 @@ Be sure there is no active I/O on the device before deleting it! Although when d
 <br>
 
 === Mapping & Unmapping Devices ===
-TODO
+After you have added a SCST device, you then need to map it to a security/host group and choose a logical unit number. This will make the device visible to your initiator(s).
+
+If you haven't already done so (you probably haven't if you've followed these documents along in order), you need to create your host group(s) in ESOS. See the [61_Hosts_and_Initiators] wiki page for details on adding a group. Adding initiators to the group isn't a requirement at this point, we
 
 <br>
 
