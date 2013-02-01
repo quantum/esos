@@ -12,13 +12,9 @@ Here is a typical example used in a VMware vSphere environment: (1) ESOS storage
 <br>
 
 === Adding/Removing Groups ===
-To add a new host/security group in the TUI: Hosts -> Add Group
+To add a new host/security group in the TUI choose the Add Group dialog (Hosts -> Add Group). You'll be prompted to select the target, and then choose a name for the new group.
 
-You'll be prompted to select the target, and then choose a name for the new group.
-
-To remove a host/security group in the TUI: Hosts -> Remove Group
-
-Select the target when prompted, and then choose the group from the selection list that you'd like to remove.
+To remove a host/security group in the TUI choose the Remove Group dialog (Hosts -> Remove Group). Select the target when prompted, and then choose the group from the selection list that you'd like to remove.
 
 <br>
 
