@@ -6,14 +6,14 @@ Enabling your target(s) is the final step to allow I/O (make target/volume visib
 <br>
 
 === Fibre Channel Targets ===
-Fibre Channel targets in ESOS are considered "hardware-based" targets. The FC HBA is put into "target" mode and will be automatically available to SCST (ESOS). No additional configuration is required.
+Fibre Channel targets in ESOS are considered "hardware-based" targets. The FC HBA is put into "target" mode and will be automatically available to SCST (ESOS). No additional configuration is required. At the time of writing this, only QLogic Fibre Channel Host Bus Adapters (HBAs) are supported.
 
 For Fibre Channel targets, you can use the Issue LIP function in the TUI (Targets -> Issue LIP) to issue a LIP (Loop Initialization Primitive) on all Fibre Channel HBAs.
 
 <br>
 
 === InfiniBand Targets ===
-InfiniBand (IB) targets are also considered "hardware-based" targets in ESOS; these will also be available to SCST. Configuring the IB fabric (eg, subnet manager) is outside the scope of this documentation.
+InfiniBand (IB) targets are also considered "hardware-based" targets in ESOS; these will be available to SCST. Configuring the IB fabric (eg, subnet manager) is outside the scope of this documentation. See the [03_Supported_Hardware] page for supported InfiniBand Host Channel Adapters (HCAs).
 
 <br>
 
