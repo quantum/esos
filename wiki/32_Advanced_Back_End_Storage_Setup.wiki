@@ -96,4 +96,4 @@ With this logical block device, you can now create a file system on it and creat
 <br>
 
 === Next Steps ===
-You should now continue on to the [41_Device_Configuration] wiki page which will guide you through configuring your SCST device(s).
+You should now continue on to the [41_Hosts_and_Initiators] wiki page which will guide you through configuring SCST security groups.
