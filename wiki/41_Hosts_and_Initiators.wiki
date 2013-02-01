@@ -1,7 +1,13 @@
 #summary Creating host groups and adding initiators.
 
 === Host/Security Group Concept ===
-TODO
+The terms "security group", "host group", and "initiator group" are synonymous -- they are used interchangeably, likely throughout all of the ESOS documentation. Most enterprise-grade disk arrays have a similar concept. They provide initiator-orientated access control (eg, LUN masking). Each group is unique to a SCST target.
+
+These groups can also be used to control I/O grouping in SCST. See the SCST documentation for more information. These "advanced" I/O group type settings can be configured via the CLI.
+
+The idea is simple: For each target, you create a host group and then add your initiators and LUNs (mapped devices). The initiators and devices can then "see each other" (devices->LUNs).
+
+Here is a typical example used in a VMware vSphere environment: (1) ESOS storage server with (2) Fibre Channel HBAs, each FC HBA is connected to an independent Fibre Channel switch (fabric); (3) ESXi hosts with (2) FC HBAs (initiators) each, one to each FC switch; you could then create (2) SCST host/security groups in ESOS, one for each target; then for each host group, you would be adding (3) initiators (the initiators connected to that target's fabric); finally you would map each SCST device to both groups.
 
 <br>
 
