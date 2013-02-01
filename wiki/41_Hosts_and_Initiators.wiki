@@ -19,7 +19,15 @@ To remove a host/security group in the TUI choose the Remove Group dialog (Hosts
 <br>
 
 === Adding/Removing Initiators ===
-TODO
+After you have created a new host group, you'll want to add one or more initiators to the group. Select the Add Initiator dialog in the TUI (Hosts -> Add Initiator). When prompted, choose the target that is associated with the group you'd like to add the initiator to. Next, select the desired host group.
+
+The initiator name should be the unique identifier for the remote initiator.
+  * For Fibre Channel initiators, this is the WWN (port name); it should be 8 bytes, with each byte separated by a ':' and lower-case alphabetic characters (eg, "10:00:00:00:c9:99:03:c3").
+  * For iSCSI initiators, use the iSCSI Qualified Name (IQN) for the remote initiator (eg, "iqn.1991-05.com.microsoft:cm-1204-o-11.mccad.mcc.edu").
+  * The initiator name may also contain simple DOS-type patterns: '*', '?', '!'
+  * The '*' means match all characters/symbols; the '?' means match a single character/symbol; the '!' can be used to revert the value of a pattern.
+
+Use the Remove Initiator dialog (Hosts -> Remove Initiator) in the ESOS TUI to remove an initiator from a security group. _Be sure I/O is stopped for the remote initiator._
 
 <br>
 
