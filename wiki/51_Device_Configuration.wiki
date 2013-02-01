@@ -33,8 +33,6 @@ Be sure there is no active I/O on the device before deleting it! Although when d
 === Mapping & Unmapping Devices ===
 After you have added a SCST device, you then need to map it to a security/host group and choose a logical unit number. This will make the device visible to your initiator(s).
 
-If you haven't already done so (you probably haven't if you've followed these documents along in order), you need to create your host group(s) in ESOS. See the [61_Hosts_and_Initiators] wiki page for details on adding a group. Adding initiators to the group isn't a requirement at this point, we just need a host (security) group so we can map a device to it.
-
 In the TUI, choose the `Map to Group` function (Devices -> Map to Group) to add a device-LUN mapping. You will first be prompted to choose a SCST device. After selecting the device, you will need to choose a target -- choose the target that you add the security group to. Next you will be prompted to choose the host/security group, and finally you'll be presented with the device-LUN mapping dialog. Use the up/down arrow keys to scroll to the desired Logical Unit Number (LUN) for the selected device. _If your initiator(s) do not have "sparse LUN" support, be sure that you have a LUN 0 presented to the initiator(s)._ You can also optionally choose to set this device-LUN mapping as read-only; hit OK to complete the device-LUN mapping.
 
 You can also remove device-LUN mappings in the TUI (Devices -> Unmap from Group). Removing a device-LUN mapping does not delete the device, it only makes the device not visible to the initiators in the selected host group.
@@ -62,4 +60,4 @@ You may be warned of errors or possible I/O disruption for the requested changes
 <br>
 
 === What's Next ===
-TODO
+After you've setup your SCST devices and mapped them as LUNs to security groups, you're ready to enable the target(s) which will make the storage targets visible to remote initiators. Continue with the [61_Target_Configuration] document.
