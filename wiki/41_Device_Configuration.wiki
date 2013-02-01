@@ -42,7 +42,22 @@ You can also remove device-LUN mappings in the TUI (Devices -> Unmap from Group)
 <br>
 
 === Getting Device/LUN Information ===
-TODO
+The TUI can be used to gather some more or less basic information on the LUN layout and SCST devices on your ESOS host. Use the CLI for additional information (eg, /etc/scst.conf file).
+
+Use the LUN Layout dialog (Devices -> LUN Layout) for a nice overview of all of the targets, groups, initiators, LUNs and their relationship on your ESOS storage server.
+
+Use the Device Information dialog (Devices -> Device Information) for detailed information and attributes of your SCST devices.
+
+<br>
+
+=== Modifying Device Attributes ===
+While modifying or updating SCST device attributes is not supported directly using the TUI, you can simply unmap and remove the SCST device, and then re-add it if you are changing attributes.
+
+Or, it may be more convenient to use the CLI (shell) to modify SCST device parameters without possibly disrupting I/O (depending on the change). To do this, you simply update the SCST configuration file and apply the changes using the `scstadmin` tool. When in the TUI, exit to the shell (Interface -> Exit to Shell). Update the SCST configuration file (`/etc/scst.conf`) as desired. Then you can apply the changes:
+{{{
+scstadmin -config /etc/scst.conf
+}}}
+You may be warned of errors or possible I/O disruption for the requested changes. See the SCST project's documentation for more information on using the `scstadmin` command.
 
 <br>
 
