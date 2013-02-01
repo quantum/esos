@@ -3,7 +3,7 @@
 === Getting Started ===
 There are two broad steps when provisioning storage with ESOS: The first is configuring your back-end storage device which is typically a high-end RAID controller, or virtual disk files on file systems, or can be anything else that appears as a SCSI block device in Linux. Enterprise Storage OS includes a number of different Linux block device subsystems such as DRBD, Linux software RAID (md), and LVM2 so the possibilities are quite endless.
 
-The second step is configuring your front side target devices, the targets that are made available via your SAN. _This will be covered in the subsequent ESOS wiki pages (devices, targets, and hosts/initiators)._
+The second step is configuring your front side target devices, the targets that are made available via your SAN. _This will be covered in the subsequent ESOS wiki pages (hosts/initiators, devices, and targets)._
 
 <br>
 
@@ -52,4 +52,4 @@ When you no longer need a virtual disk, use the TUI to delete it (Back-End Stora
 <br>
 
 === What's Next ===
-Now that you have setup and configured your basic back-end storage, you can continue on to the [41_Device_Configuration] wiki document to setup your SCST device(s). Or if you have advanced back-end storage needs, use the [32_Advanced_Back_End_Storage_Setup] page for additional information.
+Now that you have setup and configured your basic back-end storage, you can continue on to the [41_Hosts_and_Initiators] wiki document to setup your security groups and initiators. Or if you have advanced back-end storage needs, use the [32_Advanced_Back_End_Storage_Setup] page for additional information.
