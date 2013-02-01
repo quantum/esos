@@ -16,4 +16,4 @@ TODO
 <br>
 
 === Next Steps ===
-TODO
+Now that you have created your SCST security group(s) and added the initiator(s), you can move on to creating your SCST device and mapping the device as a LUN to one of these host groups. Go to the [51_Device_Configuration] page.
