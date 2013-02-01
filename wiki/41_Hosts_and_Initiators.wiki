@@ -24,6 +24,7 @@ After you have created a new host group, you'll want to add one or more initiato
 The initiator name should be the unique identifier for the remote initiator.
   * For Fibre Channel initiators, this is the WWN (port name); it should be 8 bytes, with each byte separated by a ':' and lower-case alphabetic characters (eg, "10:00:00:00:c9:99:03:c3").
   * For iSCSI initiators, use the iSCSI Qualified Name (IQN) for the remote initiator (eg, "iqn.1991-05.com.microsoft:cm-1204-o-11.mccad.mcc.edu").
+  * For InfiniBand initiators, use the remote port GUID as the initiator name value (eg, "0x0002c9020022f9fd0002c802003210cb").
   * The initiator name may also contain simple DOS-type patterns: '`*`', '`?`', '`!`'
   * The '`*`' means match all characters/symbols; the '`?`' means match a single character/symbol; the '`!`' can be used to revert the value of a pattern.
 
