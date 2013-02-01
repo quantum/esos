@@ -1,29 +1,37 @@
 #summary Enabling and configuring SCST targets.
 
 === Enabling/Disabling Targets ===
-TODO
+Enabling your target(s) is the final step to allow I/O (make target/volume visible to remote host). Open the Enable/Disable Target dialog in the TUI (Targets -> Enable/Disable Target). You can then choose the desired target and hit ENTER. Next you'll be shown the target's current state (enabled or disabled) and you can TAB to a radio widget to enable/disable the target. Hit 'OK' to make your selection.
 
 <br>
 
-=== Hardware Target: Fibre Channel ===
-TODO
+=== Fibre Channel Targets ===
+Fibre Channel targets in ESOS are considered "hardware-based" targets. The FC HBA is put into "target" mode and will be automatically available to SCST (ESOS). No additional configuration is required.
+
+For Fibre Channel targets, you can use the Issue LIP function in the TUI (Targets -> Issue LIP) to issue a LIP (Loop Initialization Primitive) on all Fibre Channel HBAs.
 
 <br>
 
-=== Hardware Target: InfiniBand ===
-TODO
+=== InfiniBand Targets ===
+InfiniBand (IB) targets are also considered "hardware-based" targets in ESOS; these will also be available to SCST. Configuring the IB fabric (eg, subnet manager) is outside the scope of this documentation.
 
 <br>
 
-=== Software Target: iSCSI ===
-TODO
+=== iSCSI Targets ===
+iSCSI targets in ESOS are considered to be "software-based" or dynamic targets. These targets need to be created initially and have no direct relationship to underlying hardware (similar to software iSCSI initiators).
+
+You can use the ESOS TUI to create iSCSI targets (Targets -> Add iSCSI Target). Creating a basic iSCSI target is very simple: Choose an IQN for the new target name, and hit the 'OK' button. ESOS generates an appropriate IQN automatically that you may use if you choose or you can change it to your liking.
+
+Removing iSCSI targets is just as simple as creating them in the TUI (Targets -> Remove iSCSI Target). Choose the target you'd like to delete and hit ENTER (you'll be prompted for confirmation). _This would definitely interrupt any I/O to/from the target!_
 
 <br>
 
 === Target Information ===
-TODO
+Some basic target information is accessible via the TUI using the Target Information dialog (Targets -> Target Information). Choose a target when prompted and hit the ENTER key to make a selection. Target information is display in a pop-up dialog (state, CPU mask, driver, etc.). Press ENTER to close the dialog.
 
 <br>
 
 === What's Next ===
-TODO
+At this point you've provisioned your storage and the remote hosts (initiators) should now have access to it. A rescan from initiator will likely be necessary to discover any new targets.
+
+If you're having any trouble, please read the [04_ESOS_Support] wiki page for basic help and troubleshooting tips. Use the [http://groups.google.com/group/esos-users esos-users] Google Group if you are still not finding answers.
