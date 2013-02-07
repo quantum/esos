@@ -2,6 +2,7 @@
 
 === Distributed Replicated Block Device (DRBD) ===
 TODO
+DRBD resources (starting/stopping) are typically handled by the cluster stack (Pacemaker + Corosync), so there is no init/rc script for DRBD included with ESOS. If you would like to use DRBD without the cluster stack, you can use the `/etc/pre-scst_xtra_conf` file to setup/configure the DRBD resources on boot.
 
 <br>
 
