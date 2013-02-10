@@ -13,7 +13,8 @@ random-seed ssmtp/revaliases ssmtp/ssmtp.conf scst.conf modprobe.conf \
 pre-scst_xtra_conf post-scst_xtra_conf drbd.conf lvm/lvm.conf mdadm.conf \
 localtime ntp_server fstab opensm/opensm.conf opensm/ib-node-name-map \
 opensm/partitions.conf opensm/qos-policy.conf opensm/prefix-routes.conf \
-opensm/per-module-logging.conf opensm/torus-2QoS.conf corosync/corosync.conf"
+opensm/per-module-logging.conf opensm/torus-2QoS.conf corosync/corosync.conf \
+mhvtl/mhvtl.conf mhvtl/device.conf mhvtl/library_contents lessfs.cfg"
 VAR_DIRS="lib/scst lib/drbd lib/pacemaker lib/corosync lib/heartbeat"
 MKDIR="mkdir -m 0755 -p"
 CP="cp -af"

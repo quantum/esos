@@ -83,6 +83,12 @@ int main(int argc, char** argv) {
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VDISK_FILE]   = "</B>Add Virtual Disk File   <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VDISK_FILE]   = "</B>Delete Virtual Disk File<!B>";
 
+    menu_list[HOSTS_MENU][0]                            = "</29/B/U>H<!29><!U>osts  <!B>";
+    menu_list[HOSTS_MENU][HOSTS_ADD_GROUP]              = "</B>Add Group       <!B>";
+    menu_list[HOSTS_MENU][HOSTS_REM_GROUP]              = "</B>Remove Group    <!B>";
+    menu_list[HOSTS_MENU][HOSTS_ADD_INIT]               = "</B>Add Initiator   <!B>";
+    menu_list[HOSTS_MENU][HOSTS_REM_INIT]               = "</B>Remove Initiator<!B>";
+
     menu_list[DEVICES_MENU][0]                          = "</29/B/U>D<!29><!U>evices  <!B>";
     menu_list[DEVICES_MENU][DEVICES_LUN_LAYOUT]         = "</B>LUN Layout        <!B>";
     menu_list[DEVICES_MENU][DEVICES_DEV_INFO]           = "</B>Device Information<!B>";
@@ -97,12 +103,6 @@ int main(int argc, char** argv) {
     menu_list[TARGETS_MENU][TARGETS_REM_ISCSI]          = "</B>Remove iSCSI Target  <!B>";
     menu_list[TARGETS_MENU][TARGETS_LIP]                = "</B>Issue LIP            <!B>";
     menu_list[TARGETS_MENU][TARGETS_TOGGLE]             = "</B>Enable/Disable Target<!B>";
-    
-    menu_list[HOSTS_MENU][0]                            = "</29/B/U>H<!29><!U>osts  <!B>";
-    menu_list[HOSTS_MENU][HOSTS_ADD_GROUP]              = "</B>Add Group       <!B>";
-    menu_list[HOSTS_MENU][HOSTS_REM_GROUP]              = "</B>Remove Group    <!B>";
-    menu_list[HOSTS_MENU][HOSTS_ADD_INIT]               = "</B>Add Initiator   <!B>";
-    menu_list[HOSTS_MENU][HOSTS_REM_INIT]               = "</B>Remove Initiator<!B>";
 
     menu_list[INTERFACE_MENU][0]                        = "</29/B/U>I<!29><!U>nterface<!B>";
     menu_list[INTERFACE_MENU][INTERFACE_QUIT]           = "</B>Quit          <!B>";
@@ -116,12 +116,12 @@ int main(int argc, char** argv) {
     menu_loc[SYSTEM_MENU]           = LEFT;
     submenu_size[BACK_STORAGE_MENU]  = 13;
     menu_loc[BACK_STORAGE_MENU]      = LEFT;
+    submenu_size[HOSTS_MENU]        = 5;
+    menu_loc[HOSTS_MENU]            = LEFT;
     submenu_size[DEVICES_MENU]      = 7;
     menu_loc[DEVICES_MENU]          = LEFT;
     submenu_size[TARGETS_MENU]      = 6;
     menu_loc[TARGETS_MENU]          = LEFT;
-    submenu_size[HOSTS_MENU]        = 5;
-    menu_loc[HOSTS_MENU]            = LEFT;
     submenu_size[INTERFACE_MENU]    = 6;
     menu_loc[INTERFACE_MENU]        = RIGHT;
 
@@ -212,6 +212,12 @@ int main(int argc, char** argv) {
             setCDKMenu(menu, BACK_STORAGE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
+        } else if (key_pressed == 104 || key_pressed == 72) {
+            /* Start with the Hosts menu */
+            cbreak();
+            setCDKMenu(menu, HOSTS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu, 0);
+
         } else if (key_pressed == 100 || key_pressed == 68) {
             /* Start with the Devices menu */
             cbreak();
@@ -222,12 +228,6 @@ int main(int argc, char** argv) {
             /* Start with the Targets menu */
             cbreak();
             setCDKMenu(menu, TARGETS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu, 0);
-
-        } else if (key_pressed == 104 || key_pressed == 72) {
-            /* Start with the Hosts menu */
-            cbreak();
-            setCDKMenu(menu, HOSTS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
         } else if (key_pressed == 105 || key_pressed == 73) {
@@ -437,6 +437,26 @@ int main(int argc, char** argv) {
                 /* Delete Virtual Disk File dialog */
                 delVDiskFileDialog(cdk_screen);
 
+            } else if (menu_choice == HOSTS_MENU &&
+                    submenu_choice == HOSTS_ADD_GROUP - 1) {
+                /* Add Group dialog */
+                addGroupDialog(cdk_screen);
+
+            } else if (menu_choice == HOSTS_MENU &&
+                    submenu_choice == HOSTS_REM_GROUP - 1) {
+                /* Remove Group dialog */
+                remGroupDialog(cdk_screen);
+
+            } else if (menu_choice == HOSTS_MENU &&
+                    submenu_choice == HOSTS_ADD_INIT - 1) {
+                /* Add Initiator dialog */
+                addInitDialog(cdk_screen);
+
+            } else if (menu_choice == HOSTS_MENU &&
+                    submenu_choice == HOSTS_REM_INIT - 1) {
+                /* Remove Initiator dialog */
+                remInitDialog(cdk_screen);
+
             } else if (menu_choice == DEVICES_MENU &&
                     submenu_choice == DEVICES_LUN_LAYOUT - 1) {
                 /* LUN Layout dialog */
@@ -491,26 +511,6 @@ int main(int argc, char** argv) {
                     submenu_choice == TARGETS_TOGGLE - 1) {
                 /* Enable/Disable Target dialog */
                 enblDsblTgtDialog(cdk_screen);
-
-            } else if (menu_choice == HOSTS_MENU &&
-                    submenu_choice == HOSTS_ADD_GROUP - 1) {
-                /* Add Group dialog */
-                addGroupDialog(cdk_screen);
-
-            } else if (menu_choice == HOSTS_MENU &&
-                    submenu_choice == HOSTS_REM_GROUP - 1) {
-                /* Remove Group dialog */
-                remGroupDialog(cdk_screen);
-
-            } else if (menu_choice == HOSTS_MENU &&
-                    submenu_choice == HOSTS_ADD_INIT - 1) {
-                /* Add Initiator dialog */
-                addInitDialog(cdk_screen);
-
-            } else if (menu_choice == HOSTS_MENU &&
-                    submenu_choice == HOSTS_REM_INIT - 1) {
-                /* Remove Initiator dialog */
-                remInitDialog(cdk_screen);
             }
 
             /* At this point we've finished the dialog, so we make

@@ -26,7 +26,7 @@ users::100:games
 nofiles:x:200:
 smmsp:x:209:smmsp
 utmp:x:406:
-nogroup::65533:
+nogroup::65533:vtl
 nobody::65534:
 sshd:x:22:
 cron:x:16:

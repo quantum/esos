@@ -1,0 +1,25 @@
+--- a/scripts/Makefile.in	2013-02-06 20:47:40.302065902 -0500
++++ a/scripts/Makefile.in	2013-02-06 20:49:03.784054175 -0500
+@@ -57,14 +57,14 @@
+ 
+ install-utils:
+ ifeq ($(WITH_UTILS),yes)
+-	install -d $(DESTDIR)$(INITDIR)
+-	install -m 755 drbd $(DESTDIR)$(INITDIR)/
+-	@ if [ ! -e $(DESTDIR)$(sysconfdir)/drbd.conf ]; then \
+-		install -d $(DESTDIR)$(sysconfdir)/; \
+-		install -m 644 drbd.conf $(DESTDIR)$(sysconfdir)/; \
+-		install -d $(DESTDIR)$(sysconfdir)/drbd.d; \
+-		install -m 644 global_common.conf $(DESTDIR)$(sysconfdir)/drbd.d; \
+-	fi
++	#install -d $(DESTDIR)$(INITDIR)
++	#install -m 755 drbd $(DESTDIR)$(INITDIR)/
++	#@ if [ ! -e $(DESTDIR)$(sysconfdir)/drbd.conf ]; then \
++	#	install -d $(DESTDIR)$(sysconfdir)/; \
++	#	install -m 644 drbd.conf $(DESTDIR)$(sysconfdir)/; \
++	#	install -d $(DESTDIR)$(sysconfdir)/drbd.d; \
++	#	install -m 644 global_common.conf $(DESTDIR)$(sysconfdir)/drbd.d; \
++	#fi
+ 	install -d $(DESTDIR)$(LIBDIR)
+ 	install -m 755 outdate-peer.sh $(DESTDIR)$(LIBDIR)
+ 	install -m 755 snapshot-resync-target-lvm.sh $(DESTDIR)$(LIBDIR)

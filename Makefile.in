@@ -99,6 +99,15 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		libaio-0.3.109.tar.bz2 \
 		glue-1.0.11.tar.bz2 \
 		readline-6.2.tar.gz \
+		resource_agents-3.9.2.tar.gz \
+		mhvtl-1.4.tar.gz \
+		lzo-2.06.tar.gz \
+		mhash-0.9.9.9.tar.bz2 \
+		lessfs-1.5.13.tar.gz \
+		tokyocabinet-1.4.48.tar.gz \
+		fuse-2.9.2.tar.gz \
+		db-5.3.21.tar.gz \
+		snappy-1.1.0.tar.gz \
 		opensm-3.3.15.tar.gz)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -109,7 +118,8 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
 			xfsprogs drbd mdadm parted opensm libqb pacemaker \
 			corosync nss glib libxml2 libxslt libtool bzip2 Python \
-			crmsh libaio glue readline
+			crmsh libaio glue readline resource_agents mhvtl lzo \
+			mhash lessfs tokyocabinet fuse db snappy
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -192,6 +202,8 @@ image: $(build_targets)
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
 	$(CHMOD) 1777 $(MOUNT_DIR)/tmp
 	$(CHMOD) 1777 $(MOUNT_DIR)/var/tmp
+	$(CHMOD) 4750 $(MOUNT_DIR)/usr/bin/vtltape
+	$(CHMOD) 4750 $(MOUNT_DIR)/usr/bin/vtllibrary
 	$(CHOWN) 101:101 $(MOUNT_DIR)/var/lib/corosync
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/pacemaker
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/heartbeat
@@ -287,7 +299,7 @@ build: image_setup $(build_targets) ;
 image_setup:
 	$(MKDIR) $(IMAGE_DIR)/{etc,bin,sbin,dev,proc,sys,root,home}
 	$(MKDIR) $(IMAGE_DIR)/boot/grub
-	$(MKDIR) $(IMAGE_DIR)/mnt/{root,conf,logs,vdisks}
+	$(MKDIR) $(IMAGE_DIR)/mnt/{root,conf,logs,vdisks,mhvtl}
 	$(MKDIR) $(IMAGE_DIR)/lib/firmware
 	$(MKDIR) $(IMAGE_DIR)/usr/{bin,sbin,libexec,lib}
 	$(MKDIR) $(IMAGE_DIR)/usr/local/{bin,sbin}
@@ -312,6 +324,7 @@ image_setup:
 
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): scst_src = $(wildcard $(BUILD_DIR)/scst-*)
+$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): mhvtl_src = $(wildcard $(BUILD_DIR)/mhvtl-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kern_suffix = $(subst scst_kernel,,$(@))
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	### Kernel prerequisites for SCST
@@ -332,6 +345,8 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(MAKE) --directory=$(linux_src) distclean
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) clean
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) extraclean
+	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean
+	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) distclean
 	if [ "$(@)" = "scst_kernel$(prod_suffix)" ]; then \
 	  $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
 	  $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
@@ -355,6 +370,9 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) SBINDIR=$(IMAGE_DIR)/usr/sbin INSTALL_MOD_PATH=$(IMAGE_DIR) iscsi_install
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) srpt
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) srpt_install
+	### Build/install mhVTL module
+	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix)
+	$(INSTALL) -m 644 $(mhvtl_src)/kernel/mhvtl.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/kernel/drivers/scsi/
 	### Done
 	$(TOUCH) $(@)
 
@@ -579,13 +597,15 @@ xfsprogs: glibc e2fsprogs
 	$(TOUCH) $(@)
 
 drbd: glibc
-	cd $(src_dir) && ./configure --prefix=/ --without-legacy_utils \
-	--without-km --without-udev --without-xen --with-pacemaker --without-heartbeat \
-	--without-rgmanager --without-bashcompletion --with-distro=generic
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/drbd-8.3.11.patch
+	cd $(src_dir) && ./configure --prefix=/usr --without-km \
+	--without-udev --without-xen --with-pacemaker --without-heartbeat \
+	--without-rgmanager --without-bashcompletion --with-distro=generic \
+	--sysconfdir=/etc --localstatedir=/var --with-utils
 	$(MAKE) --directory=$(src_dir) tools doc
 	$(MAKE) --directory=$(src_dir)/user DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/documentation DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(src_dir)/scripts DESTDIR=$(IMAGE_DIR) install-pacemaker
+	$(MAKE) --directory=$(src_dir)/scripts DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 mdadm: glibc
@@ -774,6 +794,94 @@ glue: glibc libaio libxml2 bzip2
 	$(TOUCH) $(@)
 
 readline: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+resource_agents: glib glue
+	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  cd $(src_dir) && ./autogen.sh; \
+	fi
+	cd $(src_dir) && \
+	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
+	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	CFLAGS="$(CPPFLAGS)" \
+	./configure --prefix=/usr --disable-ansi --disable-fatal-warnings \
+	--sysconfdir=/etc --localstatedir=/var
+	$(MAKE) --directory=$(src_dir)/rgmanager
+	$(MAKE) --directory=$(src_dir)/include
+	$(MAKE) --directory=$(src_dir)/heartbeat
+	$(MAKE) --directory=$(src_dir)/tools
+	$(MAKE) --directory=$(src_dir)/rgmanager DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/heartbeat DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
+	$(LN) /usr/lib/ocf/lib/heartbeat/ocf-shellfuncs $(IMAGE_DIR)/usr/lib/ocf/resource.d/heartbeat/.ocf-shellfuncs
+	$(TOUCH) $(@)
+
+mhvtl: glibc lzo zlib
+	$(MAKE) --directory=$(src_dir) MHVTL_HOME_PATH="/mnt/mhvtl" CC="gcc $(CPPFLAGS) $(LDFLAGS)"
+	$(INSTALL) -m 755 $(src_dir)/usr/libvtlscsi.so $(IMAGE_DIR)/usr/lib/
+	$(INSTALL) -m 755 $(src_dir)/usr/libvtlcart.so $(IMAGE_DIR)/usr/lib/
+	$(INSTALL) -m 750 $(src_dir)/usr/vtltape $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 750 $(src_dir)/usr/vtllibrary $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 750 $(src_dir)/usr/vtlcmd $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 750 $(src_dir)/usr/mktape $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 750 $(src_dir)/usr/dump_tape $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 750 $(src_dir)/usr/edit_tape $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 755 $(src_dir)/usr/tapeexerciser $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 700 $(src_dir)/usr/build_library_config $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 700 $(src_dir)/usr/make_vtl_media $(IMAGE_DIR)/usr/bin/
+	$(TOUCH) $(@)
+
+lzo: glibc
+	cd $(src_dir) && ./configure --prefix=/usr --enable-shared
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+mhash: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+lessfs: glibc mhash openssl lzo fuse db tokyocabinet snappy
+	cd $(src_dir) && DEPS_CFLAGS="$(CPPFLAGS)" DEPS_LIBS="$(LDFLAGS) -ltokyocabinet -lfuse" \
+        ./configure --prefix=/usr \
+	--with-crypto --with-lzo --with-snappy --without-hamsterdb --with-berkeleydb
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+tokyocabinet: glibc bzip2
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+fuse: glibc
+	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/lib DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/util DESTDIR=$(IMAGE_DIR) install-binPROGRAMS
+	$(INSTALL) $(src_dir)/util/mount.fuse $(IMAGE_DIR)/sbin/mount.fuse
+	$(TOUCH) $(@)
+
+db: glibc
+	cd $(src_dir)/build_unix && ../dist/configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)/build_unix
+	$(MAKE) --directory=$(src_dir)/build_unix DESTDIR=$(IMAGE_DIR) install_setup
+	$(MAKE) --directory=$(src_dir)/build_unix DESTDIR=$(IMAGE_DIR) install_include
+	$(MAKE) --directory=$(src_dir)/build_unix DESTDIR=$(IMAGE_DIR) install_lib
+	$(MAKE) --directory=$(src_dir)/build_unix DESTDIR=$(IMAGE_DIR) install_utilities
+	$(TOUCH) $(@)
+
+snappy: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install

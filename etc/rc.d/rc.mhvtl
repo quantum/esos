@@ -1,0 +1,18 @@
+#! /bin/sh
+
+# $Id$
+
+VTL_USER="vtl"
+MHVTL_CONFIG_PATH="/etc/mhvtl"
+
+# Make sure the mhVTL user can read/write
+/bin/chown -R ${VTL_USER} ${MHVTL_CONFIG_PATH}
+
+# Load the mhVTL module
+/sbin/modprobe mhvtl
+
+# Build the library media
+/usr/bin/make_vtl_media ${VTL_USER}
+
+# Build the library configuration
+/usr/bin/build_library_config ${VTL_USER}
