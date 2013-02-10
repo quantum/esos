@@ -33,16 +33,17 @@ if [ -x /etc/rc.d/rc.lvm2 ]; then
     /etc/rc.d/rc.lvm2
 fi
 
-if [ -x /etc/rc.d/rc.drbd ]; then
-    /etc/rc.d/rc.drbd start
-fi
-
 if [ -x /etc/rc.d/rc.corosync ]; then
     /etc/rc.d/rc.corosync start
 fi
 
 if [ -x /etc/rc.d/rc.pacemaker ]; then
     /etc/rc.d/rc.pacemaker start
+fi
+
+if [ -f /etc/mhvtl/device.conf ]; then
+    /bin/echo "Starting mhVTL services..."
+    /etc/rc.d/rc.mhvtl
 fi
 
 if [ -f /etc/pre-scst_xtra_conf ]; then

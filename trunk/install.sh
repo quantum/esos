@@ -56,8 +56,8 @@ echo
 
 # Checksums
 echo "### Verifying checksums..."
-md5sum -w -c ${MD5_CHECKSUM}
-sha256sum -w -c ${SHA256_CHECKSUM}
+md5sum -w -c ${MD5_CHECKSUM} || exit 1
+sha256sum -w -c ${SHA256_CHECKSUM} || exit 1
 echo
 
 # If the lsscsi program is available, list SCSI devices

@@ -56,8 +56,15 @@ extern "C" {
 #define BACK_STORAGE_ADD_VDISK_FILE     11
 #define BACK_STORAGE_DEL_VDISK_FILE     12
 
+/* Hosts menu layout */
+#define HOSTS_MENU      2
+#define HOSTS_ADD_GROUP 1
+#define HOSTS_REM_GROUP 2
+#define HOSTS_ADD_INIT  3
+#define HOSTS_REM_INIT  4
+
 /* Devices menu layout */
-#define DEVICES_MENU            2
+#define DEVICES_MENU            3
 #define DEVICES_LUN_LAYOUT      1
 #define DEVICES_DEV_INFO        2
 #define DEVICES_ADD_DEV         3
@@ -66,19 +73,12 @@ extern "C" {
 #define DEVICES_UNMAP_FROM      6
 
 /* Targets menu layout */
-#define TARGETS_MENU            3
+#define TARGETS_MENU            4
 #define TARGETS_TGT_INFO        1
 #define TARGETS_ADD_ISCSI       2
 #define TARGETS_REM_ISCSI       3
 #define TARGETS_LIP             4
 #define TARGETS_TOGGLE          5
-
-/* Hosts menu layout */
-#define HOSTS_MENU      4
-#define HOSTS_ADD_GROUP 1
-#define HOSTS_REM_GROUP 2
-#define HOSTS_ADD_INIT  3
-#define HOSTS_REM_INIT  4
 
 /* Interface menu layout */
 #define INTERFACE_MENU          5
