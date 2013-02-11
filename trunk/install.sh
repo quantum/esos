@@ -2,7 +2,7 @@
 #
 # $Id$
 
-TEMP_DIR=`mktemp -d /tmp/esos_install.XXXXX` || exit 1
+TEMP_DIR=`mktemp -u -d /tmp/esos_install.XXXXX` || exit 1
 MNT_DIR="${TEMP_DIR}/mnt"
 REQD_TOOLS="tar rpm2cpio cpio dd md5sum sha256sum grep blockdev unzip"
 PROP_TOOLS="MegaCLI asm_linux hpacucli linuxcli 3DM2_CLI"
@@ -39,7 +39,6 @@ echo "*** Enterprise Storage OS Install Script ***" && echo
 # Need root privileges for installer
 if [ `whoami` != "root" ]; then
     echo "### This installer requires root privileges."
-    rm -rf ${TEMP_DIR}
     exit 1
 fi
 
@@ -48,7 +47,6 @@ echo "### Checking for required tools..."
 for i in ${REQD_TOOLS}; do
     if ! which ${i} > /dev/null 2>&1; then
         echo "The '${i}' utility is required to use this installation script."
-        rm -rf ${TEMP_DIR}
         exit 1
     fi
 done
@@ -72,19 +70,16 @@ echo "### Please type the full path of your USB drive device node (eg, /dev/sdz)
 echo
 if [ "${dev_node}" = "" ] || [ ! -e ${dev_node} ]; then
     echo "### That device node doesn't seem to exist."
-    rm -rf ${TEMP_DIR}
     exit 1
 fi
 if grep ${dev_node} /proc/mounts > /dev/null; then
     echo "### It looks like that device is mounted..."
-    rm -rf ${TEMP_DIR}
     exit 1
 fi
 dev_sectors=`blockdev --getsz ${dev_node}` || exit 1
 dev_bytes=`expr ${dev_sectors} \\* 512`
 if [ ${dev_bytes} -lt 4000000000 ]; then
     echo "### Your USB flash drive isn't large enough; it must be at least 4000 MiB."
-    rm -rf ${TEMP_DIR}
     exit 1
 fi
 
@@ -95,10 +90,10 @@ if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
     image_file=`ls esos-*.img`
     echo "### Writing ${image_file} to ${dev_node}; this may take a while..."
     dd if=./${image_file} of=${dev_node} bs=1M || exit 1
+    blockdev --rereadpt ${dev_node} || exit 1
     echo
     echo "### It appears the image was successfully written to disk (no errors reported)!"
 else
-    rm -rf ${TEMP_DIR}
     exit 0
 fi
 
@@ -108,6 +103,7 @@ read -p "*** If you would like to add any RAID controller management utilities, 
 
 # Display proprietary tool information and download instructions
 echo && echo
+mkdir -p ${TEMP_DIR} || exit 1
 for i in ${PROP_TOOLS}; do
     tool_desc=TOOL_DESC_${i}
     echo "### ${!tool_desc}"
@@ -143,7 +139,6 @@ if [ -z "${install_list}" ]; then
 else
     echo "### Installing proprietary CLI tools..."
     mkdir -p ${MNT_DIR} || exit 1
-    blockdev --rereadpt ${dev_node} || exit 1
     mount -L esos_root ${MNT_DIR} || exit 1
     cd ${TEMP_DIR}
     for i in ${install_list}; do

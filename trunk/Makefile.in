@@ -358,7 +358,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2debug; \
 	fi
 	### Build/install the Linux kernel
-	$(MAKE) --directory=$(linux_src)
+	$(MAKE) --jobs=4 --directory=$(linux_src)
 	$(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage $(IMAGE_DIR)/boot/bzImage$(kern_suffix)
 	$(MAKE) --directory=$(linux_src) INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install
 	### Build/install SCST core and target drivers
@@ -432,7 +432,7 @@ glibc: kernel_headers
 	$(MKDIR) $(WORK_DIR)/glibc-build
 	cd $(WORK_DIR)/glibc-build && \
 	CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" LDFLAGS="" $(src_dir)/configure --prefix=/usr --without-selinux
-	$(MAKE) --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
+	$(MAKE) --jobs=4 --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(MKDIR) $(WORK_DIR)/fake_lib
 	$(SED) 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libc.so > $(WORK_DIR)/fake_lib/libc.so

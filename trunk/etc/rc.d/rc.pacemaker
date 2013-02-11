@@ -13,6 +13,7 @@ start() {
     /bin/echo "Starting pacemakerd..."
     ${PACEMAKERD} &
     /bin/touch ${LOCK_FILE}
+    /bin/sleep 1
 }
 
 stop() {
