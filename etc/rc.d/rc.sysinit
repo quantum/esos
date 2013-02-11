@@ -54,10 +54,6 @@ fi
 echo "Setting system time from hardware clock..."
 /sbin/hwclock --hctosys --utc
 
-echo "Starting system and kernel log daemons...."
-/sbin/syslogd
-/sbin/klogd -c4
-
 echo "Updating module dependencies..."
 /sbin/depmod -a
 
