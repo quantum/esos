@@ -58,6 +58,8 @@ After all networking settings have been configured appropriately, you can then r
 
 If you are re-configuring network settings via SSH, please be careful when restarting the network services as you may lose connectivity if anything is not configured correctly.
 
+In ESOS, the `/etc/hosts` file is automatically updated each time the network rc script is run. If you have extra static host entries you'd like to use on your system, use the shell and create/edit the `/etc/xtra_hosts` file; the format is the same as the standard hosts file (IP_ADDRESS NAME).
+
 <br>
 
 === Mail Setup ===
