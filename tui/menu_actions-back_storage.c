@@ -41,7 +41,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     static char *dsbl_enbl[] = {"Disabled", "Enabled"};
     char temp_str[MAX_MR_ATTR_SIZE] = {0};
     char *error_msg = NULL;
-    char *adp_info_msg[9] = {NULL};
+    char *adp_info_msg[10] = {NULL};
 
     /* Prompt for adapter choice */
     adp_choice = getAdpChoice(main_cdk_screen, mr_adapters);
@@ -61,7 +61,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* New CDK screen for selected adapter */
-    adp_window_lines = 20;
+    adp_window_lines = 21;
     adp_window_cols = 60;
     window_y = ((LINES / 2) - (adp_window_lines / 2));
     window_x = ((COLS / 2) - (adp_window_cols / 2));
@@ -81,26 +81,28 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     wrefresh(adapter_window);
 
     /* Adapter info. label */
-    asprintf(&adp_info_msg[0], "</31/B>MegaRAID Adapter # %d: %s",
-            adp_choice, mr_adapters[adp_choice]->prod_name);
+    asprintf(&adp_info_msg[0], "</31/B>Properties for MegaRAID adapter # %d...",
+            adp_choice);
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&adp_info_msg[1], " ");
-    asprintf(&adp_info_msg[2], "Serial number:\t\t%s",
+    asprintf(&adp_info_msg[2], "</B>Model:<!B>\t\t\t%-30s",
+            mr_adapters[adp_choice]->prod_name);
+    asprintf(&adp_info_msg[3], "</B>Serial Number:<!B>\t\t%-30s",
             mr_adapters[adp_choice]->serial);
-    asprintf(&adp_info_msg[3], "Firmware Version:\t%s",
+    asprintf(&adp_info_msg[4], "</B>Firmware Version:<!B>\t%-30s",
             mr_adapters[adp_choice]->firmware);
-    asprintf(&adp_info_msg[4], "Memory:\t\t\t%s",
+    asprintf(&adp_info_msg[5], "</B>Memory:<!B>\t\t\t%-30s",
             mr_adapters[adp_choice]->memory);
-    asprintf(&adp_info_msg[5], "Battery:\t\t%s",
+    asprintf(&adp_info_msg[6], "</B>Battery:<!B>\t\t%-30s",
             mr_adapters[adp_choice]->bbu);
-    asprintf(&adp_info_msg[6], "Host Interface:\t\t%s",
+    asprintf(&adp_info_msg[7], "</B>Host Interface:<!B>\t\t%-30s",
             mr_adapters[adp_choice]->interface);
-    asprintf(&adp_info_msg[7], "Physical Disks:\t\t%d",
+    asprintf(&adp_info_msg[8], "</B>Physical Disks:<!B>\t\t%-30d",
             mr_adapters[adp_choice]->disk_cnt);
-    asprintf(&adp_info_msg[8], "Logical Drives:\t\t%d",
+    asprintf(&adp_info_msg[9], "</B>Logical Drives:<!B>\t\t%-30d",
             mr_adapters[adp_choice]->logical_drv_cnt);
     adapter_info = newCDKLabel(adapter_screen, (window_x + 1), (window_y + 1),
-            adp_info_msg, 9, FALSE, FALSE);
+            adp_info_msg, 10, FALSE, FALSE);
     if (!adapter_info) {
         errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
         goto cleanup;
@@ -108,7 +110,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     setCDKLabelBackgroundAttrib(adapter_info, COLOR_DIALOG_TEXT);
 
     /* Field entry widgets */
-    cache_flush = newCDKEntry(adapter_screen, (window_x + 1), (window_y + 11),
+    cache_flush = newCDKEntry(adapter_screen, (window_x + 1), (window_y + 12),
             NULL, "</B>Cache Flush Interval (0 to 255): ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT, 3, 1, 3,
             FALSE, FALSE);
@@ -119,7 +121,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     setCDKEntryBoxAttribute(cache_flush, COLOR_DIALOG_INPUT);
     snprintf(temp_str, MAX_MR_ATTR_SIZE, "%d", mr_adp_props->cache_flush);
     setCDKEntryValue(cache_flush, temp_str);
-    rebuild_rate = newCDKEntry(adapter_screen, (window_x + 1), (window_y + 12),
+    rebuild_rate = newCDKEntry(adapter_screen, (window_x + 1), (window_y + 13),
             NULL, "</B>Rebuild Rate (0 to 100): ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT, 3, 1, 3,
             FALSE, FALSE);
@@ -132,7 +134,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     setCDKEntryValue(rebuild_rate, temp_str);
 
     /* Radio lists */
-    cluster_radio = newCDKRadio(adapter_screen, (window_x + 1), (window_y + 14),
+    cluster_radio = newCDKRadio(adapter_screen, (window_x + 1), (window_y + 15),
             NONE, 3, 10, "</B>Cluster", dsbl_enbl, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -142,7 +144,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
     setCDKRadioBackgroundAttrib(cluster_radio, COLOR_DIALOG_TEXT);
     setCDKRadioCurrentItem(cluster_radio, (int) mr_adp_props->cluster);
-    ncq_radio = newCDKRadio(adapter_screen, (window_x + 16), (window_y + 14),
+    ncq_radio = newCDKRadio(adapter_screen, (window_x + 16), (window_y + 15),
             NONE, 3, 10, "</B>NCQ", dsbl_enbl, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -154,14 +156,14 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     setCDKRadioCurrentItem(ncq_radio, (int) mr_adp_props->ncq);
 
     /* Buttons */
-    ok_button = newCDKButton(adapter_screen, (window_x + 16), (window_y + 18),
+    ok_button = newCDKButton(adapter_screen, (window_x + 20), (window_y + 19),
             "</B>   OK   ", ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-    cancel_button = newCDKButton(adapter_screen, (window_x + 26), (window_y + 18),
+    cancel_button = newCDKButton(adapter_screen, (window_x + 30), (window_y + 19),
             "</B> Cancel ", cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
@@ -220,7 +222,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     /* All done -- clean */
     cleanup:
     free(mr_adp_props);
-    for (i = 0; i < 9; i++) {
+    for (i = 0; i < 10; i++) {
         freeChar(adp_info_msg[i]);
     }
     for (i = 0; i < MAX_ADAPTERS; i++) {
@@ -289,7 +291,7 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Setup scrolling window widget */
-    asprintf(&encl_title, "<C></31/B>Enclosures/Slots on MegaRAID Adapter # %d:\n",
+    asprintf(&encl_title, "<C></31/B>Enclosures/Slots on MegaRAID Adapter # %d\n",
             adp_choice);
     encl_swindow = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             ADP_INFO_ROWS+2, ADP_INFO_COLS+2, encl_title, MAX_ADP_INFO_LINES, TRUE, FALSE);
@@ -464,7 +466,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Selection widget for disks */
     asprintf(&dsk_select_title,
-            "<C></31/B>Select Disks for New Logical Drive (Adapter # %d):\n",
+            "<C></31/B>Select Disks for New LD (MegaRAID Adapter # %d)\n",
             adp_choice);
     disk_select = newCDKSelection(main_cdk_screen, CENTER, CENTER, NONE,
             18, 74, dsk_select_title, selection_list, selection_size,
@@ -548,7 +550,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Make a new label for the add-logical-drive screen */
     asprintf(&new_ld_msg[0],
-            "</31/B>Creating New MegaRAID Logical Drive (on adapter %d)",
+            "</31/B>Creating new MegaRAID LD (on adapter # %d)...",
             adp_choice);
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&new_ld_msg[1], " ");
@@ -725,7 +727,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
     MRLDRIVE *mr_ldrives[MAX_MR_LDS] = {NULL};
     CDKSCROLL *ld_list = 0;
-    static char *ld_list_title = "<C></31/B>Choose a logical drive:\n";
+    static char *ld_list_title = "<C></31/B>Choose a Logical Drive\n";
     char *logical_drives[MAX_MR_LDS] = {NULL};
     char *error_msg = NULL, *confirm_msg = NULL;
     int mr_ld_ids[MAX_MR_LDS] = {0};
@@ -846,7 +848,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             pd_info_line_size = 0;
     int ld_encl_ids[MAX_MR_DISKS] = {0}, ld_slots[MAX_MR_DISKS] = {0},
             mr_ld_ids[MAX_MR_LDS] = {0};
-    static char *ld_list_title = "<C></31/B>Choose a logical drive:\n";
+    static char *ld_list_title = "<C></31/B>Choose a Logical Drive\n";
     static char *cache_opts[] = {"Cached", "Direct"};
     static char *write_opts[] = {"WT", "WB"};
     static char *read_opts[] = {"NORA", "RA", "ADRA"};
@@ -970,18 +972,18 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Logical drive info. label */
-    asprintf(&ld_info_msg[0], "</31/B>MegaRAID Logical Drive # %d (on adapter %d)",
+    asprintf(&ld_info_msg[0], "</31/B>Properties for MegaRAID LD # %d (on adapter # %d)...",
             mr_ldrives[ld_choice]->ldrive_id, adp_choice);
     asprintf(&ld_info_msg[1], " ");
-    asprintf(&ld_info_msg[2], "RAID Level:\t%s",
+    asprintf(&ld_info_msg[2], "</B>RAID Level:<!B>\t%s",
             mr_ldrives[ld_choice]->raid_lvl);
-    asprintf(&ld_info_msg[3], "Size:\t\t%s",
+    asprintf(&ld_info_msg[3], "</B>Size:<!B>\t\t%s",
             mr_ldrives[ld_choice]->size);
-    asprintf(&ld_info_msg[4], "State:\t\t%s",
+    asprintf(&ld_info_msg[4], "</B>State:<!B>\t\t%s",
             mr_ldrives[ld_choice]->state);
-    asprintf(&ld_info_msg[5], "Strip Size:\t%s",
+    asprintf(&ld_info_msg[5], "</B>Strip Size:<!B>\t%s",
             mr_ldrives[ld_choice]->strip_size);
-    asprintf(&ld_info_msg[6], "Drive Count:\t%d",
+    asprintf(&ld_info_msg[6], "</B>Drive Count:<!B>\t%d",
             mr_ldrives[ld_choice]->drive_cnt);
     asprintf(&ld_info_msg[7], " ");
     asprintf(&ld_info_msg[8], "Disks [ENCL:SLOT] - %.60s", pd_info_line_buffer);
@@ -1165,7 +1167,7 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
         /* Setup scrolling window widget */
         drbd_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                 DRBD_INFO_ROWS+2, DRBD_INFO_COLS+2,
-                "<C></31/B>Distributed Replicated Block Device (DRBD) Information:\n",
+                "<C></31/B>Distributed Replicated Block Device (DRBD) Information\n",
                 MAX_DRBD_INFO_LINES, TRUE, FALSE);
         if (!drbd_info) {
             errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -1232,7 +1234,7 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
         /* Setup scrolling window widget */
         mdstat_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                 MDSTAT_INFO_ROWS+2, MDSTAT_INFO_COLS+2,
-                "<C></31/B>Linux Software RAID (md) Status:\n",
+                "<C></31/B>Linux Software RAID (md) Status\n",
                 MAX_MDSTAT_INFO_LINES, TRUE, FALSE);
         if (!mdstat_info) {
             errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -1329,7 +1331,7 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
             /* Setup scrolling window widget */
             lvm2_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                     LVM2_INFO_ROWS+2, LVM2_INFO_COLS+2,
-                    "<C></31/B>LVM2 Logical Volume Information:\n",
+                    "<C></31/B>LVM2 Logical Volume Information\n",
                     MAX_LVM2_INFO_LINES, TRUE, FALSE);
             if (!lvm2_info) {
                 errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -1479,7 +1481,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Information label */
     asprintf(&fs_dialog_msg[0],
-            "</31/B>Creating New File System (on block device %s)", block_dev);
+            "</31/B>Creating new file system (on block device %s)...", block_dev);
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&fs_dialog_msg[1], " ");
     asprintf(&fs_dialog_msg[2], "</B>Model:<!B>\t%-20.20s </B>Transport:<!B>\t%s",
@@ -1969,12 +1971,12 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(gib_total_str, MISC_STRING_LEN, "%lld GiB", (bytes_total / GIBIBYTE_SIZE));
     
     /* Fill the information label */
-    asprintf(&vdisk_dialog_msg[0], "</31/B>Adding New Virtual Disk File");
+    asprintf(&vdisk_dialog_msg[0], "</31/B>Adding new virtual disk file...");
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&vdisk_dialog_msg[1], " ");
-    asprintf(&vdisk_dialog_msg[2], "</B>File system:<!B>\t%-20.20s </B>Type:<!B>\t\t%s",
+    asprintf(&vdisk_dialog_msg[2], "</B>File System:<!B>\t%-20.20s </B>Type:<!B>\t\t%s",
             fs_path, fs_type);
-    asprintf(&vdisk_dialog_msg[3], "</B>Size:<!B>\t\t%-20.20s </B>Available space:<!B>\t%s",
+    asprintf(&vdisk_dialog_msg[3], "</B>Size:<!B>\t\t%-20.20s </B>Available Space:<!B>\t%s",
             gib_total_str, gib_free_str);
     free(fs_info);
     vdisk_label = newCDKLabel(vdisk_screen, (window_x + 1), (window_y + 1),

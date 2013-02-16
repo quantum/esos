@@ -34,7 +34,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
     /* Setup scrolling window widget */
     dev_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             DEV_INFO_ROWS+2, DEV_INFO_COLS+2,
-            "<C></31/B>SCST Device Information:\n",
+            "<C></31/B>SCST Device Information\n",
             MAX_DEV_INFO_LINES, TRUE, FALSE);
     if (!dev_info) {
         errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -195,7 +195,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     WINDOW *dev_window = 0;
     static char *scst_dev_types[] = {"<C>dev_disk", "<C>dev_disk_perf",
-    "<C>vcdrom", "<C>vdisk_blockio", "<C>vdisk_fileio", "<C>vdisk_nullio"},
+        "<C>vcdrom", "<C>vdisk_blockio", "<C>vdisk_fileio", "<C>vdisk_nullio",
+        "<C>dev_changer", "<C>dev_tape", "<C>dev_tape_perf"},
             *bs_list[] = {"512", "1024", "2048", "4096", "8192"},
             *no_yes[] = {"No (0)", "Yes (1)"};
     char attr_path[MAX_SYSFS_PATH_SIZE] = {0}, attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -203,9 +204,9 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             device_id[MAX_SYSFS_ATTR_SIZE] = {0}, fs_name[MAX_FS_ATTR_LEN] = {0},
             fs_path[MAX_FS_ATTR_LEN] = {0}, fs_type[MAX_FS_ATTR_LEN] = {0},
             real_blk_dev[MAX_SYSFS_PATH_SIZE] = {0};
-    char *scsi_disk = NULL, *error_msg = NULL, *selected_file = NULL,
-            *iso_file_name = NULL, *dev_id_ptr = NULL, *cmd_str = NULL,
-            *block_dev = NULL;
+    char *scsi_disk = NULL, *scsi_chgr = NULL, *scsi_tape = NULL,
+            *error_msg = NULL, *selected_file = NULL, *iso_file_name = NULL,
+            *dev_id_ptr = NULL, *cmd_str = NULL, *block_dev = NULL;
     char *dev_info_msg[ADD_DEV_INFO_LINES] = {NULL};
     int dev_window_lines = 0, dev_window_cols = 0, window_y = 0, window_x = 0,
             dev_choice = 0, temp_int = 0, i = 0, traverse_ret = 0,
@@ -214,8 +215,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
     boolean mounted = FALSE;
 
     /* Prompt for new device type */
-    dev_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 12, 30,
-            "<C></31/B>Choose a SCST device handler:\n", scst_dev_types, 6,
+    dev_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 15, 30,
+            "<C></31/B>Choose a SCST Device Handler\n", scst_dev_types, 9,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!dev_list) {
         errorDialog(main_cdk_screen, "Couldn't create scroll widget!", NULL);
@@ -272,7 +273,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         case 2:
             /* Create the file selector widget */
             file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER, 20, 40,
-                    "<C></31/B>Choose an ISO file:\n", "File: ",
+                    "<C></31/B>Choose an ISO File\n", "File: ",
                     COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
                     A_REVERSE, "</N>", "</B>", "</N>", "</N>", TRUE, FALSE);
             if (!file_select) {
@@ -373,7 +374,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Information label */
             asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_blockio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "SCSI Block Device: %.35s", real_blk_dev);
+            asprintf(&dev_info_msg[2], "</B>SCSI Block Device:<!B> %.35s", real_blk_dev);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
@@ -384,7 +385,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Device name widget (entry) */
             dev_name_field = newCDKEntry(dev_screen, (window_x + 1), (window_y + 5),
-                    NULL, "</B>SCST device name (no spaces): ",
+                    NULL, "</B>SCST Device Name (no spaces): ",
                     COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
@@ -540,7 +541,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Create the file selector widget */
             file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER, 20, 40,
-                    "<C></31/B>Choose a back-end file:\n", "File: ",
+                    "<C></31/B>Choose a Back-End File\n", "File: ",
                     COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
                     A_REVERSE, "</N>", "</B>", "</N>", "</N>", TRUE, FALSE);
             if (!file_select) {
@@ -585,7 +586,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Information label */
             asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_fileio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "Virtual Disk File: %.35s", fileio_file);
+            asprintf(&dev_info_msg[2], "</B>Virtual Disk File:<!B> %.35s", fileio_file);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
@@ -596,7 +597,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Device name widget (entry) */
             dev_name_field = newCDKEntry(dev_screen, (window_x + 1), (window_y + 5),
-                    NULL, "</B>SCST device name (no spaces): ",
+                    NULL, "</B>SCST Device Name (no spaces): ",
                     COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
@@ -772,7 +773,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             
             /* Device name widget (entry) */
             dev_name_field = newCDKEntry(dev_screen, (window_x + 1), (window_y + 3),
-                    NULL, "</B>SCST device name (no spaces): ",
+                    NULL, "</B>SCST Device Name (no spaces): ",
                     COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
@@ -887,7 +888,52 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 }
             }
             break;
-            
+
+        /* dev_changer */
+        case 6:
+            /* Get changer choice from user */
+            if ((scsi_chgr = getSCSIDevChoice(main_cdk_screen, SCSI_CHANGER_TYPE)) != NULL) {
+                /* Set the sysfs path + attribute value then write it */
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/dev_changer/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", scsi_chgr);
+                if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
+                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                }
+            }
+            break;
+
+        /* dev_tape */
+        case 7:
+            /* Get tape choice from user */
+            if ((scsi_tape = getSCSIDevChoice(main_cdk_screen, SCSI_TAPE_TYPE)) != NULL) {
+                /* Set the sysfs path + attribute value then write it */
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/dev_tape/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", scsi_tape);
+                if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
+                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                }
+            }
+            break;
+
+        /* dev_tape_perf */
+        case 8:
+            /* Get disk choice from user */
+            if ((scsi_tape = getSCSIDevChoice(main_cdk_screen, SCSI_TAPE_TYPE)) != NULL) {
+                /* Set the sysfs path + attribute value then write it */
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/dev_tape_perf/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", scsi_tape);
+                if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
+                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                }
+            }
+            break;
+
         default:
             errorDialog(main_cdk_screen, "Default case reached in switch statement?", NULL);
             break;
@@ -1013,12 +1059,12 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
     /* Information label */
     asprintf(&map_info_msg[0], "</31/B>Mapping SCST device...");
     asprintf(&map_info_msg[1], " ");
-    asprintf(&map_info_msg[2], "Device: %s", scst_dev);
-    asprintf(&map_info_msg[3], "Handler: %s", scst_hndlr);
+    asprintf(&map_info_msg[2], "</B>Device:<!B>\t\t%s", scst_dev);
+    asprintf(&map_info_msg[3], "</B>Handler:<!B>\t%s", scst_hndlr);
     asprintf(&map_info_msg[4], " ");
-    asprintf(&map_info_msg[5], "Target: %s", scst_tgt);
-    asprintf(&map_info_msg[6], "Driver: %s", tgt_driver);
-    asprintf(&map_info_msg[7], "Group: %s", group_name);
+    asprintf(&map_info_msg[5], "</B>Target:<!B>\t%s", scst_tgt);
+    asprintf(&map_info_msg[6], "</B>Driver:<!B>\t%s", tgt_driver);
+    asprintf(&map_info_msg[7], "</B>Group:<!B>\t%s", group_name);
     map_info = newCDKLabel(map_screen, (window_x + 1), (window_y + 1),
             map_info_msg, MAP_DEV_INFO_LINES, FALSE, FALSE);
     if (!map_info) {

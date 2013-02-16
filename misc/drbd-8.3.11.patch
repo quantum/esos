@@ -1,5 +1,5 @@
 --- a/scripts/Makefile.in	2013-02-06 20:47:40.302065902 -0500
-+++ a/scripts/Makefile.in	2013-02-06 20:49:03.784054175 -0500
++++ b/scripts/Makefile.in	2013-02-06 20:49:03.784054175 -0500
 @@ -57,14 +57,14 @@
  
  install-utils:

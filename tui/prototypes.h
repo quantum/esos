@@ -41,6 +41,7 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]);
 boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_type[], boolean *mounted);
 char *getBlockDevChoice(CDKSCREEN *cdk_screen);
+char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type);
 
 /* menu_actions-system.c */
 void networkDialog(CDKSCREEN *main_cdk_screen);

@@ -10,9 +10,8 @@ if [ -x /etc/rc.d/rc.network ]; then
     /etc/rc.d/rc.network start
 fi
 
-echo "Starting system and kernel log daemons...."
+echo "Starting system log daemon (syslogd)...."
 /sbin/syslogd
-/sbin/klogd -c1
 
 /bin/echo "Starting vixie-cron..."
 /usr/sbin/cron
