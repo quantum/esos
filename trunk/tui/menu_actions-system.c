@@ -148,7 +148,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Scroll widget for network configuration choices */
     net_conf_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 15, 60,
-            "<C></31/B>Choose a network configuration option:\n",
+            "<C></31/B>Choose a Network Configuration Option\n",
             net_scroll_msg, j, FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!net_conf_list) {
         errorDialog(main_cdk_screen, "Couldn't create scroll widget!", NULL);
@@ -191,7 +191,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
     if (net_conf_choice == 0) {
         /* Present the 'general network settings' screen of widgets */
-        asprintf(&net_info_msg[0], "</31/B>General Network Settings");
+        asprintf(&net_info_msg[0], "</31/B>General network settings...");
         asprintf(&net_info_msg[1], " ");
 
         /* Read network configuration file (INI file) */
@@ -429,11 +429,11 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         asprintf(&net_info_msg[0], "</31/B>Configuring interface %s...",
                 net_if_name[net_conf_choice]);
         asprintf(&net_info_msg[1], " ");
-        asprintf(&net_info_msg[2], "MAC Address: %s", net_if_mac[net_conf_choice]);
+        asprintf(&net_info_msg[2], "</B>MAC Address:<!B> %s", net_if_mac[net_conf_choice]);
         if (net_if_speed[net_conf_choice] == NULL)
-            asprintf(&net_info_msg[3], "Link Status: None");
+            asprintf(&net_info_msg[3], "</B>Link Status:<!B> None");
         else
-            asprintf(&net_info_msg[3], "Link Status: %s, %s",
+            asprintf(&net_info_msg[3], "</B>Link Status:<!B> %s, %s",
                     net_if_speed[net_conf_choice], net_if_duplex[net_conf_choice]);
 
         /* Read network configuration file (INI file) */
@@ -857,7 +857,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             mail_window_lines = 0, mail_window_cols = 0;
     static char *no_yes[] = {"No", "Yes"};
     static char *auth_method_opts[] = {"Plain Text", "CRAM-MD5"};
-    static char *mail_title_msg[] = {"</31/B>Mail Setup"};
+    static char *mail_title_msg[] = {"</31/B>System mail (SMTP) settings..."};
     char tmp_email_addr[MAX_EMAIL_LEN] = {0}, tmp_smtp_host[MAX_SMTP_LEN] = {0},
             tmp_auth_user[MAX_SMTP_USER_LEN] = {0},
             tmp_auth_pass[MAX_SMTP_PASS_LEN] = {0},
@@ -917,7 +917,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Email address (to send alerts to) field */
     email_addr = newCDKEntry(mail_screen, (window_x + 1), (window_y + 3),
-            NULL, "</B>Alert email address: ",
+            NULL, "</B>Alert Email Address: ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             MAX_EMAIL_LEN, 0, MAX_EMAIL_LEN, FALSE, FALSE);
     if (!email_addr) {
@@ -936,7 +936,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* SMTP host field */
     smtp_host = newCDKEntry(mail_screen, (window_x + 1), (window_y + 5),
-            NULL, "</B>SMTP host: ",
+            NULL, "</B>SMTP Host: ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             24, 0, MAX_SMTP_LEN, FALSE, FALSE);
     if (!smtp_host) {
@@ -948,7 +948,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* SMTP port field */
     smtp_port = newCDKEntry(mail_screen, (window_x + 38), (window_y + 5),
-            NULL, "</B>SMTP port: ",
+            NULL, "</B>SMTP Port: ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
             5, 0, 5, FALSE, FALSE);
     if (!smtp_port) {
@@ -1341,7 +1341,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Password field (1) */
     pass_1_field = newCDKEntry(add_user_screen, (window_x + 1), (window_y + 5),
-            NULL, "</B>User password:   ",
+            NULL, "</B>User Password:   ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
             25, 0, MAX_PASSWD_LEN, FALSE, FALSE);
     if (!pass_1_field) {
@@ -1353,7 +1353,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Password field (2) */
     pass_2_field = newCDKEntry(add_user_screen, (window_x + 1), (window_y + 6),
-            NULL, "</B>Retype password: ",
+            NULL, "</B>Retype Password: ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
             25, 0, MAX_PASSWD_LEN, FALSE, FALSE);
     if (!pass_2_field) {
@@ -1576,7 +1576,7 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
 
     /* New password field (1) */
     new_pass_1 = newCDKEntry(chg_pass_screen, (window_x + 1), (window_y + 3),
-            NULL, "</B>New password:    ",
+            NULL, "</B>New Password:    ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
             20, 0, MAX_PASSWD_LEN, FALSE, FALSE);
     if (!new_pass_1) {
@@ -1588,7 +1588,7 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
     
     /* New password field (2) */
     new_pass_2 = newCDKEntry(chg_pass_screen, (window_x + 1), (window_y + 4),
-            NULL, "</B>Retype password: ",
+            NULL, "</B>Retype Password: ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
             20, 0, MAX_PASSWD_LEN, FALSE, FALSE);
     if (!new_pass_2) {
@@ -1684,7 +1684,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     /* Setup scrolling window widget */
     scst_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             SCST_INFO_ROWS+2, SCST_INFO_COLS+2,
-            "<C></31/B>SCST Information / Statistics:\n", MAX_SCST_INFO_LINES,
+            "<C></31/B>SCST Information / Statistics\n", MAX_SCST_INFO_LINES,
             TRUE, FALSE);
     if (!scst_info) {
         errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -1806,7 +1806,7 @@ void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
             /* Setup scrolling window widget */
             crm_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                     CRM_INFO_ROWS+2, CRM_INFO_COLS+2,
-                    "<C></31/B>CRM Status:\n",
+                    "<C></31/B>CRM Status\n",
                     MAX_CRM_INFO_LINES, TRUE, FALSE);
             if (!crm_info) {
                 errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -1857,7 +1857,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             curr_day = 0, curr_month = 0, curr_year = 0, curr_hour = 0,
             curr_minute = 0, curr_second = 0, date_window_lines = 0,
             date_window_cols = 0;
-    static char *date_title_msg[] = {"</31/B>Date & Time Settings"};
+    static char *date_title_msg[] = {"</31/B>Edit date and time settings..."};
     char *tz_files[MAX_TZ_FILES] = {NULL};
     char *error_msg = NULL, *remove_me = NULL, *strstr_result = NULL;
     char zoneinfo_path[MAX_ZONEINFO_PATH] = {0}, ntp_serv_val[MAX_NTP_LEN] = {0},

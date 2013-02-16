@@ -87,7 +87,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		gcc-4.4.5_gmp_mpfr.tar.bz2 \
 		libqb-0.14.3.tar.xz \
 		pacemaker-1.1.8.tar.gz \
-		corosync-2.1.0.tar.gz \
+		corosync-2.3.0.tar.gz \
 		nss-3.14.1.tar.gz \
 		glib-2.16.6.tar.bz2 \
 		libxml2-2.9.0.tar.gz \
@@ -108,7 +108,14 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		fuse-2.9.2.tar.gz \
 		db-5.3.21.tar.gz \
 		snappy-1.1.0.tar.gz \
-		opensm-3.3.15.tar.gz)
+		fence_agents-3.1.12.tar.gz \
+		opensm-3.3.15.tar.gz \
+		pycurl-7.19.0.tar.gz \
+		curl-7.29.0.tar.gz \
+		Net-Telnet-3.03.tar.gz \
+		python-suds-0.4.tar.gz \
+		setuptools-0.6c11.tar.gz \
+		pexpect-2.3.tar.gz)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
 build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
@@ -119,7 +126,8 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			xfsprogs drbd mdadm parted opensm libqb pacemaker \
 			corosync nss glib libxml2 libxslt libtool bzip2 Python \
 			crmsh libaio glue readline resource_agents mhvtl lzo \
-			mhash lessfs tokyocabinet fuse db snappy
+			mhash lessfs tokyocabinet fuse db snappy fence_agents \
+			pexpect pycurl curl Net-Telnet python-suds setuptools
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -672,9 +680,6 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	$(TOUCH) $(@)
 
 corosync: glibc libqb nss
-	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
-	  cd $(src_dir) && ./autogen.sh; \
-	fi
 	cd $(src_dir) && nss_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
 	nss_LIBS="$(LDFLAGS) -lnss3" LIBQB_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/qb" \
 	LIBQB_LIBS="$(LDFLAGS) -lqb" ./configure --prefix=/usr --sysconfdir=/etc \
@@ -885,5 +890,50 @@ snappy: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+fence_agents: glibc nss pexpect pycurl Net-Telnet python-suds
+	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  cd $(src_dir) && ./autogen.sh; \
+	fi
+	cd $(src_dir) && nss_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
+        nss_LIBS="$(LDFLAGS) -lnss3 -lssl3" nspr_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
+	nspr_LIBS="$(LDFLAGS) -lnspr4" ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
+	$(MAKE) --directory=$(src_dir) PATH="$(WORK_DIR):$$PATH" \
+	PERL5LIB="$(wildcard $(IMAGE_DIR)/usr/lib/perl5/site_perl/5.*)"
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+pexpect: Python
+	cd $(src_dir) && $(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+pycurl: Python curl
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/pycurl-7.19.0.patch
+	cd $(src_dir) && $(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr \
+	--curl-config=$(IMAGE_DIR)/usr/bin/curl-config
+	$(TOUCH) $(@)
+
+curl: glibc
+	cd $(src_dir) && ./configure --prefix=/usr --disable-static
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+Net-Telnet: perl_lib = $(wildcard $(IMAGE_DIR)/usr/lib/perl5/5.*)
+Net-Telnet: perl
+	cd $(src_dir) && PERL5LIB="$(perl_lib)" $(IMAGE_DIR)/usr/bin/perl Makefile.PL \
+	PREFIX=/usr DESTDIR=$(IMAGE_DIR) PERL_LIB="$(perl_lib)" PERL_ARCHLIB="$(perl_lib)/x86_64-linux"
+	$(MAKE) --directory=$(src_dir) PERL5LIB="$(perl_lib)"
+	$(MAKE) --directory=$(src_dir) PERL5LIB="$(perl_lib)" install
+	$(TOUCH) $(@)
+
+python-suds: Python setuptools
+	cd $(src_dir) && LD_LIBRARY_PATH=$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
+	$(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+setuptools: Python
+	cd $(src_dir) && $(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 

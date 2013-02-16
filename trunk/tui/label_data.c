@@ -144,7 +144,8 @@ void readDeviceData(char *label_msg[]) {
     int i = 0, row_cnt = 0;
     char line_buffer[DEVICES_LABEL_COLS];
     static char *handlers[] = {"dev_disk", "dev_disk_perf", "vcdrom",
-    "vdisk_blockio", "vdisk_fileio", "vdisk_nullio"};
+        "vdisk_blockio", "vdisk_fileio", "vdisk_nullio", "dev_changer",
+        "dev_tape", "dev_tape_perf"};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
     
     /* Clear the label message; we purposely start at 1 so we skip the title */
@@ -157,7 +158,7 @@ void readDeviceData(char *label_msg[]) {
     row_cnt = 2;
 
     /* Loop over each SCST handler type and grab any open device names */
-    for (i = 0; i < 6; i++) {
+    for (i = 0; i < 9; i++) {
         /* Open the directory */
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s",
                 SYSFS_SCST_TGT, handlers[i]);

@@ -1,0 +1,11 @@
+--- a/setup.py	2013-02-13 16:56:20.366044354 -0500
++++ b/setup.py	2013-02-13 16:56:29.417757277 -0500
+@@ -108,8 +108,6 @@
+                 define_macros.append(('HAVE_CURL_GNUTLS', 1))
+         elif e[:2] == "-L":
+             library_dirs.append(e[2:])
+-        else:
+-            extra_link_args.append(e)
+     for e in split_quoted(os.popen("'%s' --features" % CURL_CONFIG).read()):
+         if e == 'SSL':
+             define_macros.append(('HAVE_CURL_SSL', 1))

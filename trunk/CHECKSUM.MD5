@@ -31,7 +31,6 @@ dd2472f07993496ca4f4e3e8f6746517  mdadm-3.2.6.tar.gz
 ad4c179c119bbb78be740e33b59746ad  opensm-3.3.15.tar.gz
 1eee1b8dac8b1123d9a65abd2dd791a0  libqb-0.14.3.tar.xz
 3a679baed6cd2fb1af8e865529cbf8d1  pacemaker-1.1.8.tar.gz
-4c2780a3961e7e4d75bd239922ef9cd5  corosync-2.1.0.tar.gz
 7cb3c35048c3f4103aad255d7116c9e3  nss-3.14.1.tar.gz
 5b9bebf4f5d2200ae2c4efe8fa6103f7  libxml2-2.9.0.tar.gz
 9667bf6f9310b957254fdcf6596600b7  libxslt-1.1.28.tar.gz
@@ -52,3 +51,11 @@ fd03df6965f8f56dd5b8518ca43b4f5e  tokyocabinet-1.4.48.tar.gz
 7d80d0dc9cc2b9199a0c53787c151205  fuse-2.9.2.tar.gz
 3fda0b004acdaa6fa350bfc41a3b95ca  db-5.3.21.tar.gz
 c8f3ef29b5281e78f4946b2d739cea4f  snappy-1.1.0.tar.gz
+f2c9dce94629079879f6cf0ef483802d  fence_agents-3.1.12.tar.gz
+bf107cf54e67bc6dec5bea1f3e6a65c3  pexpect-2.3.tar.gz
+919d58fe37e69fe87ce4534d8b6a1c7b  pycurl-7.19.0.tar.gz
+4f57d3b4a3963038bd5e04dbff385390  curl-7.29.0.tar.gz
+2f7d34b09d6117baefe89d44cff9d5fc  Net-Telnet-3.03.tar.gz
+05523dfd3fc0de3f19dde4aca5dd17e9  python-suds-0.4.tar.gz
+7df2a529a074f613b509fb44feefe74e  setuptools-0.6c11.tar.gz
+4689279c36b1417e122a23c6818017dd  corosync-2.3.0.tar.gz

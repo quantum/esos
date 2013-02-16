@@ -36,7 +36,7 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
     /* Setup scrolling window widget */
     tgt_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             TGT_INFO_ROWS+2, TGT_INFO_COLS+2,
-            "<C></31/B>SCST Target Information:\n",
+            "<C></31/B>SCST Target Information\n",
             MAX_TGT_INFO_LINES, TRUE, FALSE);
     if (!tgt_info) {
         errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -146,9 +146,9 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
             nice_date, hostname, rand_str);
 
     /* Get new target name (entry widget) */
-    asprintf(&entry_title, "<C></31/B>Adding a new iSCSI target...\n");
+    asprintf(&entry_title, "<C></31/B>Add New iSCSI Target\n");
     tgt_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
-            entry_title, "</B>New target name (no spaces): ",
+            entry_title, "</B>New Target Name (no spaces): ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             SCST_ISCSI_TGT_LEN, 0, SCST_ISCSI_TGT_LEN, TRUE, FALSE);
     if (!tgt_name_entry) {
@@ -255,7 +255,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
     /* Setup scrolling window widget */
     lip_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             LIP_INFO_ROWS+2, LIP_INFO_COLS+2,
-            "<C></31/B>Issuing LIP on all Fibre Channel targets:\n",
+            "<C></31/B>Issuing LIP on Fibre Channel Targets\n",
             MAX_LIP_INFO_LINES, TRUE, FALSE);
     if (!lip_info) {
         errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
@@ -363,14 +363,14 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     wrefresh(tgt_window);
 
     /* Information label */
-    asprintf(&tgt_info_msg[0], "</31/B>Enable/Disable Target...");
+    asprintf(&tgt_info_msg[0], "</31/B>Enable/disable target...");
     asprintf(&tgt_info_msg[1], " ");
-    asprintf(&tgt_info_msg[2], "Target: %s", scst_tgt);
-    asprintf(&tgt_info_msg[3], "Driver: %s", tgt_driver);
+    asprintf(&tgt_info_msg[2], "</B>Target:<!B>\t\t%s", scst_tgt);
+    asprintf(&tgt_info_msg[3], "</B>Driver:<!B>\t\t%s", tgt_driver);
     if (curr_state == 0)
-        asprintf(&tgt_info_msg[4], "Current state: Disabled");
+        asprintf(&tgt_info_msg[4], "</B>Current State:<!B>\tDisabled");
     else if (curr_state == 1)
-        asprintf(&tgt_info_msg[4], "Current state: Enabled");
+        asprintf(&tgt_info_msg[4], "</B>Current State:<!B>\tEnabled");
     tgt_info = newCDKLabel(tgt_screen, (window_x + 1), (window_y + 1),
             tgt_info_msg, TGT_ON_OFF_INFO_LINES, FALSE, FALSE);
     if (!tgt_info) {

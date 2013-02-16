@@ -192,7 +192,7 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
 
     /* Get SCST target choice from user */
     scst_tgt_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 60,
-            "<C></31/B>Choose a SCST target:\n", scst_tgt_info, j,
+            "<C></31/B>Choose a SCST Target\n", scst_tgt_info, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scst_tgt_list) {
         errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
@@ -280,7 +280,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[
     }
 
     /* Get SCST target group choice from user */
-    asprintf(&scroll_title, "<C></31/B>Choose a group (%s):\n", tgt_name);
+    asprintf(&scroll_title, "<C></31/B>Choose a Group (%s)\n", tgt_name);
     scst_grp_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 55,
             scroll_title, scroll_grp_list, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
@@ -374,7 +374,7 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
     }
 
     /* Get SCST LUN choice from user */
-    asprintf(&scroll_title, "<C></31/B>Choose a LUN (%s):\n",
+    asprintf(&scroll_title, "<C></31/B>Choose a LUN (%s)\n",
             tgt_group);
     lun_scroll = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 45,
             scroll_title, scst_lun_list, j,
@@ -422,7 +422,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
             *scsi_dsk_model[MAX_SCSI_DISKS] = {NULL},
             *scsi_dsk_vendor[MAX_SCSI_DISKS] = {NULL},
             *scsi_dev_info[MAX_SCSI_DISKS] = {NULL};
-    static char *list_title = "<C></31/B>Choose a SCSI disk:\n";
+    static char *list_title = "<C></31/B>Choose a SCSI Disk\n";
     char *error_msg = NULL, *boot_dev_node = NULL;
     static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
@@ -442,7 +442,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
         goto cleanup;
     }
 
-    /* Open the directory to get SCSI devices */
+    /* Open the directory to get SCSI disks */
     if ((dir_stream = opendir(SYSFS_SCSI_DISK)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
@@ -450,7 +450,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
         goto cleanup;
     }
 
-    /* Loop over each entry in the directory (SCSI devices) */
+    /* Loop over each entry in the directory (SCSI disks) */
     while (((dir_entry = readdir(dir_stream)) != NULL) && (dev_cnt < MAX_SCSI_DISKS)) {
         if (dir_entry->d_type == DT_LNK) {
             asprintf(&scsi_dsk_dev[dev_cnt], "%s", dir_entry->d_name);
@@ -461,7 +461,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
     /* Close the directory stream */
     closedir(dir_stream);
 
-    /* Loop over our list of SCSI devices */
+    /* Loop over our list of SCSI disks */
     i = 0;
     while (i < dev_cnt) {
         /* Get the SCSI block device node */
@@ -505,7 +505,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
                 SYSFS_SCSI_DISK, scsi_dsk_dev[i]);
         readAttribute(dir_name, tmp_buff);
         asprintf(&scsi_dsk_vendor[i], "%s", tmp_buff);
-        /* Fill the list (pretty) for our CDK label with SCSI devices */
+        /* Fill the list (pretty) for our CDK label with SCSI disks */
         asprintf(&scsi_dev_info[i], "<C>[%s] %s %s (/dev/%s)", scsi_dsk_dev[i],
                 scsi_dsk_vendor[i], scsi_dsk_model[i], scsi_dsk_node[i]);
         /* Next */
@@ -567,7 +567,8 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
     static char *handlers[] = {"dev_disk", "dev_disk_perf", "vcdrom",
-        "vdisk_blockio", "vdisk_fileio", "vdisk_nullio"};
+        "vdisk_blockio", "vdisk_fileio", "vdisk_nullio", "dev_changer",
+        "dev_tape", "dev_tape_perf"};
     char *scst_dev_name[MAX_SCST_DEVS] = {NULL},
         *scst_dev_hndlr[MAX_SCST_DEVS] = {NULL},
         *scst_dev_info[MAX_SCST_DEVS] = {NULL};
@@ -576,7 +577,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
 
     /* Loop over each SCST handler type and grab any open device names */
     j = 0;
-    for (i = 0; i < 6; i++) {
+    for (i = 0; i < 9; i++) {
         /* Open the directory */
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s",
                 SYSFS_SCST_TGT, handlers[i]);
@@ -609,7 +610,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
 
     /* Get SCSI disk choice from user */
     scst_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 55,
-            "<C></31/B>Choose a SCST device:\n", scst_dev_info, j,
+            "<C></31/B>Choose a SCST Device\n", scst_dev_info, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scst_dev_list) {
         errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
@@ -651,7 +652,7 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
     CDKSCROLL *adapter_list = 0;
     int adp_count = 0, adp_choice = 0, i = 0;
     char *adapters[MAX_ADAPTERS] = {NULL};
-    static char *list_title = "<C></31/B>Choose an adapter:\n";
+    static char *list_title = "<C></31/B>Choose an Adapter\n";
     char *error_msg = NULL;
 
     /* Get MegaRAID adapters */
@@ -752,7 +753,7 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
     }
 
     /* Get SCST initiator choice from user */
-    asprintf(&scroll_title, "<C></31/B>Choose an initiator (%s):\n",
+    asprintf(&scroll_title, "<C></31/B>Choose an Initiator (%s)\n",
             tgt_group);
     lun_scroll = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 45,
             scroll_title, scroll_init_list, i,
@@ -866,7 +867,7 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
 
     /* Get user account choice */
     user_scroll = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 10, 30,
-            "<C></31/B>Choose a user account:\n", scroll_list, user_cnt,
+            "<C></31/B>Choose a User Account\n", scroll_list, user_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!user_scroll) {
         errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
@@ -1025,7 +1026,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
 
     /* Get file system choice */
     fs_scroll = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 70,
-            "<C></31/B>Choose a file system:\n", scroll_list, fs_cnt,
+            "<C></31/B>Choose a File System\n", scroll_list, fs_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!fs_scroll) {
         errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
@@ -1071,7 +1072,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     int blk_dev_choice = 0, i = 0, dev_cnt = 0;
     char *blk_dev_name[MAX_BLOCK_DEVS] = {NULL}, *blk_dev_info[MAX_BLOCK_DEVS] = {NULL},
             *blk_dev_size[MAX_BLOCK_DEVS] = {NULL}, *blk_dev_scroll_lines[MAX_BLOCK_DEVS] = {NULL};
-    static char *list_title = "<C></31/B>Choose a block device:\n";
+    static char *list_title = "<C></31/B>Choose a Block Device\n";
     char *error_msg = NULL, *boot_dev_node = NULL;
     static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
@@ -1202,6 +1203,124 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
         freeChar(blk_dev_info[i]);
         freeChar(blk_dev_size[i]);
         freeChar(blk_dev_scroll_lines[i]);
+    }
+    if (ret_buff[0] != '\0')
+        return ret_buff;
+    else
+        return NULL;
+}
+
+
+/*
+ * Give the user a list of SCSI devices (based on scsi_dev_type) and have
+ * them select one. We return a char array with "H:C:I:L" for the chosen device.
+ */
+char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
+    CDKSCROLL *scsi_dev_list = 0;
+    int dev_choice = 0, i = 0, dev_cnt = 0;
+    char *scsi_device[MAX_SCSI_DEVICES] = {NULL},
+            *scsi_dev_rev[MAX_SCSI_DEVICES] = {NULL},
+            *scsi_dev_model[MAX_SCSI_DEVICES] = {NULL},
+            *scsi_dev_vendor[MAX_SCSI_DEVICES] = {NULL},
+            *scsi_dev_info[MAX_SCSI_DEVICES] = {NULL};
+    char *error_msg = NULL, *list_title = NULL;
+    static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
+            tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+
+    /* Went with the static char array method from this article:
+     * http://www.eskimo.com/~scs/cclass/int/sx5.html
+     * Since ret_buff is re-used between calls, we reset the first character */
+    ret_buff[0] = '\0';
+
+    /* Open the directory to get SCSI devices */
+    if ((dir_stream = opendir(SYSFS_SCSI_DEVICE)) == NULL) {
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+        goto cleanup;
+    }
+
+    /* Loop over each entry in the directory (SCSI devices) */
+    while (((dir_entry = readdir(dir_stream)) != NULL) && (dev_cnt < MAX_SCSI_DEVICES)) {
+        if (dir_entry->d_type == DT_LNK) {
+            /* We only want devices that match the given type */
+            snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/type",
+                    SYSFS_SCSI_DEVICE, dir_entry->d_name);
+            readAttribute(dir_name, tmp_buff);
+            if ((atoi(tmp_buff)) == scsi_dev_type) {
+                asprintf(&scsi_device[dev_cnt], "%s", dir_entry->d_name);
+                dev_cnt++;
+            }
+        }
+    }
+
+    /* Close the directory stream */
+    closedir(dir_stream);
+
+    /* Loop over our list of SCSI devices and get some attributes */
+    i = 0;
+    while (i < dev_cnt) {
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/model",
+                SYSFS_SCSI_DEVICE, scsi_device[i]);
+        readAttribute(dir_name, tmp_buff);
+        asprintf(&scsi_dev_model[i], "%s", tmp_buff);
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/vendor",
+                SYSFS_SCSI_DEVICE, scsi_device[i]);
+        readAttribute(dir_name, tmp_buff);
+        asprintf(&scsi_dev_vendor[i], "%s", tmp_buff);
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/rev",
+                SYSFS_SCSI_DEVICE, scsi_device[i]);
+        readAttribute(dir_name, tmp_buff);
+        asprintf(&scsi_dev_rev[i], "%s", tmp_buff);
+        /* Fill the list (pretty) for our CDK label with SCSI devices */
+        asprintf(&scsi_dev_info[i], "<C>[%s] %s %s %s", scsi_device[i],
+                scsi_dev_vendor[i], scsi_dev_model[i], scsi_dev_rev[i]);
+        /* Next */
+        i++;
+    }
+
+    /* Make sure we actually have something to present */
+    if (dev_cnt == 0) {
+        errorDialog(cdk_screen, "No SCSI devices found!", NULL);
+        goto cleanup;
+    }
+
+    /* Get SCSI device choice from user */
+    asprintf(&list_title, "<C></31/B>Choose a SCSI Device (Type %d)\n", scsi_dev_type);
+    scsi_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 55,
+            list_title, scsi_dev_info, dev_cnt,
+            FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+    if (!scsi_dev_list) {
+        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        goto cleanup;
+    }
+    setCDKScrollBoxAttribute(scsi_dev_list, COLOR_DIALOG_BOX);
+    setCDKScrollBackgroundAttrib(scsi_dev_list, COLOR_DIALOG_TEXT);
+    dev_choice = activateCDKScroll(scsi_dev_list, 0);
+
+    /* Check exit from widget */
+    if (scsi_dev_list->exitType == vESCAPE_HIT) {
+        destroyCDKScroll(scsi_dev_list);
+        refreshCDKScreen(cdk_screen);
+
+    } else if (scsi_dev_list->exitType == vNORMAL) {
+        destroyCDKScroll(scsi_dev_list);
+        refreshCDKScreen(cdk_screen);
+        strncpy(ret_buff, scsi_device[dev_choice], MAX_SYSFS_ATTR_SIZE);
+    }
+
+    /* Done */
+    cleanup:
+    freeChar(list_title);
+    for (i = 0; i < MAX_SCSI_DEVICES; i++) {
+        freeChar(scsi_device[i]);
+        freeChar(scsi_dev_rev[i]);
+        freeChar(scsi_dev_model[i]);
+        freeChar(scsi_dev_vendor[i]);
+        freeChar(scsi_dev_info[i]);
     }
     if (ret_buff[0] != '\0')
         return ret_buff;

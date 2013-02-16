@@ -102,7 +102,7 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&message[0], "<C></31/B>ESOS Support Bundle");
     asprintf(&message[1], " ");
     asprintf(&message[2], "<C>An archive containing configuration files and logs has been");
-    asprintf(&message[3], "<C>created; its located here: %s", bundle_file);
+    asprintf(&message[3], "<C>created; its located here: </B>%s<!B>", bundle_file);
     asprintf(&message[4], "<C>You may now retrieve the file from this host via SFTP/SCP.");
     asprintf(&message[5], " ");
     asprintf(&message[6], " ");

@@ -34,10 +34,10 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get new group name (entry widget) */
-    asprintf(&entry_title, "<C></31/B>Adding new group to target %s (%s)...\n",
+    asprintf(&entry_title, "<C></31/B>Add New Group to Target %s (%s)\n",
             scst_tgt, tgt_driver);
     grp_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
-            entry_title, "</B>New group name (no spaces): ",
+            entry_title, "</B>New Group Name (no spaces): ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             SCST_GRP_NAME_LEN, 0, SCST_GRP_NAME_LEN, TRUE, FALSE);
     if (!grp_name_entry) {
@@ -161,10 +161,10 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get initiator (entry widget) */
-    asprintf(&entry_title, "<C></31/B>Adding initiator to group %s...\n",
-            group_name);
+    asprintf(&entry_title, "<C></31/B>Add Initiator to Group %s (%s)\n",
+            group_name, scst_tgt);
     init_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
-            entry_title, "</B>Initiator (no spaces): ",
+            entry_title, "</B>Initiator Name (no spaces): ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             30, 0, SCST_INITIATOR_LEN, TRUE, FALSE);
     if (!init_entry) {

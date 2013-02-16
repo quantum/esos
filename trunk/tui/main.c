@@ -197,6 +197,7 @@ int main(int argc, char** argv) {
 
         /* Get user input */
         wrefresh(sub_window);
+        keypad(sub_window, TRUE);
         key_pressed = wgetch(sub_window);
 
         /* Check and see what we got */

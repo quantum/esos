@@ -127,9 +127,12 @@ extern "C" {
 #define SYSFS_INFINIBAND        "/sys/class/infiniband"
 #define SYSFS_SCST_TGT          "/sys/kernel/scst_tgt"
 #define SYSFS_SCSI_DISK         "/sys/class/scsi_disk"
+#define SYSFS_SCSI_DEVICE       "/sys/class/scsi_device"
 #define SYSFS_BLOCK             "/sys/block"
 #define MAX_SYSFS_ATTR_SIZE     256
 #define MAX_SYSFS_PATH_SIZE     256
+#define SCSI_CHANGER_TYPE       8
+#define SCSI_TAPE_TYPE          1
 
 /* System files (configuration, etc.) */
 #define PROC_DRBD       "/proc/drbd"
@@ -150,7 +153,7 @@ extern "C" {
 #define LOCALTIME       "/etc/localtime"
 #define ZONEINFO        "/usr/share/zoneinfo/posix"
 
-/* SCST specific limits */
+/* Size/limits settings */
 #define MAX_SCST_TGTS           256
 #define MAX_SCST_GROUPS         128
 #define MAX_SCST_LUNS           256
@@ -162,6 +165,7 @@ extern "C" {
 #define SCST_DEV_NAME_LEN       16
 #define SCST_GRP_NAME_LEN       16
 #define SCST_INITIATOR_LEN      64
+#define MAX_SCSI_DEVICES        256
 
 #ifdef	__cplusplus
 }
