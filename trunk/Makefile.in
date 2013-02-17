@@ -74,10 +74,10 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
-		linux-3.2.6.tar.bz2 \
+		linux-3.7.8.tar.bz2 \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-trunk_r4130.tar.bz2 \
+		scst-trunk_r4762.tar.bz2 \
 		kexec-tools-2.0.3.tar.gz \
 		drbd-8.3.11.tar.gz \
 		LVM2-2.02.97.tar.gz \
@@ -338,13 +338,13 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	### Kernel prerequisites for SCST
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
 	then \
-	  $(PATCH) -d $(linux_src) -b -B $(linux_src)/scst_exec_req_fifo.patch/ \
-	  -p1 < $(scst_src)/scst/kernel/scst_exec_req_fifo-3.2.patch; \
+	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/scst_exec_req_fifo.patch/ \
+	  -p1 < $(scst_src)/scst/kernel/scst_exec_req_fifo-3.7.patch; \
 	fi
 	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
 	then \
-	  $(PATCH) -d $(linux_src) -b -B $(linux_src)/put_page_callback.patch/ \
-	  -p1 < $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.2.patch; \
+	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/put_page_callback.patch/ \
+	  -p1 < $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.7.patch; \
 	fi
 	$(RM) $(linux_src)/drivers/scsi/qla2xxx
 	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
@@ -375,7 +375,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) qla
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) qla_install
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) LOCAL_LD_FLAGS="$(LDFLAGS)" iscsi
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) SBINDIR=$(IMAGE_DIR)/usr/sbin INSTALL_MOD_PATH=$(IMAGE_DIR) iscsi_install
+	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) SBINDIR=$(IMAGE_DIR)/usr/sbin MANDIR=$(IMAGE_DIR)/usr/share/man INSTALL_MOD_PATH=$(IMAGE_DIR) iscsi_install
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) srpt
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) srpt_install
 	### Build/install mhVTL module

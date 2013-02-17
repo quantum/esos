@@ -15,8 +15,6 @@ f8370ac17c33aa8d6a897064794a7d68  srptools-0.0.4.tar.gz
 c4e36b106624aff78527c54cf08ecbfe  lsscsi-0.25.tar.gz
 261e39f7161337330ba6bd57999be801  sg3_utils-1.33.tar.gz
 8b8cd29385b97616a0f0d96d0951c5bf  groff-1.21.tar.gz
-7f6177a2add41b553b693af838e6ac2d  linux-3.2.6.tar.bz2
-ef0b566b9cb1fac0cc126e5ecda78155  scst-trunk_r4130.tar.bz2
 1b362abd2e8669171a5ba50a9cc26183  kexec-tools-2.0.3.tar.gz
 903fcfa547df2f453476800e0838fe52  glibc-2.12.2.tar.bz2
 4fa656ee307db1cc59b05e492055badd  gcc-4.4.5_gmp_mpfr.tar.bz2
@@ -59,3 +57,5 @@ bf107cf54e67bc6dec5bea1f3e6a65c3  pexpect-2.3.tar.gz
 05523dfd3fc0de3f19dde4aca5dd17e9  python-suds-0.4.tar.gz
 7df2a529a074f613b509fb44feefe74e  setuptools-0.6c11.tar.gz
 4689279c36b1417e122a23c6818017dd  corosync-2.3.0.tar.gz
+c358e9581687eeba374ee1eb042771a7  scst-trunk_r4762.tar.bz2
+053b47e6fe18ea8d23a3716bf64a2cf8  linux-3.7.8.tar.bz2
