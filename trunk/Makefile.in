@@ -387,6 +387,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 kernel_headers:
 	$(MKDIR) $(WORK_DIR)/kernel_headers
 	$(MAKE) --directory=$(linux_src) INSTALL_HDR_PATH="$(WORK_DIR)/kernel_headers" headers_install
+	- $(PATCH) -r - -N -d $(WORK_DIR)/kernel_headers -p1 < $(CWD)/misc/kernel_headers.patch
 	$(TOUCH) $(@)
 
 esos_tui: glibc ncurses cdk iniparser parted
@@ -599,8 +600,8 @@ LVM2: glibc
 	$(TOUCH) $(@)
 
 xfsprogs: glibc e2fsprogs
-	cd $(src_dir) && CFLAGS="$(CPPFLAGS) -D_LINUX_TYPES_H" ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir)
+	cd $(src_dir) && CFLAGS="-DNO_ENDIAN_DEP_TYPES $(CPPFLAGS)" ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir) BUILD_VERBOSE=1
 	$(MAKE) --directory=$(src_dir) DIST_ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
