@@ -115,7 +115,8 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		Net-Telnet-3.03.tar.gz \
 		python-suds-0.4.tar.gz \
 		setuptools-0.6c11.tar.gz \
-		pexpect-2.3.tar.gz)
+		pexpect-2.3.tar.gz \
+		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
 build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
@@ -127,7 +128,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			corosync nss glib libxml2 libxslt libtool bzip2 Python \
 			crmsh libaio glue readline resource_agents mhvtl lzo \
 			mhash lessfs tokyocabinet fuse db snappy fence_agents \
-			pexpect pycurl curl Net-Telnet python-suds setuptools
+			pexpect pycurl curl Net-Telnet python-suds setuptools fio
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -936,5 +937,10 @@ python-suds: Python setuptools
 
 setuptools: Python
 	cd $(src_dir) && $(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+fio: glibc libaio
+	$(MAKE) --directory=$(src_dir) CC="gcc $(CPPFLAGS) $(LDFLAGS)"
+	$(MAKE) --directory=$(src_dir) prefix=/usr DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
