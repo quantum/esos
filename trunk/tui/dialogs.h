@@ -114,8 +114,8 @@ extern "C" {
 #define VALID_EMAIL_CHAR_MSG    "Only these characters are valid: a-z A-Z 0-9 _ - . @"
 #define VALID_ASCII_CHAR(c)     ((isascii(c)) ? 1 : 0)
 #define VALID_ASCII_CHAR_MSG    "Only ASCII characters are valid."
-#define VALID_INIT_CHAR(c)     ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.' || c == ':')) ? 1 : 0)
-#define VALID_INIT_CHAR_MSG    "Only these characters are valid: a-z A-Z 0-9 _ - . :"
+#define VALID_INIT_CHAR(c)     ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.' || c == ':' || c == '?' || c == '*')) ? 1 : 0)
+#define VALID_INIT_CHAR_MSG    "Only these characters are valid: a-z A-Z 0-9 _ - . : ? *"
 
 #ifdef	__cplusplus
 }
