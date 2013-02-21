@@ -1434,7 +1434,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         }
         
         /* Set the password for the new account */
-        snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN, "echo '%s:%s' | %s > /dev/null 2>&1",
+        snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN, "echo '%s:%s' | %s -m > /dev/null 2>&1",
                 username, password_1, CHPASSWD_BIN);
         ret_val = system(chg_pass_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
@@ -1644,7 +1644,7 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Set the new password */
-        snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN, "echo '%s:%s' | %s > /dev/null 2>&1",
+        snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN, "echo '%s:%s' | %s -m > /dev/null 2>&1",
                 user_acct, password_1, CHPASSWD_BIN);
         ret_val = system(chg_pass_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {

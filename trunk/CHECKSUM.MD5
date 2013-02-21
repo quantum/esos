@@ -22,7 +22,6 @@ c4e36b106624aff78527c54cf08ecbfe  lsscsi-0.25.tar.gz
 02e035eea876b86b665a34c43dd6eb26  iniparser-3.1.tar.gz
 0b0aea1df66ee01ae856823ca6637383  LVM2-2.02.97.tar.gz
 f70b2e7200d4c29f0af1cf70e7be1db6  xfsprogs-3.1.8.tar.gz
-e47a35a80143b72e9708844efbe2e608  drbd-8.3.11.tar.gz
 e927540b6eda8b024fb0391eeaa4091c  grub-2.00.tar.gz
 dd2472f07993496ca4f4e3e8f6746517  mdadm-3.2.6.tar.gz
 30ceb6df7e8681891e865e2fe5a7903d  parted-2.3.tar.gz
@@ -60,3 +59,5 @@ bf107cf54e67bc6dec5bea1f3e6a65c3  pexpect-2.3.tar.gz
 c358e9581687eeba374ee1eb042771a7  scst-trunk_r4762.tar.bz2
 053b47e6fe18ea8d23a3716bf64a2cf8  linux-3.7.8.tar.bz2
 495b8d4c3669ab6b1a3754f9242980bb  fio-2.0.13.tar.bz2
+3fb927c7c33022f1c327f14a81c0d4b0  bash-4.2.tar.gz
+760a25459ef6b7262a2a3572c1561c5b  drbd-8.3.13.tar.gz

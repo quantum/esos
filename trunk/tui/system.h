@@ -145,8 +145,8 @@ extern "C" {
 #define FSTAB_TMP       "/etc/fstab.new"
 #define MTAB            "/proc/mounts"
 #define ESOS_VER_FILE   "/etc/esos-release"
-#define BASHRC_FILE     "/etc/bashrc"
 #define QLA_FW_LICENSE  "/lib/firmware/QLOGIC_FW_LICENSE"
+#define GLOBAL_BASHRC   "/etc/bashrc"
 
 /* Misc. path settings */
 #define VDISK_MNT_BASE  "/mnt/vdisks"
@@ -166,6 +166,11 @@ extern "C" {
 #define SCST_GRP_NAME_LEN       16
 #define SCST_INITIATOR_LEN      64
 #define MAX_SCSI_DEVICES        256
+
+/* Logger settings */
+#define LOG_PREFIX      "esos_tui"
+#define LOG_OPTIONS     LOG_PID
+#define LOG_FACILITY    LOG_LOCAL0
 
 #ifdef	__cplusplus
 }

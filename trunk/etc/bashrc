@@ -7,8 +7,11 @@ export VISUAL="/bin/vi"
 export MANPATH="/usr/share/man"
 
 # Set the prompt
-if [ "`whoami`" == "root" ]; then
-    export PS1="[\u@\h \W]\# "
-else
-    export PS1="[\u@\h \W]\$ "
-fi
+export PS1="[\u@\h \W]\\$ "
+
+# Some useful aliases
+alias l.='ls -d .* --color=auto'
+alias ll='ls -l --color=auto'
+alias ls='ls --color=auto'
+alias rm='rm -i'
+alias vim='vi'
