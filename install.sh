@@ -5,19 +5,19 @@
 TEMP_DIR=`mktemp -u -d /tmp/esos_install.XXXXX` || exit 1
 MNT_DIR="${TEMP_DIR}/mnt"
 REQD_TOOLS="tar rpm2cpio cpio dd md5sum sha256sum grep blockdev unzip"
-PROP_TOOLS="MegaCLI asm_linux hpacucli linuxcli 3DM2_CLI"
+PROP_TOOLS="MegaCLI arcconf hpacucli linuxcli 3DM2_CLI"
 MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
 
 TOOL_DESC_MegaCLI="LSI Logic MegaRAID Controllers"
-TOOL_FILE_MegaCLI="8.02.16_MegaCLI.zip"
-TOOL_URL_MegaCLI="http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.02.16_MegaCLI.zip"
-TOOL_INSTALL_CMD_MegaCLI="unzip -o *_MegaCLI.zip && unzip -o LINUX/MegaCliLin.zip && rpm2cpio MegaCli-*.rpm | cpio -idmv && rpm2cpio Lib_Utils-*.rpm | cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/MegaCli64 && cp opt/lsi/3rdpartylibs/libsysfs.so.2.0.2 ${MNT_DIR}/opt/lib/ && mkdir -p ${MNT_DIR}/opt/lsi/3rdpartylibs/x86_64 && ln -s /opt/lib/libsysfs.so.2.0.2 ${MNT_DIR}/opt/lsi/3rdpartylibs/x86_64/libsysfs.so.2.0.2"
+TOOL_FILE_MegaCLI="8.07.06_MegaCLI.zip"
+TOOL_URL_MegaCLI="http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.07.06_MegaCLI.zip"
+TOOL_INSTALL_CMD_MegaCLI="unzip -o *_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm && cp Linux/opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/MegaCli64"
 
-TOOL_DESC_asm_linux="Adaptec AACRAID Controllers"
-TOOL_FILE_asm_linux="asm_linux_x64_v7_30_18837.tgz"
-TOOL_URL_asm_linux="http://www.adaptec.com/en-us/speed/raid/storage_manager/asm_linux_x64_v7_30_18837_tgz.htm"
-TOOL_INSTALL_CMD_asm_linux="tar xvfz asm_linux_*.tgz && rpm2cpio manager/StorMan-*.x86_64.rpm | cpio -idmv && cp cmdline/arcconf ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/arcconf && cp usr/StorMan/libstdc++.so.5 ${MNT_DIR}/opt/lib/"
+TOOL_DESC_arcconf="Adaptec AACRAID Controllers"
+TOOL_FILE_arcconf="arcconf_v1_00_20206.zip"
+TOOL_URL_arcconf="http://www.adaptec.com/en-us/speed/raid/storage_manager/arcconf_v1_00_20206_zip.htm"
+TOOL_INSTALL_CMD_arcconf="unzip -o arcconf_*.zip && cp linux_x64/arcconf ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/arcconf"
 
 TOOL_DESC_hpacucli="HP Smart Array Controllers"
 TOOL_FILE_hpacucli="hpacucli-9.30-15.0.x86_64.rpm"
@@ -27,12 +27,12 @@ TOOL_INSTALL_CMD_hpacucli="rpm2cpio hpacucli-*.x86_64.rpm | cpio -idmv && cp opt
 TOOL_DESC_linuxcli="Areca RAID Controllers"
 TOOL_FILE_linuxcli="linuxcli_V1.10.0_120815.zip"
 TOOL_URL_linuxcli="http://www.areca.us/support/s_linux/cli/linuxcli_V1.10.0_120815.zip"
-TOOL_INSTALL_CMD_linuxcli="unzip linuxcli_*.zip && cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/cli64"
+TOOL_INSTALL_CMD_linuxcli="unzip -o linuxcli_*.zip && cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/cli64"
 
 TOOL_DESC_3DM2_CLI="3ware SATA/SAS RAID Controllers"
 TOOL_FILE_3DM2_CLI="3DM2_CLI-Linux_10.2.1_9.5.4.zip"
 TOOL_URL_3DM2_CLI="http://www.lsi.com/downloads/Public/SATA/SATA%20Common%20Files/3DM2_CLI-Linux_10.2.1_9.5.4.zip"
-TOOL_INSTALL_CMD_3DM2_CLI="unzip 3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/tw_cli.x86_64"
+TOOL_INSTALL_CMD_3DM2_CLI="unzip -o 3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/tw_cli.x86_64"
 
 echo "*** Enterprise Storage OS Install Script ***" && echo
 

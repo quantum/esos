@@ -60,7 +60,7 @@ if [ -x "${ARCCONF}" ]; then
 		echo "Adapter ${adapter} has ${ld_count} logical drive(s)."
 		for logical_drv in `seq 0 $(expr ${ld_count} - 1)`; do
 			ld_state=`${ARCCONF} GETCONFIG ${adapter} LD ${logical_drv} nologs | \
-				grep "Status of logical device                 :" |  -f2 | \
+				grep "Status of logical device                 :" | cut -d: -f2 | \
 				tr -d ' ' | tr -d '\n'`
 			if [ "${ld_state}" != "Optimal" ]; then
 				echo "** Warning! AACRAID logical drive ${logical_drv} on adapter ${adapter} is not optimal!" 1>&2

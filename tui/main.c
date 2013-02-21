@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <cdk.h>
 #include <sys/wait.h>
+#include <syslog.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -273,8 +274,12 @@ int main(int argc, char** argv) {
                     curs_set(1);
                     echo();
                     system(CLEAR_BIN);
-                    // TODO: Need to check for error if execl fails
-                    execl(SHELL_BIN, SHELL_BIN, (char *) NULL);
+                    /* Execute the shell; if we fail, print something useful to syslog */
+                    if ((execl(SHELL_BIN, SHELL_BIN, "--rcfile", GLOBAL_BASHRC, "-i", (char *) NULL)) == -1) {
+                        openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
+                        syslog(LOG_ERR, "Calling execl() failed: %s", strerror(errno));
+                        closelog();
+                    }
                     exit(2);
                 } else {
                     /* Parent; wait for the child to finish */
