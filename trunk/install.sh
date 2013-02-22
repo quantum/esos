@@ -12,7 +12,7 @@ SHA256_CHECKSUM="dist_sha256sum.txt"
 TOOL_DESC_MegaCLI="LSI Logic MegaRAID Controllers"
 TOOL_FILE_MegaCLI="8.07.06_MegaCLI.zip"
 TOOL_URL_MegaCLI="http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.07.06_MegaCLI.zip"
-TOOL_INSTALL_CMD_MegaCLI="unzip -o *_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm && cp Linux/opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/MegaCli64"
+TOOL_INSTALL_CMD_MegaCLI="unzip -o *_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm | cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/MegaCli64"
 
 TOOL_DESC_arcconf="Adaptec AACRAID Controllers"
 TOOL_FILE_arcconf="arcconf_v1_00_20206.zip"

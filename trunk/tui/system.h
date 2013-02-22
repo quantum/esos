@@ -170,7 +170,7 @@ extern "C" {
 /* Logger settings */
 #define LOG_PREFIX      "esos_tui"
 #define LOG_OPTIONS     LOG_PID
-#define LOG_FACILITY    LOG_LOCAL0
+#define LOG_FACILITY    LOG_LOCAL2
 
 #ifdef	__cplusplus
 }
