@@ -327,8 +327,10 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 asprintf(&cmd_str, "%s -i -q %s 2>&1", SG_VPD_BIN, block_dev);
                 sg_vpd_cmd = popen(cmd_str, "r");
                 while (fgets(device_id, sizeof (device_id), sg_vpd_cmd) != NULL) {
+                    /* We take the first ID found in the command output */
                     if (strstr(device_id, "0x")) {
                         dev_id_ptr = strStrip(device_id);
+                        break;
                     }
                 }
                 if ((exit_stat = pclose(sg_vpd_cmd)) == -1) {

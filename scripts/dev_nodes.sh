@@ -9,8 +9,16 @@
 # Check the first two chracters of the 'scsi_id' variable; the
 # sg_vpd utility may return 0 even when it doesn't get a proper ID.
 
-scsi_id=`sg_vpd -i -q /dev/${MDEV} 2>&1`
-if [ ${?} -eq 0 ] && [ "${scsi_id:0:2}" == "0x" ]; then
-	mkdir -m 0755 -p /dev/disk-by-id
-	ln -s /dev/${MDEV} /dev/disk-by-id/${scsi_id}
+# The sg_vpd tool may return multiple device identifiers for some
+# devices (eg, EUI and NAA) so we only use the first line.
+
+IFS='\n'
+
+vpd_result="$(sg_vpd -i -q /dev/${MDEV} 2>&1)"
+if [ ${?} -eq 0 ]; then
+    scsi_id="$(echo ${vpd_result} | head -1)"
+    if [ "${scsi_id:0:2}" == "0x" ]; then
+        mkdir -m 0755 -p /dev/disk-by-id
+        ln -s /dev/${MDEV} /dev/disk-by-id/${scsi_id}
+    fi
 fi
