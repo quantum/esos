@@ -89,6 +89,16 @@ If you find that your favorite "enterprise class" RAID controller is not support
 
 <br>
 
+=== Virtual Tape Library (VTL) ===
+TODO
+
+<br>
+
+=== Inline Data De-duplication ===
+TODO
+
+<br>
+
 === File Systems & Virtual Disk Files ===
 After you have setup/configured your advanced back-end storage, it will still appear as a block device, just as described in the basic back-storage wiki document.
 
