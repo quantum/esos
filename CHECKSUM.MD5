@@ -13,7 +13,6 @@ c7575b7620615d7dfa1c7fdbbd310ec7  libibumad-1.3.7.tar.gz
 c90739bd0178bb568aad3b2ba03bb73a  libibverbs-1.1.4.tar.gz
 f8370ac17c33aa8d6a897064794a7d68  srptools-0.0.4.tar.gz
 c4e36b106624aff78527c54cf08ecbfe  lsscsi-0.25.tar.gz
-261e39f7161337330ba6bd57999be801  sg3_utils-1.33.tar.gz
 8b8cd29385b97616a0f0d96d0951c5bf  groff-1.21.tar.gz
 1b362abd2e8669171a5ba50a9cc26183  kexec-tools-2.0.3.tar.gz
 903fcfa547df2f453476800e0838fe52  glibc-2.12.2.tar.bz2
@@ -61,3 +60,4 @@ c358e9581687eeba374ee1eb042771a7  scst-trunk_r4762.tar.bz2
 495b8d4c3669ab6b1a3754f9242980bb  fio-2.0.13.tar.bz2
 3fb927c7c33022f1c327f14a81c0d4b0  bash-4.2.tar.gz
 760a25459ef6b7262a2a3572c1561c5b  drbd-8.3.13.tar.gz
+55c32fb95a5b3907687b023f392fbd3c  sg3_utils-1.35.tar.gz
