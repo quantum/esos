@@ -211,7 +211,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
     int dev_window_lines = 0, dev_window_cols = 0, window_y = 0, window_x = 0,
             dev_choice = 0, temp_int = 0, i = 0, traverse_ret = 0,
             exit_stat = 0, ret_val = 0;
-    FILE *sg_vpd_cmd = NULL;
+    FILE *scsi_id_cmd = NULL;
     boolean mounted = FALSE;
 
     /* Prompt for new device type */
@@ -322,18 +322,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 break;
 
             if ((strstr(block_dev, "/dev/sd")) != NULL) {
-                /* Get a unique ID for the device using the sg_vpd utility; this
+                /* Get a unique ID for the device using the scsi_id.sh script; this
                  * is then used for the device node link that exists in /dev */
-                asprintf(&cmd_str, "%s -i -q %s 2>&1", SG_VPD_BIN, block_dev);
-                sg_vpd_cmd = popen(cmd_str, "r");
-                while (fgets(device_id, sizeof (device_id), sg_vpd_cmd) != NULL) {
-                    /* We take the first ID found in the command output */
-                    if (strstr(device_id, "0x")) {
-                        dev_id_ptr = strStrip(device_id);
-                        break;
-                    }
-                }
-                if ((exit_stat = pclose(sg_vpd_cmd)) == -1) {
+                asprintf(&cmd_str, "%s %s 2>&1", SCSI_ID_TOOL, block_dev);
+                scsi_id_cmd = popen(cmd_str, "r");
+                fgets(device_id, sizeof (device_id), scsi_id_cmd);
+                dev_id_ptr = strStrip(device_id);
+
+                if ((exit_stat = pclose(scsi_id_cmd)) == -1) {
                     ret_val = -1;
                 } else {
                     if (WIFEXITED(exit_stat))
@@ -343,7 +339,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 freeChar(cmd_str);
                 if (ret_val != 0) {
-                    asprintf(&error_msg, "The %s command exited with %d.", SG_VPD_BIN, ret_val);
+                    asprintf(&error_msg, "The %s command exited with %d.", SCSI_ID_TOOL, ret_val);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     freeChar(error_msg);
                     break;

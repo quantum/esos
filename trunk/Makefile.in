@@ -70,7 +70,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		e2fsprogs-1.41.14.tar.gz \
 		zlib-1.2.5.tar.bz2 \
 		lsscsi-0.25.tar.gz \
-		sg3_utils-1.33.tar.gz \
+		sg3_utils-1.35.tar.gz \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
@@ -199,7 +199,8 @@ image: $(build_targets)
 	$(INSTALL) $(CWD)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/startup.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/health_chk.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(CWD)/scripts/dev_nodes.sh $(MOUNT_DIR)/usr/local/sbin/
+	$(INSTALL) $(CWD)/scripts/sd_dev_node.sh $(MOUNT_DIR)/usr/local/sbin/
+	$(INSTALL) $(CWD)/scripts/scsi_id.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
 	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/*
 	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/var/*
