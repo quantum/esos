@@ -95,7 +95,58 @@ TODO
 <br>
 
 === Inline Data De-duplication ===
-TODO
+De-duplication in ESOS is handled by lessfs, a virtual file system for FUSE. The lessfs file system is mounted on top of a "normal" (eg, ext3, xfs, etc.) and provides compression and encryption. You can then use this lessfs file system as your back-end storage for mhVTL or SCST FILEIO devices, seamlessly providing de-duplication.
+
+A separate, unique lessfs configuration file is needed for each lessfs file system. One configuration file can not handle multiple lessfs instances. A database (local files, Berkeley DB) is used for each lessfs file system, which is configured using the lessfs configuration file.
+
+The location for the lessfs database files and configuration file needs to be a persistent attached storage device on ESOS (eg, logical drive on local RAID controller). *Do not use any locations on the esos_root file system (/) for storing lessfs configuration files, or databases!*
+
+A typical setup for lessfs looks like this:
+  * Create a new back-end storage file system using the TUI. Example mount point: /mnt/vdisks/test_fs_1
+  * You would then create your lessfs configuration file here: /mnt/vdisks/test_fs_1/lessfs.cfg
+  * Create these three directories: /mnt/vdisks/test_fs_1/mta /mnt/vdisks/test_fs_1/dta /mnt/vdisks/test_fs_1/data
+
+Here is an example lessfs configuration file (/mnt/vdisks/test_fs_1/lessfs.cfg):
+{{{
+DEBUG=5
+HASHNAME=MHASH_TIGER192
+HASHLEN=24
+BLOCKDATA_IO_TYPE=file_io
+BLOCKDATA_PATH=/mnt/vdisks/test_fs_1/dta/blockdata.dta
+META_PATH=/mnt/vdisks/test_fs_1/mta
+META_BS=1048576
+CACHESIZE=512
+COMMIT_INTERVAL=10
+LISTEN_IP=127.0.0.1
+LISTEN_PORT=100
+MAX_THREADS=16
+DYNAMIC_DEFRAGMENTATION=on
+COREDUMPSIZE=2560000000
+SYNC_RELAX=0
+BACKGROUND_DELETE=on
+ENCRYPT_DATA=off
+ENCRYPT_META=off
+ENABLE_TRANSACTIONS=on
+BLKSIZE=131072
+COMPRESSION=snappy
+}}}
+
+Create the new lessfs file system:
+{{{
+mklessfs -f -c /mnt/vdisks/test_fs_1/lessfs.cfg
+}}}
+
+Now add this line to your /etc/fstab file; be sure this line is _after_ your normal, back-end file system that lessfs sits on top of:
+{{{
+lessfs#/mnt/vdisks/test_fs_1/lessfs.cfg /mnt/vdisks/test_fs_1/data fuse defaults 0 0
+}}}
+
+You can now mount your lessfs file system:
+{{{
+mount /mnt/vdisks/test_fs_1/data
+}}}
+
+You now have a file system that supports inline data de-duplication and can be used for virtual disk files (vdisk_fileio). If you are going to use lessfs in conjunction with mhVTL, you should use a separate storage device for the lessfs configuration and metadata (database files) since the VTL path is static. See the [http://www.lessfs.com/wordpress/ lessfs] web site for additional documentation and an explanation of the configuration parameters.
 
 <br>
 
