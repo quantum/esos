@@ -162,9 +162,13 @@ extern "C" {
 #define MAX_SCST_INITS          128
 #define MAX_SCST_DRIVERS        16
 #define SCST_ISCSI_TGT_LEN      32
+#define MAX_SCST_ISCSI_TGT_LEN  SCST_ISCSI_TGT_LEN + 1
 #define SCST_DEV_NAME_LEN       16
+#define MAX_SCST_DEV_NAME_LEN   SCST_DEV_NAME_LEN + 1
 #define SCST_GRP_NAME_LEN       16
+#define MAX_SCST_GRP_NAME_LEN   SCST_GRP_NAME_LEN + 1
 #define SCST_INITIATOR_LEN      64
+#define MAX_SCST_INITIATOR_LEN  SCST_INITIATOR_LEN + 1
 #define MAX_SCSI_DEVICES        256
 
 /* Logger settings */

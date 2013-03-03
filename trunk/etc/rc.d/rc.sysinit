@@ -24,18 +24,18 @@ echo "Starting kernel log daemon (klogd)..."
 /usr/sbin/fsck -A -M -T -p
 if [ $? -gt 1 ]; then
     /bin/echo
-    /bin/echo "ERROR (fsck): Your filesystem appears to be severely damaged."
+    /bin/echo "ERROR (fsck): Your file system appears to be severely damaged."
     /bin/echo "ERROR (fsck): You can probably correct this problem by running e2fsck manually."
     /bin/echo "ERROR (fsck): After you logout, the system will reboot."
     /bin/echo
-    PS1="(Repair filesystem) # "
+    PS1="(Repair file system) # "
     export PS1
     /sbin/sulogin
     /bin/umount -a -r
     /sbin/reboot -f
 fi
 
-/bin/echo "Mounting other local filesystems..."
+/bin/echo "Mounting other local file systems..."
 for i in `/usr/bin/awk '{print $2}' /etc/fstab`; do
     if [ "${i:0:1}" == "/" ]; then
         if [ ! -d "${i}" ]; then

@@ -2,14 +2,35 @@
 
 # $Id$
 
-# Generate keys if necessary
-for i in ecdsa dsa rsa; do
-    key_file="/etc/ssh/ssh_host_${i}_key"
-    if [ ! -e "${key_file}" ]; then
-        /bin/echo "Generating ${i} host key..."
-        /usr/bin/ssh-keygen -t ${i} -f "${key_file}" -N ''
-    fi
-done
+SSHD="/usr/sbin/sshd"
+SSHD_LOCK="/var/lock/sshd"
 
-# Start sshd
-/usr/sbin/sshd -f /etc/ssh/sshd_config
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    # Generate keys if necessary
+    for i in ecdsa dsa rsa; do
+        key_file="/etc/ssh/ssh_host_${i}_key"
+        if [ ! -e "${key_file}" ]; then
+            /bin/echo "Generating ${i} host key..."
+            /usr/bin/ssh-keygen -t ${i} -f "${key_file}" -N ''
+        fi
+    done
+    # Start sshd
+    /bin/echo "Starting sshd..."
+    ${SSHD} -f /etc/ssh/sshd_config || exit 1
+    /bin/touch ${SSHD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping sshd..."
+    /bin/kill -TERM $(/bin/pidof ${SSHD}) || exit 1
+    /bin/rm -f ${SSHD_LOCK}
+}
+
+# Perform specified action
+${1}

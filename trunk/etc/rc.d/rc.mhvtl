@@ -5,14 +5,27 @@
 VTL_USER="vtl"
 MHVTL_CONFIG_PATH="/etc/mhvtl"
 
-# Make sure the mhVTL user can read/write
-/bin/chown -R ${VTL_USER} ${MHVTL_CONFIG_PATH}
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
 
-# Load the mhVTL module
-/sbin/modprobe mhvtl
+start() {
+    /bin/echo "Starting mhVTL services..."
+    # Make sure the mhVTL user can read/write
+    /bin/chown -R ${VTL_USER} ${MHVTL_CONFIG_PATH}
+    # Load the mhVTL module
+    /sbin/modprobe mhvtl
+    # Build the library media
+    /usr/bin/make_vtl_media ${VTL_USER}
+    # Build the library configuration
+    /usr/bin/build_library_config ${VTL_USER}
+}
 
-# Build the library media
-/usr/bin/make_vtl_media ${VTL_USER}
+stop() {
+    # Do nothing
+}
 
-# Build the library configuration
-/usr/bin/build_library_config ${VTL_USER}
+# Perform specified action
+${1}

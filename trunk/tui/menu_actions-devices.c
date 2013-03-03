@@ -200,7 +200,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             *bs_list[] = {"512", "1024", "2048", "4096", "8192"},
             *no_yes[] = {"No (0)", "Yes (1)"};
     char attr_path[MAX_SYSFS_PATH_SIZE] = {0}, attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
-            fileio_file[MAX_SYSFS_ATTR_SIZE] = {0}, temp_str[SCST_DEV_NAME_LEN] = {0},
+            fileio_file[MAX_SYSFS_ATTR_SIZE] = {0}, temp_str[MAX_SCST_DEV_NAME_LEN] = {0},
             device_id[MAX_SYSFS_ATTR_SIZE] = {0}, fs_name[MAX_FS_ATTR_LEN] = {0},
             fs_path[MAX_FS_ATTR_LEN] = {0}, fs_type[MAX_FS_ATTR_LEN] = {0},
             real_blk_dev[MAX_SYSFS_PATH_SIZE] = {0};
@@ -487,7 +487,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 curs_set(0);
 
                 /* Check device name (field entry) */
-                strncpy(temp_str, getCDKEntryValue(dev_name_field), SCST_DEV_NAME_LEN);
+                strncpy(temp_str, getCDKEntryValue(dev_name_field), MAX_SCST_DEV_NAME_LEN);
                 i = 0;
                 while (temp_str[i] != '\0') {
                     /* If the user didn't input an acceptable name, then cancel out */
@@ -699,7 +699,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 curs_set(0);
 
                 /* Check device name (field entry) */
-                strncpy(temp_str, getCDKEntryValue(dev_name_field), SCST_DEV_NAME_LEN);
+                strncpy(temp_str, getCDKEntryValue(dev_name_field), MAX_SCST_DEV_NAME_LEN);
                 i = 0;
                 while (temp_str[i] != '\0') {
                     /* If the user didn't input an acceptable name, then cancel out */
@@ -851,7 +851,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 curs_set(0);
 
                 /* Check device name (field entry) */
-                strncpy(temp_str, getCDKEntryValue(dev_name_field), SCST_DEV_NAME_LEN);
+                strncpy(temp_str, getCDKEntryValue(dev_name_field), MAX_SCST_DEV_NAME_LEN);
                 i = 0;
                 while (temp_str[i] != '\0') {
                     /* If the user didn't input an acceptable name, then cancel out */

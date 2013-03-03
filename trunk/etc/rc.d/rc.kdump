@@ -2,7 +2,7 @@
 
 # $Id$
 
-# Need the boot filesystem so we can load a kernel
+# Need the boot file system so we can load a kernel
 /bin/mount /boot
 
 # Load a kernel (prod or debug) for use on panic

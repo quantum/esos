@@ -2,7 +2,23 @@
 
 # $Id$
 
-# Setup LVM 2
-/usr/sbin/dmsetup mknodes
-/usr/sbin/vgscan --ignorelockingfailure
-/usr/sbin/vgchange -ay --ignorelockingfailure
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    # Setup LVM 2
+    /bin/echo "Configuring the LVM subsystem..."
+    /usr/sbin/dmsetup mknodes
+    /usr/sbin/vgscan --ignorelockingfailure
+    /usr/sbin/vgchange -ay --ignorelockingfailure
+}
+
+stop() {
+    # Do nothing
+}
+
+# Perform specified action
+${1}

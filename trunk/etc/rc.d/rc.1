@@ -2,13 +2,15 @@
 
 # $Id$
 
-if [ -x /etc/rc.d/rc.pacemaker ]; then
-    /etc/rc.d/rc.pacemaker stop
-fi
+source /etc/rc.d/common
 
-if [ -x /etc/rc.d/rc.corosync ]; then
-    /etc/rc.d/rc.corosync stop
-fi
+# Stop the user settable services (reverse order)
+for i in "$(/bin/echo ${SERVICES} | /usr/bin/tr ' ' '\n' | \
+    /usr/bin/tac | /usr/bin/tr '\n' ' ')"; do
+    if check_enabled "${i}"; then
+        ${RC_D_PREFIX}/${i} stop
+    fi
+done
 
 if [ -x /etc/rc.d/rc.network ]; then
     /etc/rc.d/rc.network stop

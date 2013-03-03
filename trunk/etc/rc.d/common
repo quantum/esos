@@ -1,0 +1,30 @@
+# $Id$
+
+RC_D_PREFIX="/etc/rc.d"
+
+# User settable services; started in this order and reversed on shutdown
+SERVICES="rc.sshd rc.lvm2 rc.drbd rc.corosync rc.pacemaker rc.mhvtl rc.scst"
+
+# Check if the service is enabled, or not
+check_enabled() {
+    rc_conf_line="$(/bin/egrep \"^${1}_enable\" /etc/rc.conf)"
+    if [ ${?} -eq 0 ]; then
+        on_off="$(/bin/echo ${rc_conf_line} | /usr/bin/cut -d= -f2 | /usr/bin/tr -d ' ')"
+        case ${on_off} in
+            # "yes", "true", "on", or "1"
+        [Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1)
+            return 0
+            ;;
+            # "no", "false", "off", or "0"
+        [Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|[Oo][Ff][Ff]|0)
+            return 1
+            ;;
+        *)
+            /bin/echo "The value for ${1}_enable is not set properly!"
+            return 1
+            ;;
+        esac
+    else
+        return 1
+}
+

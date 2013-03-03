@@ -6,20 +6,43 @@ IB_MODS="ib_ipath mlx4_ib ib_mthca ib_qib"
 SCST_MODS="scst qla2x00tgt iscsi-scst ib_srpt scst_disk scst_vdisk scst_tape scst_changer"
 SCST_CFG="/etc/scst.conf"
 
-# Load the InfiniBand modules
-for i in ${IB_MODS}; do
-	/sbin/modprobe ${i}
-done
-
-# Load the SCST core modules and target drivers
-for i in ${SCST_MODS}; do
-	/sbin/modprobe ${i}
-done
-
-# Start the iSCSI SCST daemon
-/usr/sbin/iscsi-scstd
-
-# Configure SCST
-if [ -f ${SCST_CFG} ]; then
-	/usr/sbin/scstadmin -config ${SCST_CFG}
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
 fi
+
+start() {
+    # If our pre-SCST file exists, run it
+    if [ -f /etc/pre-scst_xtra_conf ]; then
+        /bin/echo "Pre-SCST user config. file found; running..."
+        /bin/sh /etc/pre-scst_xtra_conf
+    fi
+    /bin/echo "Loading and configuring SCST..."
+    # Load the InfiniBand modules
+    for i in ${IB_MODS}; do
+        /sbin/modprobe ${i}
+    done
+    # Load the SCST core modules and target drivers
+    for i in ${SCST_MODS}; do
+        /sbin/modprobe ${i}
+    done
+    # Start the iSCSI SCST daemon
+    /usr/sbin/iscsi-scstd
+    # Configure SCST
+    if [ -f ${SCST_CFG} ]; then
+        /usr/sbin/scstadmin -config ${SCST_CFG}
+    fi
+    # If our post-SCST file exists, run it
+    if [ -f /etc/post-scst_xtra_conf ]; then
+        /bin/echo "Post-SCST user config. file found; running..."
+        /bin/sh /etc/post-scst_xtra_conf
+    fi
+}
+
+stop() {
+    # Do nothing
+}
+
+# Perform specified action
+${1}
