@@ -18,6 +18,7 @@ start() {
 
 stop() {
     # Do nothing
+    :
 }
 
 # Perform specified action

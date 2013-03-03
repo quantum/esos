@@ -29,7 +29,7 @@ if [ -x /etc/rc.d/rc.kdump ]; then
 fi
 
 # Start the user settable services
-for i in "${SERVICES}"; do
+for i in ${SERVICES}; do
     if check_enabled "${i}"; then
         ${RC_D_PREFIX}/${i} start
     fi
