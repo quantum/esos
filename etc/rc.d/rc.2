@@ -2,6 +2,8 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 /bin/echo "Bringing up loopback interface..."
 /sbin/ifconfig lo 127.0.0.1
 /sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
@@ -26,43 +28,12 @@ if [ -x /etc/rc.d/rc.kdump ]; then
     /etc/rc.d/rc.kdump
 fi
 
-if [ -x /etc/rc.d/rc.sshd ]; then
-    /bin/echo "Starting sshd..."
-    /etc/rc.d/rc.sshd
-fi
-
-if [ -x /etc/rc.d/rc.lvm2 ]; then
-    /bin/echo "Configuring the LVM subsystem..."
-    /etc/rc.d/rc.lvm2
-fi
-
-if [ -x /etc/rc.d/rc.corosync ]; then
-    /etc/rc.d/rc.corosync start
-fi
-
-if [ -x /etc/rc.d/rc.pacemaker ]; then
-    /etc/rc.d/rc.pacemaker start
-fi
-
-if [ -f /etc/mhvtl/device.conf ]; then
-    /bin/echo "Starting mhVTL services..."
-    /etc/rc.d/rc.mhvtl
-fi
-
-if [ -f /etc/pre-scst_xtra_conf ]; then
-    /bin/echo "Pre-SCST user config. file found; running..."
-    /bin/sh /etc/pre-scst_xtra_conf
-fi
-
-if [ -x /etc/rc.d/rc.scst ]; then
-    /bin/echo "Loading and configuring SCST..."
-    /etc/rc.d/rc.scst
-fi
-
-if [ -f /etc/post-scst_xtra_conf ]; then
-    /bin/echo "Post-SCST user config. file found; running..."
-    /bin/sh /etc/post-scst_xtra_conf
-fi
+# Start the user settable services
+for i in "${SERVICES}"; do
+    if check_enabled "${i}"; then
+        ${RC_D_PREFIX}/${i} start
+    fi
+done
 
 if [ -x /etc/rc.d/rc.local ]; then
     /etc/rc.d/rc.local

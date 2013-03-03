@@ -118,11 +118,11 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
  */
 void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *tgt_name_entry = 0;
-    char temp_str[SCST_ISCSI_TGT_LEN] = {0},
+    char temp_str[MAX_SCST_ISCSI_TGT_LEN] = {0},
             attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
             nice_date[MISC_STRING_LEN] = {0}, hostname[MISC_STRING_LEN] = {0},
-            rand_str[MISC_STRING_LEN] = {0}, def_iqn[SCST_ISCSI_TGT_LEN] = {0};
+            rand_str[MISC_STRING_LEN] = {0}, def_iqn[MAX_SCST_ISCSI_TGT_LEN] = {0};
     static char hex_str[] = "0123456789abcdef";
     char *entry_title = NULL, *target_name = NULL, *error_msg = NULL, *tmp_pstr = NULL;
     int i = 0, temp_int = 0;
@@ -142,7 +142,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(rand_str, MISC_STRING_LEN, "%c%c%c%c%c",
             hex_str[rand()%16], hex_str[rand()%16],hex_str[rand()%16],
             hex_str[rand()%16], hex_str[rand()%16]);
-    snprintf(def_iqn, SCST_ISCSI_TGT_LEN, "iqn.%s.esos.%s:%s",
+    snprintf(def_iqn, MAX_SCST_ISCSI_TGT_LEN, "iqn.%s.esos.%s:%s",
             nice_date, hostname, rand_str);
 
     /* Get new target name (entry widget) */
@@ -166,7 +166,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
     /* Check exit from widget */
     if (tgt_name_entry->exitType == vNORMAL) {
         /* Check target name for bad characters */
-        strncpy(temp_str, target_name, SCST_ISCSI_TGT_LEN);
+        strncpy(temp_str, target_name, MAX_SCST_ISCSI_TGT_LEN);
         i = 0;
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */

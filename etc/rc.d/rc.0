@@ -2,13 +2,15 @@
 
 # $Id$
 
-if [ -x /etc/rc.d/rc.pacemaker ]; then
-    /etc/rc.d/rc.pacemaker stop
-fi
+source /etc/rc.d/common
 
-if [ -x /etc/rc.d/rc.corosync ]; then
-    /etc/rc.d/rc.corosync stop
-fi
+# Stop the user settable services (reverse order)
+for i in "$(/bin/echo ${SERVICES} | /usr/bin/tr ' ' '\n' | \
+    /usr/bin/tac | /usr/bin/tr '\n' ' ')"; do
+    if check_enabled "${i}"; then
+        ${RC_D_PREFIX}/${i} stop
+    fi
+done
 
 if [ -x /etc/rc.d/rc.network ]; then
     /etc/rc.d/rc.network stop
@@ -44,13 +46,13 @@ esac
 /bin/echo "Saving log files..."
 /usr/local/sbin/archive_logs.sh
 
-/bin/echo "Remounting root filesystem read-only..."
+/bin/echo "Remounting root file system read-only..."
 /bin/mount -n -o remount,ro /
 
-/bin/echo "Flushing filesystem buffers..."
+/bin/echo "Flushing file system buffers..."
 /bin/sync
 
-/bin/echo "Unmounting local filesystems..."
+/bin/echo "Unmounting local file systems..."
 /bin/umount -l /dev
 /bin/umount -a
 

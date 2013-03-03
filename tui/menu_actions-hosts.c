@@ -22,7 +22,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *grp_name_entry = 0;
     char scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},
         tgt_driver[MAX_SYSFS_ATTR_SIZE] = {0},
-        temp_str[SCST_GRP_NAME_LEN] = {0},
+        temp_str[MAX_SCST_GRP_NAME_LEN] = {0},
         attr_path[MAX_SYSFS_PATH_SIZE] = {0},
         attr_value[MAX_SYSFS_ATTR_SIZE] = {0};
     char *entry_title = NULL, *group_name = NULL, *error_msg = NULL;
@@ -54,7 +54,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
     /* Check exit from widget */
     if (grp_name_entry->exitType == vNORMAL) {
         /* Check group name for bad characters */
-        strncpy(temp_str, group_name, SCST_GRP_NAME_LEN);
+        strncpy(temp_str, group_name, MAX_SCST_GRP_NAME_LEN);
         i = 0;
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
@@ -143,7 +143,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *init_entry = 0;
     char scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},
         tgt_driver[MAX_SYSFS_ATTR_SIZE] = {0},
-        temp_str[SCST_INITIATOR_LEN] = {0},
+        temp_str[MAX_SCST_INITIATOR_LEN] = {0},
         attr_path[MAX_SYSFS_PATH_SIZE] = {0},
         attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
         group_name[MAX_SYSFS_ATTR_SIZE] = {0};
@@ -181,7 +181,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
     /* Check exit from widget */
     if (init_entry->exitType == vNORMAL) {
         /* Check group name for bad characters */
-        strncpy(temp_str, initiator, SCST_INITIATOR_LEN);
+        strncpy(temp_str, initiator, MAX_SCST_INITIATOR_LEN);
         i = 0;
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable string, then cancel out */
