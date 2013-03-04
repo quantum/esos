@@ -117,6 +117,11 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		setuptools-0.6c11.tar.gz \
 		pexpect-2.3.tar.gz \
 		bash-4.2.tar.gz \
+		open-fcoe-3.7.tar.bz2 \
+		open-lldp-0.9.45.tar.gz \
+		libconfig-1.4.9.tar.gz \
+		libnl-1.1.2.tar.gz \
+		libpciaccess-0.13.1.tar.bz2 \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -130,7 +135,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			crmsh libaio glue readline resource_agents mhvtl lzo \
 			mhash lessfs tokyocabinet fuse db snappy fence_agents \
 			pexpect pycurl curl Net-Telnet python-suds setuptools \
-			fio bash
+			fio bash open-fcoe open-lldp libconfig libnl libpciaccess
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -382,6 +387,8 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) SBINDIR=$(IMAGE_DIR)/usr/sbin MANDIR=$(IMAGE_DIR)/usr/share/man INSTALL_MOD_PATH=$(IMAGE_DIR) iscsi_install
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) srpt
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) srpt_install
+	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) fcst
+	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) fcst_install
 	### Build/install mhVTL module
 	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix)
 	$(INSTALL) -m 644 $(mhvtl_src)/kernel/mhvtl.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/kernel/drivers/scsi/
@@ -949,6 +956,68 @@ fio: glibc libaio
 
 bash: glibc ncurses
 	cd $(src_dir) && ./configure --prefix=/usr --exec-prefix=/ --with-curses
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+open-fcoe: glibc open-lldp libpciaccess
+	$(QUIET) if [ ! -f "$(src_dir)/libHBAAPI/configure" ]; then \
+	  cd $(src_dir)/libHBAAPI && ./bootstrap.sh; \
+	fi
+	cd $(src_dir)/libHBAAPI && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(src_dir)/libHBAAPI
+	$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install
+	$(QUIET) if [ ! -f "$(src_dir)/libhbalinux/configure" ]; then \
+	  cd $(src_dir)/libhbalinux && ./bootstrap.sh; \
+	fi
+	cd $(src_dir)/libhbalinux && PCIACCESS_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	PCIACCESS_LIBS="$(LDFLAGS) -lpciaccess" HBAAPI_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	HBAAPI_LIBS="$(LDFLAGS) -lHBAAPI -ldl" ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(src_dir)/libhbalinux
+	$(MAKE) --directory=$(src_dir)/libhbalinux DESTDIR=$(IMAGE_DIR) install
+	$(QUIET) if [ ! -f "$(src_dir)/fcoe-utils/configure" ]; then \
+	  cd $(src_dir)/fcoe-utils && ./bootstrap.sh; \
+	fi
+	cd $(src_dir)/fcoe-utils && HBAAPI_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+        HBAAPI_LIBS="$(LDFLAGS) -lHBAAPI -ldl" LLDPAD_CFLAGS="-I$(IMAGE_DIR)/usr/include/lldpad" \
+	LLDPAD_LIBS="$(LDFLAGS) -llldp_clif" LIBHBALINUX_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	LIBHBALINUX_LIBS="$(LDFLAGS) -lhbalinux" ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(src_dir)/fcoe-utils
+	$(MAKE) --directory=$(src_dir)/fcoe-utils DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir)/fcoe-utils DESTDIR=$(IMAGE_DIR) install-man
+	$(TOUCH) $(@)
+
+open-lldp: glibc libconfig libnl
+	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  cd $(src_dir) && libtoolize; \
+	  cd $(src_dir) && ./bootstrap.sh; \
+	fi
+	$(SED) -i 's/-Werror//' $(src_dir)/Makefile.in
+	cd $(src_dir) && LIBCONFIG_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	LIBCONFIG_LIBS="$(LDFLAGS) -lconfig" LIBNL_CFLAGS="-I$(IMAGE_DIR)/usr/include/netlink" \
+	LIBNL_LIBS="$(LDFLAGS) -lnl" ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-lldpad_includeHEADERS
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-lldpadconfigDATA
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-man 
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-pkgconfigDATA
+	$(TOUCH) $(@)
+
+libconfig: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+libnl: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+libpciaccess: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)

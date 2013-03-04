@@ -3,7 +3,7 @@
 # $Id$
 
 IB_MODS="ib_ipath mlx4_ib ib_mthca ib_qib"
-SCST_MODS="scst qla2x00tgt iscsi-scst ib_srpt scst_disk scst_vdisk scst_tape scst_changer"
+SCST_MODS="scst qla2x00tgt iscsi-scst ib_srpt scst_disk scst_vdisk scst_tape scst_changer fcst"
 SCST_CFG="/etc/scst.conf"
 
 # Check arguments

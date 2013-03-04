@@ -1689,8 +1689,10 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                 addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
                 i++;
             }
-            snprintf(mkfs_cmd, MAX_SHELL_CMD_LEN, "mkfs.%s -L %s %s > /dev/null 2>&1",
-                    fs_type_opts[temp_int], fs_label_buff, new_blk_dev_node);
+            snprintf(mkfs_cmd, MAX_SHELL_CMD_LEN, "mkfs.%s -L %s -%s %s > /dev/null 2>&1",
+                    fs_type_opts[temp_int], fs_label_buff,
+                    ((strcmp(fs_type_opts[temp_int], "xfs") == 0) ? "f" : "F"),
+                    new_blk_dev_node);
             ret_val = system(mkfs_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
                 asprintf(&error_msg, "Running '%s' failed; exited with %d.", mkfs_cmd, exit_stat);
