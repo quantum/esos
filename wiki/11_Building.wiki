@@ -20,23 +20,23 @@ Here is a list of the build host system requirements:
 Using _Red Hat Enterprise Linux 6.2 Server x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * yum groupinstall "Development tools"
-  * yum install lsscsi kpartx
+  * yum install lsscsi kpartx libxslt
 
 Using _Fedora 16 Desktop Edition x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * yum groupinstall "Development tools"
-  * yum install wget lsscsi kpartx
+  * yum install wget lsscsi kpartx libxslt
 
 Using _Ubuntu 11.10 x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * apt-get install build-essential
-  * apt-get install subversion autoconf gawk flex bison gcc-multilib unzip libtinfo-dev libtool lsscsi kpartx
+  * apt-get install subversion autoconf gawk flex bison gcc-multilib unzip libtinfo-dev libtool lsscsi kpartx libxslt
 
 Using _SUSE Linux Enterprise Desktop 11.4 x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * zypper install -t pattern "devel_C_C++"
   * zypper install -t pattern "linux_kernel_devel"
-  * zypper install subversion kpartx
+  * zypper install subversion kpartx libxslt
 
 <br>
 
