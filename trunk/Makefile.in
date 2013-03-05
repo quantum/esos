@@ -988,6 +988,8 @@ open-fcoe: glibc open-lldp libpciaccess
 	$(TOUCH) $(@)
 
 open-lldp: glibc libconfig libnl
+	$(SED) -i 's/^AC_FUNC_MALLOC/dnl AC_FUNC_MALLOC/' $(src_dir)/configure.ac
+	$(SED) -i 's/^AC_FUNC_REALLOC/dnl AC_FUNC_REALLOC/' $(src_dir)/configure.ac
 	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
 	  cd $(src_dir) && libtoolize; \
 	  cd $(src_dir) && ./bootstrap.sh; \
