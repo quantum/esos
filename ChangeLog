@@ -1,0 +1,1056 @@
+2013-02-18 19:45  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/modprobe.conf,
+	  misc/initramfs_init, misc/linux-3.7.8.config, tui/dialogs.h:
+	  fixed spelling issue in initramfs script; added fio package;
+	  changed a few kernel options to built-in (instead of modules);
+	  fixed TUI add-initiator input issue (wildcards)
+
+2013-02-18 15:00  msmith626@gmail.com
+
+	* Makefile.in, misc/kernel_headers.patch: more build fixes for move
+	  to new kernel
+
+2013-02-18 03:15  msmith626@gmail.com
+
+	* misc/busybox-1.19.0.config: fixed busybox build issue (removed
+	  support for mkfs_ext2 since we install e2fsprogs)
+
+2013-02-17 23:49  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/linux-3.7.8.config: updated SCST and Linux kernel (3.7.8)
+
+2013-02-16 18:27  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/nsswitch.conf,
+	  etc/rc.d/rc.2, etc/rc.d/rc.network, etc/rc.d/rc.scst,
+	  etc/rc.d/rc.sysinit, misc/drbd-8.3.11.patch,
+	  misc/pycurl-7.19.0.patch, scripts/conf_sync.sh, tui/label_data.c,
+	  tui/main.c, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
+	  tui/menu_actions-interface.c, tui/menu_actions-system.c,
+	  tui/menu_actions-targets.c, tui/menu_actions.c, tui/prototypes.h,
+	  tui/system.h: added fence-agents package along with required
+	  dependencies; updated corosync to 2.3.0; moved klogd to
+	  rc.sysinit so it starts early so we don't see any kernel messages
+	  on the screen; added support for /etc/xtra_hosts (for additional
+	  static hosts entries and added nsswitch.conf to support this;
+	  updated rc.scst to load tape/changer modules; TUI screen/dialog
+	  title clean-up; added support for dev_changer, dev_tape, and
+	  dev_tape_perf handlers in TUI
+
+2013-02-11 03:02  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/rc.2, etc/rc.d/rc.pacemaker,
+	  etc/rc.d/rc.sysinit, install.sh, scripts/dev_nodes.sh: set
+	  --jobs=4 for Linux kernel and glibc packages to hopefully speed
+	  up build time; start system logger after network is up (after
+	  hostname has been set); move temp. directory creation to after
+	  image has been written in the install script; re-read the
+	  partition table after the disk has been written... should fix
+	  issue that some distros experience where FS by label doesn't
+	  work; fixed issue with mdev device node helper script where
+	  sg_vpd tool was not returning non-zero and giving bad results
+
+2013-02-10 00:03  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/drbd.conf,
+	  etc/group, etc/lessfs.cfg, etc/mhvtl, etc/mhvtl/mhvtl.conf,
+	  etc/passwd, etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2,
+	  etc/rc.d/rc.drbd, etc/rc.d/rc.mhvtl, etc/shadow, install.sh,
+	  misc/drbd-8.3.11.patch, scripts/conf_sync.sh, tui/main.c,
+	  tui/system.h: added resource agents package for pacemaker; added
+	  mhVTL Virtual Tape Library software (and dependencies: mhash,
+	  lzo); add lessfs/fuse support for data de-duplication (and
+	  required dependencies: tokyocabinet, fuse, berekekly DB, and
+	  google's snappy); user 'vtl' for mhVTL software; drbd.conf
+	  tweaks; removed rc.drbd init script... DRBD resources should be
+	  handled by cluster stack, not our init; added rc support for
+	  mhVTL; make install script exit if there is a problem with the
+	  checksums; updated drbd package to install additional shell
+	  script helpers (fencing, etc.); updated conf_sync.sh to sync new
+	  software's config. files; re-ordered the main menu so it flows
+	  correctly with the documentation (create host group THEN create
+	  devices and map them to the group)
+
+2013-01-28 16:52  msmith626@gmail.com
+
+	* Makefile.in: enabled pacemaker support for drbd
+
+2013-01-27 17:34  msmith626@gmail.com
+
+	* Makefile.in, tui/dialogs.h, tui/main.c,
+	  tui/menu_actions-system.c, tui/prototypes.h, tui/system.h: fixed
+	  another pacemaker issue... --without-python doesn't work? renamed
+	  Linux-HA dialog to 'CRM Status' -- updated dialog to use the 'crm
+	  status' command for cluster/HA information
+
+2013-01-27 02:24  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added readline,
+	  dependency for crmsh (interactive mode)
+
+2013-01-25 21:59  msmith626@gmail.com
+
+	* Makefile.in: make /var have an old time stamp (for conf_sync)
+
+2013-01-25 21:58  msmith626@gmail.com
+
+	* Makefile.in, install.sh, misc/initramfs_init,
+	  scripts/conf_sync.sh: more fixes/tweaks to conf_sync script (from
+	  recent updates); added a progress/working indicator to the
+	  initramfs script; install script should now fail if dd exits
+	  non-zero; added missing ocf resources for pacemaker
+
+2013-01-25 03:42  msmith626@gmail.com
+
+	* Makefile.in, etc/corosync/corosync.conf, etc/rc.d/rc.corosync,
+	  scripts/conf_sync.sh: fixed path issue for crmsh helper progs;
+	  updated conf_sync script to sync /var directories (scst,
+	  pacemaker, etc.); set corosync defaults and updated rc script
+
+2013-01-23 16:46  msmith626@gmail.com
+
+	* Makefile.in: More new build/dependency errors resolved....
+
+2013-01-23 04:26  msmith626@gmail.com
+
+	* Makefile.in: fixed a few dependency/build issues from r340
+
+2013-01-22 18:18  msmith626@gmail.com
+
+	* ., Makefile.in, etc/group, etc/passwd, etc/rc.d/rc.0,
+	  etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.corosync,
+	  etc/rc.d/rc.pacemaker, etc/shadow: new user/group for HA stuff;
+	  added/updated rc scripts for pacemaker and corosync; few tweaks
+	  to hopefully make all of the HA/cluster stuff work
+
+2013-01-16 22:04  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/corosync,
+	  etc/corosync/corosync.conf, etc/rc.d/rc.0, etc/rc.d/rc.1,
+	  etc/rc.d/rc.2, etc/rc.d/rc.3, etc/rc.d/rc.4, etc/rc.d/rc.5,
+	  etc/rc.d/rc.6, etc/rc.d/rc.corosync, etc/rc.d/rc.local,
+	  etc/rc.d/rc.pacemaker, etc/rc.d/rc.scst, etc/rc.d/rc.sshd,
+	  etc/rc.d/rc.sysinit, scripts/conf_sync.sh: added crmsh package,
+	  which requires glue, which requires a few other dependencies;
+	  started pacemaker/corosync rc scripts (needs more)
+
+2013-01-09 05:39  msmith626@gmail.com
+
+	* Makefile.in: fixed CentOS nss build issue
+
+2013-01-08 17:51  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/lvm,
+	  etc/lvm.conf, etc/lvm/lvm.conf, etc/rc.d/rc.sshd, etc/revaliases,
+	  etc/ssh, etc/ssh/ssh_config, etc/ssh/sshd_config, etc/ssh_config,
+	  etc/sshd_config, etc/ssmtp, etc/ssmtp.conf, etc/ssmtp/revaliases,
+	  etc/ssmtp/ssmtp.conf, scripts/conf_sync.sh,
+	  scripts/health_chk.sh, tui/system.h: added pacemaker and corosync
+	  along with the three dozen required depenencies to support them
+	  (libqb, nss, libxml2, libxslt, libtool, bzip2, glib); rearranged
+	  lots of default config. files into sub-directories of /etc;
+	  updated conf_sync.sh to handle /etc files in sub-directories;
+	  updated TUI defines for new config. files locations; the
+	  health_chk.sh script will now detect a failed USB flash drive and
+	  send a notification email including a config. file tar ball
+
+2012-12-30 04:15  msmith626@gmail.com
+
+	* Makefile.in, tui/dialogs.h, tui/main.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-interface.c,
+	  tui/menu_actions-targets.c, tui/prototypes.h, tui/system.h: get
+	  rid of .svn directories in image; copy QLogic FW license into
+	  image; fixed issue in CDK when compiling on Debian Wheezy
+	  (ncurses-config tool); added new LUN Layout dialog that will
+	  display overview of targets, groups, initators, and mapped LUNs;
+	  implemented new Support Bundle dialog for creating a support tar
+	  archive and new About dialog
+
+2012-12-22 03:06  msmith626@gmail.com
+
+	* tui/dialogs.h, tui/main.c, tui/megaraid.c,
+	  tui/menu_actions-back_storage.c, tui/menu_actions-devices.c,
+	  tui/menu_actions-interface.c, tui/menu_actions.c,
+	  tui/prototypes.h, tui/system.h: added menu options for Help,
+	  Support Bundle, and About; completed Help dialog; fixed issue # 2
+	  (TUI seg. fault when using Volume Properties dialog; new source
+	  file for Interface menu
+
+2012-12-19 03:11  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
+	  scripts/archive_logs.sh, scripts/conf_sync.sh,
+	  scripts/dev_nodes.sh, tui/dialogs.h, tui/prototypes.h,
+	  tui/system.h: added IB subnet manager opensm; updated conf_sync
+	  to include new config. files; fixed sysconfdir for e2fsprogs;
+	  fixed scripts to use more sensible directory perms; PATH update
+	  for profile/bashrc
+
+2012-12-17 20:47  msmith626@gmail.com
+
+	* Makefile.in, configure.ac, etc/bashrc, etc/passwd, etc/profile,
+	  etc/syslog.conf, misc/busybox-1.19.0.config, tui/dialogs.h,
+	  tui/main.c, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
+	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
+	  tui/system.h: new GRUB installation that uses newly built
+	  binaries the correct way (should resolve Debian install/image
+	  issue); Makefile will now keep the permissions on
+	  directories/files consistent regardless of a user's umask on
+	  build host; LVM2 uses CLDFLAGS and not LDFLAGS?? (fixed, resolves
+	  Fedora build issue); updated configure.ac for xargs command;
+	  re-work of how TUI is launched; user now gets a normal shell
+	  (bash) and TUI is launched via /etc/profile (login shell)...
+	  updated root shell entry in passwd file; switched bash shell to
+	  use hush (instead of ash); updated syslog.conf file to be a bit
+	  simpler and less redundant; we now set umask in TUI just in case;
+	  re-work of how field entry widget values are checked -- much more
+	  consistent and clean now
+
+2012-12-10 15:54  msmith626@gmail.com
+
+	* etc/crontab, etc/rc.d/rc.sysinit, tui/menu_actions.c: updated
+	  ntpd cron job to redirect stderr too; re-work of rc.sysinit --
+	  conf. sync, fsck, and mounting file systems; fixed spacing issue
+	  in FS chooser dialog
+
+2012-12-09 17:47  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/rc.network, misc/ncurses-5.7.patch, tui,
+	  tui/Makefile, tui/dialogs.h, tui/label_data.c, tui/main.c,
+	  tui/megaraid.c, tui/megaraid.h, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-system.c,
+	  tui/menu_actions-targets.c, tui/menu_actions.c, tui/system.h:
+	  lots of TUI code clean-up including megaraid functions; fixed
+	  xterm backspace issue -- terminfo for xterm and variants by
+	  default from ncurses is ^H but must distributions have BS set to
+	  \177, so we'll do the same thing to make it work like we think it
+	  should (terminfo.src patch); various TUI color/size tweaks; set
+	  add-device dialogs to use new chooser dialogs; made it so the
+	  ESOS boot drive is never an option for any disk dialog choosers;
+	  SCST iSCSI target/driver isn't enabled when adding/enabling new
+	  targets? (fixed); removed use of volume name from add dialog (not
+	  an option with MegaCLI; added MTU as a network option
+
+2012-12-05 19:25  msmith626@gmail.com
+
+	* Makefile.in, etc/crontab, tui/dialogs.h, tui/label_data.c,
+	  tui/label_data.h, tui/main.c, tui/main.h, tui/megaraid.c,
+	  tui/megaraid.h, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-back_storage.h, tui/menu_actions-devices.c,
+	  tui/menu_actions-devices.h, tui/menu_actions-hosts.c,
+	  tui/menu_actions-hosts.h, tui/menu_actions-system.c,
+	  tui/menu_actions-system.h, tui/menu_actions-targets.c,
+	  tui/menu_actions-targets.h, tui/menu_actions.c,
+	  tui/menu_actions.h, tui/prototypes.h, tui/system.h: fixed sym.
+	  link location for /etc/localtime in Makefile; redirect stdout to
+	  null for NTP cron; merged all header files into new shared,
+	  common header files and re-organized defines; fixed bug in
+	  restart net. scroll windows, and similar instances (other
+	  dialogs)
+
+2012-12-03 19:13  msmith626@gmail.com
+
+	* etc/crontab, scripts/health_chk.sh, tui,
+	  tui/menu_actions-back_storage.c, tui/menu_actions-back_storage.h,
+	  tui/menu_actions.c: fixed fsck command in crontab to not check
+	  mounted file systems; updated health check script to use
+	  /proc/meminfo and take into account page cache when calculating
+	  free memory; implemented 'add vdisk' and 'delete vdisk' in
+	  back-end storage menu
+
+2012-11-30 18:31  msmith626@gmail.com
+
+	* Makefile.in: missed a dependency for the new parted package
+	  (libdm)
+
+2012-11-30 16:38  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.sysinit,
+	  scripts/conf_sync.sh, tui, tui/Makefile, tui/main.h,
+	  tui/menu_actions-back_storage.c, tui/menu_actions-back_storage.h,
+	  tui/menu_actions-system.c, tui/menu_actions.c,
+	  tui/menu_actions.h: added parted package (for parted tool +
+	  libparted); updated rc.sysinit to create mount point directories
+	  if they don't exist; conf_sync to include fstab file; new TUI
+	  utility functions for getting FS and block dev. choice from user;
+	  implemented create FS & remove FS dialogs in TUI; additional TUI
+	  clean-up
+
+2012-11-21 20:03  msmith626@gmail.com
+
+	* etc/rc.d/rc.network, install.sh, misc/linux-3.2.6.config: fixed
+	  stderr redirect typo in network rc script; enabled MPT2SAS driver
+	  in Linux kernel; added chmod executable for new CLI binaries
+
+2012-11-20 03:28  msmith626@gmail.com
+
+	* install.sh, misc/linux-3.2.6.config: enabled 3ware SATA/SAS RAID
+	  support in kernel config; added remaining RAID controller CLI
+	  tool package information and setup in install script (needs
+	  testing)
+
+2012-11-19 18:18  msmith626@gmail.com
+
+	* etc/crontab, etc/rc.d/rc.2, install.sh, scripts/conf_sync.sh,
+	  tui, tui/main.c, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-back_storage.h, tui/menu_actions-system.c,
+	  tui/menu_actions-system.h: updated system crontab to run ntpd to
+	  set time hourly; added to rc.2 init script to check for
+	  ntp_server file and if it exists, set the time via NTP on boot; a
+	  few install.sh enhancements; updated conf. sync script to sync
+	  ntp_server file and time zone link; implemented Date & Time, DRBD
+	  Status, Software RAID, and LVM2 Info dialogs
+
+2012-11-12 20:24  msmith626@gmail.com
+
+	* Makefile.in, install.sh, tui/main.c, tui/main.h,
+	  tui/menu_actions-back_storage.c, tui/menu_actions-back_storage.h,
+	  tui/menu_actions-controllers.c, tui/menu_actions-controllers.h,
+	  tui/menu_actions-system.c, tui/menu_actions-system.h: removed
+	  some extraneous commented-out lines from Makefile; switched
+	  install.sh script to use bash instead of sh -- Ubuntu sym links
+	  /bin/sh to dash which does not deal with the bashisms used, so
+	  we'll use this for now; started revamp of TUI -- changed
+	  Controllers menu name and added a number of stubs for new
+	  features
+
+2012-11-08 21:33  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/mdadm.conf,
+	  install.sh, misc/linux-3.2.6.config, scripts/conf_sync.sh: added
+	  support for software raid (md) and mdadm tool; fixed a issue in
+	  install.sh if the blockdev command failed
+
+2012-11-06 21:44  msmith626@gmail.com
+
+	* Makefile.in: the GRUB package needs device-mapper support, so
+	  LVM2 was a dep package before build; fixed a possible ambiguous
+	  situation that could occur with the image recipe when mounting
+
+2012-11-06 17:16  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, INSTALL, Makefile.in, README,
+	  THANKS, TODO, configure.ac, install.sh: replaced 'install' recipe
+	  with new 'image' recipe/target; instead of installing directly to
+	  a USB device, the 'image' target now creates a disk image; added
+	  'pkg_dist' target which will produce a tarball with checksum
+	  files, install script, and disk image suitable for distribution;
+	  lots of supporting tweaks for new 'image' target including but
+	  not limited to: up'd to grub-2.00, removed all proprietary tool
+	  references from configure.ac and Makefile.in (now installed via
+	  install.sh script), and updated in-tree documentation files
+
+2012-10-30 20:58  msmith626@gmail.com
+
+	* etc/rc.d/rc.2, etc/rc.d/rc.kdump, etc/rc.d/rc.lvm2: added rc.lvm2
+	  init script
+
+2012-10-26 21:07  msmith626@gmail.com
+
+	* Makefile.in, etc/lvm.conf: fixed LVM config path for package and
+	  added default lvm.conf file
+
+2012-10-25 20:14  msmith626@gmail.com
+
+	* etc/drbd.conf, etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2,
+	  etc/rc.d/rc.drbd, etc/rc.d/rc.kdump, etc/rc.d/rc.sshd,
+	  etc/rc.d/rc.sysinit, scripts/conf_sync.sh: implemented DRBD rc
+	  script; rc script formatting and tweaks; updated conf_sync to
+	  include drbd and lvm files
+
+2012-10-24 19:33  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: fixed a few issues
+	  with recently added features; xfsprogs install dir and build
+	  issue, DRBD version of userland tools was incorrect -- went to
+	  8.3.11 (matches kernel)
+
+2012-10-24 16:14  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/linux-3.2.6.config, tui: implemented LVM, DRBD, and
+	  xfsprogs: kernel options + userland tools; still needs rc
+	  scripts, config files, conf_sync mods, and testing
+
+2012-10-10 01:07  msmith626@gmail.com
+
+	* Makefile.in: this fixes issue #1; needed to include gcc
+	  (libstdc++) as a requirement for the ncurses package
+
+2012-10-06 19:07  msmith626@gmail.com
+
+	* misc/linux-3.2.6.config: added kernel support for Areca RAID
+	  controllers
+
+2012-08-02 19:33  msmith626@gmail.com
+
+	* tui/main.c: added a syncConfig when user quits
+
+2012-08-02 18:51  msmith626@gmail.com
+
+	* etc/rc.d/rc.network, tui/menu_actions-controllers.c,
+	  tui/menu_actions-system.c: fixed a few compiler warnings
+
+2012-08-02 13:35  msmith626@gmail.com
+
+	* etc/rc.d/rc.network: updated network rc script to redirect all
+	  stderr to stdout for all system calls; also modified start arg to
+	  bring up all interfaces (eth)
+
+2012-08-01 19:39  msmith626@gmail.com
+
+	* etc/rc.d/rc.network, scripts/startup.sh: a few script path
+	  changes and updates
+
+2012-08-01 17:55  msmith626@gmail.com
+
+	* scripts/conf_sync.sh, tui/menu_actions-devices.c,
+	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
+	  tui/menu_actions.h: fixed delete user dialog to check for saved
+	  user ID, and not real user ID; updated various "information"
+	  dialogs to have a continue message at the bottom so users know
+	  how to close the dialog
+
+2012-07-31 21:11  msmith626@gmail.com
+
+	* tui/main.c: fixed suid business; modified statusBar to use the
+	  saved user ID -- still need to update the delete-user dialog...
+
+2012-07-31 14:05  msmith626@gmail.com
+
+	* tui/main.c, tui/menu_actions-system.c: fixed a few TUI usability
+	  items in the Systems menu; updated a couple error dialog messages
+	  to be more informative; added seteuid
+
+2012-07-31 13:15  msmith626@gmail.com
+
+	* etc/rc.d/rc.network: redirect stderr into stdout for the DHCP
+	  client program
+
+2012-07-31 13:11  msmith626@gmail.com
+
+	* etc/network.conf, etc/ssmtp.conf: ini files needed a new line at
+	  the end, otherwise they wouldn't parse
+
+2012-07-30 21:08  msmith626@gmail.com
+
+	* Makefile.in: chmod suid for the TUI binary
+
+2012-07-30 18:31  msmith626@gmail.com
+
+	* etc/hostname, etc/network: the hostname and network /etc files
+	  are no longer needed
+
+2012-07-30 18:26  msmith626@gmail.com
+
+	* etc/network.conf, etc/passwd, etc/rc.d/rc.1, etc/rc.d/rc.2,
+	  etc/rc.d/rc.network, etc/rc.d/rc.sysinit, etc/ssmtp.conf: rc
+	  scripts switched over for new network script; set TUI as shell
+	  for root account
+
+2012-07-30 15:41  msmith626@gmail.com
+
+	* tui/label_data.c, tui/label_data.h, tui/main.c, tui/main.h: fixed
+	  a few include issues
+
+2012-07-30 14:40  msmith626@gmail.com
+
+	* tui/Makefile, tui/label_data.c, tui/label_data.h, tui/main.c,
+	  tui/main.h, tui/megaraid.c, tui/megaraid.h,
+	  tui/menu_actions-controllers.c, tui/menu_actions-controllers.h,
+	  tui/menu_actions-devices.c, tui/menu_actions-devices.h,
+	  tui/menu_actions-hosts.c, tui/menu_actions-hosts.h,
+	  tui/menu_actions-system.c, tui/menu_actions-system.h,
+	  tui/menu_actions-targets.c, tui/menu_actions-targets.h,
+	  tui/menu_actions.c, tui/menu_actions.h: added Id tag keyword to
+	  TUI source
+
+2012-07-30 14:15  msmith626@gmail.com
+
+	* Makefile.in: fixed a typo
+
+2012-07-30 14:11  msmith626@gmail.com
+
+	* Makefile.in: new target for kernel headers; updated CPPFLAGS for
+	  new path
+
+2012-07-30 03:11  msmith626@gmail.com
+
+	* Makefile.in, tui/label_data.c, tui/main.c, tui/megaraid.c,
+	  tui/menu_actions-controllers.c, tui/menu_actions-devices.c,
+	  tui/menu_actions-hosts.c, tui/menu_actions-system.c,
+	  tui/menu_actions-targets.c, tui/menu_actions.c: cleaned up lots
+	  of warnings; updated main Makefile to actually clean the TUI
+	  directory when running 'clean-esos_tui' (helpful for development)
+
+2012-07-28 16:07  msmith626@gmail.com
+
+	* tui/Makefile, tui/label_data.c: set _GNU_SOURCE define in
+	  Makefile to TUI, and removed def from label_data
+
+2012-07-28 16:00  msmith626@gmail.com
+
+	* tui/megaraid.h, tui/menu_actions-controllers.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-devices.h,
+	  tui/menu_actions-hosts.c, tui/menu_actions-system.c,
+	  tui/menu_actions-targets.c, tui/menu_actions.c: cdk/cdk.h is now
+	  just cdk.h, updated includes; typedef boolean is now defined in
+	  cdk.h, commented out in megaraid.h
+
+2012-07-28 15:22  msmith626@gmail.com
+
+	* Makefile.in: added build targets and proprietary tools as
+	  dependencies for the install target
+
+2012-07-28 04:36  msmith626@gmail.com
+
+	* Makefile.in: fixed issue with 'export CPPFLAGS' using the
+	  wildcard function and between the src_dir variable
+
+2012-07-27 21:06  msmith626@gmail.com
+
+	* .: ...
+
+2012-07-27 18:21  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: removed sysfsutils
+	  (libsysfs is no longer used); added iniparser (for TUI)
+
+2012-07-26 21:07  msmith626@gmail.com
+
+	* Makefile.in, tui/Makefile: updated main Makefile to include TUI
+
+2012-07-26 20:44  msmith626@gmail.com
+
+	* tui/Makefile: more updates for new Makefile
+
+2012-07-26 20:41  msmith626@gmail.com
+
+	* tui/Makefile: new Makefile for TUI
+
+2012-07-26 14:46  msmith626@gmail.com
+
+	* tui, tui/label_data.c, tui/label_data.h, tui/main.c, tui/main.h,
+	  tui/megaraid.c, tui/megaraid.h, tui/menu_actions-controllers.c,
+	  tui/menu_actions-controllers.h, tui/menu_actions-devices.c,
+	  tui/menu_actions-devices.h, tui/menu_actions-hosts.c,
+	  tui/menu_actions-hosts.h, tui/menu_actions-system.c,
+	  tui/menu_actions-system.h, tui/menu_actions-targets.c,
+	  tui/menu_actions-targets.h, tui/menu_actions.c,
+	  tui/menu_actions.h: import of TUI code
+
+2012-07-24 13:14  msmith626@gmail.com
+
+	* Makefile.in: some computers don't seem to like Unix epoch, so for
+	  /etc we'll use something a little more recent
+
+2012-07-22 19:29  msmith626@gmail.com
+
+	* etc/rc.d/rc.scst: new section for IB modules to load
+
+2012-07-22 16:43  msmith626@gmail.com
+
+	* Makefile.in: updated global CPPFLAGS to use Linux kernel include;
+	  disabled use of gpm for ncurses package
+
+2012-07-19 18:30  msmith626@gmail.com
+
+	* misc/linux-3.2.6.config: enabled additional IB kernel options
+
+2012-07-18 16:04  msmith626@gmail.com
+
+	* etc/rc.d/rc.network: more tweaks to new network rc script; tested
+	  and verified working
+
+2012-07-18 03:06  msmith626@gmail.com
+
+	* etc/rc.d/rc.network: new network script is ready for testing
+
+2012-07-17 19:02  msmith626@gmail.com
+
+	* etc/rc.d/rc.network: more work on new network rc script
+
+2012-07-16 20:59  msmith626@gmail.com
+
+	* etc/rc.d/rc.network: initial import of new rc network script
+
+2012-07-13 13:39  msmith626@gmail.com
+
+	* misc/busybox-1.19.0.patch: added a patch for busybox to fix a
+	  segfault when using chpasswd:
+	  https://bugs.busybox.net/show_bug.cgi?id=4105
+
+2012-06-29 19:15  msmith626@gmail.com
+
+	* Makefile.in: fixed /var/empty <-> sshd permissions issue;
+	  reported by Carl Swanberg
+
+2012-06-13 20:53  msmith626@gmail.com
+
+	* Makefile.in, etc/mdev.conf, scripts/dev_nodes.sh: implemented
+	  device node unique ID for SCSI disks in /dev (via mdev)
+
+2012-04-17 15:53  msmith626@gmail.com
+
+	* Makefile.in, misc/cdk-5.0-20120323.patch: added patch for CDK --
+	  this will make it use LDFLAGS with libtool
+
+2012-04-17 01:45  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added cdk and
+	  sysfsutils pacakges
+
+2012-04-09 16:10  msmith626@gmail.com
+
+	* Makefile.in: using install.libs for ncurses was not enough --
+	  missing terminfo, etc., switched to full install target
+
+2012-03-30 20:44  msmith626@gmail.com
+
+	* Makefile.in, misc/busybox-1.19.0.patch: lots of fixes to make
+	  everything compile on Ubuntu -- added -fno-stack-protector to
+	  CFLAGS for glibc, a couple variables set for make for gcc (Ubuntu
+	  puts crt*.o files in /usr/lib/x86......), fixed up CFLAGS for
+	  ssmtp package, and finally added a patch
+	  (http://lists.busybox.net/pipermail/busybox/2011-October/076834.html)
+	  to make busybox compile on Ubuntu
+
+2012-03-27 20:56  msmith626@gmail.com
+
+	* Makefile.in: commented out check/test make targets for e2fsprogs
+	  and perl -- are these really needed? we don't run any other
+	  testing type targets for other included projects...
+
+2012-03-27 20:44  msmith626@gmail.com
+
+	* Makefile.in: set glibc as a requirement for the kernel since it
+	  also compiles the userland iscsi-scst tool/daemon; set LDFLAGS
+	  for iscsi-scst in kernel target and for cron
+
+2012-03-27 15:22  msmith626@gmail.com
+
+	* THANKS: added some words to the THANKS document
+
+2012-03-23 17:36  msmith626@gmail.com
+
+	* Makefile.in: set LD_LIBRARY_PATH for openssh configure script;
+	  remove reference to LD_LIBRARY_PATH in openssl target so gcc runs
+	  correctly (glibc differences)
+
+2012-03-23 13:08  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: lots of updates --
+	  included mpfr and gmp with gcc, this way it will build the
+	  required libs against new glibc and should avoid any glibc symbol
+	  problems; also setup the 'fake_lib' directory that includes ld
+	  scripts for libc.so, libpthread.so, etc. that should help force
+	  use of new glibc when linking
+
+2012-03-21 20:58  msmith626@gmail.com
+
+	* Makefile.in, misc/glibc-2.12.2.patch: implemented patch for glibc
+	  (see http://sourceware.org/bugzilla/show_bug.cgi?id=12343 and
+	  http://sourceware.org/git/?p=glibc.git;a=commit;h=4a531bb0b3b582cb693de9f76d2d97d970f9a5d5)
+	  that should resolve issues compiling on fedora and possibly
+	  ubuntu; set configure to disable selinux support in glibc
+
+2012-03-19 16:54  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: switched back to
+	  glibc 2.12.2
+
+2012-03-18 01:18  msmith626@gmail.com
+
+	* misc/busybox-1.19.0.config: removed several features
+	  (mount-NFS,CIFS, etc.) from busybox config -- these were
+	  preventing static busybox due to glibc 2.14.1
+
+2012-03-16 17:29  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256: removed glibc 2.13 line in
+	  checksum files
+
+2012-03-16 17:28  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: problems with glibc
+	  2.13 (memcpy-ssse3); up'd again to 2.14.1
+
+2012-03-16 14:57  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: up'd glibc to 2.13;
+	  set SHELL to bash -- using a bashism or two (still testing)
+
+2012-03-12 13:41  msmith626@gmail.com
+
+	* Makefile.in: updated URL for MegaCLI tool
+
+2012-03-12 13:23  msmith626@gmail.com
+
+	* Makefile.in: cleaned up some extra comments in Makefile.in; added
+	  prop_tools var to clean_targets
+
+2012-03-09 15:44  msmith626@gmail.com
+
+	* etc/rc.d/rc.2: added pre/post SCST extra config file check in
+	  rc.2 init script; if either file exists, run them with /bin/sh
+
+2012-03-09 15:18  msmith626@gmail.com
+
+	* scripts/conf_sync.sh: updated sync script to include modprobe
+	  config file and extra user config files
+
+2012-03-06 16:18  msmith626@gmail.com
+
+	* Makefile.in: removed MegaCLI and asm_linux targets from
+	  build_targets var
+
+2012-03-06 14:47  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256: removed Adaptec and LSI CLI
+	  packages from both checksum files
+
+2012-03-05 21:45  msmith626@gmail.com
+
+	* Makefile.in, configure.ac: updated configure.ac -- now has
+	  'disable' options for the current proprietary tools (MegaCLI,
+	  asm_linux); also revamped how proprietary tools are handled in
+	  the Makefile
+
+2012-03-05 03:23  msmith626@gmail.com
+
+	* Makefile.in, etc/crontab, scripts/health_chk.sh: fixed a few
+	  issues in health_chk, added health_chk to cron and Makefile.in
+
+2012-03-05 03:10  msmith626@gmail.com
+
+	* scripts/health_chk.sh: finished (hopefully) health check
+	  script...
+
+2012-03-04 19:40  msmith626@gmail.com
+
+	* scripts/health_chk.sh: implemented check for AACRAID logical
+	  drives
+
+2012-03-04 19:02  msmith626@gmail.com
+
+	* scripts/health_chk.sh: started work on system health check shell
+	  script
+
+2012-03-04 03:45  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/rc.local, scripts/startup.sh: added new
+	  system startup script; this script emails useful (hopefully)
+	  information and checks for kernel crash dumps
+
+2012-03-04 03:39  msmith626@gmail.com
+
+	* etc/crontab: updated system cron job schedules
+
+2012-03-04 03:23  msmith626@gmail.com
+
+	* Makefile.in: doubled esos_logs partition size
+
+2012-02-24 19:23  msmith626@gmail.com
+
+	* scripts/conf_sync.sh: additional files to sync
+
+2012-02-22 19:09  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
+	  etc/rc.d/rc.kdump, misc/grub.cfg, misc/initramfs_init: added
+	  kexec-tools package; implemented kdump/kexec to capture kernel
+	  crash dump: new rc script, added logic in initramfs image to save
+	  dump image
+
+2012-02-16 16:41  msmith626@gmail.com
+
+	* Makefile.in: removed echo lines used when debugging the
+	  scst_kernel targets
+
+2012-02-16 16:06  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, misc/grub.cfg,
+	  misc/linux-3.2.6.config: lots of changes: up'd SCST to trunk and
+	  Linux to 3.2.6; re-worked scst_kernel target to be much simpler
+	  for prod/debug
+
+2012-02-13 20:42  msmith626@gmail.com
+
+	* Makefile.in: switched applicable targets to use 'install' target
+	  instead of manually install'ing files
+
+2012-02-13 15:19  msmith626@gmail.com
+
+	* Makefile.in: cleaned up un-needed comments
+
+2012-02-13 15:16  msmith626@gmail.com
+
+	* Makefile.in: added a /etc/esos-release file that is generated by
+	  install target (contains version number)
+
+2012-02-13 15:05  msmith626@gmail.com
+
+	* Makefile.in, etc/profile: set MANPATH for all users and needed
+	  gtbl for man pages (sym link -> tbl)
+
+2012-02-12 03:01  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: implemented groff
+	  target
+
+2012-02-11 17:59  msmith626@gmail.com
+
+	* Makefile.in: version number will now include SVN revision
+
+2012-02-11 16:31  msmith626@gmail.com
+
+	* Makefile.in: fix permissions of shadow and crontab on install
+
+2012-02-07 13:12  msmith626@gmail.com
+
+	* Makefile.in: forgot touch lines for new targets (lsscsi,
+	  sg3_utils)
+
+2012-02-07 02:55  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: implemented lsscsi
+	  and sg3_utils packages
+
+2012-02-07 02:14  msmith626@gmail.com
+
+	* Makefile.in: MegaCli64 needs libsysfs.so.2.0.2 even though ldd
+	  doesn't report its required -- it also seems to only look in an
+	  absolute, static path for it; MegaCLI target now provides the
+	  library that comes with the package
+
+2012-02-05 02:39  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/rc.sysinit: added -u flag for cpio in the
+	  install target (ld.so.conf wasn't being installed due to existing
+	  empty ld.so.conf); added a touch for /var/log/wtmp and lastlog in
+	  rc init script
+
+2012-02-03 14:19  msmith626@gmail.com
+
+	* Makefile.in, etc/network: CFLAGS should be CPPFLAGS for setting
+	  include search; typo in /etc/network
+
+2012-02-02 15:21  msmith626@gmail.com
+
+	* Makefile.in: typo in CC variable
+
+2012-02-02 14:18  msmith626@gmail.com
+
+	* Makefile.in: ssmtp target was not pulling in LDFLAGS, fixed using
+	  CC var via make
+
+2012-02-02 02:38  msmith626@gmail.com
+
+	* Makefile.in: switched grub target to use CONFIG_STATIC in .config
+	  instead of LDFLAGS
+
+2012-01-31 20:43  msmith626@gmail.com
+
+	* Makefile.in: cleaned up gcc target -- should be less to compile
+	  now; tweaked a few other targets
+
+2012-01-31 13:59  msmith626@gmail.com
+
+	* Makefile.in: switched to using 'install' target for most projects
+	  instead of manually installing files
+
+2012-01-30 02:05  msmith626@gmail.com
+
+	* Makefile.in: when compiling perl, it fails -- seems related to
+	  gcc's -I and -ansi; it gets mad about C++ style comments in
+	  stdlib.h, etc. ignoring CFLAGS for now with configure.gnu
+
+2012-01-29 14:55  msmith626@gmail.com
+
+	* Makefile.in: added LDFLAGS and CFLAGS environment variables;
+	  added pre-reqs for packages
+
+2012-01-26 22:05  msmith626@gmail.com
+
+	* Makefile.in, configure.ac, misc/grub.cfg: tweaked install target:
+	  removed un-needed blockdev command to re-read PT, fixed grub.cfg
+	  for grub2
+
+2012-01-26 14:26  msmith626@gmail.com
+
+	* Makefile.in: more grub tweaks
+
+2012-01-24 18:13  msmith626@gmail.com
+
+	* Makefile.in: fixed shell string equality tests
+
+2012-01-24 14:22  msmith626@gmail.com
+
+	* Makefile.in: more grub2 changes
+
+2012-01-24 14:21  msmith626@gmail.com
+
+	* misc/grub.cfg: updates for grub2
+
+2012-01-24 14:16  msmith626@gmail.com
+
+	* misc/grub.cfg, misc/grub.conf: for grub2 switch
+
+2012-01-23 22:15  msmith626@gmail.com
+
+	* Makefile.in: updated scstadmin perl mod target -- needs more work
+
+2012-01-23 21:56  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: up'd grub to 1.99
+
+2012-01-20 16:58  msmith626@gmail.com
+
+	* Makefile.in: needed KDIR var for a couple make targets
+
+2012-01-19 15:42  msmith626@gmail.com
+
+	* Makefile.in: updated distclean target and updated variables for
+	  configure script
+
+2012-01-19 15:27  msmith626@gmail.com
+
+	* Makefile, Makefile.in: moved Makefile to Makefile.in to prep for
+	  config script
+
+2012-01-19 15:25  msmith626@gmail.com
+
+	* configure.ac: finishing touches on configure.ac
+
+2012-01-19 14:52  msmith626@gmail.com
+
+	* Makefile: removed variables for shell built-ins
+
+2012-01-19 14:40  msmith626@gmail.com
+
+	* configure.ac: working autoconf configure.ac
+
+2012-01-19 05:03  msmith626@gmail.com
+
+	* configure.ac: started work on autoconf
+
+2012-01-18 15:45  msmith626@gmail.com
+
+	* etc/rc.d/rc.0: fixed /dev umount busy message on halt
+
+2012-01-18 14:53  msmith626@gmail.com
+
+	* etc/rc.d/rc.sysinit: run ldconfig on boot
+
+2012-01-18 14:37  msmith626@gmail.com
+
+	* Makefile, etc/ld.so.conf, etc/profile: updated asm_linux and
+	  MegaCLI targets to use /opt for 3rd party binaries; updated PATH
+	  and ld.so.conf
+
+2012-01-17 21:40  msmith626@gmail.com
+
+	* Makefile, etc/ld.so.conf: added support for libstdc++.so.5 (for
+	  arcconf) from asm_linux package
+
+2012-01-17 20:43  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile: updated Makefile to
+	  provide Adaptec Storage Manager CLI
+
+2012-01-17 19:55  msmith626@gmail.com
+
+	* etc/rc.d/rc.scst: fixed up SCST rc script now that module deps
+	  should work correctly
+
+2012-01-17 19:50  msmith626@gmail.com
+
+	* Makefile, misc/initramfs_init: tweaked initramfs script a bit and
+	  modified install target to accept slightly less than 4 GB drives
+
+2012-01-16 02:49  msmith626@gmail.com
+
+	* misc/linux-2.6.39.4.config: renovated kernel config
+
+2012-01-13 22:07  msmith626@gmail.com
+
+	* Makefile, misc/initramfs_init: implemented USB flash drive size
+	  check and initramfs RAM check
+
+2012-01-13 20:39  msmith626@gmail.com
+
+	* Makefile, etc/rc.d/rc.scst, misc/busybox-1.19.0.config: new
+	  busybox .config file; more Makefile clean-up; tweaked SCST rc
+	  script
+
+2012-01-10 02:30  msmith626@gmail.com
+
+	* INSTALL, README, configure.ac: updated documentation and initial
+	  import of configure.ac
+
+2012-01-09 22:00  msmith626@gmail.com
+
+	* Makefile, README: cleaned up several targets that were also
+	  install man pages
+
+2012-01-08 04:15  msmith626@gmail.com
+
+	* Makefile: lots of Makefile cleanup
+
+2012-01-06 21:56  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile: added srpt
+
+2012-01-06 01:55  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile: implemented checksum
+	  target
+
+2012-01-05 03:58  msmith626@gmail.com
+
+	* Makefile, TODO: more Makefile clean-up
+
+2012-01-04 22:12  msmith626@gmail.com
+
+	* Makefile: more Makefile updates
+
+2012-01-03 21:06  msmith626@gmail.com
+
+	* Makefile: updated fetch target and pre-reqs
+
+2012-01-02 04:13  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, COPYING, ChangeLog, INSTALL,
+	  Makefile, README, THANKS, TODO, etc/crontab, etc/fstab,
+	  etc/group, etc/hostname, etc/hosts, etc/inittab, etc/issue,
+	  etc/ld.so.conf, etc/network, etc/passwd, etc/profile,
+	  etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.3,
+	  etc/rc.d/rc.4, etc/rc.d/rc.5, etc/rc.d/rc.6, etc/rc.d/rc.local,
+	  etc/rc.d/rc.scst, etc/rc.d/rc.sshd, etc/rc.d/rc.sysinit,
+	  etc/revaliases, etc/services, etc/shadow, etc/ssh_config,
+	  etc/sshd_config, etc/ssmtp.conf, etc/sysctl.conf,
+	  etc/syslog.conf: added Id svn keyword
+
+2012-01-02 03:48  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, COPYING, ChangeLog, INSTALL,
+	  Makefile, README, THANKS, TODO, etc, etc/crontab, etc/fstab,
+	  etc/group, etc/hostname, etc/hosts, etc/inittab, etc/issue,
+	  etc/ld.so.conf, etc/network, etc/passwd, etc/profile, etc/rc.d,
+	  etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.3,
+	  etc/rc.d/rc.4, etc/rc.d/rc.5, etc/rc.d/rc.6, etc/rc.d/rc.local,
+	  etc/rc.d/rc.scst, etc/rc.d/rc.sshd, etc/rc.d/rc.sysinit,
+	  etc/revaliases, etc/services, etc/shadow, etc/ssh_config,
+	  etc/sshd_config, etc/ssmtp.conf, etc/sysctl.conf,
+	  etc/syslog.conf, misc, misc/grub.conf, misc/initramfs_init,
+	  misc/linux-2.6.39.4.config, scripts, scripts/archive_logs.sh,
+	  scripts/conf_sync.sh: initial import
+
+2011-12-21 03:11  
+
+	* .: Initial directory structure.
+
