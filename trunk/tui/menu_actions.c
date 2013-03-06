@@ -19,7 +19,7 @@
 
 /*
  * Generic error dialog; takes an error message and displays a nice red
- * "ERROR" box to the user. Accepts mutliple lines; caller should pass NULL
+ * "ERROR" box to the user. Accepts multiple lines; caller should pass NULL
  * for lines that shouldn't be set.
  */
 void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
@@ -146,10 +146,11 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
         asprintf(&drivers[0], "%s", tgt_driver);
     } else {
         /* No driver was given, so we provide all of them */
-        driver_cnt = 3;
+        driver_cnt = 4;
         asprintf(&drivers[0], "ib_srpt");
         asprintf(&drivers[1], "iscsi");
         asprintf(&drivers[2], "qla2x00t");
+        asprintf(&drivers[3], "fcst");
     }
 
     /* Loop over each SCST target driver and get targets */
