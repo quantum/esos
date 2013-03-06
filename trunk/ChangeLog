@@ -1,3 +1,23 @@
+2013-03-06 21:01  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in, TODO,
+	  etc/crontab, etc/fcoe, etc/fcoe/cfg-ethx, etc/fcoe/config,
+	  etc/rc.d/rc.scst, misc/linux-3.7.8.config, scripts/conf_sync.sh,
+	  tui/label_data.c, tui/main.c, tui/menu_actions.c: added new
+	  linux-firmware package -- it sounds like new firmware is not
+	  being added directly to the Linux kernel git repo, they now are
+	  trying to keep the firmware blobs separate from code; disabled
+	  inlining driver firmware in the kernel since we use the
+	  linux-firmware package and we only include the blobs needed for
+	  drivers we enable (including the license files); fixed
+	  archive_logs cron issue; updated rc.scst script for new userland
+	  daemons (FCoE) and stop() function; added default config files
+	  for fcoemon; re-work of conf_sync.sh -- we now sync entire
+	  directories (eg, /etc /var/lib) so we get everything including
+	  dynamically generated config. files; updated TUI main screen
+	  label to support FCoE adapters, and support the fcst driver for
+	  target functions
+
 2013-03-05 01:26  msmith626@gmail.com
 
 	* ChangeLog, Makefile.in: fixed build issue in open-lldp with
