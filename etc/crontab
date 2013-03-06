@@ -12,7 +12,7 @@ HOME=/
 10 0,8,16 * * * root /usr/local/sbin/conf_sync.sh
 
 # If the log directory gets too big, then archive the logs to reclaim the space
-20 * * * * root if [ `du -sk /var/log | awk '{print $1}'` -ge 50000 ]; then /usr/local/sbin/archive_logs; fi
+20 * * * * root if [ `du -sk /var/log | awk '{print $1}'` -ge 50000 ]; then /usr/local/sbin/archive_logs.sh; fi
 
 # System health check script
 30 * * * * root /usr/local/sbin/health_chk.sh > /dev/null

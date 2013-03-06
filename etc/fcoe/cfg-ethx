@@ -1,0 +1,19 @@
+# $Id$
+
+## Type:       yes/no
+## Default:    no
+# Enable/Disable FCoE service at the Ethernet port
+# Normally set to "yes"
+FCOE_ENABLE="yes"
+
+## Type:       yes/no
+## Default:    no
+# Indicate if DCB service is required at the Ethernet port
+# Normally set to "yes"
+DCB_REQUIRED="yes"
+
+## Type:	yes/no
+## Default:	no
+# Indicate if VLAN discovery should be handled by fcoemon
+# Normally set to "yes"
+AUTO_VLAN="yes"

@@ -122,6 +122,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		libconfig-1.4.9.tar.gz \
 		libnl-1.1.2.tar.gz \
 		libpciaccess-0.13.1.tar.bz2 \
+		linux-firmware-20130306.tar.xz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -135,7 +136,8 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			crmsh libaio glue readline resource_agents mhvtl lzo \
 			mhash lessfs tokyocabinet fuse db snappy fence_agents \
 			pexpect pycurl curl Net-Telnet python-suds setuptools \
-			fio bash open-fcoe open-lldp libconfig libnl libpciaccess
+			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
+			linux-firmware
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -990,11 +992,11 @@ open-fcoe: glibc open-lldp libpciaccess
 open-lldp: glibc libconfig libnl
 	$(SED) -i 's/^AC_FUNC_MALLOC/dnl AC_FUNC_MALLOC/' $(src_dir)/configure.ac
 	$(SED) -i 's/^AC_FUNC_REALLOC/dnl AC_FUNC_REALLOC/' $(src_dir)/configure.ac
+	$(SED) -i 's/-Werror//' $(src_dir)/Makefile.am
 	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
 	  cd $(src_dir) && libtoolize; \
 	  cd $(src_dir) && ./bootstrap.sh; \
 	fi
-	$(SED) -i 's/-Werror//' $(src_dir)/Makefile.in
 	cd $(src_dir) && LIBCONFIG_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
 	LIBCONFIG_LIBS="$(LDFLAGS) -lconfig" LIBNL_CFLAGS="-I$(IMAGE_DIR)/usr/include/netlink" \
 	LIBNL_LIBS="$(LDFLAGS) -lnl" ./configure --prefix=/usr
@@ -1022,5 +1024,14 @@ libpciaccess: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+linux-firmware:
+	$(MKDIR) $(IMAGE_DIR)/lib/firmware
+	$(CP) $(src_dir)/WHENCE $(IMAGE_DIR)/lib/firmware/
+	$(CP) -r $(src_dir)/bnx2* $(IMAGE_DIR)/lib/firmware/
+	$(CP) $(src_dir)/LICENCE.chelsio_firmware $(IMAGE_DIR)/lib/firmware/
+	$(CP) -r $(src_dir)/cxgb* $(IMAGE_DIR)/lib/firmware/
+	$(CP) -r $(src_dir)/qlogic $(IMAGE_DIR)/lib/firmware/
 	$(TOUCH) $(@)
 

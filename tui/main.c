@@ -30,9 +30,9 @@ int main(int argc, char** argv) {
     int selection = 0, key_pressed = 0, menu_choice = 0, submenu_choice = 0,
             screen_x = 0, screen_y = 0, orig_scr_x = 0, orig_scr_y = 0,
             child_status = 0, proc_status = 0;
-    static char *adapters_label_title = "HBAs / HCAs",
+    static char *adapters_label_title = "FC HBAs / IB HCAs / FCoE Adapters",
             *devices_label_title = "SCST Devices",
-            *targets_label_title = "Dynamic Targets";
+            *targets_label_title = "iSCSI Targets";
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
 

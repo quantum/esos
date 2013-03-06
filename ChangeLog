@@ -1,3 +1,82 @@
+2013-03-05 01:26  msmith626@gmail.com
+
+	* ChangeLog, Makefile.in: fixed build issue in open-lldp with
+	  AC_FUNC_MALLOC/REALLOC
+
+2013-03-04 22:00  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.scst,
+	  misc/linux-3.7.8.config, tui/menu_actions-back_storage.c: added
+	  Fibre Channel over Ethernet (FCoE) support (SCST -> fcst) and
+	  required dependencies (open-fcoe, libconfig, libnl, open-lldp,
+	  libpciaccess); updated rc.scst to load new fcst module; updated
+	  Linux kernel configuration file for FCoE dependency options (data
+	  center briding, etc.); fixed issue when creating file systems on
+	  devices that already have a partition table (label) and/or
+	  existing file system(s) -- we now use the '-f' option for
+	  mkfs.xfs and '-F' for the other mkfs.ext* tools
+
+2013-03-03 23:36  msmith626@gmail.com
+
+	* Makefile.in, etc/drbd.conf, etc/rc.conf, etc/rc.d/common,
+	  etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.lvm2,
+	  etc/rc.d/rc.mhvtl, etc/rc.d/rc.scst, misc/linux-3.7.8.config:
+	  added USB 3.0 support; set drbd and mhvtl to disabled on startup
+	  as default; fixed a syntax issue in default drbd.conf file;
+	  increased esos_root partition size to 1 GB; fixed issues with new
+	  rc system enhancements
+
+2013-03-03 03:28  msmith626@gmail.com
+
+	* etc/mdev.conf, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.0,
+	  etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.drbd,
+	  etc/rc.d/rc.kdump, etc/rc.d/rc.lvm2, etc/rc.d/rc.mhvtl,
+	  etc/rc.d/rc.pacemaker, etc/rc.d/rc.scst, etc/rc.d/rc.sshd,
+	  etc/rc.d/rc.sysinit, scripts/conf_sync.sh,
+	  scripts/sd_dev_node.sh, tui/menu_actions-devices.c,
+	  tui/menu_actions-hosts.c, tui/menu_actions-targets.c,
+	  tui/system.h: updated mdev unique SCSI disk ID process (new shell
+	  script used by mdev and TUI); fixed subtle TUI bug that affected
+	  several dialogs (strncat); updated conf_sync for new rc.conf /etc
+	  file; re-work of rc system... now uses /etc/rc.conf to
+	  enable/disable services
+
+2013-02-28 20:07  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/mdev.conf,
+	  etc/protocols, scripts/dev_nodes.sh, scripts/scsi_id.sh,
+	  scripts/sd_dev_node.sh, tui/menu_actions-devices.c, tui/system.h:
+	  updated sg3_utils to version 1.35 to get new '--exported' feature
+	  in sg_inq tool; renamed dev_nodes.sh to something more
+	  meaningful; added /etc/protocols file; added new scsi_id.sh
+	  script to produce a useful, consistent unique ID for SCSI devices
+	  (disks); updated TUI to use new scsi_id.sh script
+
+2013-02-22 14:49  msmith626@gmail.com
+
+	* TODO, etc/bashrc, install.sh, misc/busybox-1.19.0.config,
+	  scripts/conf_sync.sh, scripts/dev_nodes.sh,
+	  tui/menu_actions-devices.c, tui/system.h: a couple global bashrc
+	  tweaks; fixed an issue in the install script for the MegaCLI
+	  tool; updated busybox config to make use of mount helpers to
+	  support fuse/lessfs; updated conf_sync.sh to sync dynamically
+	  generated library contents files for mhVTL; fixed an issue in the
+	  dev_nodes.sh mdev helper script where devices had multiple
+	  identifiers (eg, EUI and NAA) and in the TUI code for adding
+	  devices (only take the first); changed syslog facility
+
+2013-02-21 03:51  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
+	  install.sh, misc/drbd-8.3.11.patch, misc/drbd-8.3.13.patch,
+	  scripts/health_chk.sh, tui/main.c, tui/menu_actions-system.c,
+	  tui/system.h: added real bash; upgraded DRBD to match new kernel
+	  version; fixed man page install paths for fio and ncurses;
+	  updated /etc/bashrc for real bash and added a few useful aliases;
+	  updated MegaRAID and Adaptec CLI tools in install script; fixed
+	  bug in health_chk script for Adaptec devices; updated
+	  exit-to-shell function in main for real bash
+
 2013-02-18 19:45  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/modprobe.conf,

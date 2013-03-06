@@ -42,7 +42,7 @@ void readAdapterData(char *label_msg[]) {
     /* We start our row 2 down (1 for the title, 1 for spacing) */
     row_cnt = 2;
 
-    /* Fibre Channel HBA information */
+    /* Fibre Channel HBA / FCoE Adapter information */
     if ((dir_stream = opendir(SYSFS_FC_HOST)) == NULL) {
         if (row_cnt < ADAPTERS_LABEL_ROWS) {
             snprintf(line_buffer, ADAPTERS_LABEL_COLS, "opendir(): %s", strerror(errno));
@@ -54,15 +54,29 @@ void readAdapterData(char *label_msg[]) {
     while ((dir_entry = readdir(dir_stream)) != NULL) {
         /* We want to skip the '.' and '..' directories */
         if (i > 1) {
-            /* Get the HBA model name */
+            /* Get the model name */
             snprintf(sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/%s/device/scsi_host/%s/model_name",
                     SYSFS_FC_HOST, dir_entry->d_name, dir_entry->d_name);
-            readAttribute(sysfs_path, fc_model);
-
+            if (access(sysfs_path, R_OK) != -1) {
+                readAttribute(sysfs_path, fc_model);
+            } else {
+                /* This seems to be the FCoE adapter equivalent */
+                snprintf(sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/%s/model",
+                        SYSFS_FC_HOST, dir_entry->d_name);
+                readAttribute(sysfs_path, fc_model);
+            }
+            
             /* Get the firmware version */
             snprintf(sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/%s/device/scsi_host/%s/fw_version",
                     SYSFS_FC_HOST, dir_entry->d_name, dir_entry->d_name);
-            readAttribute(sysfs_path, fc_fw_ver);
+            if (access(sysfs_path, R_OK) != -1) {
+                readAttribute(sysfs_path, fc_fw_ver);
+            } else {
+                /* This seems to be the FCoE adapter equivalent */
+                snprintf(sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/%s/firmware_version",
+                        SYSFS_FC_HOST, dir_entry->d_name);
+                readAttribute(sysfs_path, fc_fw_ver);
+            }
 
             /* Get the port WWN */
             snprintf(sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/%s/port_name",
@@ -72,7 +86,15 @@ void readAdapterData(char *label_msg[]) {
             /* Get link state */
             snprintf(sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/%s/device/scsi_host/%s/link_state",
                     SYSFS_FC_HOST, dir_entry->d_name, dir_entry->d_name);
-            readAttribute(sysfs_path, fc_link);
+            if (access(sysfs_path, R_OK) != -1) {
+                readAttribute(sysfs_path, fc_link);
+            } else {
+                /* This does not seem to be the FCoE adapter equivalent,
+                 but it gives us some kind of state information */
+                snprintf(sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/%s/port_state",
+                        SYSFS_FC_HOST, dir_entry->d_name);
+                readAttribute(sysfs_path, fc_link);
+            }
 
             /* Get speed (if any) */
             snprintf(sysfs_path, MAX_SYSFS_PATH_SIZE, "%s/%s/speed",
