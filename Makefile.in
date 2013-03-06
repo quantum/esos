@@ -122,7 +122,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		libconfig-1.4.9.tar.gz \
 		libnl-1.1.2.tar.gz \
 		libpciaccess-0.13.1.tar.bz2 \
-		linux-firmware-20130306.tar.xz \
+		linux_firmware-20130306.tar.xz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -137,7 +137,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			mhash lessfs tokyocabinet fuse db snappy fence_agents \
 			pexpect pycurl curl Net-Telnet python-suds setuptools \
 			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
-			linux-firmware
+			linux_firmware
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -1026,7 +1026,7 @@ libpciaccess: glibc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-linux-firmware:
+linux_firmware:
 	$(MKDIR) $(IMAGE_DIR)/lib/firmware
 	$(CP) $(src_dir)/WHENCE $(IMAGE_DIR)/lib/firmware/
 	$(CP) -r $(src_dir)/bnx2* $(IMAGE_DIR)/lib/firmware/
