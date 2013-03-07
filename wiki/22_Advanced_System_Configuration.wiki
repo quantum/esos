@@ -56,5 +56,15 @@ For additional OpenSM IB subnet manager help/information, please see the related
 
 <br>
 
+=== Enabling/Disabling System Services ===
+Some of the ESOS system services can be enabled/disabled; typically this is needed if your specific configuration or setup has conflicting services. A common example is using DRBD on a stand-alone ESOS server, versus using DRBD in a ESOS cluster. In the latter scenario, you would typically want the cluster stack to manage the DRBD resources, so you would disable the `rc.drbd` service.
+
+Edit the "/etc/rc.conf" file and use 'YES' to enable a service, and 'NO' to disable a service. You can then use the following CLI command syntax to start/stop a service without rebooting:
+{{{
+/etc/rc.d/rc.service_name [start | stop]
+}}}
+
+<br>
+
 === What's Next ===
 From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
