@@ -55,7 +55,7 @@ prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
 distfiles	= $(addprefix $(DISTFILES_DIR)/, \
-		busybox-1.19.0.tar.bz2 \
+		busybox-1.20.2.tar.bz2 \
 		grub-2.00.tar.gz \
 		sysvinit-2.88dsf.tar.bz2 \
 		glibc-2.12.2.tar.bz2 \
@@ -409,7 +409,7 @@ esos_tui: glibc ncurses cdk iniparser parted
 	$(TOUCH) $(@)
 
 busybox: glibc
-	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/busybox-1.19.0.patch
+	#- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/busybox-1.19.0.patch
 	$(MAKE) --directory=$(src_dir) clean
 	$(MAKE) --directory=$(src_dir) distclean
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
@@ -987,6 +987,8 @@ open-fcoe: glibc open-lldp libpciaccess
 	$(MAKE) --directory=$(src_dir)/fcoe-utils
 	$(MAKE) --directory=$(src_dir)/fcoe-utils DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/fcoe-utils DESTDIR=$(IMAGE_DIR) install-man
+	$(INSTALL) $(src_dir)/fcoe-utils/contrib/*.sh $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) $(src_dir)/fcoe-utils/debug/*.sh $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
 open-lldp: glibc libconfig libnl

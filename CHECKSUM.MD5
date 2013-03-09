@@ -1,4 +1,3 @@
-9ad0b619bb788913b263eb53bbd659be  busybox-1.19.0.tar.bz2
 05f70470aea2ef7efbb0845b2b116720  e2fsprogs-1.41.14.tar.gz
 cce05daf61a64501ef6cd8da1f727ec6  ncurses-5.7.tar.gz
 86f5e1c23b4c4845f23b9b7b493fb53d  openssh-5.8p1.tar.gz
@@ -67,3 +66,4 @@ b6ee0ce2b3ef844bad7cac2803a90634  libconfig-1.4.9.tar.gz
 5f6f65bdd17a3c9f0a5f00f62126e593  open-lldp-0.9.45.tar.gz
 399a419ac6a54f0fc07c69c9bdf452dc  libpciaccess-0.13.1.tar.bz2
 5c62ca8f9b028ce60f74771fe3d382da  linux_firmware-20130306.tar.xz
+e025414bc6cd79579cc7a32a45d3ae1c  busybox-1.20.2.tar.bz2
