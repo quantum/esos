@@ -11,14 +11,14 @@ Here is a list of the install requirements:
 <br>
 
 === Installing ESOS ===
-If using a pre-built image package, you will need to extract it (version 0.1-r242 in our example):
+If using a pre-built image package, you will need to extract it (version 0.1-r412 in our example):
 {{{
-tar xvfz esos-0.1-r242.tar.gz
+tar xvfJ esos-0.1-r412.tar.xz
 }}}
 
 If using a ESOS image you built from source, you should now be in that directory, otherwise change to the package directory you just extracted:
 {{{
-cd esos-0.1-r242
+cd esos-0.1-r412
 }}}
 
 At this point, you should now plug in the USB flash drive you'd like to install ESOS to; you may need to unmount any filesystems on your flash drive if you use a desktop-like Linux distribution (eg, Ubuntu).
