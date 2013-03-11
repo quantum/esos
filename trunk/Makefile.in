@@ -243,7 +243,7 @@ pkg_dist: $(img_file)
 	$(MD5SUM) $(img_file) > $(CWD)/dist_md5sum.txt
 	$(SHA256SUM) $(img_file) > $(CWD)/dist_sha256sum.txt
 	$(TAR) --transform 's,^,esos-$(esos_ver)/,' --show-transformed-names \
-	-c -v -z -f $(CWD)/esos-$(esos_ver).tar.gz $(img_file) install.sh \
+	-c -v -J -f $(CWD)/esos-$(esos_ver).tar.xz $(img_file) install.sh \
 	INSTALL README COPYING dist_*.txt
 
 
@@ -254,7 +254,7 @@ clean: $(clean_targets)
 	$(RM) $(IMAGE_DIR)
 	$(RM) $(WORK_DIR)/fake_lib
 	$(RM) $(CWD)/dist_*.txt
-	$(RM) $(CWD)/esos-*.tar.gz
+	$(RM) $(CWD)/esos-*.tar.xz
 	$(RM) $(CWD)/esos-*.img
 
 $(clean_targets):: target = $(subst clean-,,$(@))
@@ -968,7 +968,9 @@ open-fcoe: glibc open-lldp libpciaccess
 	fi
 	cd $(src_dir)/libHBAAPI && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(src_dir)/libHBAAPI
-	$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install
+	#$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install-libLTLIBRARIES
+	$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install-data
 	$(QUIET) if [ ! -f "$(src_dir)/libhbalinux/configure" ]; then \
 	  cd $(src_dir)/libhbalinux && ./bootstrap.sh; \
 	fi
