@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# $Id$
+
+CLVMD="/usr/sbin/clvmd"
+CLVMD_LOCK="/var/lock/clvmd"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Starting clvmd..."
+    ${CLVMD} -T30 || exit 1
+    /bin/touch ${CLVMD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping clvmd..."
+    /bin/kill -TERM $(/bin/pidof ${CLVMD})
+    /bin/rm -f ${CLVMD_LOCK}
+}
+
+# Perform specified action
+${1}
