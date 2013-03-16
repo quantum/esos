@@ -123,6 +123,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		libnl-1.1.2.tar.gz \
 		libpciaccess-0.13.1.tar.bz2 \
 		linux_firmware-20130306.tar.xz \
+		dlm-4.0.1.tar.bz2 \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -137,7 +138,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			mhash lessfs tokyocabinet fuse db snappy fence_agents \
 			pexpect pycurl curl Net-Telnet python-suds setuptools \
 			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
-			linux_firmware
+			linux_firmware dlm
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -603,13 +604,21 @@ cdk: glibc ncurses
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-LVM2: glibc
-	cd $(src_dir) && ./configure --with-lvm1=none --disable-selinux --prefix=/usr
+LVM2: glibc corosync dlm
+	cd $(src_dir) && COROSYNC_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+	COROSYNC_LIBS="$(LDFLAGS)" QUORUM_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+        QUORUM_LIBS="$(LDFLAGS) -lquorum" CPG_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+        CPG_LIBS="$(LDFLAGS) -lcpg" CMAP_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+        CMAP_LIBS="$(LDFLAGS) -lcmap" DLM_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+        DLM_LIBS="$(LDFLAGS) -ldlm -lpthread" ./configure --with-lvm1=none --disable-selinux --prefix=/usr \
+	--with-clvmd=corosync --with-cluster=shared --enable-ocf --enable-cmirrord
 	$(MAKE) --directory=$(src_dir) CLDFLAGS+="$(LDFLAGS)"
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/libdm DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/lib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/scripts DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/daemons DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 xfsprogs: glibc e2fsprogs
@@ -1037,5 +1046,11 @@ linux_firmware:
 	$(CP) $(src_dir)/LICENCE.chelsio_firmware $(IMAGE_DIR)/lib/firmware/
 	$(CP) -r $(src_dir)/cxgb* $(IMAGE_DIR)/lib/firmware/
 	$(CP) -r $(src_dir)/qlogic $(IMAGE_DIR)/lib/firmware/
+	$(TOUCH) $(@)
+
+dlm: glibc corosync
+	$(MAKE) --directory=$(src_dir) CC="gcc $(CPPFLAGS) $(LDFLAGS)" USE_SD_NOTIFY=no
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(RM) $(IMAGE_DIR)/lib/udev
 	$(TOUCH) $(@)
 
