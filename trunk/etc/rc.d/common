@@ -3,7 +3,7 @@
 RC_D_PREFIX="/etc/rc.d"
 
 # User settable services; started in this order and reversed on shutdown
-SERVICES="rc.sshd rc.lvm2 rc.drbd rc.corosync rc.clvmd rc.pacemaker rc.mhvtl rc.scst"
+SERVICES="rc.sshd rc.lvm2 rc.drbd rc.corosync rc.dlm rc.clvmd rc.pacemaker rc.mhvtl rc.scst"
 
 # Check if the service is enabled, or not
 check_enabled() {

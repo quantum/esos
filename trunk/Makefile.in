@@ -207,7 +207,7 @@ image: $(build_targets)
 	$(INSTALL) $(CWD)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/startup.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/health_chk.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(CWD)/scripts/sd_dev_node.sh $(MOUNT_DIR)/usr/local/sbin/
+	$(INSTALL) $(CWD)/scripts/dev_nodes.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/scsi_id.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
 	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/*
