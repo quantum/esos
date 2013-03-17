@@ -724,7 +724,7 @@ corosync: glibc libqb nss
 	$(RM) $(IMAGE_DIR)/usr/lib/libquorum.la
 	$(TOUCH) $(@)
 
-nss: glibc
+nss: glibc zlib
 	$(MAKE) --directory=$(src_dir)/mozilla/security/nss BUILD_OPT=1 USE_64=1 USE_SYSTEM_ZLIB=1 \
 	ZLIB_LIBS="-lz -L$(IMAGE_DIR)/usr/lib" CC="gcc -I$(src_dir)/mozilla/security/nss/lib/zlib" nss_build_all
 	$(INSTALL) -v -m755 $(src_dir)/mozilla/dist/Linux*/lib/*.so $(IMAGE_DIR)/usr/lib
