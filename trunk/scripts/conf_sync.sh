@@ -61,7 +61,7 @@ for i in ${SYNC_DIRS}; do
         # The directory doesn't exist on the local file system
         if [ ! -d "${local_dir}" ]; then
             # Create the directory
-            cd ${CONF_MNT} && echo ${usb_dir} | sed -e s@${CONF_MNT}/@@ | ${CPIO} / && cd -
+            cd ${CONF_MNT} && echo ${usb_dir} | sed -e s@${CONF_MNT}/@@ | ${CPIO} / && cd - > /dev/null
             continue
         fi
     done

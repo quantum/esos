@@ -13,7 +13,7 @@ fi
 
 start() {
     /bin/echo "Starting clvmd..."
-    ${CLVMD} || exit 1
+    ${CLVMD} -T5 || exit 1
     /bin/touch ${CLVMD_LOCK}
 }
 
