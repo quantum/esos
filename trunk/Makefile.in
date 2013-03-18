@@ -203,6 +203,7 @@ image: $(build_targets)
 	--root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.cfg > $(MOUNT_DIR)/boot/grub/grub.cfg
 	$(LN) /usr/share/zoneinfo/posix/UTC $(MOUNT_DIR)/etc/localtime
+	$(TOUCH) -h -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/localtime
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/startup.sh $(MOUNT_DIR)/usr/local/sbin/
@@ -210,8 +211,8 @@ image: $(build_targets)
 	$(INSTALL) $(CWD)/scripts/dev_nodes.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/scsi_id.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
-	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/*
-	$(TOUCH) -d "2001-01-01 00:00:00" $(MOUNT_DIR)/var/*
+	$(FIND) $(MOUNT_DIR)/etc -print0 | $(XARGS) -0 $(TOUCH) -d "2001-01-01 00:00:00"
+	$(FIND) $(MOUNT_DIR)/var/lib -print0 | $(XARGS) -0 $(TOUCH) -d "2001-01-01 00:00:00"
 	$(CHOWN) -R root:root $(MOUNT_DIR)/*
 	$(FIND) $(MOUNT_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
 	$(FIND) $(MOUNT_DIR)/etc -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
@@ -611,7 +612,7 @@ LVM2: glibc corosync dlm
         CPG_LIBS="$(LDFLAGS) -lcpg" CMAP_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
         CMAP_LIBS="$(LDFLAGS) -lcmap" DLM_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
         DLM_LIBS="$(LDFLAGS) -ldlm -lpthread" ./configure --with-lvm1=none --disable-selinux --prefix=/usr \
-	--with-clvmd=corosync --with-cluster=shared --enable-ocf --enable-cmirrord
+	--with-clvmd=corosync --with-cluster=internal --enable-ocf --enable-cmirrord
 	$(MAKE) --directory=$(src_dir) CLDFLAGS+="$(LDFLAGS)"
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
