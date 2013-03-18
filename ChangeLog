@@ -1,3 +1,38 @@
+2013-03-18 02:56  msmith626@gmail.com
+
+	* etc/corosync/corosync.conf, etc/mdev.conf, etc/rc.d/rc.clvmd,
+	  etc/rc.d/rc.dlm, scripts/conf_sync.sh: set default quorum votes
+	  to 1 in corosync.conf; updated dlm and clvd rc script settings;
+	  hide output for the 'cd -' command in conf_sync
+
+2013-03-17 16:31  msmith626@gmail.com
+
+	* Makefile.in, etc/corosync/corosync.conf, etc/mdev.conf,
+	  etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.clvmd, etc/rc.d/rc.dlm,
+	  scripts/dev_nodes.sh, scripts/sd_dev_node.sh: made dev_nodes.sh
+	  script generic, udev rule like script (called mdev); added rc
+	  script for DLM; corosync.conf needs the cluster_name setting;
+	  removed timeout setting from rc.clvmd script; updated mdev.conf
+	  to call rule script for dlm* device nodes
+
+2013-03-17 02:31  msmith626@gmail.com
+
+	* Makefile.in, misc/linux-3.7.8.config: fixed build issue (added
+	  zlib dependency for nss package); enabled DLM in Linux kernel
+	  config
+
+2013-03-16 17:16  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.conf,
+	  etc/rc.d/common, etc/rc.d/rc.clvmd: added support for clvmd (LVM2
+	  and rc script) including dlm dependency
+
+2013-03-11 14:44  msmith626@gmail.com
+
+	* ChangeLog, Makefile.in, etc/hba.conf: changed compression type
+	  for pkg dist file to xz; added default /etc/hba.conf for
+	  fcoe-utils (fixes fcoe tool issue)
+
 2013-03-09 02:58  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in,
