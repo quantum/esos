@@ -65,6 +65,29 @@ resource r0 {
   }
 }
 }}}
+
+Next, run the following on both hosts:
+{{{
+drbdadm create-md r0
+drbdadm attach r0
+drbdadm syncer r0
+drbdadm connect r0
+}}}
+
+Now run the following on only one of the hosts (assuming empty disk):
+{{{
+drbdadm -- --overwrite-data-of-peer primary r0
+}}}
+
+The DRBD resource will now be synchronized to the other host; you can check the status with "cat /proc/drbd" (or check the status in the TUI: Back-End Storage -> DRBD Status).
+
+You can now make the "secondary" host a primary:
+{{{
+drbdadm primary r0
+}}}
+
+You should now have a dual-primary DRBD resource available as /dev/drbd0 on both nodes. You can use this block device node as an SCST device, or use an additional storage management/provisioning layer on top of the DRBD resource (LVM, software RAID, etc.), or whatever other advanced storage configuration you might dream up.
+
 <br>
 
 === Linux Software RAID (md) ===
