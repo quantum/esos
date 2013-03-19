@@ -90,7 +90,12 @@ If you find that your favorite "enterprise class" RAID controller is not support
 <br>
 
 === Virtual Tape Library (VTL) ===
-TODO
+ESOS includes the mhVTL software (virtual tape library); this, combined with data de-duplication makes an excellent traditional tape library (eg, DLT, LTO, etc.) replacement. You can use this virtual tape library on your Storage Area Network (SAN -> Fibre Channel, iSCSI, etc.). The mhVTL service is disabled by default -- to enable it, simply edit the /etc/rc.conf file and set `rc.mhvtl_enable` to "YES".
+
+The data storage location (mount point in the file system) is hard coded in the software (/mnt/mhvtl). You'll need to create a new back-end storage device and file system then mount it on `/mnt/mhvtl` and update the fstab file.
+
+If you are going to use lessfs for de-duplication as the mhVTL storage backing, you will want to use a separate persistent storage device (RAID volume) for the lessfs configuration data and database. You will then use the `/mnt/mhvtl` location for a separate underlying back-end storage file system, and then use the same location as the lessfs mount point. The key point here is that you need two separate persistent file systems for this setup with lessfs and mhVTL: One for the lessfs data, and one the mhVTL data.
+
 
 <br>
 
