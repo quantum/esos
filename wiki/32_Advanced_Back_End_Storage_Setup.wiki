@@ -86,12 +86,26 @@ You can now make the "secondary" host a primary:
 drbdadm primary r0
 }}}
 
-You should now have a dual-primary DRBD resource available as /dev/drbd0 on both nodes. You can use this block device node as an SCST device, or use an additional storage management/provisioning layer on top of the DRBD resource (LVM, software RAID, etc.), or whatever other advanced storage configuration you might dream up.
+You should now have a dual-primary DRBD resource available as /dev/drbd0 on both nodes. You can use this block device node as an SCST device, or use an additional storage management/provisioning layer on top of the DRBD resource (LVM2, software RAID, etc.), or whatever other advanced storage configuration you might dream up.
 
 <br>
 
 === Linux Software RAID (md) ===
-TODO
+The `mdadm` tool is provided with ESOS to manage Linux software RAID (md) arrays. Since there are so many good guides, articles, and information on using mdadm available on the Internet, we won't even mention a specific link in this document; simply Google "mdadm howto" and you'll get a whole slew of them. We'll provide a couple basic examples below. Possible ESOS storage configuration ideas that make use of software RAID might include using RAID0 across two different hardware RAID controllers to possibly gain performance, or using software RAID1 across multiple hardware RAID controllers or SCSI disks to increase reliability.
+
+Create a partition on each SCSI disk block device you'd like to use for software RAID ("Linux RAID Autodetect", type 'fd'). You can use either `fdisk` or `parted` to create partitions (both are included with ESOS).
+
+To create a RAID0 (striped) volume with a 64 KiB chunk size on two disks, run the following command:
+{{{
+mdadm --create /dev/md0 --chunk=64 --level=0 --raid-devices=2 /dev/sda1 /dev/sdb1
+}}}
+
+To create a RAID1 (mirrored) volume with a 64 KiB chunk size on two disks, run the following command:
+{{{
+mdadm --create /dev/md0 --chunk=64 --level=1 --raid-devices=2 /dev/sda1 /dev/sdb1
+}}}
+
+You can now use these new software RAID block devices as backing for a file system, or directly as a vdisk_blockio SCST device, or in conjunction with another storage management layer (eg, LVM2). The possibilities are limitless!
 
 <br>
 
