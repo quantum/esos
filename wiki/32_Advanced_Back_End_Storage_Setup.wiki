@@ -96,6 +96,110 @@ The data storage location (mount point in the file system) is hard coded in the 
 
 If you are going to use lessfs for de-duplication as the mhVTL storage backing, you will want to use a separate persistent storage device (RAID volume) for the lessfs configuration data and database. You will then use the `/mnt/mhvtl` location for a separate underlying back-end storage file system, and then use the same location as the lessfs mount point. The key point here is that you need two separate persistent file systems for this setup with lessfs and mhVTL: One for the lessfs data, and one the mhVTL data.
 
+We'll present a very basic mhVTL configuration on this page. See the mhVTL [https://sites.google.com/site/linuxvtl2/ page] for additional setup/configuration information.
+
+First, create the /etc/mhvtl/device.conf file:
+{{{
+VERSION: 3
+
+Library: 10 CHANNEL: 0 TARGET: 1 LUN: 0
+ Vendor identification: SPECTRA
+ Product identification: PYTHON
+ Product revision level: 5500
+ Unit serial number: XYZZY_10
+ NAA: 10:22:33:44:ab:cd:ef:00
+
+Drive: 11 CHANNEL: 0 TARGET: 1 LUN: 1
+ Library ID: 10 Slot: 1
+ Vendor identification: QUANTUM
+ Product identification: SDLT600
+ Product revision level: 5500
+ Unit serial number: XYZZY_11
+ NAA: 10:22:33:44:ab:cd:ef:01
+ VPD: b0 04 00 02 01 00
+
+Drive: 12 CHANNEL: 0 TARGET: 1 LUN: 2
+ Library ID: 10 Slot: 2
+ Vendor identification: QUANTUM
+ Product identification: SDLT600
+ Product revision level: 5500
+ Unit serial number: XYZZY_12
+ NAA: 10:22:33:44:ab:cd:ef:02
+ VPD: b0 04 00 02 01 00
+}}}
+
+Next, create the /etc/mhvtl/library_contents.10 file:
+{{{
+VERSION: 2
+
+Drive 1:
+Drive 2:
+
+Picker 1:
+
+MAP 1:
+MAP 2:
+MAP 3:
+MAP 4:
+
+Slot 01: L10001S3
+Slot 02: L10002S3
+Slot 03: L10003S3
+Slot 04: L10004S3
+Slot 05: L10005S3
+Slot 06: L10006S3
+Slot 07: L10007S3
+Slot 08: L10008S3
+Slot 09: L10009S3
+Slot 10: L10010S3
+Slot 11: L10011S3
+Slot 12: L10012S3
+Slot 13: L10013S3
+Slot 14: L10014S3
+Slot 15: L10015S3
+Slot 16: L10016S3
+Slot 17: L10017S3
+Slot 18: L10018S3
+Slot 19: L10019S3
+Slot 20: L10020S3
+Slot 21: L10021S3
+Slot 22: L10022S3
+Slot 23: L10023S3
+Slot 24: L10024S3
+Slot 25: L10025S3
+Slot 26: L10026S3
+Slot 27: L10027S3
+Slot 28: L10028S3
+Slot 29: L10029S3
+Slot 30: L10030S3
+Slot 31: L10031S3
+Slot 32: L10032S3
+Slot 33: L10033S3
+Slot 34: L10034S3
+Slot 35: L10035S3
+Slot 36: L10036S3
+Slot 37: L10037S3
+Slot 38: L10038S3
+Slot 39: L10039S3
+Slot 40: L10040S3
+Slot 41: L10041S3
+Slot 42: L10042S3
+Slot 43: L10043S3
+Slot 44: L10044S3
+Slot 45: L10045S3
+Slot 46: L10046S3
+Slot 47: L10047S3
+Slot 48: L10048S3
+Slot 49: L10049S3
+Slot 50: L10050S3
+}}}
+
+You can now start in the mhVTL service in a ESOS shell:
+{{{
+/etc/rc.d/rc.mhvtl start
+}}}
+
+You should now have a mhVTL virtual tape library running on you ESOS storage server! You can check that the robot/drives are available with the `lsscsi -g` command. After the VTL is configured, you'll use the [51_Device_Configuration] wiki page to create the corresponding SCST devices.
 
 <br>
 
