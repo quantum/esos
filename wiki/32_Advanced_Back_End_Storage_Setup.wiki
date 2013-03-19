@@ -154,12 +154,12 @@ Slot 09: L10009S3
 Slot 10: L10010S3
 }}}
 
-You can now start in the mhVTL service in a ESOS shell:
+You can now start the mhVTL service in a ESOS shell:
 {{{
 /etc/rc.d/rc.mhvtl start
 }}}
 
-You should now have a mhVTL virtual tape library running on you ESOS storage server! You can check that the robot/drives are available with the `lsscsi -g` command. After the VTL is configured, you'll use the [51_Device_Configuration] wiki page to create the corresponding SCST devices.
+You should now have a mhVTL virtual tape library running on your ESOS storage server! You can check that the robot/drives are available with the `lsscsi -g` command. After the VTL is configured, you'll use the [51_Device_Configuration] wiki page to create the corresponding SCST devices.
 
 <br>
 
