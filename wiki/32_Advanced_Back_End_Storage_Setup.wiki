@@ -1,9 +1,70 @@
 #summary DRBD, software RAID (md), LVM2, and CLI RAID tool information.
 
 === Distributed Replicated Block Device (DRBD) ===
-TODO
-DRBD resources (starting/stopping) are typically handled by the cluster stack (Pacemaker + Corosync), so there is no init/rc script for DRBD included with ESOS. If you would like to use DRBD without the cluster stack, you can use the `/etc/pre-scst_xtra_conf` file to setup/configure the DRBD resources on boot.
+DRBD makes an excellent partner to SCST for creating highly available disk arrays and/or replicating data to a remote site for business continuity or disaster recovery purposes. ESOS includes a mostly vanilla DRBD install with the full set of user-land tools and DRBD functionality built-in to the kernel; we are currently using the 8.3 version of DRBD. The DRBD [http://www.drbd.org/users-guide-8.3/ documentation] is quite excellent, so we won't even try to emulate that here. _Use the official 8.3 DRBD documentation._
 
+Since DRBD resources (starting/stopping) are typically handled by the cluster stack (Pacemaker + Corosync), the stand-alone DRBD service is disabled by default. To setup/configure the DRBD resources on boot, edit the /etc/rc.conf file and set `rc.drbd_enable` to "YES".
+
+We'll provide a brief example DRBD setup of (2) nodes with one dual-primary resource. Here is the /etc/drbd.conf configuration file we used on both ESOS nodes:
+{{{
+global {
+  usage-count no;
+}
+
+common {
+  protocol C;
+  handlers {
+    pri-on-incon-degr "/usr/lib/drbd/notify-pri-on-incon-degr.sh; /usr/lib/drbd/notify-emergency-reboot.sh; echo b > /proc/sysrq-trigger ; reboot -f";
+    pri-lost-after-sb "/usr/lib/drbd/notify-pri-lost-after-sb.sh; /usr/lib/drbd/notify-emergency-reboot.sh; echo b > /proc/sysrq-trigger ; reboot -f";
+    local-io-error "/usr/lib/drbd/notify-io-error.sh; /usr/lib/drbd/notify-emergency-shutdown.sh; echo o > /proc/sysrq-trigger ; halt -f";
+    fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
+    after-resync-target "/usr/lib/drbd/crm-unfence-peer.sh";
+    split-brain "/usr/lib/drbd/notify-split-brain.sh root";
+  }
+  startup {
+    degr-wfc-timeout 120;
+    outdated-wfc-timeout 2;
+  }
+  disk {
+    on-io-error detach;
+    no-disk-barrier;
+    no-disk-flushes;
+    fencing resource-only;
+  }
+  net {
+    after-sb-0pri discard-zero-changes;
+    after-sb-1pri discard-secondary;
+    after-sb-2pri disconnect;
+    rr-conflict disconnect;
+    max-buffers 8000;
+    max-epoch-size 8000;
+    sndbuf-size 512k;
+  }
+  syncer {
+    rate 100M;
+    on-no-data-accessible io-error;
+    al-extents 3389;
+  }
+}
+
+resource r0 {
+  net {
+    allow-two-primaries;
+  }
+  on testhosta {
+    device     /dev/drbd0;
+    disk       /dev/sda;
+    address    172.16.0.22:7788;
+    meta-disk  internal;
+  }
+  on testhostb {
+    device    /dev/drbd0;
+    disk      /dev/sda;
+    address   172.16.0.21:7788;
+    meta-disk internal;
+  }
+}
+}}}
 <br>
 
 === Linux Software RAID (md) ===
