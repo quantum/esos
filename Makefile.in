@@ -124,6 +124,8 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		libpciaccess-0.13.1.tar.bz2 \
 		linux_firmware-20130306.tar.xz \
 		dlm-4.0.1.tar.bz2 \
+		sysklogd-1.5.tar.gz \
+		ipmitool-1.8.12.tar.bz2 \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -138,7 +140,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			mhash lessfs tokyocabinet fuse db snappy fence_agents \
 			pexpect pycurl curl Net-Telnet python-suds setuptools \
 			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
-			linux_firmware dlm
+			linux_firmware dlm ipmitool sysklogd
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -332,7 +334,6 @@ image_setup:
 	$(INSTALL) -m 710 -d $(IMAGE_DIR)/var/cron
 	$(INSTALL) -m 700 -d $(IMAGE_DIR)/var/cron/tabs
 	$(MKDIR) $(IMAGE_DIR)/var/lib/corosync
-	$(MKDIR) $(IMAGE_DIR)/var/log/cluster
 	$(MKDIR) $(IMAGE_DIR)/var/lib/pacemaker/{cores,pengine,cib,blackbox}
 	$(MKDIR) $(IMAGE_DIR)/var/lib/pacemaker/cores/{root,hacluster}
 	$(MKDIR) $(IMAGE_DIR)/var/run/crm
@@ -362,6 +363,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(RM) $(linux_src)/drivers/scsi/qla2xxx
 	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
 	### Setup for prod or debug
+	- $(PATCH) -r - -N -d $(linux_src) -p1 < $(CWD)/misc/linux-3.7.8.patch
 	$(MAKE) --directory=$(linux_src) clean
 	$(MAKE) --directory=$(linux_src) distclean
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) clean
@@ -1053,5 +1055,20 @@ dlm: glibc corosync
 	$(MAKE) --directory=$(src_dir) CC="gcc $(CPPFLAGS) $(LDFLAGS)" USE_SD_NOTIFY=no
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(RM) $(IMAGE_DIR)/lib/udev
+	$(TOUCH) $(@)
+
+ipmitool: glibc openssl
+	cd $(src_dir) && ./configure --prefix=/usr --enable-intf-lan --enable-intf-lanplus
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+sysklogd: glibc
+	$(MAKE) --directory=$(src_dir) CC="gcc $(CPPFLAGS) $(LDFLAGS)"
+	$(MAKE) --directory=$(src_dir) prefix=$(IMAGE_DIR) install_exec
+	$(INSTALL) -D $(src_dir)/sysklogd.8 $(IMAGE_DIR)/usr/share/man/man8/sysklogd.8
+	$(INSTALL) -D $(src_dir)/syslogd.8 $(IMAGE_DIR)/usr/share/man/man8/syslogd.8
+	$(INSTALL) -D $(src_dir)/syslog.conf.5 $(IMAGE_DIR)/usr/share/man/man5/syslog.conf.5
+	$(INSTALL) -D $(src_dir)/klogd.8 $(IMAGE_DIR)/usr/share/man/man8/klogd.8
 	$(TOUCH) $(@)
 

@@ -19,7 +19,7 @@
 /usr/local/sbin/conf_sync.sh
 
 echo "Starting kernel log daemon (klogd)..."
-/sbin/klogd -c1
+/usr/sbin/klogd -c1
 
 /usr/sbin/fsck -A -M -T -p
 if [ $? -gt 1 ]; then
