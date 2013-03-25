@@ -2,6 +2,8 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 COROSYNC="/usr/sbin/corosync"
 COROSYNC_NOTIFYD="/usr/sbin/corosync-notifyd"
 COROSYNC_LOCK="/var/lock/corosync"
@@ -25,11 +27,11 @@ start() {
 
 stop() {
     /bin/echo "Stopping corosync-notifyd..."
-    /bin/kill -TERM $(/bin/pidof ${COROSYNC_NOTIFYD})
-    /bin/rm -f ${COROSYNC_NOTIFYD_LOCK}
+    /bin/kill -TERM $(/bin/pidof ${COROSYNC_NOTIFYD}) || exit 1
+    wait_for_stop ${COROSYNC_NOTIFYD} && /bin/rm -f ${COROSYNC_NOTIFYD_LOCK}
     /bin/echo "Stopping corosync..."
-    /bin/kill -TERM $(/bin/pidof ${COROSYNC})
-    /bin/rm -f ${COROSYNC_LOCK}
+    /bin/kill -TERM $(/bin/pidof ${COROSYNC}) || exit 1
+    wait_for_stop ${COROSYNC} && /bin/rm -f ${COROSYNC_LOCK}
 }
 
 # Perform specified action

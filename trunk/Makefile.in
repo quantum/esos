@@ -212,9 +212,9 @@ image: $(build_targets)
 	$(INSTALL) $(CWD)/scripts/health_chk.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/dev_nodes.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/scsi_id.sh $(MOUNT_DIR)/usr/local/sbin/
+	$(MKDIR) $(MOUNT_DIR)/usr/lib/ocf/resource.d/esos
+	$(INSTALL) $(CWD)/misc/ocf/* $(MOUNT_DIR)/usr/lib/ocf/resource.d/esos/
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release
-	$(FIND) $(MOUNT_DIR)/etc -print0 | $(XARGS) -0 $(TOUCH) -d "2001-01-01 00:00:00"
-	$(FIND) $(MOUNT_DIR)/var/lib -print0 | $(XARGS) -0 $(TOUCH) -d "2001-01-01 00:00:00"
 	$(CHOWN) -R root:root $(MOUNT_DIR)/*
 	$(FIND) $(MOUNT_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
 	$(FIND) $(MOUNT_DIR)/etc -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
@@ -231,6 +231,8 @@ image: $(build_targets)
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/pacemaker
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/heartbeat
 	$(CHOWN) 101:101 $(MOUNT_DIR)/var/run/crm
+	$(FIND) $(MOUNT_DIR)/etc -print0 | $(XARGS) -0 $(TOUCH) -d "2001-01-01 00:00:00"
+	$(FIND) $(MOUNT_DIR)/var/lib -print0 | $(XARGS) -0 $(TOUCH) -d "2001-01-01 00:00:00"
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
@@ -413,7 +415,6 @@ esos_tui: glibc ncurses cdk iniparser parted
 	$(TOUCH) $(@)
 
 busybox: glibc
-	#- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/busybox-1.19.0.patch
 	$(MAKE) --directory=$(src_dir) clean
 	$(MAKE) --directory=$(src_dir) distclean
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
@@ -427,6 +428,8 @@ busybox: glibc
 	$(INSTALL) $(STRIP) $(src_dir)/busybox_unstripped $(IMAGE_DIR)/bin/busybox
 	$(INSTALL) -d $(IMAGE_DIR)/usr/share/udhcpc
 	$(INSTALL) $(src_dir)/examples/udhcp/simple.script $(IMAGE_DIR)/usr/share/udhcpc/default.script
+	$(ECHO) -e "#! /bin/sh\n\n/bin/busybox awk \"\044\0100\"\n" > $(IMAGE_DIR)/usr/bin/gawk
+	$(CHMOD) +x $(IMAGE_DIR)/usr/bin/gawk
 	$(TOUCH) $(@)
 
 sysvinit: glibc

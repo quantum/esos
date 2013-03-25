@@ -18,7 +18,7 @@ for i in ${SYNC_DIRS}; do
     ${MKDIR} ${CONF_MNT}${i}
     # Make sure all of the local directories exist on USB
     local_dir_base="${i}"
-    for j in `test -d ${local_dir_base} && find ${local_dir_base} -type d`; do
+    for j in `test -d ${local_dir_base} && find ${local_dir_base} -type d \( ! -name rc.d \)`; do
         local_dir=${j}
         usb_dir=${CONF_MNT}${local_dir}
         # The directory doesn't exist on the USB drive
@@ -29,7 +29,7 @@ for i in ${SYNC_DIRS}; do
         fi
     done
     # Make sure all of the local files exist on USB
-    for j in `test -d ${local_dir_base} && find ${local_dir_base} -type f`; do
+    for j in `test -d ${local_dir_base} && find ${local_dir_base} -path /etc/rc.d -prune -o -type f -print`; do
         local_file=${j}
         usb_file=${CONF_MNT}${local_file}
         # The file doesn't exist on the USB drive
@@ -91,5 +91,28 @@ for i in ${SYNC_DIRS}; do
         fi
     done
 done
+
+# Make sure our sole symbolic link for the time zone is up to date
+local_tz_link="/etc/localtime"
+usb_tz_link="${CONF_MNT}${local_tz_link}"
+if [ ! -L "${usb_tz_link}" ]; then
+    # The link doesn't exist on the USB drive
+    ${CP} ${local_tz_link} ${usb_tz_link}
+elif [ ! -L "${local_tz_link}" ]; then
+    # The link doesn't exist on the local file system
+    ${CP} ${usb_tz_link} ${local_tz_link}
+elif [ -L "${usb_tz_link}" ] && [ -L "${local_tz_link}" ]; then
+    # The link exists in both locations
+    if [ $(stat -c %Y ${local_tz_link}) -gt $(stat -c %Y ${usb_tz_link}) ]; then
+        # Update the USB link with the local copy
+        ${CP} ${local_tz_link} ${usb_tz_link}
+    elif [ $(stat -c %Y ${local_tz_link}) -lt $(stat -c %Y ${usb_tz_link}) ]; then
+        # Update the local link with the USB copy
+        ${CP} ${usb_tz_link} ${local_tz_link}
+    else
+        # The links are the same; do nothing
+        continue
+    fi
+fi
 
 umount ${CONF_MNT} || exit 1
