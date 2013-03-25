@@ -1,6 +1,7 @@
 # $Id$
 
 RC_D_PREFIX="/etc/rc.d"
+STOP_TIMEOUT=120
 
 # User settable services; started in this order and reversed on shutdown
 SERVICES="rc.sshd rc.lvm2 rc.drbd rc.corosync rc.dlm rc.clvmd rc.pacemaker rc.mhvtl rc.scst"
@@ -27,5 +28,23 @@ check_enabled() {
     else
         return 1
     fi
+}
+
+# Wait for a daemon to stop
+wait_for_stop() {
+    timer=0
+    rc=1
+    while [ ${timer} -lt ${STOP_TIMEOUT} ]; do
+        pid=$(/bin/pidof ${1} > /dev/null 2>&1)
+        if [ ${?} -eq 0 ]; then
+            /bin/sleep 1
+            timer=$(/usr/bin/expr ${timer} + 1)
+            continue
+        else
+            rc=0
+            break
+        fi
+    done
+    return ${rc}
 }
 

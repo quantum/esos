@@ -2,6 +2,8 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 IB_MODS="ib_ipath mlx4_ib ib_mthca ib_qib"
 SCST_MODS="scst qla2x00tgt iscsi-scst ib_srpt scst_disk scst_vdisk scst_tape scst_changer fcst"
 SCST_CFG="/etc/scst.conf"
@@ -60,12 +62,12 @@ stop() {
     ${SCSTADMIN} -nonkey -write_config ${SCST_CFG}
     /bin/echo "Stopping SCST daemons and unloading modules..."
     # Stop all of the userland daemons first
-    /bin/kill -TERM $(/bin/pidof ${FCOEMON})
-    /bin/rm -f ${FCOEMON_LOCK}
-    /bin/kill -TERM $(/bin/pidof ${LLDPAD})
-    /bin/rm -f ${LLDPAD_LOCK}
-    /bin/kill -TERM $(/bin/pidof ${ISCSI_SCSTD})
-    /bin/rm -f ${ISCSI_SCSTD_LOCK}
+    /bin/kill -TERM $(/bin/pidof ${FCOEMON}) || exit 1
+    wait_for_stop ${FCOEMON} && /bin/rm -f ${FCOEMON_LOCK}
+    /bin/kill -TERM $(/bin/pidof ${LLDPAD}) || exit 1
+    wait_for_stop ${LLDPAD} && /bin/rm -f ${LLDPAD_LOCK}
+    /bin/kill -TERM $(/bin/pidof ${ISCSI_SCSTD}) || exit 1
+    wait_for_stop ${ISCSI_SCSTD} && /bin/rm -f ${ISCSI_SCSTD_LOCK}
     # Unload all of the modules in reverse order
     for i in $(/bin/echo ${SCST_MODS} | /usr/bin/tr ' ' '\n' | \
         /usr/bin/tac | /usr/bin/tr '\n' ' '); do

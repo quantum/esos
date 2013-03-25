@@ -2,6 +2,8 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 DLM_CONTROLD="/usr/sbin/dlm_controld"
 DLM_CONTROLD_LOCK="/var/lock/dlm_controld"
 
@@ -22,8 +24,8 @@ start() {
 
 stop() {
     /bin/echo "Stopping dlm_controld..."
-    /bin/kill -TERM $(/bin/pidof ${DLM_CONTROLD})
-    /bin/rm -f ${DLM_CONTROLD_LOCK}
+    /bin/kill -TERM $(/bin/pidof ${DLM_CONTROLD}) || exit 1
+    wait_for_stop ${DLM_CONTROLD} && /bin/rm -f ${DLM_CONTROLD_LOCK}
 }
 
 # Perform specified action

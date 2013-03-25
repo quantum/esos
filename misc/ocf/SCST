@@ -1,0 +1,425 @@
+#! /bin/sh
+#
+# $Id$
+
+#
+#   Resource Agent for managing the Generic SCSI Target Subsystem
+#   for Linux (SCST) and related daemons.
+#
+#   License:      GNU General Public License (GPL)
+#   (c) 2012-2013 Marc Smith
+#
+
+# Initialization
+: ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}
+. ${OCF_FUNCTIONS_DIR}/ocf-shellfuncs
+MODULES="ib_ipath mlx4_ib ib_mthca ib_qib \
+scst qla2x00tgt iscsi-scst ib_srpt \
+scst_disk scst_vdisk scst_tape scst_changer fcst"
+SCST_CFG="/etc/scst.conf"
+PRE_SCST_CONF="/etc/pre-scst_xtra_conf"
+POST_SCST_CONF="/etc/post-scst_xtra_conf"
+SCST_SYSFS="/sys/kernel/scst_tgt"
+
+SCST_start() {
+	# Exit immediately if configuration is not valid
+	SCST_validate_all || exit $?
+
+	# If resource is already running, bail out early
+	if SCST_monitor; then
+		ocf_log info "Resource is already running."
+		return $OCF_SUCCESS
+	fi
+
+	# If our pre-SCST file exists, run it
+	if [ -f $PRE_SCST_CONF]; then
+		ocf_log debug "Pre-SCST user config. file found; running..."
+		ocf_run -warn "sh $PRE_SCST_CONF"
+	fi
+
+	# Load all modules
+	ocf_log debug "Loading kernel modules..."
+	for i in $MODULES; do
+		ocf_run "modprobe $i" || exit $OCF_ERR_GENERIC
+	done
+
+	# Start the daemons
+	ocf_log debug "Starting daemons..."
+	ocf_run "iscsi-scstd" || exit $OCF_ERR_GENERIC
+	ocf_run "lldpad -d" || exit $OCF_ERR_GENERIC
+	ocf_run "fcoemon -s" || exit $OCF_ERR_GENERIC
+
+	# Configure SCST
+	if [ -f $SCST_CFG ]; then
+		ocf_log debug "Applying SCST configuration..."
+		ocf_run "scstadmin -config $SCST_CFG" || exit $OCF_ERR_GENERIC
+	fi
+
+	# If our post-SCST file exists, run it
+	if [ -f $POST_SCST_CONF ]; then
+		ocf_log debug "Post-SCST user config. file found; running..."
+		ocf_run -warn "sh $POST_SCST_CONF"
+	fi
+
+	# Make sure the resource started correctly
+	while ! SCST_monitor; do
+		ocf_log debug "Resource has not started yet, waiting..."
+		sleep 1
+	done
+
+	# If we are using ALUA, be sure we are in Slave mode (offline)
+	if ocf_is_true $OCF_RESKEY_alua; then
+		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
+		ocf_run "echo offline > $target_groups/$OCF_RESKEY_local_tgt_grp/state" || \
+		exit $OCF_ERR_GENERIC
+	fi
+
+	# Only return $OCF_SUCCESS if _everything_ succeeded as expected
+	return $OCF_SUCCESS
+}
+
+SCST_stop() {
+	# Exit immediately if configuration is not valid
+	SCST_validate_all || exit $?
+
+	# Check the current resource state
+	SCST_monitor
+	local rc=$?
+	case "$rc" in
+	"$OCF_SUCCESS")
+		# Currently running; normal, expected behavior
+		ocf_log debug "Resource is currently running."
+		;;
+	"$OCF_RUNNING_MASTER")
+		# Running as a Master; need to demote before stopping
+		ocf_log info "Resource is currently running as Master."
+		SCST_demote || ocf_log warn "Demote failed, trying to stop anyway..."
+		;;
+	"$OCF_NOT_RUNNING")
+		# Currently not running; nothing to do
+		ocf_log info "Resource is already stopped."
+		return $OCF_SUCCESS
+		;;
+	esac
+
+	# Save the SCST configuration, just in case
+	ocf_log debug "Saving SCST configuration..."
+	ocf_run "scstadmin -nonkey -write_config $SCST_CFG" || exit $OCF_ERR_GENERIC
+
+	# Stop all of the daemons and wait for each
+	for i in "fcoemon lldpad iscsi-scstd"; do
+		ocf_run "killall -TERM $i" || exit $OCF_ERR_GENERIC
+		while pidof $i > /dev/null 2>&1; do
+			ocf_log debug "The $i daemon is still running, waiting..."
+			sleep 1
+		done
+	done
+
+	# Unload the modules (in reverse)
+	for i in $(echo $MODULES | tr ' ' '\n' | tac | tr '\n' ' '); do
+		ocf_run "modprobe -r $i" || exit $OCF_ERR_GENERIC
+	done
+
+	# Make sure the resource stopped correctly
+	while SCST_monitor; do
+		ocf_log debug "Resource has not stopped yet, waiting..."
+		sleep 1
+	done
+
+	# Only return $OCF_SUCCESS if _everything_ succeeded as expected
+	return $OCF_SUCCESS
+}
+
+SCST_monitor() {
+	# Exit immediately if configuration is not valid
+	SCST_validate_all || exit $?
+
+	# Check if SCST is loaded
+	local rc=$OCF_NOT_RUNNING
+	if [ -e "$SCST_SYSFS/version" ]; then
+		ocf_log debug "SCST version: $(cat $SCST_SYSFS/version)"
+		ocf_log debug "Resource is running."
+		rc=$OCF_SUCCESS
+	else
+		ocf_log debug "Resource is not running."
+		return $rc
+	fi
+
+	# If we are using ALUA, then we can test if we are Master or not
+	if ocf_is_true $OCF_RESKEY_alua; then
+		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
+		tgt_grp_state="$(cat $target_groups/$OCF_RESKEY_local_tgt_grp/state)"
+		ocf_log debug "SCST local target group state: $tgt_grp_state"
+		if [ -n "$tgt_grp_state" ] && [ "$tgt_grp_state" = "active" ]; then
+			rc=$OCF_RUNNING_MASTER
+		fi
+	fi
+
+	return $rc
+}
+
+SCST_validate_all() {
+	# Test for required binaries
+	check_binary scstadmin
+
+	# If ALUA support is enabled, we need to check the parameters
+	if ocf_is_true $OCF_RESKEY_alua; then
+		# Make sure they are set to something
+		if [ -z "$OCF_RESKEY_device_group" ]; then
+			ocf_log err "The device_group parameter is not set!"
+			exit $OCF_ERR_CONFIGURED
+		fi
+		if [ -z "$OCF_RESKEY_local_tgt_grp" ]; then
+			ocf_log err "The local_tgt_grp parameter is not set!"
+			exit $OCF_ERR_CONFIGURED
+		fi
+		if [ -z "$OCF_RESKEY_remote_tgt_grp" ]; then
+			ocf_log err "The remote_tgt_grp parameter is not set!"
+			exit $OCF_ERR_CONFIGURED
+		fi
+		# Make sure the directories exist in the SCST sysfs structure
+		if [ ! -d "$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group" ]; then
+			ocf_log err "The $OCF_RESKEY_device_group device group does not exist!"
+			exit $OCF_ERR_INSTALLED
+		fi
+		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
+		if [ ! -d "$target_groups/$OCF_RESKEY_local_tgt_grp" ]; then
+			ocf_log err "The $OCF_RESKEY_local_tgt_grp target group does not exist!"
+			exit $OCF_ERR_INSTALLED
+		fi
+		if [ ! -d "$target_groups/$OCF_RESKEY_remote_tgt_grp" ]; then
+			ocf_log err "The $OCF_RESKEY_remote_tgt_grp target group does not exist!"
+			exit $OCF_ERR_INSTALLED
+		fi
+	fi
+
+	return $OCF_SUCCESS
+}
+
+SCST_meta_data() {
+	cat <<-EOF
+	<?xml version="1.0"?>
+	<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+	<resource-agent name="SCST" version="0.1">
+	  <version>0.1</version>
+	  <longdesc lang="en">The SCST OCF resource agent for ESOS; includes SCST ALUA support.</longdesc>
+	  <shortdesc lang="en">SCST OCF RA script for ESOS.</shortdesc>
+	  <parameters>
+	    <parameter name="alua" unique="0" required="0">
+	      <longdesc lang="en">Use to enable/disable updating ALUA status in SCST.</longdesc>
+              <shortdesc lang="en">The 'alua' parameter.</shortdesc>
+	      <content type="boolean" default="false" />
+            </parameter>
+	    <parameter name="device_group" unique="0" required="0">
+	      <longdesc lang="en">The name of the SCST device group (used with ALUA support).</longdesc>
+	      <shortdesc lang="en">The 'device_group' parameter.</shortdesc>
+	      <content type="string" default="" />
+	    </parameter>
+	    <parameter name="local_tgt_grp" unique="0" required="0">
+	      <longdesc lang="en">The name of the SCST local target group (used with ALUA support).</longdesc>
+	      <shortdesc lang="en">The 'local_tgt_grp' parameter.</shortdesc>
+	      <content type="string" default="" />
+	    </parameter>
+	    <parameter name="remote_tgt_grp" unique="0" required="0">
+	      <longdesc lang="en">The name of the SCST remote target group (used with ALUA support).</longdesc>
+	      <shortdesc lang="en">The 'remote_tgt_grp' parameter.</shortdesc>
+	      <content type="string" default="" />
+	    </parameter>
+	  </parameters>
+	  <actions>
+	    <action name="meta-data" timeout="5" />
+	    <action name="start" timeout="20" />
+	    <action name="stop" timeout="20" />
+	    <action name="monitor" timeout="20" depth="0" interval="20" role="Slave" />
+	    <action name="monitor" timeout="20" depth="0" interval="10" role="Master" />
+	    <action name="notify" timeout="20" />
+	    <action name="promote" timeout="20" />
+	    <action name="demote" timeout="20" />
+	    <action name="reload" timeout="20" />
+	    <action name="validate-all" timeout="20" />
+	  </actions>
+	</resource-agent>
+	EOF
+}
+
+SCST_usage() {
+	echo "usage: $0 {start|stop|monitor|validate-all|promote|demote|reload|notify|meta-data}"
+	echo ""
+	echo "Expects to have a fully populated OCF RA-compliant environment set."
+}
+
+SCST_promote() {
+	# Exit immediately if configuration is not valid
+	SCST_validate_all || exit $?
+
+	# Test the resource's current state
+	SCST_monitor
+	local rc=$?
+	case "$rc" in
+	"$OCF_SUCCESS")
+		# Running as Slave; normal, expected behavior
+		ocf_log debug "Resource is currently running as Slave."
+		;;
+	"$OCF_RUNNING_MASTER")
+		# Already a Master; unexpected, but not a problem
+		ocf_log info "Resource is already running as Master."
+		return $OCF_SUCCESS
+		;;
+	"$OCF_NOT_RUNNING")
+		# Currently not running; need to start before promoting
+		ocf_log info "Resource is currently not running."
+		SCST_start
+		;;
+	*)
+		# Failed resource; let the cluster manager recover
+		ocf_log err "Unexpected error, cannot promote."
+		exit $rc
+		;;
+	esac
+
+	# Promote only makes sense if we are using ALUA
+	if ocf_is_true $OCF_RESKEY_alua; then
+		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
+		ocf_run "echo active > $target_groups/$OCF_RESKEY_local_tgt_grp/state" || \
+		exit $OCF_ERR_GENERIC
+	fi
+
+	# After the resource has been promoted, check whether the promotion worked
+	while true; do
+		SCST_monitor
+		if [ $? -eq $OCF_RUNNING_MASTER ]; then
+			ocf_log debug "Resource was promoted successfully."
+			break
+		else
+			ocf_log debug "Resource still awaiting promotion."
+			sleep 1
+		fi
+	done
+
+	# Only return $OCF_SUCCESS if _everything_ succeeded as expected
+	return $OCF_SUCCESS
+}
+
+SCST_demote() {
+	# Exit immediately if configuration is not valid
+	SCST_validate_all || exit $?
+
+	# Test the resource's current state
+	SCST_monitor
+	local rc=$?
+	case "$rc" in
+	"$OCF_RUNNING_MASTER")
+		# Running as Master; normal, expected behavior
+		ocf_log debug "Resource is currently running as Master."
+		;;
+	"$OCF_SUCCESS")
+		# Already running as Slave; nothing to do
+		ocf_log debug "Resource is currently running as Slave."
+		return $OCF_SUCCESS
+		;;
+	"$OCF_NOT_RUNNING")
+		# Currently not running; getting a demote action in this state is unexpected
+		ocf_log err "Resource is currently not running."
+		exit $OCF_ERR_GENERIC
+		;;
+	*)
+		# Failed resource; let the cluster manager recover
+		ocf_log err "Unexpected error, cannot demote."
+		exit $rc
+		;;
+	esac
+
+	# Demote only makes sense if we are using ALUA
+	if ocf_is_true $OCF_RESKEY_alua; then
+		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
+		ocf_run "echo offline > $target_groups/$OCF_RESKEY_local_tgt_grp/state" || \
+		exit $OCF_ERR_GENERIC
+	fi
+
+	# After the resource has been demoted, check whether the demotion worked
+	while true; do
+		SCST_monitor
+		if [ $? -eq $OCF_RUNNING_MASTER ]; then
+			ocf_log debug "Resource still awaiting promotion."
+			sleep 1
+		else
+			ocf_log debug "Resource was demoted successfully."
+			break
+		fi
+	done
+
+	# Only return $OCF_SUCCESS if _everything_ succeeded as expected
+	return $OCF_SUCCESS
+}
+
+SCST_notify() {
+	local type_op="${OCF_RESKEY_CRM_meta_notify_type}-${OCF_RESKEY_CRM_meta_notify_operation}"
+	ocf_log debug "Received $type_op notification."
+	case "$type_op" in
+	'post-promote')
+		ocf_log info "Received $type_op notification for node $OCF_RESKEY_CRM_meta_notify_promote_uname."
+		;;
+	'post-demote')
+		ocf_log info "Received $type_op notification for node $OCF_RESKEY_CRM_meta_notify_demote_uname."
+		;;
+	esac
+	return $OCF_SUCCESS
+}
+
+
+# Make sure meta-data and usage always succeed
+case $__OCF_ACTION in
+meta-data)
+	SCST_meta_data
+	exit $OCF_SUCCESS
+	;;
+usage|help)
+	SCST_usage
+	exit $OCF_SUCCESS
+	;;
+esac
+
+# Anything other than meta-data and usage must pass validation
+SCST_validate_all || exit $?
+
+# Translate each action into the appropriate function call
+case $__OCF_ACTION in
+start)
+	SCST_start
+	;;
+stop)
+	SCST_stop
+	;;
+status|monitor)
+	SCST_monitor
+	;;
+notify)
+	SCST_notify
+	;;
+promote)
+	SCST_promote
+	;;
+demote)
+	SCST_demote
+	;;
+reload)
+	ocf_log info "Reloading..."
+	SCST_start
+	;;
+validate-all)
+	;;
+migrate_to|migrate_from)
+	SCST_usage
+	exit $OCF_ERR_UNIMPLEMENTED
+	;;
+*)
+	SCST_usage
+	exit $OCF_ERR_UNIMPLEMENTED
+	;;
+esac
+
+# Log a debug message and exit
+rc=$?
+ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION returned: $rc"
+exit $rc
+

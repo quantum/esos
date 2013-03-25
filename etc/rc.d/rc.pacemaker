@@ -2,6 +2,8 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 PACEMAKERD="/usr/sbin/pacemakerd"
 LOCK_FILE="/var/lock/pacemakerd"
 
@@ -20,8 +22,8 @@ start() {
 
 stop() {
     /bin/echo "Stopping pacemakerd..."
-    /bin/kill -TERM $(/bin/pidof ${PACEMAKERD})
-    /bin/rm -f ${LOCK_FILE}
+    /bin/kill -TERM $(/bin/pidof ${PACEMAKERD}) || exit 1
+    wait_for_stop ${PACEMAKERD} && /bin/rm -f ${LOCK_FILE}
 }
 
 # Perform specified action

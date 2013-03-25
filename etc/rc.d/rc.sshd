@@ -2,6 +2,8 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 SSHD="/usr/sbin/sshd"
 SSHD_LOCK="/var/lock/sshd"
 
@@ -29,7 +31,7 @@ start() {
 stop() {
     /bin/echo "Stopping sshd..."
     /bin/kill -TERM $(/bin/pidof ${SSHD}) || exit 1
-    /bin/rm -f ${SSHD_LOCK}
+    wait_for_stop ${SSHD} && /bin/rm -f ${SSHD_LOCK}
 }
 
 # Perform specified action
