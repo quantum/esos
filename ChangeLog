@@ -1,3 +1,37 @@
+2013-03-25 00:11  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/common, etc/rc.d/rc.clvmd,
+	  etc/rc.d/rc.corosync, etc/rc.d/rc.dlm, etc/rc.d/rc.pacemaker,
+	  etc/rc.d/rc.scst, etc/rc.d/rc.sshd, misc/ocf, misc/ocf/SCST,
+	  scripts/conf_sync.sh: added new resource agent (RA) for SCST;
+	  updated rc scripts to use new wait_for_stop common function to
+	  wait after a -TERM is issued on stop(); updated conf_sync to omit
+	  /etc/rc.d and correctly sync the /etc/localtime sym link; added
+	  support for gawk (-> awk); adjust order in image target for
+	  setting time stamp
+
+2013-03-21 03:29  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  etc/corosync/corosync.conf, etc/rc.d/rc.2, etc/rc.d/rc.sysinit,
+	  etc/syslog.conf, misc/busybox-1.20.2.config,
+	  misc/linux-3.7.8.patch: resolved issue with DLM locking (via
+	  clvmd) -- issue in kernel, see:
+	  http://www.redhat.com/archives/cluster-devel/2013-February/msg00060.html;
+	  added ipmitools (to make fence_ipmilan work); added sysklogd to
+	  replace busybox implementation (syslogd + klogd) so we can
+	  actually log kern.* to kern.log; removed fsck and sysklogd
+	  components from busybox config; updated syslog.conf file so we
+	  don't sync when writing all log files; updated corosync.conf
+	  default file to not log to a flat file, only to syslog via local2
+	  (and removed log dir creation line from Makefile)
+
+2013-03-18 17:56  msmith626@gmail.com
+
+	* ChangeLog, Makefile.in: switched LVM locking type
+	  (cluster=internal instead of shared); recursively set old time
+	  stamp on /etc and /var/lib files
+
 2013-03-18 02:56  msmith626@gmail.com
 
 	* etc/corosync/corosync.conf, etc/mdev.conf, etc/rc.d/rc.clvmd,
