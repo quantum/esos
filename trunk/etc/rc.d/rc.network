@@ -264,15 +264,18 @@ if ($ARGV[0] eq "start") {
     }
 
 } elsif ($ARGV[0] eq "stop") {
-    # Remove the default route
-    print("Deleting the current default route...\n");
-    system($route_prog . " del default 2>&1");
-    if ($? == -1) {
-        print("ERROR: Running $route_prog failed: $!\n");
-    } else {
-        my $exit_status = $? >> 8;
-        if ($exit_status != 0) {
-            print("ERROR: The $route_prog program exited with value $exit_status.\n");
+    # Remove the default route (if there is one set)
+    my $default_gw = `netstat -r | grep ^default | awk '{print \$2}' | tr -d '\n'`;
+    if ($default_gw != "") {
+        print("Deleting the current default route (GW: $default_gw)...\n");
+        system($route_prog . " del default 2>&1");
+        if ($? == -1) {
+            print("ERROR: Running $route_prog failed: $!\n");
+        } else {
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $route_prog program exited with value $exit_status.\n");
+            }
         }
     }
 

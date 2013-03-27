@@ -250,7 +250,7 @@ pkg_dist: $(img_file)
 	$(SHA256SUM) $(img_file) > $(CWD)/dist_sha256sum.txt
 	$(TAR) --transform 's,^,esos-$(esos_ver)/,' --show-transformed-names \
 	-c -v -J -f $(CWD)/esos-$(esos_ver).tar.xz $(img_file) install.sh \
-	INSTALL README COPYING dist_*.txt
+	INSTALL README COPYING dist_*.txt ChangeLog
 
 
 # clean - Remove all temporary files and clean/distclean each package source directory.

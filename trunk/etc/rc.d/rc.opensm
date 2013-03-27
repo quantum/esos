@@ -1,0 +1,30 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+OPENSM="/usr/sbin/opensm"
+OPENSM_LOCK="/var/lock/opensm"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Starting IB Subnet Manager..."
+    ${OPENSM} --daemon || exit 1
+    /bin/touch ${OPENSM_LOCK}
+    /bin/sleep 1
+}
+
+stop() {
+    /bin/echo "Stopping IB Subnet Manager..."
+    /bin/kill -15 $(/bin/pidof ${OPENSM}) || exit 1
+    wait_for_stop ${OPENSM} && /bin/rm -f ${OPENSM_LOCK}
+}
+
+# Perform specified action
+${1}

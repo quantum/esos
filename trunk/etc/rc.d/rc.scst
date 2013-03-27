@@ -4,7 +4,6 @@
 
 source /etc/rc.d/common
 
-IB_MODS="ib_ipath mlx4_ib ib_mthca ib_qib"
 SCST_MODS="scst qla2x00tgt iscsi-scst ib_srpt scst_disk scst_vdisk scst_tape scst_changer fcst"
 SCST_CFG="/etc/scst.conf"
 SCSTADMIN="/usr/sbin/scstadmin"
@@ -28,13 +27,9 @@ start() {
         /bin/sh /etc/pre-scst_xtra_conf
     fi
     /bin/echo "Loading SCST modules and starting daemons..."
-    # Load the InfiniBand modules
-    for i in ${IB_MODS}; do
-        /sbin/modprobe ${i}
-    done
     # Load the SCST core modules and target drivers
     for i in ${SCST_MODS}; do
-        /sbin/modprobe ${i}
+        /sbin/modprobe ${i} || exit 1
     done
     # Start the iSCSI SCST daemon
     ${ISCSI_SCSTD} || exit 1
@@ -70,10 +65,6 @@ stop() {
     wait_for_stop ${ISCSI_SCSTD} && /bin/rm -f ${ISCSI_SCSTD_LOCK}
     # Unload all of the modules in reverse order
     for i in $(/bin/echo ${SCST_MODS} | /usr/bin/tr ' ' '\n' | \
-        /usr/bin/tac | /usr/bin/tr '\n' ' '); do
-        /sbin/modprobe -r ${i}
-    done
-    for i in $(/bin/echo ${IB_MODS} | /usr/bin/tr ' ' '\n' | \
         /usr/bin/tac | /usr/bin/tr '\n' ' '); do
         /sbin/modprobe -r ${i}
     done
