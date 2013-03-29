@@ -812,22 +812,29 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
     setCDKLabelBackgroundAttrib(sync_msg, COLOR_DIALOG_TEXT);
     setCDKLabelBoxAttribute(sync_msg, COLOR_DIALOG_BOX);
     refreshCDKScreen(main_cdk_screen);
-    
-    /* Dump the SCST configuration to a file */
-    snprintf(scstadmin_cmd, MAX_SHELL_CMD_LEN, "%s -nonkey -write_config %s > /dev/null 2>&1", SCSTADMIN_TOOL, SCST_CONF);
-    ret_val = system(scstadmin_cmd);
-    if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-        asprintf(&error_msg, "Running %s failed; exited with %d.", SCSTADMIN_TOOL, exit_stat);
-        errorDialog(main_cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
-        goto cleanup;
+
+    /* Dump the SCST configuration to a file, if its loaded */
+    if (isSCSTLoaded()) {
+        snprintf(scstadmin_cmd, MAX_SHELL_CMD_LEN,
+                "%s -nonkey -write_config %s > /dev/null 2>&1",
+                SCSTADMIN_TOOL, SCST_CONF);
+        ret_val = system(scstadmin_cmd);
+        if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+            asprintf(&error_msg, "Running %s failed; exited with %d.",
+                    SCSTADMIN_TOOL, exit_stat);
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            goto cleanup;
+        }
     }
     
     /* Synchronize the ESOS configuration */
-    snprintf(sync_conf_cmd, MAX_SHELL_CMD_LEN, "%s > /dev/null 2>&1", SYNC_CONF_TOOL);
+    snprintf(sync_conf_cmd, MAX_SHELL_CMD_LEN, "%s > /dev/null 2>&1",
+            SYNC_CONF_TOOL);
     ret_val = system(sync_conf_cmd);
     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-        asprintf(&error_msg, "Running %s failed; exited with %d.", SYNC_CONF_TOOL, exit_stat);
+        asprintf(&error_msg, "Running %s failed; exited with %d.",
+                SYNC_CONF_TOOL, exit_stat);
         errorDialog(main_cdk_screen, error_msg, NULL);
         freeChar(error_msg);
         goto cleanup;

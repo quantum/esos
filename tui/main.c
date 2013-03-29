@@ -181,6 +181,12 @@ int main(int argc, char** argv) {
     statusBar(main_window);
     refreshCDKScreen(cdk_screen);
 
+    /* Check and see if SCST is loaded */
+    if (! isSCSTLoaded()) {
+        errorDialog(cdk_screen, "It appears SCST is not loaded; a number",
+                "of the TUI functions will not work.");
+    }
+
     /* Loop refreshing the labels and waiting for input */
     halfdelay(REFRESH_DELAY);
     for (;;) {
@@ -781,4 +787,18 @@ int writeAttribute(char sysfs_attr[], char attr_value[]) {
              return errno;
          }
      }
+}
+
+
+/*
+ * Test if SCST is loaded on the current machine. For now we have a very
+ * simple test using the SCST sysfs directory; return TRUE (1) if the
+ * directory exists and return FALSE (0) if it doesn't.
+ */
+boolean isSCSTLoaded() {
+    struct stat scst_test = {0};
+    if (stat(SYSFS_SCST_TGT, &scst_test) == 0)
+        return TRUE;
+    else
+        return FALSE;
 }

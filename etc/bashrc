@@ -5,6 +5,7 @@ export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:/opt/b
 export EDITOR="/bin/vi"
 export VISUAL="/bin/vi"
 export MANPATH="/usr/share/man"
+export PAGER="/usr/bin/less"
 
 # Set the prompt
 export PS1="[\u@\h \W]\\$ "

@@ -1,3 +1,17 @@
+2013-03-27 02:20  msmith626@gmail.com
+
+	* ChangeLog, Makefile.in, etc/infiniband,
+	  etc/infiniband/openib.conf, etc/rc.conf, etc/rc.d/common,
+	  etc/rc.d/rc.network, etc/rc.d/rc.openibd, etc/rc.d/rc.opensm,
+	  etc/rc.d/rc.scst, etc/sysctl.conf, misc/linux-3.7.8.config,
+	  misc/ocf/SCST, misc/ocf/scst: rework of InfiniBand setup... new
+	  rc.openibd rc script for loading IB modules and rc.opensm for IB
+	  subnet manager; enabled IPoIB and switched all IB kernel options
+	  to modules (for use with new rc.openibd setup); added
+	  "performance tweaks" to sysctl.conf that are hopefully universal
+	  (from OFED package); more SCST RA tweaks; removed IB modules from
+	  RA and SCST rc script
+
 2013-03-25 00:11  msmith626@gmail.com
 
 	* Makefile.in, etc/rc.d/common, etc/rc.d/rc.clvmd,
