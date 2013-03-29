@@ -2017,7 +2017,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Hour, minute, second scale widgets */
     hour = newCDKUScale(date_screen, (window_x + 39), (window_y + 15),
-            "</B>Hour  ", NULL, COLOR_DIALOG_INPUT, 3, curr_hour, 0, 59,
+            "</B>Hour  ", NULL, COLOR_DIALOG_INPUT, 3, curr_hour, 0, 23,
             1, 5, FALSE, FALSE);
     if (!hour) {
         errorDialog(main_cdk_screen, "Couldn't create scale widget!", NULL);

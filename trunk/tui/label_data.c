@@ -179,6 +179,15 @@ void readDeviceData(char *label_msg[]) {
     /* We start our row 2 down (1 for the title, 1 for spacing) */
     row_cnt = 2;
 
+    /* Print a nice message if SCST isn't loaded and return */
+    if (!isSCSTLoaded()) {
+        if (row_cnt < DEVICES_LABEL_ROWS) {
+            snprintf(line_buffer, DEVICES_LABEL_COLS, NO_SCST_MSG);
+            asprintf(&label_msg[row_cnt], "%s", line_buffer);
+        }
+        return;
+    }
+
     /* Loop over each SCST handler type and grab any open device names */
     for (i = 0; i < 9; i++) {
         /* Open the directory */
@@ -231,6 +240,15 @@ void readTargetData(char *label_msg[]) {
     
     /* We start our row 2 down (1 for the title, 1 for spacing) */
     row_cnt = 2;
+
+    /* Print a nice message if SCST isn't loaded and return */
+    if (!isSCSTLoaded()) {
+        if (row_cnt < DEVICES_LABEL_ROWS) {
+            snprintf(line_buffer, DEVICES_LABEL_COLS, NO_SCST_MSG);
+            asprintf(&label_msg[row_cnt], "%s", line_buffer);
+        }
+        return;
+    }
 
     /* Open the iSCSI targets directory */
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/iscsi", SYSFS_SCST_TGT);

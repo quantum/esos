@@ -126,6 +126,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		dlm-4.0.1.tar.bz2 \
 		sysklogd-1.5.tar.gz \
 		ipmitool-1.8.12.tar.bz2 \
+		less-451.tar.gz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -140,7 +141,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			mhash lessfs tokyocabinet fuse db snappy fence_agents \
 			pexpect pycurl curl Net-Telnet python-suds setuptools \
 			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
-			linux_firmware dlm ipmitool sysklogd
+			linux_firmware dlm ipmitool sysklogd less
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -1073,5 +1074,11 @@ sysklogd: glibc
 	$(INSTALL) -D $(src_dir)/syslogd.8 $(IMAGE_DIR)/usr/share/man/man8/syslogd.8
 	$(INSTALL) -D $(src_dir)/syslog.conf.5 $(IMAGE_DIR)/usr/share/man/man5/syslog.conf.5
 	$(INSTALL) -D $(src_dir)/klogd.8 $(IMAGE_DIR)/usr/share/man/man8/klogd.8
+	$(TOUCH) $(@)
+
+less: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 

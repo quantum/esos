@@ -4,7 +4,7 @@
 
 source /etc/rc.d/common
 
-SCST_MODS="scst qla2x00tgt iscsi-scst ib_srpt scst_disk scst_vdisk scst_tape scst_changer fcst"
+SCST_MODS="scst qla2x00tgt iscsi_scst ib_srpt scst_disk scst_vdisk scst_tape scst_changer fcst"
 SCST_CFG="/etc/scst.conf"
 SCSTADMIN="/usr/sbin/scstadmin"
 ISCSI_SCSTD="/usr/sbin/iscsi-scstd"
@@ -66,7 +66,7 @@ stop() {
     # Unload all of the modules in reverse order
     for i in $(/bin/echo ${SCST_MODS} | /usr/bin/tr ' ' '\n' | \
         /usr/bin/tac | /usr/bin/tr '\n' ' '); do
-        /sbin/modprobe -r ${i}
+        /sbin/rmmod -w ${i}
     done
 }
 

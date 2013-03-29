@@ -13,7 +13,7 @@
 # Initialization
 : ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}
 . ${OCF_FUNCTIONS_DIR}/ocf-shellfuncs
-MODULES="scst qla2x00tgt iscsi-scst ib_srpt \
+MODULES="scst qla2x00tgt iscsi_scst ib_srpt \
 scst_disk scst_vdisk scst_tape scst_changer fcst"
 SCST_CFG="/etc/scst.conf"
 PRE_SCST_CONF="/etc/pre-scst_xtra_conf"
@@ -40,14 +40,30 @@ scst_start() {
 	ocf_log info "Loading kernel modules..."
 	for i in $MODULES; do
 		ocf_log debug "Module: $i"
-		ocf_run modprobe $i || exit $OCF_ERR_GENERIC
+		if [ -d /sys/module/$i ]; then
+			ocf_log warn "The $i module is already loaded!"
+		else
+			ocf_run modprobe $i || exit $OCF_ERR_GENERIC
+		fi
 	done
 
 	# Start the daemons
 	ocf_log info "Starting daemons..."
-	ocf_run iscsi-scstd || exit $OCF_ERR_GENERIC
-	ocf_run lldpad -d || exit $OCF_ERR_GENERIC
-	ocf_run fcoemon -s || exit $OCF_ERR_GENERIC
+	if pidof iscsi-scstd > /dev/null 2>&1; then
+		ocf_log warn "The iscsi-scstd daemon is already running!"
+	else
+		ocf_run iscsi-scstd || exit $OCF_ERR_GENERIC
+	fi
+	if pidof lldpad > /dev/null 2>&1; then
+		ocf_log warn "The lldpad daemon is already running!"
+	else
+		ocf_run lldpad -d || exit $OCF_ERR_GENERIC
+	fi
+	if pidof fcoemon > /dev/null 2>&1; then
+		ocf_log warn "The fcoemon daemon is already running!"
+	else
+		ocf_run fcoemon -s || exit $OCF_ERR_GENERIC
+	fi
 
 	# Configure SCST
 	if [ -f $SCST_CFG ]; then
@@ -69,9 +85,9 @@ scst_start() {
 
 	# If we are using ALUA, be sure we are in Slave mode (offline)
 	if ocf_is_true $OCF_RESKEY_alua; then
-		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
-		ocf_run echo offline > $target_groups/$OCF_RESKEY_local_tgt_grp/state || \
-		exit $OCF_ERR_GENERIC
+		check_alua
+		ocf_run scstadmin -noprompt -set_tgrp_attr $OCF_RESKEY_local_tgt_grp \
+		-dev_group $OCF_RESKEY_device_group -attributes state\=offline || exit $OCF_ERR_GENERIC
 	fi
 
 	# Only return $OCF_SUCCESS if _everything_ succeeded as expected
@@ -109,6 +125,11 @@ scst_stop() {
 	# Stop all of the daemons and wait for each
 	ocf_log info "Stopping daemons..."
 	for i in "fcoemon lldpad iscsi-scstd"; do
+		pidof $i > /dev/null 2>&1
+		if [ $? -ne 0 ]; then
+			ocf_log warn "The $i daemon is not running!"
+			continue
+		fi
 		ocf_run killall -TERM $i || exit $OCF_ERR_GENERIC
 		while pidof $i > /dev/null 2>&1; do
 			ocf_log debug "The $i daemon is still running, waiting..."
@@ -120,7 +141,11 @@ scst_stop() {
 	ocf_log info "Unloading kernel modules..."
 	for i in $(echo $MODULES | tr ' ' '\n' | tac | tr '\n' ' '); do
 		ocf_log debug "Module: $i"
-		ocf_run modprobe -r $i || exit $OCF_ERR_GENERIC
+		if [ -d /sys/module/$i ]; then
+			ocf_run rmmod -w $i || exit $OCF_ERR_GENERIC
+		else
+			ocf_log warn "The $i module is not loaded!"
+		fi
 	done
 
 	# Make sure the resource stopped correctly
@@ -138,20 +163,23 @@ scst_monitor() {
 	scst_validate_all || exit $?
 
 	# Check if SCST is loaded
-	local rc=$OCF_NOT_RUNNING
+	local rc
 	if [ -e "$SCST_SYSFS/version" ]; then
 		ocf_log debug "SCST version: $(cat $SCST_SYSFS/version)"
 		ocf_log debug "Resource is running."
+		crm_master -l reboot -v 100
 		rc=$OCF_SUCCESS
 	else
 		ocf_log debug "Resource is not running."
+		crm_master -l reboot -D
+		rc=$OCF_NOT_RUNNING
 		return $rc
 	fi
 
 	# If we are using ALUA, then we can test if we are Master or not
 	if ocf_is_true $OCF_RESKEY_alua; then
 		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
-		tgt_grp_state="$(cat $target_groups/$OCF_RESKEY_local_tgt_grp/state)"
+		tgt_grp_state="$(head -1 $target_groups/$OCF_RESKEY_local_tgt_grp/state)"
 		ocf_log debug "SCST local target group state: $tgt_grp_state"
 		if [ -n "$tgt_grp_state" ] && [ "$tgt_grp_state" = "active" ]; then
 			rc=$OCF_RUNNING_MASTER
@@ -179,20 +207,6 @@ scst_validate_all() {
 		if [ -z "$OCF_RESKEY_remote_tgt_grp" ]; then
 			ocf_log err "The remote_tgt_grp parameter is not set!"
 			exit $OCF_ERR_CONFIGURED
-		fi
-		# Make sure the directories exist in the SCST sysfs structure
-		if [ ! -d "$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group" ]; then
-			ocf_log err "The $OCF_RESKEY_device_group device group does not exist!"
-			exit $OCF_ERR_INSTALLED
-		fi
-		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
-		if [ ! -d "$target_groups/$OCF_RESKEY_local_tgt_grp" ]; then
-			ocf_log err "The $OCF_RESKEY_local_tgt_grp target group does not exist!"
-			exit $OCF_ERR_INSTALLED
-		fi
-		if [ ! -d "$target_groups/$OCF_RESKEY_remote_tgt_grp" ]; then
-			ocf_log err "The $OCF_RESKEY_remote_tgt_grp target group does not exist!"
-			exit $OCF_ERR_INSTALLED
 		fi
 	fi
 
@@ -231,10 +245,10 @@ scst_meta_data() {
 	  </parameters>
 	  <actions>
 	    <action name="meta-data" timeout="5" />
-	    <action name="start" timeout="20" />
-	    <action name="stop" timeout="20" />
-	    <action name="monitor" timeout="20" depth="0" interval="20" role="Slave" />
+	    <action name="start" timeout="120" />
+	    <action name="stop" timeout="60" />
 	    <action name="monitor" timeout="20" depth="0" interval="10" role="Master" />
+	    <action name="monitor" timeout="20" depth="0" interval="20" role="Slave" />
 	    <action name="notify" timeout="20" />
 	    <action name="promote" timeout="20" />
 	    <action name="demote" timeout="20" />
@@ -282,9 +296,9 @@ scst_promote() {
 
 	# Promote only makes sense if we are using ALUA
 	if ocf_is_true $OCF_RESKEY_alua; then
-		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
-		ocf_run echo active > $target_groups/$OCF_RESKEY_local_tgt_grp/state || \
-		exit $OCF_ERR_GENERIC
+		check_alua
+		ocf_run scstadmin -noprompt -set_tgrp_attr $OCF_RESKEY_local_tgt_grp \
+		-dev_group $OCF_RESKEY_device_group -attributes state\=active || exit $OCF_ERR_GENERIC
 	else
 		ocf_log err "The ALUA parameters need to be configured before using MS."
 		exit $OCF_ERR_CONFIGURED
@@ -337,9 +351,9 @@ scst_demote() {
 
 	# Demote only makes sense if we are using ALUA
 	if ocf_is_true $OCF_RESKEY_alua; then
-		target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
-		ocf_run echo offline > $target_groups/$OCF_RESKEY_local_tgt_grp/state || \
-		exit $OCF_ERR_GENERIC
+		check_alua
+		ocf_run scstadmin -noprompt -set_tgrp_attr $OCF_RESKEY_local_tgt_grp \
+		-dev_group $OCF_RESKEY_device_group -attributes state\=offline || exit $OCF_ERR_GENERIC
 	else
 		ocf_log err "The ALUA parameters need to be configured before using MS."
 		exit $OCF_ERR_CONFIGURED
@@ -363,18 +377,48 @@ scst_demote() {
 
 scst_notify() {
 	local type_op="${OCF_RESKEY_CRM_meta_notify_type}-${OCF_RESKEY_CRM_meta_notify_operation}"
-	ocf_log debug "Received $type_op notification."
+	ocf_log debug "Received '$type_op' notification."
 	case "$type_op" in
 	'post-promote')
-		ocf_log info "Received $type_op notification for node $OCF_RESKEY_CRM_meta_notify_promote_uname."
+		ocf_log info "Received '$type_op' notification for node(s): $OCF_RESKEY_CRM_meta_notify_promote_uname"
+		# If the notification is not for this node, then update the remote target group state
+		for i in $OCF_RESKEY_CRM_meta_notify_promote_uname; do
+			if [ "`uname -n`" != "$i" ]; then
+				ocf_run scstadmin -noprompt -set_tgrp_attr $OCF_RESKEY_remote_tgt_grp \
+				-dev_group $OCF_RESKEY_device_group -attributes state\=active || exit $OCF_ERR_GENERIC
+			fi
+		done
 		;;
 	'post-demote')
-		ocf_log info "Received $type_op notification for node $OCF_RESKEY_CRM_meta_notify_demote_uname."
+		ocf_log info "Received '$type_op' notification for node(s): $OCF_RESKEY_CRM_meta_notify_demote_uname"
+		# If the notification is not for this node, then update the remote target group state
+		for i in $OCF_RESKEY_CRM_meta_notify_demote_uname; do
+			if [ "`uname -n`" != "$i" ]; then
+				ocf_run scstadmin -noprompt -set_tgrp_attr $OCF_RESKEY_remote_tgt_grp \
+				-dev_group $OCF_RESKEY_device_group -attributes state\=offline || exit $OCF_ERR_GENERIC
+			fi
+		done
 		;;
 	esac
 	return $OCF_SUCCESS
 }
 
+check_alua() {
+	# Make sure the directories exist in the SCST sysfs structure
+	if [ ! -d "$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group" ]; then
+		ocf_log err "The '$OCF_RESKEY_device_group' device group does not exist!"
+		exit $OCF_ERR_INSTALLED
+	fi
+	local target_groups="$SCST_SYSFS/device_groups/$OCF_RESKEY_device_group/target_groups"
+	if [ ! -d "$target_groups/$OCF_RESKEY_local_tgt_grp" ]; then
+		ocf_log err "The '$OCF_RESKEY_local_tgt_grp' target group does not exist!"
+		exit $OCF_ERR_INSTALLED
+	fi
+	if [ ! -d "$target_groups/$OCF_RESKEY_remote_tgt_grp" ]; then
+		ocf_log err "The '$OCF_RESKEY_remote_tgt_grp' target group does not exist!"
+		exit $OCF_ERR_INSTALLED
+	fi
+}
 
 # Make sure meta-data and usage always succeed
 case $__OCF_ACTION in

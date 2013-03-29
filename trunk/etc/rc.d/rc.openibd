@@ -21,6 +21,9 @@ fi
 # Load configuration
 . ${IB_CONFIG}
 KERN_MODS=""
+if [ "X${IPATH_LOAD}" == "Xyes" ]; then
+    KERN_MODS="${KERN_MODS} ib_ipath"
+fi
 if [ "X${MTHCA_LOAD}" == "Xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_mthca"
 fi
@@ -29,9 +32,6 @@ if [ "X${MLX4_LOAD}" == "Xyes" ]; then
 fi
 if [ "X${QIB_LOAD}" == "Xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_qib"
-fi
-if [ "X${IPATH_LOAD}" == "Xyes" ]; then
-    KERN_MODS="${KERN_MODS} ib_ipath"
 fi
 if [ "X${CXGB3_LOAD}" == "Xyes" ]; then
     KERN_MODS="${KERN_MODS} iw_cxgb3"
@@ -96,12 +96,12 @@ start() {
 stop() {
     # Unload the modules
     /bin/echo "Unloading configured IB modules..."
-    /sbin/modprobe -r ib_uverbs || exit 1
-    /sbin/modprobe -r ib_umad || exit 1
     for i in $(/bin/echo ${KERN_MODS} | /usr/bin/tr ' ' '\n' | \
         /usr/bin/tac | /usr/bin/tr '\n' ' '); do
-        /sbin/modprobe -r ${i}
+        /sbin/rmmod -w ${i}
     done
+    /sbin/rmmod -w ib_uverbs
+    /sbin/rmmod -w ib_umad
 }
 
 # Perform specified action

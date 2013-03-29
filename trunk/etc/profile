@@ -1,5 +1,8 @@
 # $Id$
 
+# Set the title bar
+echo -e "\033]0;`hostname` - Enterprise Storage OS\007"
+
 # A few settings (include the "real" profile)
 ulimit -n 10240
 source /etc/bashrc

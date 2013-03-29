@@ -18,6 +18,7 @@ char *strStrip(char *string);
 void statusBar(WINDOW *window);
 void readAttribute(char sysfs_attr[], char attr_value[]);
 int writeAttribute(char sysfs_attr[], char attr_value[]);
+int isSCSTLoaded();
 
 /* label_data.c */
 void readAdapterData(char *label_msg[]);

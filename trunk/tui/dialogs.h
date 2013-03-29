@@ -24,19 +24,20 @@ extern "C" {
 
 /* Canned messages */
 #define CONTINUE_MSG    "<C></B><Press ENTER to continue...>"
+#define NO_SCST_MSG     "<C></B><SCST is not loaded!>"
 
 /* Scrolling window sizing */
 #define ADP_INFO_ROWS                   16
 #define ADP_INFO_COLS                   72
 #define MAX_ADP_INFO_LINES              256
 #define DRBD_INFO_ROWS                  10
-#define DRBD_INFO_COLS                  58
+#define DRBD_INFO_COLS                  70
 #define MAX_DRBD_INFO_LINES             256
 #define MDSTAT_INFO_ROWS                10
-#define MDSTAT_INFO_COLS                58
+#define MDSTAT_INFO_COLS                70
 #define MAX_MDSTAT_INFO_LINES           256
-#define LVM2_INFO_ROWS                  10
-#define LVM2_INFO_COLS                  58
+#define LVM2_INFO_ROWS                  14
+#define LVM2_INFO_COLS                  70
 #define MAX_LVM2_INFO_LINES             512
 #define NET_RESTART_INFO_ROWS           15
 #define NET_RESTART_INFO_COLS           60
@@ -59,8 +60,8 @@ extern "C" {
 #define LUN_LAYOUT_ROWS                 12
 #define LUN_LAYOUT_COLS                 62
 #define MAX_LUN_LAYOUT_LINES            128
-#define CRM_INFO_ROWS                   10
-#define CRM_INFO_COLS                   58
+#define CRM_INFO_ROWS                   12
+#define CRM_INFO_COLS                   68
 #define MAX_CRM_INFO_LINES              512
 
 /* Other window/screen/label/etc. sizing limits */

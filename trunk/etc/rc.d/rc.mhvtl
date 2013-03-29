@@ -16,7 +16,7 @@ start() {
     # Make sure the mhVTL user can read/write
     /bin/chown -R ${VTL_USER} ${MHVTL_CONFIG_PATH}
     # Load the mhVTL module
-    /sbin/modprobe mhvtl
+    /sbin/modprobe mhvtl || exit 1
     # Build the library media
     /usr/bin/make_vtl_media ${VTL_USER}
     # Build the library configuration

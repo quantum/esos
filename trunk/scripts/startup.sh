@@ -28,6 +28,6 @@ Enterprise Storage OS on host "`hostname`" has started. If this system startup i
 
 `test "${vmcore_files}" != "" && echo "** Warning! Kernel crash dump file(s) detected:"; echo -e "${vmcore_files}"`
 
-`scstadmin -list_target`
-`scstadmin -list_device`
+`test -d "/sys/kernel/scst_tgt" && scstadmin -list_target`
+`test -d "/sys/kernel/scst_tgt" && scstadmin -list_device`
 _EOF_
