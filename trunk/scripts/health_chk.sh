@@ -107,9 +107,9 @@ fi
 # Check if the USB drive is available/working via one of the FS labels (no indentation for if statement)
 if ! findfs LABEL=${CHK_FS_LABEL} > /dev/null 2>&1; then
 # Create a archive of the configuration files
-arch_pkg_file="esos_conf_pkg-`date +%s`.tgz"
+arch_pkg_file="`hostname`-esos_conf-`date +%s`.tgz"
 arch_pkg_path="${TMP_PATH}/${arch_pkg_file}"
-tar cpfz ${arch_pkg_path} --exclude='rc.d' --exclude='ssh_host_*' --exclude='shadow*' /etc > /dev/null 2>&1
+tar cpfz ${arch_pkg_path} --exclude='rc.d' --exclude='ssh' --exclude='shadow*' /etc > /dev/null 2>&1
 # Send an email with the archive file attachment (uuencode'd)
 sendmail -t << _EOF_
 To: ${EMAIL_TO}

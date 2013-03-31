@@ -95,10 +95,10 @@ done
 # Make sure our sole symbolic link for the time zone is up to date
 local_tz_link="/etc/localtime"
 usb_tz_link="${CONF_MNT}${local_tz_link}"
-if [ ! -L "${usb_tz_link}" ]; then
+if [ ! -L "${usb_tz_link}" ] && [ -L "${local_tz_link}" ]; then
     # The link doesn't exist on the USB drive
     ${CP} ${local_tz_link} ${usb_tz_link}
-elif [ ! -L "${local_tz_link}" ]; then
+elif [ ! -L "${local_tz_link}" ] && [ -L "${usb_tz_link}" ]; then
     # The link doesn't exist on the local file system
     ${CP} ${usb_tz_link} ${local_tz_link}
 elif [ -L "${usb_tz_link}" ] && [ -L "${local_tz_link}" ]; then
