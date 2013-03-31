@@ -18,6 +18,10 @@
 /bin/echo "Performing initial configuration sync..."
 /usr/local/sbin/conf_sync.sh
 
+if [ ! -L "/etc/localtime" ]; then
+    /bin/ln -s /usr/share/zoneinfo/posix/Factory /etc/localtime
+fi
+
 echo "Starting kernel log daemon (klogd)..."
 /usr/sbin/klogd -c1
 
