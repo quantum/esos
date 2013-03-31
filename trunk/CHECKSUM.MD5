@@ -54,11 +54,8 @@ bf107cf54e67bc6dec5bea1f3e6a65c3  pexpect-2.3.tar.gz
 05523dfd3fc0de3f19dde4aca5dd17e9  python-suds-0.4.tar.gz
 7df2a529a074f613b509fb44feefe74e  setuptools-0.6c11.tar.gz
 4689279c36b1417e122a23c6818017dd  corosync-2.3.0.tar.gz
-c358e9581687eeba374ee1eb042771a7  scst-trunk_r4762.tar.bz2
-053b47e6fe18ea8d23a3716bf64a2cf8  linux-3.7.8.tar.bz2
 495b8d4c3669ab6b1a3754f9242980bb  fio-2.0.13.tar.bz2
 3fb927c7c33022f1c327f14a81c0d4b0  bash-4.2.tar.gz
-760a25459ef6b7262a2a3572c1561c5b  drbd-8.3.13.tar.gz
 55c32fb95a5b3907687b023f392fbd3c  sg3_utils-1.35.tar.gz
 8a9d3144e677f5d5f1a4e8f1a9f536fa  open-fcoe-3.7.tar.bz2
 b6ee0ce2b3ef844bad7cac2803a90634  libconfig-1.4.9.tar.gz
@@ -71,3 +68,6 @@ e025414bc6cd79579cc7a32a45d3ae1c  busybox-1.20.2.tar.bz2
 cfdfd15b6ee471c19a7a7e6b47233963  ipmitool-1.8.12.tar.bz2
 e053094e8103165f98ddafe828f6ae4b  sysklogd-1.5.tar.gz
 765f082658002b2b46b86af4a0da1842  less-451.tar.gz
+55e77da0eef1f348b4adfaad4ced830a  linux-3.8.5.tar.xz
+b081f1046adda1d51ba351c40a8b1107  drbd-8.4.2.tar.gz
+fa2a8e80f996dc74a7b25a663eb5581b  scst-trunk_r4830.tar.gz

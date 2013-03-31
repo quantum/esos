@@ -74,12 +74,12 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
-		linux-3.7.8.tar.bz2 \
+		linux-3.8.5.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-trunk_r4762.tar.bz2 \
+		scst-trunk_r4830.tar.gz \
 		kexec-tools-2.0.3.tar.gz \
-		drbd-8.3.13.tar.gz \
+		drbd-8.4.2.tar.gz \
 		LVM2-2.02.97.tar.gz \
 		xfsprogs-3.1.8.tar.gz \
 		mdadm-3.2.6.tar.gz \
@@ -205,8 +205,6 @@ image: $(build_targets)
 	--grub-mkrelpath=$(WORK_DIR)/grub-mkrelpath --grub-probe=$(WORK_DIR)/grub-probe \
 	--root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.cfg > $(MOUNT_DIR)/boot/grub/grub.cfg
-	$(LN) /usr/share/zoneinfo/posix/UTC $(MOUNT_DIR)/etc/localtime
-	$(TOUCH) -h -d "2001-01-01 00:00:00" $(MOUNT_DIR)/etc/localtime
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/startup.sh $(MOUNT_DIR)/usr/local/sbin/
@@ -232,8 +230,8 @@ image: $(build_targets)
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/pacemaker
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/heartbeat
 	$(CHOWN) 101:101 $(MOUNT_DIR)/var/run/crm
-	$(FIND) $(MOUNT_DIR)/etc -print0 | $(XARGS) -0 $(TOUCH) -d "2001-01-01 00:00:00"
-	$(FIND) $(MOUNT_DIR)/var/lib -print0 | $(XARGS) -0 $(TOUCH) -d "2001-01-01 00:00:00"
+	$(FIND) $(MOUNT_DIR)/etc -path $(MOUNT_DIR)/etc/rc.d -prune -o -print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
+	$(FIND) $(MOUNT_DIR)/var/lib -print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
@@ -356,17 +354,16 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/scst_exec_req_fifo.patch/ \
-	  -p1 < $(scst_src)/scst/kernel/scst_exec_req_fifo-3.7.patch; \
+	  -p1 < $(scst_src)/scst/kernel/scst_exec_req_fifo-3.8.patch; \
 	fi
 	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/put_page_callback.patch/ \
-	  -p1 < $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.7.patch; \
+	  -p1 < $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.8.patch; \
 	fi
 	$(RM) $(linux_src)/drivers/scsi/qla2xxx
 	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
 	### Setup for prod or debug
-	- $(PATCH) -r - -N -d $(linux_src) -p1 < $(CWD)/misc/linux-3.7.8.patch
 	$(MAKE) --directory=$(linux_src) clean
 	$(MAKE) --directory=$(linux_src) distclean
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) clean
@@ -467,6 +464,7 @@ glibc: kernel_headers
 	$(MKDIR) $(WORK_DIR)/fake_lib
 	$(SED) 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libc.so > $(WORK_DIR)/fake_lib/libc.so
 	$(SED) 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libpthread.so > $(WORK_DIR)/fake_lib/libpthread.so
+	$(RM) $(IMAGE_DIR)/etc/localtime
 	$(TOUCH) $(@)
 
 perl: glibc
@@ -635,7 +633,7 @@ xfsprogs: glibc e2fsprogs
 	$(TOUCH) $(@)
 
 drbd: glibc
-	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/drbd-8.3.13.patch
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/drbd-8.4.2.patch
 	cd $(src_dir) && ./configure --prefix=/usr --without-km \
 	--without-udev --without-xen --with-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic \

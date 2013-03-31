@@ -1,3 +1,22 @@
+2013-03-29 04:45  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in,
+	  etc/bashrc, etc/profile, etc/rc.d/rc.mhvtl, etc/rc.d/rc.openibd,
+	  etc/rc.d/rc.pacemaker, etc/rc.d/rc.scst, etc/sysctl.conf,
+	  misc/busybox-1.20.2.config, misc/ocf/scst, scripts/startup.sh,
+	  tui/dialogs.h, tui/label_data.c, tui/main.c,
+	  tui/menu_actions-system.c, tui/menu_actions.c, tui/prototypes.h:
+	  added the real GNU less and removed less from busybox config; we
+	  now set the PAGER var in global bashrc; in /etc/profile we
+	  provide a window bar title; updated rc scripts to use rmmod
+	  instead of `modprobe -r` (returns 1 when removing modules on
+	  success); rc.openibd -> ipath needs to be loaded first; pacemaker
+	  produces an error (warning?) msg even though it starts/runs fine,
+	  so we hide it; fixed typo in sysctl.conf; lots of updates/fixes
+	  to new RA; if SCST is not loaded, don't run the startup scstadmin
+	  commands; a few TUI dialog sizing tweaks; updated TUI to handle
+	  SCST not being loaded
+
 2013-03-27 02:20  msmith626@gmail.com
 
 	* ChangeLog, Makefile.in, etc/infiniband,
