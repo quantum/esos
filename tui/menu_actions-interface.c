@@ -88,7 +88,7 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Archive the configuration files and logs */
     snprintf(tar_cmd, MAX_SHELL_CMD_LEN,
-            "%s cpfz %s --exclude='rc.d' --exclude='ssh_host_*' --exclude='shadow*' /etc /var/log > /dev/null 2>&1",
+            "%s cpfz %s --exclude='rc.d' --exclude='ssh' --exclude='shadow*' --exclude='ssmtp' /etc /var/log > /dev/null 2>&1",
             TAR_BIN, bundle_file);
     ret_val = system(tar_cmd);
     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
