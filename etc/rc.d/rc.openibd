@@ -4,7 +4,6 @@
 
 IB_CONFIG="/etc/infiniband/openib.conf"
 IB_SYSFS="/sys/class/infiniband"
-IPOIB_MTU=65520
 
 # Check arguments
 if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
@@ -21,40 +20,40 @@ fi
 # Load configuration
 . ${IB_CONFIG}
 KERN_MODS=""
-if [ "X${IPATH_LOAD}" == "Xyes" ]; then
+if [ "x${IPATH_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_ipath"
 fi
-if [ "X${MTHCA_LOAD}" == "Xyes" ]; then
+if [ "x${MTHCA_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_mthca"
 fi
-if [ "X${MLX4_LOAD}" == "Xyes" ]; then
+if [ "x${MLX4_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} mlx4_ib"
 fi
-if [ "X${QIB_LOAD}" == "Xyes" ]; then
+if [ "x${QIB_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_qib"
 fi
-if [ "X${CXGB3_LOAD}" == "Xyes" ]; then
+if [ "x${CXGB3_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} iw_cxgb3"
 fi
-if [ "X${CXGB4_LOAD}" == "Xyes" ]; then
+if [ "x${CXGB4_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} iw_cxgb4"
 fi
-if [ "X${NES_LOAD}" == "Xyes" ]; then
+if [ "x${NES_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} iw_nes"
 fi
-if [ "X${IPOIB_LOAD}" == "Xyes" ]; then
+if [ "x${IPOIB_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_ipoib"
 fi
-if [ "X${SRP_LOAD}" == "Xyes" ]; then
+if [ "x${SRP_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_srp"
 fi
-if [ "X${UCM_LOAD}" == "Xyes" ]; then
+if [ "x${UCM_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_ucm"
 fi
-if [ "X${ISER_LOAD}" == "Xyes" ]; then
+if [ "x${ISER_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_iser"
 fi
-if [ "X${RDMA_UCM_LOAD}" == "Xyes" ]; then
+if [ "x${RDMA_UCM_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} rdma_ucm"
 fi
 
@@ -78,16 +77,15 @@ start() {
         done
     fi
     # Enable connected mode for IPoIB interfaces
-    if [ "X${IPOIB_LOAD}" == "Xyes" ]; then
+    if [ "x${IPOIB_LOAD}" == "xyes" ]; then
         interfaces=$(cd /sys/class/net; /bin/ls -d ib* 2> /dev/null)
         for i in ${interfaces}; do
-            if [ "X${SET_IPOIB_CM}" == "Xyes" ]; then
+            if [ "x${SET_IPOIB_CM}" == "xyes" ]; then
                 if [ ! -e /sys/class/net/${i}/mode ]; then
                     /bin/echo "Failed to configure IPoIB connected mode for ${i}."
                 fi
                 /bin/sleep 1
                 /bin/echo connected > /sys/class/net/${i}/mode
-                /bin/ip link set ${i} mtu ${IPOIB_MTU}
             fi
         done
     fi

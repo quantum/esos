@@ -339,14 +339,27 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 freeChar(cmd_str);
                 if (ret_val != 0) {
-                    asprintf(&error_msg, "The %s command exited with %d.", SCSI_ID_TOOL, ret_val);
+                    asprintf(&error_msg, "The %s command exited with %d.",
+                            SCSI_ID_TOOL, ret_val);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     freeChar(error_msg);
                     break;
                 }
-                snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "/dev/disk-by-id/%s", dev_id_ptr);
+                snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "/dev/disk-by-id/%s",
+                        dev_id_ptr);
+
+            } else if ((strstr(block_dev, "/dev/dm-")) != NULL) {
+                /* A /dev/dm-* device, we're assuming its an LVM logical volume */
+                if ((dev_id_ptr = strstr(block_dev, "dm-")) != NULL) {
+                    snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/%s/dm/name",
+                            SYSFS_BLOCK, dev_id_ptr);
+                    readAttribute(attr_path, attr_value);
+                    snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "/dev/mapper/%s",
+                            attr_value);
+                }
+
             } else {
-                /* Not a normal SCSI disk block device (md, dm, etc.) */
+                /* Not a normal SCSI disk block device (md, drbd, etc.) */
                 snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "%s", block_dev);
             }
 

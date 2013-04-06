@@ -98,8 +98,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 return;
             }
 
-            /* We only want Ethernet interfaces */
             if (ifr.ifr_hwaddr.sa_family == ARPHRD_ETHER) {
+                /* For Ethernet interfaces */
                 mac_addy = (unsigned char*) &ifr.ifr_hwaddr.sa_data;
                 asprintf(&net_if_name[j], "%s", if_name[i].if_name);
                 asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X",
@@ -137,6 +137,17 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                     asprintf(&net_scroll_msg[j], "<C>%s (%s - %s - %s)",
                             net_if_name[j], net_if_mac[j], net_if_speed[j], net_if_duplex[j]);
                 }
+                j++;
+
+            } else if (ifr.ifr_hwaddr.sa_family == ARPHRD_INFINIBAND) {
+                /* For InfiniBand interfaces */
+                mac_addy = (unsigned char*) &ifr.ifr_hwaddr.sa_data;
+                asprintf(&net_if_name[j], "%s", if_name[i].if_name);
+                /* Yes, the link-layer address is 20 bytes, but we'll keep it simple */
+                asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X...",
+                        mac_addy[0], mac_addy[1], mac_addy[2], mac_addy[3], mac_addy[4], mac_addy[5]);
+                asprintf(&net_scroll_msg[j], "<C>%s (IPoIB - %s)",
+                            net_if_name[j], net_if_mac[j]);
                 j++;
             }
         }
@@ -450,8 +461,15 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         conf_netmask = iniparser_getstring(ini_dict, temp_ini_str, "");
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast", net_if_name[net_conf_choice]);
         conf_broadcast = iniparser_getstring(ini_dict, temp_ini_str, "");
+
+        /* If value doesn't exist, use a default MTU based on the interface type */
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name[net_conf_choice]);
-        conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_IF_MTU);
+        if (strstr(net_if_name[net_conf_choice], "eth") != NULL)
+            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_ETH_MTU);
+        else if (strstr(net_if_name[net_conf_choice], "ib") != NULL)
+            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_IB_MTU);
+        else
+            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, "");
 
         /* Information label */
         net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
