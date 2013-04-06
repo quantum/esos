@@ -25,7 +25,8 @@ extern "C" {
 #define MAX_UNAME_LEN   20
 #define MAX_PASSWD_LEN  64
 #define ESOS_BOOT_PART  "esos_boot"
-#define DEFAULT_IF_MTU  "1500"
+#define DEFAULT_ETH_MTU "1500"
+#define DEFAULT_IB_MTU  "65520"
 
 /* System menu layout */
 #define SYSTEM_MENU             0

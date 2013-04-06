@@ -18,6 +18,7 @@ my $dhcp_prog = "/sbin/udhcpc";
 my $ifconfig_prog = "/sbin/ifconfig";
 my $route_prog = "/sbin/route";
 my $hostname_prog = "/bin/hostname";
+my $ip_prog = "/bin/ip";
 my $net_if_dir = "/sys/class/net";
 my $section;
 my @sections;
@@ -92,14 +93,14 @@ if ($ARGV[0] eq "start") {
                     }
                     # Set MTU for interface
                     print("Setting MTU for interface $each...\n");
-                    system($ifconfig_prog . " " . $each . " mtu " . $mtu . " 2>&1");
+                    system($ip_prog . " link set " . $each . " mtu " . $mtu . " 2>&1");
                     if ($? == -1) {
-                        print("ERROR: Running $ifconfig_prog failed: $!\n");
+                        print("ERROR: Running $ip_prog failed: $!\n");
                         next;
                     }
                     my $exit_status = $? >> 8;
                     if ($exit_status != 0) {
-                        print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                        print("ERROR: The $ip_prog program exited with value $exit_status.\n");
                         next;
                     }
                     # Do DHCP configuration for interface

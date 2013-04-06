@@ -211,6 +211,7 @@ image: $(build_targets)
 	$(INSTALL) $(CWD)/scripts/health_chk.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/dev_nodes.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/scsi_id.sh $(MOUNT_DIR)/usr/local/sbin/
+	$(INSTALL) $(CWD)/scripts/crm_mon_email.sh $(MOUNT_DIR)/usr/local/bin/
 	$(MKDIR) $(MOUNT_DIR)/usr/lib/ocf/resource.d/esos
 	$(INSTALL) $(CWD)/misc/ocf/* $(MOUNT_DIR)/usr/lib/ocf/resource.d/esos/
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > $(MOUNT_DIR)/etc/esos-release

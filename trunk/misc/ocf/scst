@@ -83,11 +83,11 @@ scst_start() {
 		sleep 1
 	done
 
-	# If we are using ALUA, be sure we are in Slave mode (offline)
+	# If we are using ALUA, be sure we are in Slave mode (nonoptimized)
 	if ocf_is_true $OCF_RESKEY_alua; then
 		check_alua
 		ocf_run scstadmin -noprompt -set_tgrp_attr $OCF_RESKEY_local_tgt_grp \
-		-dev_group $OCF_RESKEY_device_group -attributes state\=offline || exit $OCF_ERR_GENERIC
+		-dev_group $OCF_RESKEY_device_group -attributes state\=nonoptimized || exit $OCF_ERR_GENERIC
 	fi
 
 	# Only return $OCF_SUCCESS if _everything_ succeeded as expected
@@ -353,7 +353,7 @@ scst_demote() {
 	if ocf_is_true $OCF_RESKEY_alua; then
 		check_alua
 		ocf_run scstadmin -noprompt -set_tgrp_attr $OCF_RESKEY_local_tgt_grp \
-		-dev_group $OCF_RESKEY_device_group -attributes state\=offline || exit $OCF_ERR_GENERIC
+		-dev_group $OCF_RESKEY_device_group -attributes state\=nonoptimized || exit $OCF_ERR_GENERIC
 	else
 		ocf_log err "The ALUA parameters need to be configured before using MS."
 		exit $OCF_ERR_CONFIGURED
@@ -395,7 +395,7 @@ scst_notify() {
 		for i in $OCF_RESKEY_CRM_meta_notify_demote_uname; do
 			if [ "`uname -n`" != "$i" ]; then
 				ocf_run scstadmin -noprompt -set_tgrp_attr $OCF_RESKEY_remote_tgt_grp \
-				-dev_group $OCF_RESKEY_device_group -attributes state\=offline || exit $OCF_ERR_GENERIC
+				-dev_group $OCF_RESKEY_device_group -attributes state\=nonoptimized || exit $OCF_ERR_GENERIC
 			fi
 		done
 		;;
