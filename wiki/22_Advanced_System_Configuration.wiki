@@ -19,7 +19,7 @@ conf_sync.sh
 <br>
 
 === Extra Configuration ===
-If you find that you need to run any extra commands on before or after starting SCST (via RA, or rc/init), there are two files you can create/edit in /etc:
+If you find that you need to run any extra commands before or after starting SCST (via RA, or rc/init), there are two files you can create/edit in /etc:
   * /etc/pre-scst_xtra_conf
   * /etc/post-scst_xtra_conf
 These files can be treated as shell scripts; if either exists, they will be executed during start-up with `sh`.
@@ -41,14 +41,26 @@ TODO
 <br>
 
 === InfiniBand Drivers ===
-TODO
+All of the InfiniBand drivers in ESOS are built as modules; they are all the in-line Linux kernel versions (not OFED). Most popular IB HCAs are supported including IP over InfiniBand (IPoIB). See the [03_Supported_Hardware] wiki page for more details.
+
+ESOS uses a /etc/rc.d/rc.openibd rc script, similar to the OFED init script, openibd. Like the OFED version, we employ the use of the `/etc/infiniband/openib.conf` module configuration file. Edit this file to control which hardware drivers, and IB modules are loaded. _Note: IPoIB is disabled by default. When using Windows Server 2012 initiators with IPoIB, apparently Connected Mode (CM) is not supported._
+
+Synchronize your configuration:
+{{{
+conf_sync.sh
+}}}
 
 <br>
 
 === InfiniBand Subnet Manager ===
-The OpenSM IB subnet manager software is also included with ESOS. It is disabled by default, but can be enabled editing the `/etc/rc.conf` file and setting `rc.opensm_enable` to 'YES'.
+The OpenSM IB subnet manager software is also included with ESOS. It is disabled by default, but can be enabled editing the /etc/rc.conf file and setting `rc.opensm_enable` to 'YES'.
 
 The OpenSM configuration files should be created in the /etc directory (/etc/opensm is the default location). For additional OpenSM IB subnet manager help/information, please see the related OFED documentation.
+
+Synchronize your configuration:
+{{{
+conf_sync.sh
+}}}
 
 <br>
 
