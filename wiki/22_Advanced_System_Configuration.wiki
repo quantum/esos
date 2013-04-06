@@ -46,6 +46,8 @@ A SCST resource agent (ocf:esos:scst) is included with ESOS. It can be configure
 
 When using `ocf:esos:scst` as a "normal" resource, the supporting user-land daemons and SCST modules are loaded when started, and when stopped, all daemons and modules are unloaded. This is important to know since when loading SCST, it expects whatever devices you have defined in /etc/scst.conf to be available (eg, /dev/drbd0 block device, or a virtual disk file on a file system). SCST will remove these from the configuration if they are not available when started; please keep this in mind when designing your cluster.
 
+_You will also want to make sure SCST start-up via init is disabled since the cluster stack will be managing it; set rc.scst_enable to 'NO' in /etc/rc.conf and stop the SCST service: /etc/rc.d/rc.scst stop_
+
 An example of the SCST resource configuration for two ESOS nodes (one started, one stopped) might look something like this:
 {{{
 crm
@@ -63,6 +65,91 @@ cib new scst
 configure primitive p_scst ocf:esos:scst
 configure clone clone_scst p_scst \
 meta clone-max="2" clone-node-max="1" notify="true" interleave="true"
+configure show
+cib commit scst
+quit
+}}}
+
+If you want SCST to be loaded and running on the cluster nodes, but not necessarily "available" (path preference, see notes below) you can use `ocf:esos:scst` as a multi-state resource. The resource agent (RA) relies on ALUA in SCST to function. Below are example ALUA configurations in SCST for a two node cluster (SCST must be running in order to configure this, use `/etc/rc.d/rc.scst` to enable and then disable SCST).
+
+On the first host, using the shell (Interface -> Exit to Shell):
+{{{
+/etc/rc.d/rc.scst start
+scstadmin -add_dgrp esos
+scstadmin -add_tgrp local -dev_group esos
+scstadmin -set_tgrp_attr local -dev_group esos -attributes group_id=1
+scstadmin -add_tgrp_tgt 21:00:00:e0:8b:9d:74:49 -dev_group esos -tgt_group local
+scstadmin -set_ttgt_attr 21:00:00:e0:8b:9d:74:49 -dev_group esos -tgt_group local \
+-attributes rel_tgt_id=1
+scstadmin -add_tgrp remote -dev_group esos
+scstadmin -set_tgrp_attr remote -dev_group esos -attributes group_id=2
+scstadmin -add_tgrp_tgt 21:00:00:1b:32:01:6b:11 -dev_group esos -tgt_group remote
+scstadmin -set_ttgt_attr 21:00:00:1b:32:01:6b:11 -dev_group esos -tgt_group remote \
+-attributes rel_tgt_id=2
+/etc/rc.d/rc.scst stop
+}}}
+
+On the second host, using the shell (Interface -> Exit to Shell):
+{{{
+/etc/rc.d/rc.scst start
+scstadmin -add_dgrp esos
+scstadmin -add_tgrp local -dev_group esos
+scstadmin -set_tgrp_attr local -dev_group esos -attributes group_id=2
+scstadmin -add_tgrp_tgt 21:00:00:1b:32:01:6b:11 -dev_group esos -tgt_group local
+scstadmin -set_ttgt_attr 21:00:00:1b:32:01:6b:11 -dev_group esos -tgt_group local \
+-attributes rel_tgt_id=2
+scstadmin -add_tgrp remote -dev_group esos
+scstadmin -set_tgrp_attr remote -dev_group esos -attributes group_id=1
+scstadmin -add_tgrp_tgt 21:00:00:e0:8b:9d:74:49 -dev_group esos -tgt_group remote
+scstadmin -set_ttgt_attr 21:00:00:e0:8b:9d:74:49 -dev_group esos -tgt_group remote \
+-attributes rel_tgt_id=1
+/etc/rc.d/rc.scst stop
+}}}
+
+Now that ALUA is configured, you can configure the SCST resource. From this point forward, when you want your SCST devices to be used in the ALUA setup, you must run the following command command on each node for each device (DEVICE_NAME is the name of the SCST device):
+{{{
+scstadmin -add_dgrp_dev DEVICE_NAME -dev_group esos
+}}}
+
+SCST multi-state resource example; two nodes (one master, one slave):
+{{{
+crm
+cib new scst
+configure primitive p_scst ocf:esos:scst \
+params alua="true" \
+device_group=”esos” \
+local_tgt_grp=”local” \
+remote_tgt_grp=”remote”
+op monitor interval=”10” role="Master" \
+op monitor interval=”20” role="Slave" \
+op start interval="0" timeout="120" \
+op stop interval="0" timeout="60"
+ms ms_scst p_scst \
+meta master-max="1" master-node-max="1" \
+clone-max="2" clone-node-max="1" \
+notify="true"
+configure show
+cib commit scst
+quit
+}}}
+
+SCST multi-state resource example; two nodes (both master):
+{{{
+crm
+cib new scst
+configure primitive p_scst ocf:esos:scst \
+params alua="true" \
+device_group=”esos” \
+local_tgt_grp=”local” \
+remote_tgt_grp=”remote”
+op monitor interval=”10” role="Master" \
+op monitor interval=”20” role="Slave" \
+op start interval="0" timeout="120" \
+op stop interval="0" timeout="60"
+ms ms_scst p_scst \
+meta master-max="2" master-node-max="1" \
+clone-max="2" clone-node-max="1" \
+notify="true"
 configure show
 cib commit scst
 quit
