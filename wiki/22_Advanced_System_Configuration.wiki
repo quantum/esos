@@ -19,7 +19,7 @@ conf_sync.sh
 <br>
 
 === Extra Configuration ===
-If you find that you need to run any extra commands on ESOS start-up, there are two files you can create/edit in /etc:
+If you find that you need to run any extra commands on before or after starting SCST (via RA, or rc/init), there are two files you can create/edit in /etc:
   * /etc/pre-scst_xtra_conf
   * /etc/post-scst_xtra_conf
 These files can be treated as shell scripts; if either exists, they will be executed during start-up with `sh`.
@@ -40,19 +40,15 @@ TODO
 
 <br>
 
+=== InfiniBand Drivers ===
+TODO
+
+<br>
+
 === InfiniBand Subnet Manager ===
-The OpenSM IB subnet manager software is also included with ESOS. It is disabled by default, but can be enabled by adding the binary (`/usr/sbin/opensm`) and associated configuration options to the pre-SCST configuration file: /etc/pre-scst_xtra_conf
+The OpenSM IB subnet manager software is also included with ESOS. It is disabled by default, but can be enabled editing the `/etc/rc.conf` file and setting `rc.opensm_enable` to 'YES'.
 
-The following OpenSM configuration file locations should be used with ESOS (they'll be synchronized to the USB flash drive):
-  * /etc/opensm/opensm.conf
-  * /etc/opensm/ib-node-name-map
-  * /etc/opensm/partitions.conf
-  * /etc/opensm/qos-policy.conf
-  * /etc/opensm/prefix-routes.conf
-  * /etc/opensm/per-module-logging.conf
-  * /etc/opensm/torus-2QoS.conf
-
-For additional OpenSM IB subnet manager help/information, please see the related OFED documentation.
+The OpenSM configuration files should be created in the /etc directory (/etc/opensm is the default location). For additional OpenSM IB subnet manager help/information, please see the related OFED documentation.
 
 <br>
 
