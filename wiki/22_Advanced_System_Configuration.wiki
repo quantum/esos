@@ -36,7 +36,39 @@ conf_sync.sh
 <br>
 
 === High Availability (HA) / Clustering via the Pacemaker + Corosync Stack ===
-TODO
+A full featured cluster stack is included with ESOS. The stack consists of Pacemaker, Corosync, and crmsh. The resource-agents and fence-agents packages are also included along with other supporting tools/utilities (eg, Python, ipmitool, etc.).
+
+The setup and configuration of the cluster stack is well beyond the scope of this ESOS documentation, however, there is tons of information out there on Pacemaker/Corosync. We suggest starting with the following guides for configuration (obviously, all of the cluster components are already installed in ESOS):
+  * [http://clusterlabs.org/doc/en-US/Pacemaker/1.1-crmsh/html/Clusters_from_Scratch/index.html Clusters from Scratch]
+  * [http://clusterlabs.org/doc/en-US/Pacemaker/1.1-crmsh/html/Pacemaker_Explained/index.html Pacemaker Explained]
+
+A SCST resource agent (ocf:esos:scst) is included with ESOS. It can be configured either as a normal resource (start/stop) or a multi-state resource (master/slave); the MS resource mode relies on the implicit Asymmetric Logical Unit Assignment (ALUA) functionality in SCST, so this must also be configured when using `ocf:esos:scst` as master/slave.
+
+When using `ocf:esos:scst` as a "normal" resource, the supporting user-land daemons and SCST modules are loaded when started, and when stopped, all daemons and modules are unloaded. This is important to know since when loading SCST, it expects whatever devices you have defined in /etc/scst.conf to be available (eg, /dev/drbd0 block device, or a virtual disk file on a file system). SCST will remove these from the configuration if they are not available when started; please keep this in mind when designing your cluster.
+
+An example of the SCST resource configuration for two ESOS nodes (one started, one stopped) might look something like this:
+{{{
+crm
+cib new scst
+configure primitive p_scst ocf:esos:scst
+configure show
+cib commit scst
+quit
+}}}
+
+An example of the SCST resource configuration for two ESOS nodes (both started) might look something like this:
+{{{
+crm
+cib new scst
+configure primitive p_scst ocf:esos:scst
+configure clone clone_scst p_scst \
+meta clone-max="2" clone-node-max="1" notify="true" interleave="true"
+configure show
+cib commit scst
+quit
+}}}
+
+
 
 <br>
 
