@@ -44,33 +44,33 @@ ESOS uses the software projects listed below; you can check the [https://code.go
   * Corosync
   * nss
   * glib
-  * libxml2-2.9.0.tar.gz \
-  * libxslt-1.1.28.tar.gz \
-  * libtool-2.4.2.tar.xz \
-  * bzip2-1.0.6.tar.gz \
-  * Python-2.7.3.tar.bz2 \
-  * crmsh-1.2.4.tar.bz2 \
-  * libaio-0.3.109.tar.bz2 \
-  * glue-1.0.11.tar.bz2 \
-  * readline-6.2.tar.gz \
-  * resource_agents-3.9.2.tar.gz \
-  * mhvtl-1.4.tar.gz \
-  * lzo-2.06.tar.gz \
-  * mhash-0.9.9.9.tar.bz2 \
-  * lessfs-1.5.13.tar.gz \
-  * tokyocabinet-1.4.48.tar.gz \
-  * fuse-2.9.2.tar.gz \
-  * db-5.3.21.tar.gz \
-  * snappy-1.1.0.tar.gz \
-  * fence_agents-3.1.12.tar.gz \
-  * opensm-3.3.15.tar.gz \
-  * pycurl-7.19.0.tar.gz \
-  * curl-7.29.0.tar.gz \
-  * Net-Telnet-3.03.tar.gz \
-  * python-suds-0.4.tar.gz \
-  * setuptools-0.6c11.tar.gz \
-  * pexpect-2.3.tar.gz \
-  * bash-4.2.tar.gz \
+  * libxml2
+  * libxslt
+  * libtool
+  * bzip2
+  * Python
+  * crmsh
+  * libaio
+  * glue
+  * readline
+  * resource-agents
+  * mhVTL
+  * lzo
+  * mhash
+  * lessfs
+  * tokyocabinet
+  * FUSE
+  * Berkeley DB 
+  * Google's Snappy
+  * fence-agents
+  * OpenSM
+  * pycurl
+  * curl
+  * Net-Telnet (Perl module)
+  * python-suds (Python module)
+  * setuptools (Python module)
+  * pexpect (Python module)
+  * BASH
   * open-fcoe-3.7.tar.bz2 \
   * open-lldp-0.9.45.tar.gz \
   * libconfig-1.4.9.tar.gz \
