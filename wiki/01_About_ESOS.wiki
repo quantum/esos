@@ -1,7 +1,9 @@
 #summary More details on the design and internal workings.
 
 === Introduction ===
-ESOS started with an internal need for a fully functioning SCST / Linux system that could easily be deployed to new servers. We also wanted to this Linux "distribution" to be fully optimized for SCST and include necessary RAID controller tools/utilities so new volumes could easily be provisioned/modified from inside the OS.
+ESOS started with an internal need for a fully functioning SCST / Linux system that could easily be deployed to new servers. We also wanted this Linux "distribution" to be fully optimized for SCST and include necessary RAID controller tools/utilities so new volumes could easily be provisioned/modified from inside the OS.
+
+After some time passed and our comfort level with ESOS/SCST grew, we realized the next logical step: Highly available storage clusters. We pumped a number of new features (software projects) into ESOS, including, but not limited to DRBD, LVM2, Linux software RAID (md), mhVTL, and a full-featured cluster stack (Pacemaker + Corosync).
 
 <br>
 
