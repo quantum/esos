@@ -47,10 +47,10 @@ fio --bs=4k --direct=1 --rw=randwrite --ioengine=libaio --iodepth=64 --name=/dev
 
 4K random, 75% reads + 25% writes:
 {{{
-./fio --bs=4k --direct=1 --rw=randrw --ioengine=libaio --iodepth=64 --rwmixread=75 --rwmixwrite=25 --name=/dev/sdd --runtime=60
+fio --bs=4k --direct=1 --rw=randrw --ioengine=libaio --iodepth=64 --rwmixread=75 --rwmixwrite=25 --name=/dev/sdd --runtime=60
 }}}
 
-These should give you an idea of fio, and hopefully at least get you started. The fio tool is very powerful and has extensive documentation (man page) and there are lots of examples available on the 'net.
+These should hopefully at least get you started. The fio tool is very powerful and has extensive documentation (man page) and there are lots of examples available on the 'net.
 
 If you find your back-end storage is the culprit, then you'll need to address that. If it turns out your back-end storage is quite speedy, you'll need to look at your SCST configuration, and the other layers (eg, LVM2, DRBD, etc.) in between your underlying storage and the initiators. Don't forget about the SAN fabric either!
 
