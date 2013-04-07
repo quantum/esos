@@ -41,7 +41,7 @@ Mellanox and QLogic InfiniBand Host Channel Adapters work with ESOS.
 <br>
 
 === Network Interface Cards / CNAs ===
-Although Linux provides drivers for a ton of different NICs, we tried to keep it simple and only support NICs that are common in enterprise IT environments. The list below includes 10 GbE and 1 GbE cards -- no one actually uses 10/100 NICs in their data center anymore, right?
+Although Linux provides drivers for a ton of different NICs, we tried to keep it simple and only support NICs that are common in enterprise IT environments. The list below includes popular 10 GbE and 1 GbE cards, and even a couple lower-end cards that might be useful for console/configuration access (SSH).
   * Intel PRO/1000 Gigabit Ethernet adapters
   * Intel PRO/1000 PCI-Express Gigabit Ethernet adapters
   * Intel 82575/82576 PCI-Express Gigabit Ethernet adapters
@@ -57,3 +57,9 @@ Although Linux provides drivers for a ton of different NICs, we tried to keep it
   * QLOGIC QLCNIC 1/10Gb CNAs (QLE8240, QLE8242)
   * QLogic QLGE ISP8XXX 10Gb Ethernet adapters
   * Brocade 1010/1020 10Gb Ethernet cards
+  * Intel(R) PRO/100+ Ethernet cards
+  * RealTek RTL-8139 C+ PCI Fast Ethernet adapters
+  * RealTek RTL-8129/8130/8139 PCI Fast Ethernet adapters
+  * Realtek 8169 Gigabit Ethernet cards
+  * Marvell Yukon Gigabit Ethernet cards
+  * Marvell Yukon 2  Ethernet adapters
