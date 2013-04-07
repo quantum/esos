@@ -3,7 +3,7 @@
 === The First Boot ===
 At this point its assumed you have already inserted your USB flash drive into your storage server's USB port, set USB as the only boot device in the BIOS, and you are at the physical console and have a login prompt. If you're ESOS USB flash drive failed to boot for some reason, please let us know on the esos-users Google Group so we can help.
 
-On the first boot, you may get messages saying something like "Superblock last write time is in the future." -- just hit 'y' to fix it. This happens typically because the time on your build machine is different than your ESOS storage server machine.
+On the first boot, you may get messages saying something like "Superblock last write time is in the future." -- just hit 'y' to fix it. This happens typically because the time on the build machine is/was different than your ESOS storage server machine.
 
 The first item on your agenda will be to login as root and change the password.
   * Superuser account: root
@@ -44,7 +44,7 @@ _The only normal, interactive editor that is installed on ESOS is "vi"._ For a h
 <br>
 
 === Networking ===
-Next, you will want to configure your network interface(s), system host/domain names, resolver, etc. First, access the network configuration dialog: System -> Network Settings
+Next, you will want to configure your network interface(s), system host/domain names, resolver, etc. If you are configuring IPoIB interfaces, you will need to first enable the kernel module(s); see the [22_Advanced_System_Configuration] wiki page for details. To access the network configuration dialog: System -> Network Settings
 
 Then choose General Network Settings. In this dialog, you can set the system host name, domain name, and if you're not using DHCP, the default gateway and name servers.
 
@@ -91,7 +91,7 @@ You can also send a test email message at any time after: System -> Send Test Em
 === Date & Time ===
 Setting the date and time in ESOS is a good idea; this will help with log entry correlation when/if tracking down issues. Open the date & time dialog: System -> Date & Time Settings
 
-The default timezone for ESOS is UTC. Choose your local timezone if desired, or keep it UTC. You can then setting the current date and time (24-hour format) if needed.
+The default timezone for ESOS is Factory. Choose your local timezone, or set it UTC. You can then set the current date and time (24-hour format) if needed.
 
 Setting a NTP server is the easiest way to keep your ESOS system time up to date. The date/time will be set via NTP on ESOS host boot-up and periodically via cron.
 
