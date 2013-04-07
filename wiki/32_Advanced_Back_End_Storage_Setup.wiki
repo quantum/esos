@@ -5,64 +5,69 @@ DRBD makes an excellent partner to SCST for creating highly available disk array
 
 Since DRBD resources (starting/stopping) are typically handled by the cluster stack (Pacemaker + Corosync), the stand-alone DRBD service is disabled by default. To setup/configure the DRBD resources on boot, edit the /etc/rc.conf file and set `rc.drbd_enable` to "YES".
 
-We'll provide a brief example DRBD setup of (2) nodes with one dual-primary resource. Here is the /etc/drbd.conf configuration file we used on both ESOS nodes:
+We'll provide a brief example DRBD setup of (2) nodes with one dual-primary resource. Here is the /etc/drbd.d/global_common.conf configuration file we used on both ESOS nodes:
 {{{
 global {
-  usage-count no;
+        usage-count no;
 }
-
 common {
-  protocol C;
-  handlers {
-    pri-on-incon-degr "/usr/lib/drbd/notify-pri-on-incon-degr.sh; /usr/lib/drbd/notify-emergency-reboot.sh; echo b > /proc/sysrq-trigger ; reboot -f";
-    pri-lost-after-sb "/usr/lib/drbd/notify-pri-lost-after-sb.sh; /usr/lib/drbd/notify-emergency-reboot.sh; echo b > /proc/sysrq-trigger ; reboot -f";
-    local-io-error "/usr/lib/drbd/notify-io-error.sh; /usr/lib/drbd/notify-emergency-shutdown.sh; echo o > /proc/sysrq-trigger ; halt -f";
-    fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
-    after-resync-target "/usr/lib/drbd/crm-unfence-peer.sh";
-    split-brain "/usr/lib/drbd/notify-split-brain.sh root";
-  }
-  startup {
-    degr-wfc-timeout 120;
-    outdated-wfc-timeout 2;
-  }
-  disk {
-    on-io-error detach;
-    no-disk-barrier;
-    no-disk-flushes;
-    fencing resource-only;
-  }
-  net {
-    after-sb-0pri discard-zero-changes;
-    after-sb-1pri discard-secondary;
-    after-sb-2pri disconnect;
-    rr-conflict disconnect;
-    max-buffers 8000;
-    max-epoch-size 8000;
-    sndbuf-size 512k;
-  }
-  syncer {
-    rate 100M;
-    on-no-data-accessible io-error;
-    al-extents 3389;
-  }
+        handlers {
+                pri-on-incon-degr "/usr/lib/drbd/notify-pri-on-incon-degr.sh; /usr/lib/drbd/notify-emergency-reboot.sh; echo b > /proc/sysrq-
+trigger ; reboot -f";
+                pri-lost-after-sb "/usr/lib/drbd/notify-pri-lost-after-sb.sh; /usr/lib/drbd/notify-emergency-reboot.sh; echo b > /proc/sysrq-
+trigger ; reboot -f";
+                local-io-error "/usr/lib/drbd/notify-io-error.sh; /usr/lib/drbd/notify-emergency-shutdown.sh; echo o > /proc/sysrq-trigger ;
+halt -f";
+                fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
+                split-brain "/usr/lib/drbd/notify-split-brain.sh root";
+                out-of-sync "/usr/lib/drbd/notify-out-of-sync.sh root";
+                after-resync-target "/usr/lib/drbd/crm-unfence-peer.sh";
+        }
+        startup {
+                degr-wfc-timeout 120;
+                outdated-wfc-timeout 2;
+        }
+        options {
+                on-no-data-accessible io-error;
+        }
+        disk {
+                on-io-error detach;
+                disk-barrier no;
+                disk-flushes no;
+                fencing resource-only;
+                al-extents 3389;
+        }
+        net {
+                protocol C;
+                after-sb-0pri discard-zero-changes;
+                after-sb-1pri discard-secondary;
+                after-sb-2pri disconnect;
+                rr-conflict disconnect;
+                max-buffers 8000;
+                max-epoch-size 8000;
+                sndbuf-size 512k;
+        }
 }
+}}}
 
+Here is the resource file (/etc/drbd.d/r0.res) used on each host:
+{{{
 resource r0 {
-  net {
-    allow-two-primaries;
-  }
-  on testhosta {
-    device     /dev/drbd0;
-    disk       /dev/sda;
-    address    172.16.0.22:7788;
-    meta-disk  internal;
-  }
-  on testhostb {
-    device    /dev/drbd0;
-    disk      /dev/sda;
-    address   172.16.0.21:7788;
-    meta-disk internal;
-  }
+        net {
+                allow-two-primaries;
+        }
+        on bill.mcc.edu {                                                                                                                    
+                device     /dev/drbd0;
+                disk       /dev/sda;
+                address    172.16.0.22:7788;
+                meta-disk  internal;
+        }
+        on ben.mcc.edu {
+                device    /dev/drbd0;
+                disk      /dev/sda;
+                address   172.16.0.21:7788;
+                meta-disk internal;
+        }
 }
 }}}
 
