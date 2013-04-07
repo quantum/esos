@@ -26,6 +26,11 @@ Removing iSCSI targets is just as simple as creating them in the TUI (Targets ->
 
 <br>
 
+=== Fibre Channel over Ethernet (FCoE) Targets ===
+TODO
+
+<br>
+
 === Target Information ===
 Some basic target information is accessible via the TUI using the Target Information dialog (Targets -> Target Information). Choose a target when prompted and hit the ENTER key to make a selection. Target information is display in a pop-up dialog (state, CPU mask, driver, etc.). Press ENTER to close the dialog.
 
