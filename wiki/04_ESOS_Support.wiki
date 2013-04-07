@@ -9,6 +9,8 @@ mount /mnt/logs
 }}}
 You can then `scp` the tarballs to another machine to examine, or you can take a peek on the ESOS server itself. _Don't forget, any non-standard changes (eg, copying files to /root) made to a running ESOS will be lost on power off or reboot._
 
+There is also a function in the TUI that can be used to easily generate a support archive (Interface -> Support Bundle). This "support bundle" will contain logs from the current set located in /var/log and all of the configuration files from /etc. Obvious files that contain sensitive information are filtered out (eg, SSH key files, /etc/shadow, etc.) from the tarball, but _you should examine the contents of this archive before posting it publicly_.
+
 Another important feature of ESOS is that there are two different kernels. You'll notice two options when booting ESOS (GRUB):
   * ESOS - Enterprise Storage OS $VERSION <*Production*>
   * ESOS - Enterprise Storage OS $VERISON <*Debug*>
