@@ -56,7 +56,7 @@ resource r0 {
         net {
                 allow-two-primaries;
         }
-        on bill.mcc.edu {                                                                                                                    
+        on bill.mcc.edu {
                 device     /dev/drbd0;
                 disk       /dev/sda;
                 address    172.16.0.22:7788;
