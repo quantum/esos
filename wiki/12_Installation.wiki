@@ -21,7 +21,7 @@ If using a ESOS image you built from source, you should now be in that directory
 cd esos-0.1-r412
 }}}
 
-At this point, you should now plug in the USB flash drive you'd like to install ESOS to; you may need to unmount any filesystems on your flash drive if you use a desktop-like Linux distribution (eg, Ubuntu).
+At this point, you should now plug in the USB flash drive you'd like to install ESOS to; you may need to unmount any file systems on your flash drive if you use a desktop-like Linux distribution (eg, Ubuntu).
 
 The `lsscsi` tool makes it very easy to find your USB drive SCSI device node (needed during the install). Here is an example of what that looks like:
 {{{
