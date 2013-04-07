@@ -26,12 +26,33 @@ The advantage is you can easily reboot and switch to debugging mode if you are h
 === Kernel Panics ===
 Kdump is implemented in ESOS to capture the memory in case of a system kernel panic. When/if a kernel panic occurs, the dump-capture kernel is loaded and the old memory image (/proc/vmcore) is saved to the "esos_logs" filesystem and then the system is rebooted and the default (production) kernel will be booted like normal.
 
-If you are unlucky enough to experience a kernel panic, you can retrieve the vmcore file from the esos_logs (label) filesystem. The vmcore file is a dump of the memory, so it may be quite large; its best to `scp` it to another machine before decompressing and analyzing.
+If you are unlucky enough to experience a kernel panic, you can retrieve the vmcore file from the esos_logs (label) file system. The vmcore file is a dump of the memory, so it may be quite large; its best to `scp` it to another machine before decompressing and analyzing.
 
 <br>
 
 === Performance Issues ===
 These types of issues can sometimes be quite difficult to diagnose. Assuming the performance problem is realized at the initiator end, you would probably then want to test the performance of your back-end storage to see if that is culprit. ESOS includes `fio`, a very useful tool that aids in diagnosing these types of problems.
+
+We'll show a few examples of using fio to perform some tests on block devices from "inside" ESOS. *While performing tests using fio that consist only of reads is probably safe, using writes is definitely not if you have data that you care about! You have been warned!*
+
+4K random, 100% reads:
+{{{
+fio --bs=4k --direct=1 --rw=randread --ioengine=libaio --iodepth=64 --name=/dev/sdd --runtime=60
+}}}
+
+4K random, 100% writes:
+{{{
+fio --bs=4k --direct=1 --rw=randwrite --ioengine=libaio --iodepth=64 --name=/dev/sdd --runtime=60
+}}}
+
+4K random, 75% reads + 25% writes:
+{{{
+./fio --bs=4k --direct=1 --rw=randrw --ioengine=libaio --iodepth=64 --rwmixread=75 --rwmixwrite=25 --name=/dev/sdd --runtime=60
+}}}
+
+These should give you an idea of fio, and hopefully at least get you started. The fio tool is very powerful and has extensive documentation (man page) and there are lots of examples available on the 'net.
+
+If you find your back-end storage is the culprit, then you'll need to address that. If it turns out your back-end storage is quite speedy, you'll need to look at your SCST configuration, and the other layers (eg, LVM2, DRBD, etc.) in between your underlying storage and the initiators. Don't forget about the SAN fabric either!
 
 <br>
 
