@@ -28,6 +28,11 @@ If you are unlucky enough to experience a kernel panic, you can retrieve the vmc
 
 <br>
 
+=== Performance Issues ===
+TODO
+
+<br>
+
 === Getting Help ===
 These wiki pages should be the first stop when seeking help or getting questions answered. All of the basic information on using ESOS will be listed in that documentation. If you find some key piece of information missing from the wiki pages that is a necessity, please let us know on the [http://groups.google.com/group/esos-users esos-users] Google Group.
 
