@@ -121,7 +121,7 @@ The clvmd daemon is also included with ESOS. This service is utilized when using
 /etc/rc.d/rc.clvmd start
 }}}
 
-To create a physical volume (PV) for LVM using an entire SCST disk (/dev/sdc):
+To create a physical volume (PV) for LVM using an entire SCSI disk (/dev/sdc):
 {{{
 pvcreate -v /dev/sdc
 }}}
