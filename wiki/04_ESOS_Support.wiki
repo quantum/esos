@@ -17,7 +17,7 @@ Another important feature of ESOS is that there are two different kernels. You'l
 
 The "Production" kernel/mode is what you will typically run in -- its using a kernel with minimal debugging options set and SCST setup for performance.
 
-The "Debug" kernel/mode should be used when you are having problems or issues that you are unable to resolve/diagnose using the normal "Production" kernel. The "Debug" ESOS kernel has a few extra kernel debugging options set and the SCST modules are set for full debugging.
+The "Debug" kernel/mode should be used when you are having problems or issues that you are unable to resolve/diagnose using the normal "Production" kernel. The "Debug" ESOS kernel has a few extra kernel debugging options set and the SCST modules are set for full debugging. When using debug mode, you will have a `trace_level` file in the root of SCST sysfs (/sys/kernel/scst_tgt/trace_level). Examine this file for instructions on how to set the trace/log level for SCST. _Some SCST trace settings can produce massive log files; be sure to keep an eye on the root tmpfs file system disk space._
 
 The advantage is you can easily reboot and switch to debugging mode if you are having problems without re-configuring anything. All of the target/device/storage/system/etc. configuration is exactly the same as the production mode.
 
@@ -31,7 +31,7 @@ If you are unlucky enough to experience a kernel panic, you can retrieve the vmc
 <br>
 
 === Performance Issues ===
-TODO
+These types of issues can sometimes be quite difficult to diagnose. Assuming the performance problem is realized at the initiator end, you would probably then want to test the performance of your back-end storage to see if that is culprit. ESOS includes `fio`, a very useful tool that aids in diagnosing these types of problems.
 
 <br>
 
