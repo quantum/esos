@@ -98,7 +98,7 @@ ESOS boots from a USB flash drive; all of the binaries/files/directories/etc. ar
 Here is a high level step-through of the ESOS boot process:
   # The ESOS USB flash drive is used as the BIOS boot device.
   # GRUB is loaded; user can select between ESOS 'Production' or 'Debug' kernel/modules.
-  # Selected kernel (and initramfs image) is loaded; initramfs init then takes care of various prep. tasks, initializes tmpfs filesystem (RAM) and then extracts root image into newly created tmpfs filesystem.
+  # Selected kernel (and initramfs image) is loaded; initramfs init then takes care of various prep. tasks, initializes tmpfs file system (RAM) and then extracts root image into newly created tmpfs file system.
   # Control is then passed to init and the rc/init scripts are executed.
   # Running ESOS configuration is synchronized with USB flash drive.
   # Various daemons (sshd, crond, etc.) are started, HBA/HCA/CNA and SCST modules are loaded.
