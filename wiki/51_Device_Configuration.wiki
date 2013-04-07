@@ -1,7 +1,7 @@
 #summary Configuring SCST devices on your ESOS storage server.
 
 === SCST I/O Modes ===
-ESOS is based on the SCST project, and it really is the core of ESOS. SCST provides a number of different features and I/O modes (pass-through, FILEIO, BLOCKIO, etc.). At the time of writing this document, ESOS supports (6) SCST device I/O modes.
+ESOS is based on the SCST project, and it really is the core of ESOS. SCST provides a number of different features and I/O modes (pass-through, FILEIO, BLOCKIO, etc.). At the time of writing this document, ESOS supports (9) SCST device I/O modes.
 
 Here is a list and description of each supported I/O mode:
   * *Pass-Through SCSI Disk (dev_disk)*: SCSI commands coming from initiators on your SAN are passed to the local SCSI disks on the ESOS storage server as is, without any modifications. One-to-many is supported in this mode in which several initiators can safely connect to a single device.
