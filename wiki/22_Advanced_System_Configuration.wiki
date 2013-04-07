@@ -155,7 +155,22 @@ quit
 
 *`*``*` Warning: Care needs to be taken when using an active/active SCST configuration in MPIO and clustered initiator environments. SCST itself is not cluster aware and when using something like DRBD, it only replicates the blocks of data between hosts. There is more to SCSI than just reads/writes (locks, etc.) and these are _NOT_ communicated to other hosts with SCST. If you are using some type of clustered/HA back-end storage and using ESOS/SCST as a different target type, these other SCSI items may be passed through the layers, but you should double-check. Even when using the SCST ALUA multi-state resource agent, it is _implicit_ ALUA and the targets are only "suggesting" what path to take (assuming the initiator/application supports implicit ALUA). _Be sure not to use some type of round-robin algorithm for MPIO on you initiators!_ Check your initiator configuration, and use a fixed pathing policy or something similar. `*``*`*
 
-Since ESOS makes use of email as a communication method, a email-helper script was developed for the `crm_mon` utility. 
+Since ESOS makes use of email as a communication method, a email-helper script (external agent) was developed for the `crm_mon` utility. This is typically used with the `ocf:pacemaker:ClusterMon` resource agent in ESOS for cluster status change notifications. Below is an example of configuring it using crmsh; its recommended to not enable this resource until after you have completed setup and testing of your ESOS cluster as it can generate a lot of email messages.
+
+{{{
+crm
+cib new notify
+configure primitive p_notify ocf:pacemaker:ClusterMon \
+params user="root" update="30" \
+extra_options="-E /usr/local/bin/crm_mon_email.sh -e root" \
+op monitor on-fail="restart" interval="10"
+configure clone clone_notify p_notify \
+meta target-role="Started"
+configure show
+cib commit notify
+quit
+}}}
+
 Synchronize your configuration:
 {{{
 conf_sync.sh
