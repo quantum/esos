@@ -8,11 +8,11 @@ The second step is configuring your front side target devices, the targets that 
 <br>
 
 === RAID Controller TUI Functions ===
-ESOS has limited support for provisioning/configuring logical drives via the TUI. Currently only LSI Logic MegaRAID adapters are supported using the TUI logical drive / adapter functions. Using these functions requires the MegaCLI tool which is an option during the USB flash drive installation. Advanced adapter properties, multi-span logical drives, etc. are not supported.
+ESOS has limited support for provisioning/configuring logical drives via the TUI. Currently only LSI Logic MegaRAID adapters are supported using the TUI logical drive / adapter functions. Using these functions requires the MegaCLI tool which is an option during the USB flash drive installation. Advanced adapter properties, multi-span logical drives, etc. are not supported using the TUI.
 
 A few basic RAID controller/adapter properties are configurable via the TUI: Back-End Storage -> Adapter Properties
 
-Using the adapter information dialog (Back-End Storage -> Adapter Information) will allow you select a RAID controller and will display an overview of the attached storage (enclosures + devices).
+Using the adapter information dialog (Back-End Storage -> Adapter Information) will allow you to select a RAID controller and will display an overview of the attached storage (enclosures + devices).
 
 To add a new logical drive (Back-End Storage -> Add Volume) you will first select the desired RAID adapter; next you will be presented with screen that contains the available disks. Select the disks and hit ENTER (or ESCAPE to cancel). On the final dialog, you will choose the RAID level, strip size, cache options, etc. and then hit 'OK' to proceed with provisioning the volume or 'Cancel' to do nothing and close the dialog.
 
