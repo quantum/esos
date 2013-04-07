@@ -1,10 +1,10 @@
 #summary Learn how to upgrade ESOS on your system.
 
 === About Upgrading ESOS ===
-First, the upgrade process for ESOS is disruptive and will require a small amount of down time. The upgrade procedure goes something like this:
+First, if the storage server is not part of a cluster, the upgrade process for ESOS is disruptive and will require a small amount of down time. The upgrade procedure goes something like this:
   * You install the new version of ESOS to an entirely new, fresh USB flash drive.
   * Next, you copy the configuration files from the current (old) ESOS flash drive from your ESOS storage server to the new USB device.
-  * Finally you remove the old flash drive from the server, and replace it with the new flash drive and boot your storage server.
+  * Finally you remove the old flash drive from the server, and replace it with the new flash drive and reboot your storage server.
 
 While this upgrade procedure does involve some down time, it has one important benefit: It is very easy to revert to your old ESOS version if there is some type of problem when running the new version -- simply power off the storage server, and swap USB flash drives (use the old one).
 
@@ -55,7 +55,7 @@ umount /mnt/old_esos
 umount /mnt/new_esos
 }}}
 
-You can now power off the ESOS storage server, insert the newly created (upgraded) ESOS USB flash drive and power on the machine. You can optionally replace the old USB drive into the storage server before powering off if you would like to keep the log files.
+You can now insert the newly created (upgraded) ESOS USB flash drive into the USB port on your ESOS storage server, and then reboot the machine. When it comes back up, it will be running off of the new USB drive and the upgraded version of ESOS will be loaded.
 
 <br>
 
