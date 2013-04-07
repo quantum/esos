@@ -112,7 +112,31 @@ You can now use these new software RAID block devices as backing for a file syst
 <br>
 
 === Logical Volume Manager (LVM2) ===
-TODO
+The Logical Volume Manager in Linux is a time-tested, stable piece of software. Its used by default on installs in big-name Linux distributions and has proven its usefulness. In ESOS, LVM a very helpful layer when use between the back-end storage devices, and SCST targets. It allows one to partition and manage back-storage easily, and includes advanced features like snapshots. There is lots of great information on using LVM2 on the web, so we definitely won't try to cover everything here. We'll provide a few brief examples below.
+
+The clvmd daemon is also included with ESOS. This service is utilized when using LVM2 in a cluster; it prevents concurrent metadata updates from different nodes on shared storage (eg, using DRBD). The clvmd service is disabled by default. The clvmd daemon uses DLM for locking and requires a working Corosync cluster. To enable clvmd and dlm_controld, edit /etc/rc.conf, then change the value for `rc.dlm_enable` and `rc.clvmd_enable` to 'YES'. After you are sure Corosync is running and you have quorum (check it with: `corosync-cfgtool -s`) start the services:
+
+{{{
+/etc/rc.d/rc.dlm start
+/etc/rc.d/rc.clvmd start
+}}}
+
+To create a physical volume (PV) for LVM using an entire SCST disk (/dev/sdc):
+{{{
+pvcreate -v /dev/sdc
+}}}
+
+Next you can create a volume group (VG) for LVM using the PV we created above:
+{{{
+vgcreate -v big_space_1 /dev/sdc
+}}}
+
+Now we can create a 500 GB logical volume (LV) called "small_vmfs_1" that can be used with SCST:
+{{{
+lvcreate -v -L 500G -n small_vmfs_1 big_space_1
+}}}
+
+These were a couple very basic examples that should show you how to get started with LVM2; this software is very powerful and flexible and can be used in a number of different ways. Read up on the LVM2 documentation (and man pages)!
 
 <br>
 
