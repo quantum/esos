@@ -21,4 +21,7 @@ if [ ${MDEV:0:2} = "sd" ]; then
 elif [ ${MDEV:0:3} = "dlm" ]; then
     mkdir -m 0755 -p /dev/misc
     ln -s /dev/${MDEV} /dev/misc/${MDEV}
+elif [ ${MDEV:0:4} = "umad" ] || [ ${MDEV:0:4} = "issm" ] || [ ${MDEV:0:6} = "uverbs" ]; then
+    mkdir -m 0755 -p /dev/infiniband
+    ln -s /dev/${MDEV} /dev/infiniband/${MDEV}
 fi
