@@ -27,7 +27,31 @@ Removing iSCSI targets is just as simple as creating them in the TUI (Targets ->
 <br>
 
 === Fibre Channel over Ethernet (FCoE) Targets ===
-TODO
+If you are using switches, ensure they are FCoE capable and VLANs, DCB, and DCBX and have been configured correctly. To configure the local interfaces on ESOS, you will first need to create the `/etc/fcoe/cfg-<ifname>` file (replacing "<ifname>" with your actual interface name). A default/example configuration file is included, simply copy this for each interface you'd like to setup; in this example our interface is 'eth2':
+{{{
+cp /etc/fcoe/cfg-ethx /etc/fcoe/cfg-eth2
+}}}
+
+You can then edit this file to your liking (see `man 8 fcoemon` for more information).
+
+Next, restart the SCST service, which includes user-land daemons for FCoE (fcoemon, lldpad):
+{{{
+/etc/rc.d/rc.scst stop && /etc/rc.d/rc.scst start
+}}}
+
+Now you can configure the interface for DCB (Data Center Bridging):
+{{{
+dcbtool sc eth2 dcb on
+dcbtool sc eth2 pfc e:1
+dcbtool sc eth2 app:fcoe e:1
+}}}
+
+Check the status and list of visible initiators with this command:
+{{{
+fcc.sh
+}}}
+
+The FCoE target should now be available in SCST (fcst); it should be listed in the adapters information label in the main TUI screen and available under the Targets menu. You can now use this FCoE target the same as any other SCST target (creating host groups, adding initiators, etc.).
 
 <br>
 
