@@ -1,3 +1,30 @@
+2013-04-06 05:27  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/rc.network, etc/rc.d/rc.openibd,
+	  misc/linux-3.8.5.config, misc/ocf/scst, scripts/crm_mon_email.sh,
+	  tui/menu_actions-devices.c, tui/menu_actions-system.c,
+	  tui/system.h: added new crm_mon_email.sh script (helper /
+	  external agent for crm_mon, used with ClusterMon RA); updated
+	  network rc script to use the /bin/ip binary instead of ifconfig
+	  when setting MTU for dhcp-enabled interfaces; removed IBoIP MTU
+	  settings from the openibd script (now done through TUI); added
+	  misc. network interface (Ethernet) drivers to kernel config;
+	  updated SCST RA to use 'nonoptimized' instead of 'offline' for
+	  slave status; in TUI, for /dev/dm-* block devices, we look-up the
+	  (assumed) full LVM VG+LV device node path (more unique) and use
+	  this; first attempt (not tested) at supporting IPoIB interfaces
+	  in the TUI; updated TUI to use two different default MTUs based
+	  on interface name (Ethernet / IB)
+
+2013-03-31 22:26  msmith626@gmail.com
+
+	* ChangeLog, scripts/conf_sync.sh, scripts/health_chk.sh,
+	  tui/menu_actions-interface.c: conf_sync -> needed to check if the
+	  local/usb versions of localtime exist (fixed); updated
+	  health_check script to include hostname in file name for conf
+	  pkg. sent via email; updated TUI support package function to
+	  exclude some private content items
+
 2013-03-31 14:30  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in,

@@ -61,7 +61,7 @@ if ($ARGV[0] eq "start") {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
-        if ($iface =~ "eth") {
+        if (($iface =~ "eth") || ($iface =~ "ib")) {
             print("Bringing up interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " up 2>&1");
             if ($? == -1) {
@@ -78,7 +78,7 @@ if ($ARGV[0] eq "start") {
 
     # Configure the network interfaces
     foreach my $each (@sections) {
-        if ($each =~ "eth") {
+        if (($each =~ "eth") || ($each =~ "ib")) {
             my $hash_key = $each . ":bootproto";
             if (exists($ini_hash{$hash_key})) {
                 if (lc($ini_hash{$hash_key}) eq "dhcp") {
@@ -284,7 +284,7 @@ if ($ARGV[0] eq "start") {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
-        if ($iface =~ "eth") {
+        if (($iface =~ "eth") || ($iface =~ "ib")) {
             print("Bringing down interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " 0.0.0.0 down 2>&1");
             if ($? == -1) {
