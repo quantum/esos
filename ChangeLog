@@ -1,3 +1,12 @@
+2013-04-09 21:03  msmith626@gmail.com
+
+	* ChangeLog, etc/mdev.conf, etc/opensm, etc/opensm/partitions.conf,
+	  etc/rc.d/rc.network, etc/rc.d/rc.opensm, scripts/dev_nodes.sh:
+	  updated mdev.conf and dev_nodes script to handle InfiniBand
+	  device nodes (/etc/infiniband/); updated rc.network script to
+	  handle ibX devices; make opensm quiet when it starts; added
+	  /etc/opensm/partitions.conf default file
+
 2013-04-06 05:27  msmith626@gmail.com
 
 	* Makefile.in, etc/rc.d/rc.network, etc/rc.d/rc.openibd,

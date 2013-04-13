@@ -816,7 +816,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
     /* Dump the SCST configuration to a file, if its loaded */
     if (isSCSTLoaded()) {
         snprintf(scstadmin_cmd, MAX_SHELL_CMD_LEN,
-                "%s -nonkey -write_config %s > /dev/null 2>&1",
+                "%s -force -nonkey -write_config %s > /dev/null 2>&1",
                 SCSTADMIN_TOOL, SCST_CONF);
         ret_val = system(scstadmin_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {

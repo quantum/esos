@@ -8,6 +8,16 @@ source /etc/rc.d/common
 /sbin/ifconfig lo 127.0.0.1
 /sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
 
+# Set a temporary host name
+/bin/hostname localhost
+
+# Start the EARLY user settable services
+for i in ${EARLY_SERVICES}; do
+    if check_enabled "${i}"; then
+        ${RC_D_PREFIX}/${i} start
+    fi
+done
+
 if [ -x /etc/rc.d/rc.network ]; then
     /etc/rc.d/rc.network start
 fi
@@ -28,8 +38,11 @@ if [ -x /etc/rc.d/rc.kdump ]; then
     /etc/rc.d/rc.kdump
 fi
 
-# Start the user settable services
-for i in ${SERVICES}; do
+/bin/echo "Loading the QLogic Fibre Channel HBA module..."
+/sbin/modprobe qla2xxx
+
+# Start the LATE user settable services
+for i in ${LATE_SERVICES}; do
     if check_enabled "${i}"; then
         ${RC_D_PREFIX}/${i} start
     fi

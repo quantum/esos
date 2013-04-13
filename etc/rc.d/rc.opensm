@@ -15,7 +15,7 @@ fi
 
 start() {
     /bin/echo "Starting IB Subnet Manager..."
-    ${OPENSM} --daemon > /dev/null || exit 1
+    ${OPENSM} --daemon > /dev/null 2>&1 || exit 1
     /bin/touch ${OPENSM_LOCK}
     /bin/sleep 1
 }
