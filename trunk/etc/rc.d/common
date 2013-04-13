@@ -4,7 +4,8 @@ RC_D_PREFIX="/etc/rc.d"
 STOP_TIMEOUT=120
 
 # User settable services; started in this order and reversed on shutdown
-SERVICES="rc.sshd rc.openibd rc.opensm rc.lvm2 rc.drbd rc.corosync rc.dlm rc.clvmd rc.pacemaker rc.mhvtl rc.scst"
+EARLY_SERVICES="rc.openibd rc.opensm"
+LATE_SERVICES="rc.sshd rc.lvm2 rc.drbd rc.corosync rc.dlm rc.clvmd rc.pacemaker rc.mhvtl rc.scst"
 
 # Check if the service is enabled, or not
 check_enabled() {

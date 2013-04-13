@@ -27,11 +27,11 @@ if [ -x "${MEGACLI}" ]; then
 		# Get the number of logical drives for the adapter
 		# Logical drive numbers start with 0 for MegaRAID
 		ld_count=`${MEGACLI} -AdpAllInfo -a${adapter} -NoLog | \
-			grep "Virtual Drives    :" | cut -d: -f2 | tr -d ' ' | tr -d '\n'`
+			grep "Virtual Drives" | cut -d: -f2 | tr -d ' ' | tr -d '\n'`
 		echo "Adapter ${adapter} has ${ld_count} logical drive(s)."
 		for logical_drv in `seq 0 $(expr ${ld_count} - 1)`; do
 			ld_state=`${MEGACLI} -LDInfo -L${logical_drv} -a${adapter} -NoLog | \
-				grep "State               :" | cut -d: -f2 | tr -d ' ' | tr -d '\n'`
+				grep "State" | cut -d: -f2 | tr -d ' ' | tr -d '\n'`
 			if [ "${ld_state}" != "Optimal" ]; then
 				echo "** Warning! MegaRAID logical drive ${logical_drv} on adapter ${adapter} is not optimal!" 1>&2
 				${MEGACLI} -LDInfo -L${logical_drv} -a${adapter} -NoLog 1>&2
@@ -55,12 +55,12 @@ if [ -x "${ARCCONF}" ]; then
 		# Get the number of logical drives for the adapter
 		# Logical drive numbers start with 0 for AACRAID
 		ld_count=`${ARCCONF} GETCONFIG ${adapter} AD nologs | \
-			grep "Logical devices/Failed/Degraded          :" | \
+			grep "Logical devices/Failed/Degraded" | \
 			cut -d: -f2 | cut -d/ -f1 | tr -d ' ' | tr -d '\n'`
 		echo "Adapter ${adapter} has ${ld_count} logical drive(s)."
 		for logical_drv in `seq 0 $(expr ${ld_count} - 1)`; do
 			ld_state=`${ARCCONF} GETCONFIG ${adapter} LD ${logical_drv} nologs | \
-				grep "Status of logical device                 :" | cut -d: -f2 | \
+				grep "Status of logical device" | cut -d: -f2 | \
 				tr -d ' ' | tr -d '\n'`
 			if [ "${ld_state}" != "Optimal" ]; then
 				echo "** Warning! AACRAID logical drive ${logical_drv} on adapter ${adapter} is not optimal!" 1>&2

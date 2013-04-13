@@ -54,7 +54,7 @@ start() {
 stop() {
     # Save the SCST configuration, just in case
     /bin/echo "Saving SCST configuration..."
-    ${SCSTADMIN} -nonkey -write_config ${SCST_CFG}
+    ${SCSTADMIN} -force -nonkey -write_config ${SCST_CFG}
     /bin/echo "Stopping SCST daemons and unloading modules..."
     # Stop all of the userland daemons first
     /bin/kill -TERM $(/bin/pidof ${FCOEMON}) || exit 1

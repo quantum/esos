@@ -4,8 +4,8 @@
 
 source /etc/rc.d/common
 
-# Stop the user settable services (reverse order)
-for i in $(/bin/echo ${SERVICES} | /usr/bin/tr ' ' '\n' | \
+# Stop the LATE user settable services (reverse order)
+for i in $(/bin/echo ${LATE_SERVICES} | /usr/bin/tr ' ' '\n' | \
     /usr/bin/tac | /usr/bin/tr '\n' ' '); do
     if check_enabled "${i}"; then
         ${RC_D_PREFIX}/${i} stop
@@ -15,6 +15,14 @@ done
 if [ -x /etc/rc.d/rc.network ]; then
     /etc/rc.d/rc.network stop
 fi
+
+# Stop the EARLY user settable services (reverse order)
+for i in $(/bin/echo ${EARLY_SERVICES} | /usr/bin/tr ' ' '\n' | \
+    /usr/bin/tac | /usr/bin/tr '\n' ' '); do
+    if check_enabled "${i}"; then
+        ${RC_D_PREFIX}/${i} stop
+    fi
+done
 
 /bin/echo "Sending all processes the TERM signal..."
 /sbin/killall5 -15

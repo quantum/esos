@@ -120,7 +120,7 @@ scst_stop() {
 
 	# Save the SCST configuration, just in case
 	ocf_log info "Saving SCST configuration..."
-	ocf_run scstadmin -nonkey -write_config $SCST_CFG || exit $OCF_ERR_GENERIC
+	ocf_run scstadmin -force -nonkey -write_config $SCST_CFG || exit $OCF_ERR_GENERIC
 
 	# Stop all of the daemons and wait for each
 	ocf_log info "Stopping daemons..."
