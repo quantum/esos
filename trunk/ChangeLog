@@ -1,3 +1,21 @@
+2013-04-13 18:12  msmith626@gmail.com
+
+	* ChangeLog, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.0,
+	  etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.opensm,
+	  etc/rc.d/rc.scst, misc/ocf/scst, scripts/health_chk.sh,
+	  tui/menu_actions.c: we now have "early" and "late" user settable
+	  services, only IB-related services are classified as early so far
+	  since they need to be loaded before we run rc.network -- updated
+	  all rc scripts for this new change; OpenSM is sometimes noisey
+	  when starting so we hide it (stdout + stderr); in all areas we
+	  save the SCST configuration using scstadmin, we now use a
+	  '-force' when calling write_config since if the current running
+	  config is not koesher, scstadmin will exit with an error and not
+	  save (bad) -> updated RA, rc script, and TUI sync. config. call;
+	  updated the health_chk script to be a little more leanient with
+	  MegaCLI output; we now load qla2xxx in run-level 2 since even if
+	  SCST is not loaded, the TUI still displays FC HBA information
+
 2013-04-09 21:03  msmith626@gmail.com
 
 	* ChangeLog, etc/mdev.conf, etc/opensm, etc/opensm/partitions.conf,
