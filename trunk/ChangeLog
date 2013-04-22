@@ -1,3 +1,9 @@
+2013-04-22 20:13  msmith626@gmail.com
+
+	* misc/linux-3.8.5.config, tui/menu_actions-devices.c: enabled
+	  bridging support in Linux kernel; fixed bug in the 'LUN Layout'
+	  dialog -- readlink() does not append a null byte
+
 2013-04-13 18:12  msmith626@gmail.com
 
 	* ChangeLog, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.0,
