@@ -1213,7 +1213,7 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
 void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lun_info = 0;
     char *swindow_info[MAX_LUN_LAYOUT_LINES] = {NULL};
-    int i = 0, line_pos = 0;
+    int i = 0, line_pos = 0, dev_path_size = 0;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             link_path[MAX_SYSFS_PATH_SIZE] = {0},
             dev_path[MAX_SYSFS_PATH_SIZE] = {0};
@@ -1345,7 +1345,10 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                                                 SYSFS_SCST_TGT, driver_dir_entry->d_name,
                                                 tgt_dir_entry->d_name, group_dir_entry->d_name,
                                                 lun_dir_entry->d_name);
-                                        readlink(link_path, dev_path, MAX_SYSFS_PATH_SIZE);
+                                        /* Read the link to get device name (doesn't append null byte) */
+                                        dev_path_size = readlink(link_path, dev_path, MAX_SYSFS_PATH_SIZE);
+                                        if (dev_path_size < MAX_SYSFS_PATH_SIZE)
+                                            *(dev_path + dev_path_size) = '\0';
                                         if (line_pos < MAX_LUN_LAYOUT_LINES) {
                                             asprintf(&swindow_info[line_pos],
                                                     "\t\t</B>LUN:<!B> %s (%s)",
