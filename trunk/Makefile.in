@@ -85,7 +85,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		mdadm-3.2.6.tar.gz \
 		parted-2.3.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2 \
-		libqb-0.14.3.tar.xz \
+		libqb-0.14.4.tar.xz \
 		pacemaker-1.1.8.tar.gz \
 		corosync-2.3.0.tar.gz \
 		nss-3.14.1.tar.gz \

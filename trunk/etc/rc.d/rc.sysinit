@@ -39,16 +39,6 @@ if [ $? -gt 1 ]; then
     /sbin/reboot -f
 fi
 
-/bin/echo "Mounting other local file systems..."
-for i in `/usr/bin/awk '{print $2}' /etc/fstab`; do
-    if [ "${i:0:1}" == "/" ]; then
-        if [ ! -d "${i}" ]; then
-            /bin/mkdir -p ${i}
-        fi
-    fi
-done
-/bin/mount -a
-
 /bin/echo "Configuring kernel parameters..."
 /sbin/sysctl -p /etc/sysctl.conf
 

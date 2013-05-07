@@ -24,7 +24,6 @@ e927540b6eda8b024fb0391eeaa4091c  grub-2.00.tar.gz
 dd2472f07993496ca4f4e3e8f6746517  mdadm-3.2.6.tar.gz
 30ceb6df7e8681891e865e2fe5a7903d  parted-2.3.tar.gz
 ad4c179c119bbb78be740e33b59746ad  opensm-3.3.15.tar.gz
-1eee1b8dac8b1123d9a65abd2dd791a0  libqb-0.14.3.tar.xz
 3a679baed6cd2fb1af8e865529cbf8d1  pacemaker-1.1.8.tar.gz
 7cb3c35048c3f4103aad255d7116c9e3  nss-3.14.1.tar.gz
 5b9bebf4f5d2200ae2c4efe8fa6103f7  libxml2-2.9.0.tar.gz
@@ -71,3 +70,4 @@ e053094e8103165f98ddafe828f6ae4b  sysklogd-1.5.tar.gz
 55e77da0eef1f348b4adfaad4ced830a  linux-3.8.5.tar.xz
 b081f1046adda1d51ba351c40a8b1107  drbd-8.4.2.tar.gz
 fa2a8e80f996dc74a7b25a663eb5581b  scst-trunk_r4830.tar.gz
+514d07752c7c746dc9a1d88d441f0ec3  libqb-0.14.4.tar.xz
