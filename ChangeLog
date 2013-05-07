@@ -1,3 +1,13 @@
+2013-05-07 17:30  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/mdadm.conf,
+	  etc/rc.d/rc.2, etc/rc.d/rc.sysinit: updated libqb to 0.14.4
+	  (fixes
+	  http://permalink.gmane.org/gmane.linux.highavailability.pacemaker/15504);
+	  moved "mount other file systems" from rc.sysinit to run-level 2,
+	  right before late start services; added mdadm assemble line for
+	  md software RAID just before mounting other file systems
+
 2013-04-22 20:13  msmith626@gmail.com
 
 	* misc/linux-3.8.5.config, tui/menu_actions-devices.c: enabled
