@@ -1,3 +1,12 @@
+2013-05-14 19:47  msmith626@gmail.com
+
+	* etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.2, etc/rc.d/rc.fsmount,
+	  etc/rc.d/rc.mdraid, etc/rc.d/rc.sysinit, misc/linux-3.8.5.config:
+	  moved file system mounting and md RAID assemble into individual
+	  rc scripts -- ordering of software RAID, fsck, and mounting works
+	  correctly on boot; enabled Linux bonding driver in kernel and
+	  Fusion MPT
+
 2013-05-07 17:30  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/mdadm.conf,
