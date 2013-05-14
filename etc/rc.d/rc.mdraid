@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Assembling software RAID devices..."
+    /sbin/mdadm --assemble --scan > /dev/null 2>&1
+}
+
+stop() {
+    # Do nothing
+    :
+}
+
+# Perform specified action
+${1}
