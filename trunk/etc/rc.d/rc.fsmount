@@ -1,0 +1,40 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    # Check file systems for any possible errors
+    /usr/sbin/fsck -A -M -T -p
+    if [ $? -gt 1 ]; then
+        /bin/echo "ERROR (fsck): Your file system appears to be severely damaged."
+        /bin/echo "ERROR (fsck): You can probably correct this problem by running e2fsck manually."
+        exit 1
+    fi
+
+    # If we got this far, mount the file systems
+    /bin/echo "Mounting local file systems..."
+    for i in `/usr/bin/awk '{print $2}' /etc/fstab`; do
+        if [ "${i:0:1}" == "/" ]; then
+            if [ ! -d "${i}" ]; then
+                /bin/mkdir -p ${i}
+            fi
+        fi
+    done
+    /bin/mount -a
+}
+
+stop() {
+    # Do nothing
+    :
+}
+
+# Perform specified action
+${1}

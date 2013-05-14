@@ -41,19 +41,6 @@ fi
 /bin/echo "Loading the QLogic Fibre Channel HBA module..."
 /sbin/modprobe qla2xxx
 
-/bin/echo "Assembling software RAID devices..."
-/sbin/mdadm --assemble --scan > /dev/null 2>&1
-
-/bin/echo "Mounting other local file systems..."
-for i in `/usr/bin/awk '{print $2}' /etc/fstab`; do
-    if [ "${i:0:1}" == "/" ]; then
-        if [ ! -d "${i}" ]; then
-            /bin/mkdir -p ${i}
-        fi
-    fi
-done
-/bin/mount -a
-
 # Start the LATE user settable services
 for i in ${LATE_SERVICES}; do
     if check_enabled "${i}"; then

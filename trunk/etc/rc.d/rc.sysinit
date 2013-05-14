@@ -25,20 +25,6 @@ fi
 echo "Starting kernel log daemon (klogd)..."
 /usr/sbin/klogd -c1
 
-/usr/sbin/fsck -A -M -T -p
-if [ $? -gt 1 ]; then
-    /bin/echo
-    /bin/echo "ERROR (fsck): Your file system appears to be severely damaged."
-    /bin/echo "ERROR (fsck): You can probably correct this problem by running e2fsck manually."
-    /bin/echo "ERROR (fsck): After you logout, the system will reboot."
-    /bin/echo
-    PS1="(Repair file system) # "
-    export PS1
-    /sbin/sulogin
-    /bin/umount -a -r
-    /sbin/reboot -f
-fi
-
 /bin/echo "Configuring kernel parameters..."
 /sbin/sysctl -p /etc/sysctl.conf
 
