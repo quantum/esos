@@ -1,3 +1,11 @@
+2013-05-20 19:39  msmith626@gmail.com
+
+	* etc/rc.d/rc.2, misc/linux-3.8.5.config,
+	  tui/menu_actions-system.c: the Linux Ethernet Bonding driver is
+	  now a module and loaded in run-level 2 so the behavior/options
+	  can be changed using modprobe.conf (thanks Tim); fixed TUI issue
+	  with bonding driver
+
 2013-05-14 19:47  msmith626@gmail.com
 
 	* etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.2, etc/rc.d/rc.fsmount,
