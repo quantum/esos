@@ -64,6 +64,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             temp_ini_str[MAX_INI_VAL] = {0};
     __be16 eth_speed = 0;
     boolean question = FALSE;
+    short saved_ifr_flags = 0;
 
     /* Get socket handle */
     sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
@@ -85,16 +86,21 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Get interface flags */
         if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-            errorDialog(main_cdk_screen, "ioctl: SIOCGIFFLAGS", NULL);
+            asprintf(&error_msg, "ioctl(): SIOCGIFFLAGS Error (%s)", ifr.ifr_name);
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
             return;
         }
+        saved_ifr_flags = ifr.ifr_flags;
 
         /* We don't want to include the loopback interface */
-        if (!(ifr.ifr_flags & IFF_LOOPBACK)) {
+        if (!(saved_ifr_flags & IFF_LOOPBACK)) {
 
             /* Get interface hardware address (MAC) */
             if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
-                errorDialog(main_cdk_screen, "ioctl: SIOCGIFHWADDR", NULL);
+                asprintf(&error_msg, "ioctl(): SIOCGIFHWADDR Error (%s)", ifr.ifr_name);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
                 return;
             }
 
@@ -105,39 +111,48 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X",
                         mac_addy[0],mac_addy[1],mac_addy[2],mac_addy[3],mac_addy[4],mac_addy[5]);
 
-                /* Get additional Ethernet interface information */
-                ifr.ifr_data = (caddr_t) &edata;
-                edata.cmd = ETHTOOL_GSET;
-                if (ioctl(sock, SIOCETHTOOL, &ifr) < 0) {
-                    errorDialog(main_cdk_screen, "ioctl: SIOCETHTOOL", NULL);
-                    return;
-                }
-
-                /* Get speed of Ethernet link; we use the returned speed value
-                 * to determine the link status -- probably not the best
-                 * solution long term, but its easy for now */
-                eth_speed = ethtool_cmd_speed(&edata);
-                if (eth_speed == 0 || eth_speed == (__be16)(-1) || eth_speed == (__be32)(-1)) {
-                    asprintf(&net_scroll_msg[j], "<C>%s (%s - No Link)",
-                            net_if_name[j], net_if_mac[j]);
+                if ((saved_ifr_flags & IFF_MASTER) || (saved_ifr_flags & IFF_SLAVE)) {
+                    /* This is a bonding interface (in either master or slave mode) */
+                    asprintf(&net_scroll_msg[j], "<C>%s (%s)", net_if_name[j], net_if_mac[j]);
+                    j++;
+                    
                 } else {
-                    switch (edata.duplex) {
-                        case DUPLEX_HALF:
-                            snprintf(eth_duplex, MISC_STRING_LEN, "Half Duplex");
-                            break;
-                        case DUPLEX_FULL:
-                            snprintf(eth_duplex, MISC_STRING_LEN, "Full Duplex");
-                            break;
-                        default:
-                            snprintf(eth_duplex, MISC_STRING_LEN, "Unknown Duplex");
-                            break;
+                    /* Get additional Ethernet interface information */
+                    ifr.ifr_data = (caddr_t) & edata;
+                    edata.cmd = ETHTOOL_GSET;
+                    if (ioctl(sock, SIOCETHTOOL, &ifr) < 0) {
+                        asprintf(&error_msg, "ioctl(): SIOCETHTOOL Error (%s)", ifr.ifr_name);
+                        errorDialog(main_cdk_screen, error_msg, NULL);
+                        freeChar(error_msg);
+                        return;
                     }
-                    asprintf(&net_if_speed[j], "%u Mb/s", eth_speed);
-                    asprintf(&net_if_duplex[j], "%s", eth_duplex);
-                    asprintf(&net_scroll_msg[j], "<C>%s (%s - %s - %s)",
-                            net_if_name[j], net_if_mac[j], net_if_speed[j], net_if_duplex[j]);
+
+                    /* Get speed of Ethernet link; we use the returned speed value
+                     * to determine the link status -- probably not the best
+                     * solution long term, but its easy for now */
+                    eth_speed = ethtool_cmd_speed(&edata);
+                    if (eth_speed == 0 || eth_speed == (__be16) (-1) || eth_speed == (__be32) (-1)) {
+                        asprintf(&net_scroll_msg[j], "<C>%s (%s - No Link)",
+                                net_if_name[j], net_if_mac[j]);
+                    } else {
+                        switch (edata.duplex) {
+                            case DUPLEX_HALF:
+                                snprintf(eth_duplex, MISC_STRING_LEN, "Half Duplex");
+                                break;
+                            case DUPLEX_FULL:
+                                snprintf(eth_duplex, MISC_STRING_LEN, "Full Duplex");
+                                break;
+                            default:
+                                snprintf(eth_duplex, MISC_STRING_LEN, "Unknown Duplex");
+                                break;
+                        }
+                        asprintf(&net_if_speed[j], "%u Mb/s", eth_speed);
+                        asprintf(&net_if_duplex[j], "%s", eth_duplex);
+                        asprintf(&net_scroll_msg[j], "<C>%s (%s - %s - %s)",
+                                net_if_name[j], net_if_mac[j], net_if_speed[j], net_if_duplex[j]);
+                    }
+                    j++;
                 }
-                j++;
 
             } else if (ifr.ifr_hwaddr.sa_family == ARPHRD_INFINIBAND) {
                 /* For InfiniBand interfaces */

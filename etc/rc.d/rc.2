@@ -18,6 +18,9 @@ for i in ${EARLY_SERVICES}; do
     fi
 done
 
+/bin/echo "Loading the Linux Ethernet Bonding driver..."
+/sbin/modprobe bonding
+
 if [ -x /etc/rc.d/rc.network ]; then
     /etc/rc.d/rc.network start
 fi
