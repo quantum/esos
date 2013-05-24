@@ -105,6 +105,7 @@ extern "C" {
 #define MAX_ZONEINFO_PATH       64
 #define MAX_TZ_FILES            1024
 #define MAX_PD_INFO_LINE_BUFF   4096
+#define MAX_SLAVES_LIST_BUFF    512
 
 /* Character validation */
 #define VALID_NAME_CHAR(c)      ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.')) ? 1 : 0)
@@ -117,6 +118,9 @@ extern "C" {
 #define VALID_ASCII_CHAR_MSG    "Only ASCII characters are valid."
 #define VALID_INIT_CHAR(c)     ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.' || c == ':' || c == '?' || c == '*')) ? 1 : 0)
 #define VALID_INIT_CHAR_MSG    "Only these characters are valid: a-z A-Z 0-9 _ - . : ? *"
+
+/* Linux NIC bonding mode */
+enum bonding_t {NO_BONDING, MASTER, SLAVE};
 
 #ifdef	__cplusplus
 }

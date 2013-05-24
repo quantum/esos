@@ -39,6 +39,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             *broadcast = 0, *iface_mtu = 0;
     CDKRADIO *ip_config = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
+    CDKSELECTION *slave_select = 0;
     WINDOW *net_window = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     dictionary *ini_dict = NULL;
@@ -48,23 +49,30 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     struct ethtool_cmd edata = {0};
     unsigned char* mac_addy = NULL;
     int sock = 0, i = 0, j = 0, net_conf_choice = 0, window_y = 0, window_x = 0,
-            traverse_ret = 0, net_window_lines = 0, net_window_cols = 0;
+            traverse_ret = 0, net_window_lines = 0, net_window_cols = 0,
+            poten_slave_cnt = 0, slaves_line_size = 0, slave_val_size = 0;
     char *net_scroll_msg[MAX_NET_IFACE] = {NULL},
             *net_if_name[MAX_NET_IFACE] = {NULL},
             *net_if_mac[MAX_NET_IFACE] = {NULL},
             *net_if_speed[MAX_NET_IFACE] = {NULL},
             *net_if_duplex[MAX_NET_IFACE] = {NULL}, *net_info_msg[MAX_NET_INFO_LINES] = {NULL},
-            *short_label_msg[NET_SHORT_INFO_LINES] = {NULL};
+            *short_label_msg[NET_SHORT_INFO_LINES] = {NULL},
+            *poten_slaves[MAX_NET_IFACE] = {NULL};
     char *conf_hostname = NULL, *conf_domainname = NULL, *conf_defaultgw = NULL,
             *conf_nameserver1 = NULL, *conf_nameserver2 = NULL,
             *conf_bootproto = NULL, *conf_ipaddr = NULL, *conf_netmask = NULL,
-            *conf_broadcast = NULL, *error_msg = NULL, *conf_if_mtu = NULL;
-    static char *ip_opts[] = {"Disabled", "Static", "DHCP"};
+            *conf_broadcast = NULL, *error_msg = NULL, *conf_if_mtu = NULL,
+            *temp_pstr = NULL, *conf_slaves = NULL, *strtok_result = NULL;
+    static char *ip_opts[] = {"Disabled", "Static", "DHCP"},
+            *choice_char[] = {"[ ] ", "[*] "};
     char eth_duplex[MISC_STRING_LEN] = {0}, temp_str[MISC_STRING_LEN] = {0},
-            temp_ini_str[MAX_INI_VAL] = {0};
+            temp_ini_str[MAX_INI_VAL] = {0},
+            slaves_list_line_buffer[MAX_SLAVES_LIST_BUFF] = {0};
     __be16 eth_speed = 0;
     boolean question = FALSE;
     short saved_ifr_flags = 0;
+    enum bonding_t net_if_bonding[MAX_NET_IFACE] = {0};
+    static char *bonding_map[] = {"None", "Master", "Slave"};
 
     /* Get socket handle */
     sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
@@ -109,50 +117,73 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 mac_addy = (unsigned char*) &ifr.ifr_hwaddr.sa_data;
                 asprintf(&net_if_name[j], "%s", if_name[i].if_name);
                 asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X",
-                        mac_addy[0],mac_addy[1],mac_addy[2],mac_addy[3],mac_addy[4],mac_addy[5]);
+                        mac_addy[0], mac_addy[1], mac_addy[2], mac_addy[3],
+                        mac_addy[4], mac_addy[5]);
 
-                if ((saved_ifr_flags & IFF_MASTER) || (saved_ifr_flags & IFF_SLAVE)) {
-                    /* This is a bonding interface (in either master or slave mode) */
-                    asprintf(&net_scroll_msg[j], "<C>%s (%s)", net_if_name[j], net_if_mac[j]);
+                /* Check for NIC bonding */
+                if (saved_ifr_flags & IFF_MASTER) {
+                    net_if_bonding[j] = MASTER;
+                    snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
+                            bonding_map[net_if_bonding[j]]);
+                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
+                            net_if_name[j], net_if_mac[j],
+                            temp_str);
+                    /* We can continue to the next iteration if its a master */
                     j++;
-                    
+                    i++;
+                    continue;
+                } else if (saved_ifr_flags & IFF_SLAVE) {
+                    net_if_bonding[j] = SLAVE;
+                    asprintf(&poten_slaves[poten_slave_cnt], "%s", net_if_name[j]);
+                    poten_slave_cnt++;
                 } else {
-                    /* Get additional Ethernet interface information */
-                    ifr.ifr_data = (caddr_t) & edata;
-                    edata.cmd = ETHTOOL_GSET;
-                    if (ioctl(sock, SIOCETHTOOL, &ifr) < 0) {
-                        asprintf(&error_msg, "ioctl(): SIOCETHTOOL Error (%s)", ifr.ifr_name);
-                        errorDialog(main_cdk_screen, error_msg, NULL);
-                        freeChar(error_msg);
-                        return;
-                    }
-
-                    /* Get speed of Ethernet link; we use the returned speed value
-                     * to determine the link status -- probably not the best
-                     * solution long term, but its easy for now */
-                    eth_speed = ethtool_cmd_speed(&edata);
-                    if (eth_speed == 0 || eth_speed == (__be16) (-1) || eth_speed == (__be32) (-1)) {
-                        asprintf(&net_scroll_msg[j], "<C>%s (%s - No Link)",
-                                net_if_name[j], net_if_mac[j]);
-                    } else {
-                        switch (edata.duplex) {
-                            case DUPLEX_HALF:
-                                snprintf(eth_duplex, MISC_STRING_LEN, "Half Duplex");
-                                break;
-                            case DUPLEX_FULL:
-                                snprintf(eth_duplex, MISC_STRING_LEN, "Full Duplex");
-                                break;
-                            default:
-                                snprintf(eth_duplex, MISC_STRING_LEN, "Unknown Duplex");
-                                break;
-                        }
-                        asprintf(&net_if_speed[j], "%u Mb/s", eth_speed);
-                        asprintf(&net_if_duplex[j], "%s", eth_duplex);
-                        asprintf(&net_scroll_msg[j], "<C>%s (%s - %s - %s)",
-                                net_if_name[j], net_if_mac[j], net_if_speed[j], net_if_duplex[j]);
-                    }
-                    j++;
+                    net_if_bonding[j] = NO_BONDING;
+                    asprintf(&poten_slaves[poten_slave_cnt], "%s", net_if_name[j]);
+                    poten_slave_cnt++;
                 }
+
+                /* Get additional Ethernet interface information */
+                ifr.ifr_data = (caddr_t) & edata;
+                edata.cmd = ETHTOOL_GSET;
+                if (ioctl(sock, SIOCETHTOOL, &ifr) < 0) {
+                    asprintf(&error_msg, "ioctl(): SIOCETHTOOL Error (%s)", ifr.ifr_name);
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                    return;
+                }
+
+                /* Get speed of Ethernet link; we use the returned speed value
+                 * to determine the link status -- probably not the best
+                 * solution long term, but its easy for now */
+                eth_speed = ethtool_cmd_speed(&edata);
+                if (eth_speed == 0 || eth_speed == (__be16) (-1) || eth_speed == (__be32) (-1)) {
+                    snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
+                            bonding_map[net_if_bonding[j]]);
+                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-26s",
+                            net_if_name[j], net_if_mac[j],
+                            temp_str, "No Link");
+                } else {
+                    switch (edata.duplex) {
+                        case DUPLEX_HALF:
+                            snprintf(eth_duplex, MISC_STRING_LEN, "Half Duplex");
+                            break;
+                        case DUPLEX_FULL:
+                            snprintf(eth_duplex, MISC_STRING_LEN, "Full Duplex");
+                            break;
+                        default:
+                            snprintf(eth_duplex, MISC_STRING_LEN, "Unknown Duplex");
+                            break;
+                    }
+                    asprintf(&net_if_speed[j], "%u Mb/s", eth_speed);
+                    asprintf(&net_if_duplex[j], "%s", eth_duplex);
+                    snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
+                            bonding_map[net_if_bonding[j]]);
+                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-12s%-14s",
+                            net_if_name[j], net_if_mac[j],
+                            temp_str, net_if_speed[j],
+                            net_if_duplex[j]);
+                }
+                j++;
 
             } else if (ifr.ifr_hwaddr.sa_family == ARPHRD_INFINIBAND) {
                 /* For InfiniBand interfaces */
@@ -161,8 +192,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 /* Yes, the link-layer address is 20 bytes, but we'll keep it simple */
                 asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X...",
                         mac_addy[0], mac_addy[1], mac_addy[2], mac_addy[3], mac_addy[4], mac_addy[5]);
-                asprintf(&net_scroll_msg[j], "<C>%s (IPoIB - %s)",
-                            net_if_name[j], net_if_mac[j]);
+                asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
+                            net_if_name[j], net_if_mac[j], "IPoIB");
                 j++;
             }
         }
@@ -173,7 +204,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     if_freenameindex(if_name);
 
     /* Scroll widget for network configuration choices */
-    net_conf_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 15, 60,
+    net_conf_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 15, 76,
             "<C></31/B>Choose a Network Configuration Option\n",
             net_scroll_msg, j, FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!net_conf_list) {
@@ -195,28 +226,28 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         refreshCDKScreen(main_cdk_screen);
     }
 
-    /* Setup a new CDK screen for one of two network dialogs below */
-    net_window_lines = 16;
-    net_window_cols = 70;
-    window_y = ((LINES / 2) - (net_window_lines / 2));
-    window_x = ((COLS / 2) - (net_window_cols / 2));
-    net_window = newwin(net_window_lines, net_window_cols,
-            window_y, window_x);
-    if (net_window == NULL) {
-        errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
-        goto cleanup;
-    }
-    net_screen = initCDKScreen(net_window);
-    if (net_screen == NULL) {
-        errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
-        goto cleanup;
-    }
-    boxWindow(net_window, COLOR_DIALOG_BOX);
-    wbkgd(net_window, COLOR_DIALOG_TEXT);
-    wrefresh(net_window);
-
+    /* Present the 'general network settings' screen of widgets */
     if (net_conf_choice == 0) {
-        /* Present the 'general network settings' screen of widgets */
+        /* Setup a new CDK screen */
+        net_window_lines = 16;
+        net_window_cols = 68;
+        window_y = ((LINES / 2) - (net_window_lines / 2));
+        window_x = ((COLS / 2) - (net_window_cols / 2));
+        net_window = newwin(net_window_lines, net_window_cols,
+                window_y, window_x);
+        if (net_window == NULL) {
+            errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+            goto cleanup;
+        }
+        net_screen = initCDKScreen(net_window);
+        if (net_screen == NULL) {
+            errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+            goto cleanup;
+        }
+        boxWindow(net_window, COLOR_DIALOG_BOX);
+        wbkgd(net_window, COLOR_DIALOG_TEXT);
+        wrefresh(net_window);
+
         asprintf(&net_info_msg[0], "</31/B>General network settings...");
         asprintf(&net_info_msg[1], " ");
 
@@ -450,23 +481,56 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
         }
 
+    /* Present the screen for a specific network interface configuration */
     } else {
-        /* Present the screen for a specific network interface configuration */
+        /* If an interface is enslaved, there is nothing to configure */
+        if (net_if_bonding[net_conf_choice] == SLAVE) {
+            asprintf(&error_msg, "Interface '%s' is currently enslaved to a master",
+                    net_if_name[net_conf_choice]);
+            errorDialog(main_cdk_screen, error_msg,
+                    "bonding interface, so there is nothing to configure.");
+            freeChar(error_msg);
+            goto cleanup;
+        }
+
+        /* Setup a new CDK screen */
+        net_window_lines = 18;
+        net_window_cols = 70;
+        window_y = ((LINES / 2) - (net_window_lines / 2));
+        window_x = ((COLS / 2) - (net_window_cols / 2));
+        net_window = newwin(net_window_lines, net_window_cols,
+                window_y, window_x);
+        if (net_window == NULL) {
+            errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+            goto cleanup;
+        }
+        net_screen = initCDKScreen(net_window);
+        if (net_screen == NULL) {
+            errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+            goto cleanup;
+        }
+        boxWindow(net_window, COLOR_DIALOG_BOX);
+        wbkgd(net_window, COLOR_DIALOG_TEXT);
+        wrefresh(net_window);
+
+        /* Make a nice, informational label */
         asprintf(&net_info_msg[0], "</31/B>Configuring interface %s...",
                 net_if_name[net_conf_choice]);
         asprintf(&net_info_msg[1], " ");
-        asprintf(&net_info_msg[2], "</B>MAC Address:<!B> %s", net_if_mac[net_conf_choice]);
+        asprintf(&net_info_msg[2], "</B>MAC Address:<!B>\t%s", net_if_mac[net_conf_choice]);
         if (net_if_speed[net_conf_choice] == NULL)
-            asprintf(&net_info_msg[3], "</B>Link Status:<!B> None");
+            asprintf(&net_info_msg[3], "</B>Link Status:<!B>\tNone");
         else
-            asprintf(&net_info_msg[3], "</B>Link Status:<!B> %s, %s",
+            asprintf(&net_info_msg[3], "</B>Link Status:<!B>\t%s, %s",
                     net_if_speed[net_conf_choice], net_if_duplex[net_conf_choice]);
+        asprintf(&net_info_msg[4], "</B>Bonding:<!B>\t%s",
+                bonding_map[net_if_bonding[net_conf_choice]]);
 
         /* Read network configuration file (INI file) */
         ini_dict = iniparser_load(NETWORK_CONF);
         if (ini_dict == NULL) {
             errorDialog(main_cdk_screen, "Cannot parse network configuration file!", NULL);
-            return;
+            goto cleanup;
         }
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:bootproto", net_if_name[net_conf_choice]);
         conf_bootproto = iniparser_getstring(ini_dict, temp_ini_str, "");
@@ -476,6 +540,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         conf_netmask = iniparser_getstring(ini_dict, temp_ini_str, "");
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast", net_if_name[net_conf_choice]);
         conf_broadcast = iniparser_getstring(ini_dict, temp_ini_str, "");
+        snprintf(temp_ini_str, MAX_INI_VAL, "%s:slaves", net_if_name[net_conf_choice]);
+        conf_slaves = iniparser_getstring(ini_dict, temp_ini_str, "");
 
         /* If value doesn't exist, use a default MTU based on the interface type */
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name[net_conf_choice]);
@@ -483,12 +549,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_ETH_MTU);
         else if (strstr(net_if_name[net_conf_choice], "ib") != NULL)
             conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_IB_MTU);
+        else if (strstr(net_if_name[net_conf_choice], "bond") != NULL)
+            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_ETH_MTU);
         else
             conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, "");
 
         /* Information label */
         net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
-                net_info_msg, 4, FALSE, FALSE);
+                net_info_msg, 5, FALSE, FALSE);
         if (!net_label) {
             errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
             goto cleanup;
@@ -496,7 +564,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKLabelBackgroundAttrib(net_label, COLOR_DIALOG_TEXT);
 
         /* IP settings radio */
-        ip_config = newCDKRadio(net_screen, (window_x + 1), (window_y + 6),
+        ip_config = newCDKRadio(net_screen, (window_x + 1), (window_y + 7),
                 NONE, 5, 10, "</B>IP Settings:", ip_opts, 3,
                 '#' | COLOR_DIALOG_SELECT, 1,
                 COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -514,7 +582,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
         /* A very small label for instructions */
         asprintf(&short_label_msg[0], "</B>Static IP Settings (leave blank if using DHCP)");
-        short_label = newCDKLabel(net_screen, (window_x + 20), (window_y + 6),
+        short_label = newCDKLabel(net_screen, (window_x + 20), (window_y + 7),
                 short_label_msg, NET_SHORT_INFO_LINES, FALSE, FALSE);
         if (!short_label) {
             errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
@@ -523,7 +591,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKLabelBackgroundAttrib(short_label, COLOR_DIALOG_TEXT);
         
         /* IP address field */
-        ip_addy = newCDKEntry(net_screen, (window_x + 20), (window_y + 7),
+        ip_addy = newCDKEntry(net_screen, (window_x + 20), (window_y + 8),
                 NULL, "</B>IP address: ",
                 COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                 MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
@@ -535,7 +603,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKEntryValue(ip_addy, conf_ipaddr);
 
         /* Netmask field */
-        netmask = newCDKEntry(net_screen, (window_x + 20), (window_y + 8),
+        netmask = newCDKEntry(net_screen, (window_x + 20), (window_y + 9),
                 NULL, "</B>Netmask:    ",
                 COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                 MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
@@ -547,7 +615,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKEntryValue(netmask, conf_netmask);
 
         /* Broadcast field */
-        broadcast = newCDKEntry(net_screen, (window_x + 20), (window_y + 9),
+        broadcast = newCDKEntry(net_screen, (window_x + 20), (window_y + 10),
                 NULL, "</B>Broadcast:  ",
                 COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                 MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
@@ -559,7 +627,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKEntryValue(broadcast, conf_broadcast);
 
         /* Interface MTU field */
-        iface_mtu = newCDKEntry(net_screen, (window_x + 1), (window_y + 11),
+        iface_mtu = newCDKEntry(net_screen, (window_x + 1), (window_y + 12),
                 NULL, "</B>Interface MTU:  ",
                 COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
                 12, 0, 12, FALSE, FALSE);
@@ -570,15 +638,36 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKEntryBoxAttribute(iface_mtu, COLOR_DIALOG_INPUT);
         setCDKEntryValue(iface_mtu, conf_if_mtu);
 
+        /* If the interface is a master (bonding) then they can select slaves */
+        if (net_if_bonding[net_conf_choice] == MASTER) {
+            slave_select = newCDKSelection(net_screen, (window_x + 35), (window_y + 12),
+                    RIGHT, 3, 20, "</B>Bonding Slaves:", poten_slaves, poten_slave_cnt,
+                    choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
+            if (!slave_select) {
+                errorDialog(main_cdk_screen, "Couldn't create selection widget!", NULL);
+                goto cleanup;
+            }
+            setCDKSelectionBackgroundAttrib(slave_select, COLOR_DIALOG_TEXT);
+            /* Parse the existing slaves (if any) */
+            strtok_result = strtok(conf_slaves, ",");
+            while (strtok_result != NULL) {
+                for (i = 0; i < poten_slave_cnt; i++) {
+                    if (strstr(strStrip(strtok_result), poten_slaves[i]))
+                        setCDKSelectionChoice(slave_select, i, 1);
+                }
+                strtok_result = strtok(NULL, ",");
+            }
+        }
+
         /* Buttons */
-        ok_button = newCDKButton(net_screen, (window_x + 26), (window_y + 14),
+        ok_button = newCDKButton(net_screen, (window_x + 26), (window_y + 16),
                 "</B>   OK   ", ok_cb, FALSE, FALSE);
         if (!ok_button) {
             errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
             goto cleanup;
         }
         setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-        cancel_button = newCDKButton(net_screen, (window_x + 36), (window_y + 14),
+        cancel_button = newCDKButton(net_screen, (window_x + 36), (window_y + 16),
                 "</B> Cancel ", cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
@@ -644,16 +733,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 /* If the user sets the interface to disabled/unconfigured
                  * then we remove the section */
                 iniparser_unset(ini_dict, net_if_name[net_conf_choice]);
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:bootproto", net_if_name[net_conf_choice]);
-                iniparser_unset(ini_dict, temp_ini_str);
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:ipaddr", net_if_name[net_conf_choice]);
-                iniparser_unset(ini_dict, temp_ini_str);
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:netmask", net_if_name[net_conf_choice]);
-                iniparser_unset(ini_dict, temp_ini_str);
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast", net_if_name[net_conf_choice]);
-                iniparser_unset(ini_dict, temp_ini_str);
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name[net_conf_choice]);
-                iniparser_unset(ini_dict, temp_ini_str);
+
             } else {
                 /* Network interface should be configured (static or DHCP) */
                 if (iniparser_set(ini_dict, net_if_name[net_conf_choice], NULL) == -1) {
@@ -686,6 +766,41 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                     goto cleanup;
                 }
             }
+
+            if (net_if_bonding[net_conf_choice] == MASTER) {
+                /* For master interfaces, we need to check if any slave
+                 * interfaces were selected (or removed) */
+                for (i = 0; i < poten_slave_cnt; i++) {
+                    if (slave_select->selections[i] == 1) {
+                        if (i == (poten_slave_cnt - 1))
+                            asprintf(&temp_pstr, "%s", poten_slaves[i]);
+                        else
+                            asprintf(&temp_pstr, "%s,", poten_slaves[i]);
+                        /* We add one extra for the null byte */
+                        slave_val_size = strlen(temp_pstr) + 1;
+                        slaves_line_size = slaves_line_size + slave_val_size;
+                        // TODO: This totes needs to be tested (strcat)
+                        if (slaves_line_size >= MAX_SLAVES_LIST_BUFF) {
+                            errorDialog(main_cdk_screen,
+                                    "The maximum slaves list line buffer size has been reached!",
+                                    NULL);
+                            freeChar(temp_pstr);
+                            goto cleanup;
+                        } else {
+                            strcat(slaves_list_line_buffer, temp_pstr);
+                            freeChar(temp_pstr);
+                        }
+                        /* Remove to slave interface sections from the INI file */
+                        iniparser_unset(ini_dict, poten_slaves[i]);
+                    }
+                }
+                snprintf(temp_ini_str, MAX_INI_VAL, "%s:slaves", net_if_name[net_conf_choice]);
+                if (iniparser_set(ini_dict, temp_ini_str, slaves_list_line_buffer) == -1) {
+                    errorDialog(main_cdk_screen, "Couldn't set configuration file value!", NULL);
+                    goto cleanup;
+                }
+            }
+
             /* Write to network config. file */
             ini_file = fopen(NETWORK_CONF, "w");
             if (ini_file == NULL) {
@@ -709,6 +824,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         freeChar(net_if_mac[i]);
         freeChar(net_if_speed[i]);
         freeChar(net_if_duplex[i]);
+        freeChar(poten_slaves[i]);
     }
     if (net_screen != NULL) {
         destroyCDKScreenObjects(net_screen);
