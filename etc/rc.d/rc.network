@@ -19,6 +19,7 @@ my $ifconfig_prog = "/sbin/ifconfig";
 my $route_prog = "/sbin/route";
 my $hostname_prog = "/bin/hostname";
 my $ip_prog = "/bin/ip";
+my $ifenslave_prog = "/sbin/ifenslave";
 my $net_if_dir = "/sys/class/net";
 my $section;
 my @sections;
@@ -61,7 +62,7 @@ if ($ARGV[0] eq "start") {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
-        if (($iface =~ "eth") || ($iface =~ "ib")) {
+        if (($iface =~ /eth[0-9]/) || ($iface =~ /ib[0-9]/) || ($iface =~ /bond[0-9]/)) {
             print("Bringing up interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " up 2>&1");
             if ($? == -1) {
@@ -78,7 +79,33 @@ if ($ARGV[0] eq "start") {
 
     # Configure the network interfaces
     foreach my $each (@sections) {
-        if (($each =~ "eth") || ($each =~ "ib")) {
+        if ($each =~ "bond") {
+            if (!exists($ini_hash{$each . ":slaves"})) {
+                print("ERROR: The 'slaves' name is missing!\n");
+                next;
+            }
+            my $slaves = $ini_hash{$each . ":slaves"};
+            if ($slaves eq "") {
+                print("ERROR: The 'slaves' value is empty!\n");
+                next;
+            }
+            # Add the slaves to the master bonding interface
+            my @slave_vals = split(',', $slaves);
+            foreach my $each_slave (@slave_vals) {
+                print("Enslaving device $each_slave to interface $each...\n");
+                system($ifenslave_prog . " " . $each . " " . $each_slave . " 2>&1");
+                if ($? == -1) {
+                    print("ERROR: Running $ifenslave_prog failed: $!\n");
+                    next;
+                }
+                my $exit_status = $? >> 8;
+                if ($exit_status != 0) {
+                    print("ERROR: The $ifenslave_prog program exited with value $exit_status.\n");
+                    next;
+                }
+            }
+        }
+        if (($each =~ "eth") || ($each =~ "ib") || ($each =~ "bond")) {
             my $hash_key = $each . ":bootproto";
             if (exists($ini_hash{$hash_key})) {
                 if (lc($ini_hash{$hash_key}) eq "dhcp") {
@@ -284,7 +311,24 @@ if ($ARGV[0] eq "start") {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
-        if (($iface =~ "eth") || ($iface =~ "ib")) {
+        if ($iface =~ /bond[0-9]/) {
+            my @raw_bond_slaves = glob($net_if_dir . "/" . $iface . "/slave_*");
+            foreach my $raw_slave_iface (@raw_bond_slaves) {
+                my $slave_iface = (split('slave_', $raw_slave_iface))[-1];
+                print("Removing interface $slave_iface from $iface...\n");
+                system($ifenslave_prog . " -d " . $iface . " " . $slave_iface . " 2>&1");
+                if ($? == -1) {
+                    print("ERROR: Running $ifenslave_prog failed: $!\n");
+                    next;
+                }
+                my $exit_status = $? >> 8;
+                if ($exit_status != 0) {
+                    print("ERROR: The $ifenslave_prog program exited with value $exit_status.\n");
+                    next;
+                }
+            }
+        }
+        if (($iface =~ /eth[0-9]/) || ($iface =~ /ib[0-9]/) || ($iface =~ /bond[0-9]/)) {
             print("Bringing down interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " 0.0.0.0 down 2>&1");
             if ($? == -1) {

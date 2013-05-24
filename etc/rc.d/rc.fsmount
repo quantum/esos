@@ -12,6 +12,7 @@ fi
 
 start() {
     # Check file systems for any possible errors
+    /bin/echo "Checking all file systems..."
     /usr/sbin/fsck -A -M -T -p
     if [ $? -gt 1 ]; then
         /bin/echo "ERROR (fsck): Your file system appears to be severely damaged."
