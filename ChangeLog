@@ -1,3 +1,11 @@
+2013-05-24 21:26  msmith626@gmail.com
+
+	* etc/modprobe.conf, etc/rc.d/rc.fsmount, etc/rc.d/rc.network,
+	  tui/dialogs.h, tui/menu_actions-system.c: updated modprobe.conf
+	  to use two bonding interfaces by default; updated TUI system
+	  network dialog for inital bonding support; updated rc.network for
+	  bonding support -- needs further testing
+
 2013-05-20 19:39  msmith626@gmail.com
 
 	* etc/rc.d/rc.2, misc/linux-3.8.5.config,
