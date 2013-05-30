@@ -1,3 +1,8 @@
+2013-05-30 20:58  msmith626@gmail.com
+
+	* misc/linux-3.8.5.config: enabled support for Micron PCIe SSDs
+	  (CONFIG_BLK_DEV_PCIESSD_MTIP32XX)
+
 2013-05-24 21:26  msmith626@gmail.com
 
 	* etc/modprobe.conf, etc/rc.d/rc.fsmount, etc/rc.d/rc.network,
