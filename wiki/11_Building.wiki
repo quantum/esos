@@ -30,7 +30,7 @@ Using _Fedora 16 Desktop Edition x86_64_ as your build host:
 Using _Ubuntu 12.04.2 LTS x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * apt-get install build-essential
-  * apt-get install subversion autoconf gawk flex bison gcc-multilib unzip libtinfo-dev libtool lsscsi kpartx libxslt1-dev groff
+  * apt-get install subversion autoconf gawk flex bison gcc-multilib unzip libtinfo-dev libtool lsscsi kpartx libxslt1-dev groff gettext
 
 Using _SUSE Linux Enterprise Desktop 11.4 x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
