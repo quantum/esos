@@ -44,6 +44,9 @@ fi
 /bin/echo "Loading the QLogic Fibre Channel HBA module..."
 /sbin/modprobe qla2xxx
 
+/bin/echo "Starting irqbalance..."
+/usr/sbin/irqbalance
+
 # Start the LATE user settable services
 for i in ${LATE_SERVICES}; do
     if check_enabled "${i}"; then
