@@ -1,3 +1,13 @@
+2013-06-04 20:21  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
+	  misc/glibc-2.12.2.patch: added the irqbalance package; revamped
+	  fetch/checksum to now check checksums on downloaded files only
+	  once -- if a checksum fails, we simply delete the file; major
+	  overhaul on build system, we now use a spec file to disable all
+	  default system library locations and global gcc/g++ variables
+	  that disable built-in include search paths (we only use our own)
+
 2013-05-30 20:58  msmith626@gmail.com
 
 	* misc/linux-3.8.5.config: enabled support for Micron PCIe SSDs
