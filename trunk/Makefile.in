@@ -147,24 +147,28 @@ src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.xz,,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles))))))
 
-# The 'fake_lib' directory deserves a little explanation; after glibc
-# is built, we put modified ld scripts (eg, libc.so) in this location,
-# this way our new libraries are found/used during link
-export LDFLAGS = -L$(WORK_DIR)/fake_lib -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib
-#export LDFLAGS = -L$(WORK_DIR)/fake_lib -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib -Wl,-rpath-link,$(IMAGE_DIR)/lib -Wl,-rpath-link,$(IMAGE_DIR)/usr/lib
-export CPPFLAGS = -I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/include
+# We now modify ld scripts (eg, libc.so) in place and fix them after installing
+export LDFLAGS	= -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib \
+		-Wl,-rpath-link,$(IMAGE_DIR)/lib -Wl,-rpath-link,$(IMAGE_DIR)/usr/lib
+export CPPFLAGS	= -idirafter $(IMAGE_DIR)/usr/include -idirafter $(WORK_DIR)/kernel_headers/include
 
 # We use a GCC spec file to override the default library search path; the
 # GCC spec file is created by the 'glibc' target
 spec_file	= $(WORK_DIR)/esos_build.spec
 cc_base		= gcc -specs=$(spec_file) -nostdinc \
-		-I$(dir $(shell gcc -print-libgcc-file-name))include
+		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include \
+		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include-fixed
 esos_cc		= $(cc_base) $(CPPFLAGS)
 cxx_base	= g++ -specs=$(spec_file) -nostdinc \
-		-I$(dir $(shell g++ -print-libgcc-file-name))include
+		-idirafter $(dir $(shell g++ -print-libgcc-file-name))include \
+		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include-fixed
 esos_cxx	= $(cxx_base) $(CPPFLAGS) \
-		-I$(wildcard $(IMAGE_DIR)/usr/include/c++/*) \
-		-I$(wildcard $(IMAGE_DIR)/usr/include/c++/*/x86_64-unknown-linux-gnu)
+		-idirafter $(wildcard $(IMAGE_DIR)/usr/include/c++/*) \
+		-idirafter $(wildcard $(IMAGE_DIR)/usr/include/c++/*/x86_64-unknown-linux-gnu)
+
+define clean_la_files
+	$(FIND) $(IMAGE_DIR)/usr/lib -type f -iname *.la -exec $(RM) {} \;
+endef
 
 
 # all - The default goal; complete every target except install.
@@ -246,6 +250,8 @@ image: $(build_targets)
 	$(CHOWN) 101:101 $(MOUNT_DIR)/var/run/crm
 	$(FIND) $(MOUNT_DIR)/etc -path $(MOUNT_DIR)/etc/rc.d -prune -o -print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
 	$(FIND) $(MOUNT_DIR)/var/lib -print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
+	$(SED) -i 's/ $(subst /,\/,$(IMAGE_DIR))\// \//g' $(MOUNT_DIR)/usr/lib/libc.so
+	$(SED) -i 's/ $(subst /,\/,$(IMAGE_DIR))\// \//g' $(MOUNT_DIR)/usr/lib/libpthread.so
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
@@ -271,7 +277,6 @@ pkg_dist: $(img_file)
 clean: $(clean_targets)
 	$(RM) $(INITRAMFS_DIR)
 	$(RM) $(IMAGE_DIR)
-	$(RM) $(WORK_DIR)/fake_lib
 	$(RM) $(CWD)/dist_*.txt
 	$(RM) $(CWD)/esos-*.tar.xz
 	$(RM) $(CWD)/esos-*.img
@@ -457,13 +462,13 @@ grub: glibc LVM2
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(IMAGE_DIR)/usr/sbin/grub-install > $(WORK_DIR)/grub-install
 	$(CHMOD) +x $(WORK_DIR)/grub-install
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' $(src_dir)/grub-mkconfig_lib > $(WORK_DIR)/grub-mkconfig_lib
-	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/sbin/grub-bios-setup \"\044\0100\"\n" > $(WORK_DIR)/grub-bios-setup
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/sbin/grub-bios-setup \"\044\0100\"\n" > $(WORK_DIR)/grub-bios-setup
 	$(CHMOD) +x $(WORK_DIR)/grub-bios-setup
-	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/grub-mkimage \"\044\0100\"\n" > $(WORK_DIR)/grub-mkimage
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/grub-mkimage \"\044\0100\"\n" > $(WORK_DIR)/grub-mkimage
 	$(CHMOD) +x $(WORK_DIR)/grub-mkimage
-	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/grub-mkrelpath \"\044\0100\"\n" > $(WORK_DIR)/grub-mkrelpath
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/grub-mkrelpath \"\044\0100\"\n" > $(WORK_DIR)/grub-mkrelpath
 	$(CHMOD) +x $(WORK_DIR)/grub-mkrelpath
-	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/sbin/grub-probe \"\044\0100\"\n" > $(WORK_DIR)/grub-probe
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/sbin/grub-probe \"\044\0100\"\n" > $(WORK_DIR)/grub-probe
 	$(CHMOD) +x $(WORK_DIR)/grub-probe
 	$(TOUCH) $(@)
 
@@ -475,11 +480,10 @@ glibc: kernel_headers
 	CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" LDFLAGS="" $(src_dir)/configure --prefix=/usr --without-selinux
 	$(MAKE) --jobs=4 --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
-	$(MKDIR) $(WORK_DIR)/fake_lib
-	$(SED) 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libc.so > $(WORK_DIR)/fake_lib/libc.so
-	$(SED) 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libpthread.so > $(WORK_DIR)/fake_lib/libpthread.so
+	$(SED) -i 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libc.so
+	$(SED) -i 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libpthread.so
 	$(RM) $(IMAGE_DIR)/etc/localtime
-	$(ECHO) -e "*link_libgcc:\n-L$(WORK_DIR)/fake_lib -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib -L$(dir $(shell gcc -print-libgcc-file-name))\n" > $(spec_file)
+	$(ECHO) -en "*link_libgcc:\n-L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib -L$(dir $(shell gcc -print-libgcc-file-name)) -rpath-link $(IMAGE_DIR)/lib -rpath-link $(IMAGE_DIR)/usr/lib\n" > $(spec_file)
 	$(TOUCH) $(@)
 
 perl: glibc
@@ -505,7 +509,7 @@ scstadmin: perl
 	$(TOUCH) $(@)
 
 openssh: glibc zlib openssl
-	cd $(src_dir) && LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
+	cd $(src_dir) && LD_LIBRARY_PATH=/lib64:/lib/x86_64-linux-gnu:/usr/lib64:/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
 	./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check --sysconfdir=/etc/ssh
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-files
@@ -531,7 +535,8 @@ gcc: glibc
 	$(TOUCH) $(@)
 
 openssl: glibc
-	cd $(src_dir) && ./config shared --prefix=/usr $(CPPFLAGS) $(LDFLAGS)
+	cd $(src_dir) && ./config shared --prefix=/usr \
+	-I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/include $(LDFLAGS)
 	$(SED) -i '/LD_LIBRARY_PATH/d' $(src_dir)/Makefile.shared
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) INSTALL_PREFIX=$(IMAGE_DIR) install_sw
@@ -553,9 +558,9 @@ ncurses: glibc gcc
 
 e2fsprogs: glibc
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
-	cd $(WORK_DIR)/e2fsprogs-build && $(src_dir)/configure --prefix=/usr \
-	--enable-elf-shlibs --sysconfdir=/etc
-	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build CC="$(esos_cc)"
+	cd $(WORK_DIR)/e2fsprogs-build && LIBS="-lpthread" $(src_dir)/configure --prefix=/usr \
+	--enable-elf-shlibs --sysconfdir=/etc --enable-verbose-makecmds
+	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build CC="$(esos_cc)" LD="$(cc_base)"
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-libs
 	$(TOUCH) $(@)
@@ -616,7 +621,7 @@ kexec-tools: glibc
 	$(TOUCH) $(@)
 
 iniparser: glibc
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" CFLAGS="-O2 -fPIC -Wall"
 	$(INSTALL) -m 0644 $(src_dir)/libiniparser.a $(IMAGE_DIR)/usr/lib/
 	$(INSTALL) -m 0755 $(src_dir)/libiniparser.so.0 $(IMAGE_DIR)/usr/lib/
 	$(INSTALL) -m 0644 $(src_dir)/src/iniparser.h $(IMAGE_DIR)/usr/include/
@@ -634,8 +639,8 @@ cdk: glibc ncurses
 LVM2: glibc corosync dlm
 	cd $(src_dir) && COROSYNC_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
 	COROSYNC_LIBS="$(LDFLAGS)" QUORUM_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
-        QUORUM_LIBS="$(LDFLAGS) -lquorum" CPG_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
-        CPG_LIBS="$(LDFLAGS) -lcpg" CMAP_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+        QUORUM_LIBS="$(LDFLAGS) -lquorum -lrt" CPG_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+        CPG_LIBS="$(LDFLAGS) -lcpg -lrt -lpthread" CMAP_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
         CMAP_LIBS="$(LDFLAGS) -lcmap" DLM_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
         DLM_LIBS="$(LDFLAGS) -ldlm -lpthread" ./configure --with-lvm1=none --disable-selinux --prefix=/usr \
 	--with-clvmd=corosync --with-cluster=internal --enable-ocf --enable-cmirrord --disable-readline
@@ -691,6 +696,7 @@ libqb: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync libxslt glue Python
@@ -708,12 +714,12 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	cmap_LIBS="$(LDFLAGS) -lcmap" quorum_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
 	quorum_LIBS="$(LDFLAGS) -lquorum" PYTHON="$(WORK_DIR)/python" \
 	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
-	CPPFLAGS="-I$(IMAGE_DIR)/usr/include" LDFLAGS="-L$(IMAGE_DIR)/usr/lib" \
+	CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 	./configure --prefix=/usr --disable-upstart --disable-systemd \
 	--without-heartbeat --without-snmp --without-esmtp \
 	--disable-fatal-warnings --disable-ansi --disable-silent-rules \
 	--sysconfdir=/etc --localstatedir=/var --with-python
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" CCLD="$(cc_base)"
 	$(MAKE) --directory=$(src_dir)/replace DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/lib DESTDIR=$(IMAGE_DIR) install
@@ -728,6 +734,7 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	$(MAKE) --directory=$(src_dir)/cts DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/extra DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 corosync: glibc libqb nss
@@ -746,15 +753,12 @@ corosync: glibc libqb nss
 	$(MAKE) --directory=$(src_dir)/pkgconfig DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/qdevices DESTDIR=$(IMAGE_DIR) install
-	$(RM) $(IMAGE_DIR)/usr/lib/libcpg.la
-	$(RM) $(IMAGE_DIR)/usr/lib/libcfg.la
-	$(RM) $(IMAGE_DIR)/usr/lib/libcmap.la
-	$(RM) $(IMAGE_DIR)/usr/lib/libquorum.la
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 nss: glibc zlib
 	$(MAKE) --directory=$(src_dir)/mozilla/security/nss BUILD_OPT=1 USE_64=1 USE_SYSTEM_ZLIB=1 \
-	ZLIB_LIBS="-lz -L$(IMAGE_DIR)/usr/lib" \
+	ZLIB_LIBS="-lz" OS_LIBS="-lpthread -ldl -lc -lrt -lz" \
 	CC="$(cc_base) -I$(src_dir)/mozilla/security/nss/lib/zlib -I$(src_dir)/mozilla/security/nss/lib/nss $(CPPFLAGS)" \
 	DSO_CFLAGS="-fPIC -std=gnu99" nss_build_all
 	$(INSTALL) -v -m755 $(src_dir)/mozilla/dist/Linux*/lib/*.so $(IMAGE_DIR)/usr/lib
@@ -785,7 +789,7 @@ libxslt: glibc libxml2
 	--with-libxml-libs-prefix="$(IMAGE_DIR)/usr/lib" --without-python
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(RM) $(IMAGE_DIR)/usr/lib/libxslt.la
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 libtool: glibc
@@ -803,12 +807,13 @@ bzip2: glibc
 	$(TOUCH) $(@)
 
 Python: glibc bzip2 readline
-	cd $(src_dir) && ./configure --prefix=/usr --enable-shared
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
-	$(MAKE) --directory=$(src_dir) \
-	RUNSHARED="LD_LIBRARY_PATH=/lib64:/usr/lib64:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib" \
+	cd $(src_dir) && LDFLAGS="$(LDFLAGS)" \
+	CPPFLAGS="-I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/include" \
+	./configure --prefix=/usr --enable-shared
+	$(MAKE) --directory=$(src_dir) CC="$(cc_base)" CXX="$(cxx_base)"
+	$(MAKE) --directory=$(src_dir) CC="$(cc_base)" CXX="$(cxx_base)" \
 	DESTDIR=$(IMAGE_DIR) install
-	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(WORK_DIR)/fake_lib:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/python \"\044\0100\"\n" > $(WORK_DIR)/python
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 --library-path \"$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" $(IMAGE_DIR)/usr/bin/python \"\044\0100\"\n" > $(WORK_DIR)/python
 	$(CHMOD) +x $(WORK_DIR)/python
 	$(TOUCH) $(@)
 
@@ -847,13 +852,12 @@ glue: glibc libaio libxml2 bzip2 curl
 	$(MAKE) --directory=$(src_dir)/hb_report DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/config DESTDIR=$(IMAGE_DIR) install
-	$(RM) $(IMAGE_DIR)/usr/lib/libpils.la
-	$(RM) $(IMAGE_DIR)/usr/lib/libplumb.la
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 readline: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" SHOBJ_CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -898,6 +902,7 @@ lzo: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 mhash: glibc
@@ -908,7 +913,7 @@ mhash: glibc
 
 lessfs: glibc mhash openssl lzo fuse db tokyocabinet snappy
 	cd $(src_dir) && DEPS_CFLAGS="$(CPPFLAGS)" \
-	DEPS_LIBS="$(LDFLAGS) -ltokyocabinet -lfuse -lbz2 -lssl -lcrypto" \
+	DEPS_LIBS="$(LDFLAGS) -ltokyocabinet -lfuse -lbz2 -lssl -lcrypto -lpthread" \
         ./configure --prefix=/usr \
 	--with-crypto --with-lzo --with-snappy --without-hamsterdb --with-berkeleydb
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
@@ -944,6 +949,7 @@ snappy: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 fence_agents: glibc nss pexpect pycurl Net-Telnet python-suds
@@ -964,7 +970,7 @@ pexpect: Python
 
 pycurl: Python curl
 	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/pycurl-7.19.0.patch
-	cd $(src_dir) && $(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr \
+	cd $(src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr \
 	--curl-config=$(IMAGE_DIR)/usr/bin/curl-config
 	$(TOUCH) $(@)
 
@@ -983,7 +989,8 @@ Net-Telnet: perl
 	$(TOUCH) $(@)
 
 python-suds: Python setuptools
-	cd $(src_dir) && LD_LIBRARY_PATH=$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
+	cd $(src_dir) && \
+	LD_LIBRARY_PATH=/lib:/usr/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
 	$(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
@@ -1024,12 +1031,15 @@ open-fcoe: glibc open-lldp libpciaccess
 	cd $(src_dir)/fcoe-utils && HBAAPI_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
         HBAAPI_LIBS="$(LDFLAGS) -lHBAAPI -ldl" LLDPAD_CFLAGS="-I$(IMAGE_DIR)/usr/include/lldpad" \
 	LLDPAD_LIBS="$(LDFLAGS) -llldp_clif" LIBHBALINUX_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
-	LIBHBALINUX_LIBS="$(LDFLAGS) -lhbalinux" ./configure --prefix=/usr --sysconfdir=/etc
-	$(MAKE) --directory=$(src_dir)/fcoe-utils CC="$(esos_cc)"
+	LIBHBALINUX_LIBS="$(LDFLAGS) -lhbalinux" \
+	./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(src_dir)/fcoe-utils CC="$(esos_cc)" \
+	LIBS="-lHBAAPI -ldl -lhbalinux -lrt"
 	$(MAKE) --directory=$(src_dir)/fcoe-utils DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/fcoe-utils DESTDIR=$(IMAGE_DIR) install-man
 	$(INSTALL) $(src_dir)/fcoe-utils/contrib/*.sh $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) $(src_dir)/fcoe-utils/debug/*.sh $(IMAGE_DIR)/usr/sbin/
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 open-lldp: glibc libconfig libnl
@@ -1100,7 +1110,7 @@ sysklogd: glibc
 	$(TOUCH) $(@)
 
 less: glibc
-	cd $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
