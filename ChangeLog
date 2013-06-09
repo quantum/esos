@@ -1,3 +1,8 @@
+2013-06-09 22:07  msmith626@gmail.com
+
+	* Makefile.in: more updates to Makefile build setup, too many to
+	  list -- should (mostly) fix building on non-RHEL-like distros
+
 2013-06-04 20:21  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
