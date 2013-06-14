@@ -5,10 +5,15 @@ echo -e "\033]0;`hostname` - Enterprise Storage OS\007"
 
 # A few settings (include the "real" profile)
 ulimit -n 10240
+ulimit -c unlimited
 source /etc/bashrc
 
 # Run the TUI binary and if it doesn't exit cleanly, fall through to the shell
 /usr/local/bin/esos_tui
-if [ $? -eq 0 ]; then
+tui_exit=${?}
+if [ ${tui_exit} -eq 0 ]; then
     exit 0
+else
+    clear
+    echo "Something broke; the TUI exited with ${tui_exit}."
 fi
