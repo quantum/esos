@@ -1,0 +1,14 @@
+--- a/setup.py	2013-06-14 09:34:50.330076551 -0400
++++ b/setup.py	2013-06-14 10:02:08.751921349 -0400
+@@ -278,6 +278,11 @@
+                           (ext.name, sys.exc_info()[1]))
+             self.failed.append(ext.name)
+             return
++
++        # Don't check imports
++        self.announce('WARNING: skipping import check for "%s" (ESOS patch)' % ext.name)
++        return
++
+         # Workaround for Mac OS X: The Carbon-based modules cannot be
+         # reliably imported into a command-line Python
+         if 'Carbon' in ext.extra_link_args:

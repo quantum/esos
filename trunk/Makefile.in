@@ -305,7 +305,6 @@ fetch: $(distfiles) ;
 
 $(distfiles):
 	$(WGET) -P $(DISTFILES_DIR) $(distfiles_repo)/$(notdir $(@))
-	$(QUIET) $(ECHO)
 	$(QUIET) cd $(DISTFILES_DIR) && if ! $(GREP) $(notdir $(@)) $(CWD)/CHECKSUM.MD5 | $(MD5SUM) -c -; then \
 	  $(RM) $(@); \
 	  exit 1; \
@@ -314,6 +313,7 @@ $(distfiles):
 	  $(RM) $(@); \
 	  exit 1; \
 	fi
+	$(QUIET) $(ECHO)
 
 
 # extract - Extract all of the previously downloaded packages/archives.
@@ -455,7 +455,7 @@ sysvinit: glibc
 	$(TOUCH) $(@)
 
 grub: glibc LVM2
-	cd $(src_dir) && ./configure --prefix=/usr --disable-grub-mkfont --enable-device-mapper
+	cd $(src_dir) && ./configure --prefix=/usr --disable-grub-mkfont --enable-device-mapper --disable-werror
 	$(MAKE) --directory=$(src_dir) CC="$(cc_base)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/grub-core DESTDIR=$(IMAGE_DIR) install-platformDATA
@@ -551,7 +551,7 @@ zlib: glibc
 ncurses: glibc gcc
 	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/ncurses-5.7.patch
 	cd $(src_dir) && ./configure --prefix=/usr --with-shared \
-	--without-gpm --mandir=/usr/share/man
+	--without-gpm --mandir=/usr/share/man --with-termlib
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" CXX="$(esos_cxx)" CXXLIBS="-lstdc++"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
@@ -807,6 +807,7 @@ bzip2: glibc
 	$(TOUCH) $(@)
 
 Python: glibc bzip2 readline
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/Python-2.7.3.patch
 	cd $(src_dir) && LDFLAGS="$(LDFLAGS)" \
 	CPPFLAGS="-I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/include" \
 	./configure --prefix=/usr --enable-shared
@@ -975,7 +976,8 @@ pycurl: Python curl
 	$(TOUCH) $(@)
 
 curl: glibc
-	cd $(src_dir) && ./configure --prefix=/usr --disable-static --without-libssh2 --without-libidn
+	cd $(src_dir) && LD_LIBRARY_PATH=$(IMAGE_DIR)/usr/lib: ./configure --prefix=/usr \
+	--disable-static --without-libssh2 --without-libidn
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
@@ -990,7 +992,7 @@ Net-Telnet: perl
 
 python-suds: Python setuptools
 	cd $(src_dir) && \
-	LD_LIBRARY_PATH=/lib:/usr/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
+	LD_LIBRARY_PATH=/lib:/usr/lib:/lib64:/usr/lib64:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
 	$(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
@@ -1011,6 +1013,7 @@ bash: glibc ncurses
 
 open-fcoe: glibc open-lldp libpciaccess
 	$(QUIET) if [ ! -f "$(src_dir)/libHBAAPI/configure" ]; then \
+	  $(SED) -i 's/-Werror//' $(src_dir)/libHBAAPI/configure.ac; \
 	  cd $(src_dir)/libHBAAPI && ./bootstrap.sh; \
 	fi
 	cd $(src_dir)/libHBAAPI && ./configure --prefix=/usr --sysconfdir=/etc
@@ -1018,6 +1021,7 @@ open-fcoe: glibc open-lldp libpciaccess
 	$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install-libLTLIBRARIES
 	$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install-data
 	$(QUIET) if [ ! -f "$(src_dir)/libhbalinux/configure" ]; then \
+	  $(SED) -i 's/-Werror//' $(src_dir)/libhbalinux/configure.ac; \
 	  cd $(src_dir)/libhbalinux && ./bootstrap.sh; \
 	fi
 	cd $(src_dir)/libhbalinux && PCIACCESS_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
@@ -1026,6 +1030,7 @@ open-fcoe: glibc open-lldp libpciaccess
 	$(MAKE) --directory=$(src_dir)/libhbalinux CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir)/libhbalinux DESTDIR=$(IMAGE_DIR) install
 	$(QUIET) if [ ! -f "$(src_dir)/fcoe-utils/configure" ]; then \
+	  $(SED) -i 's/-Werror//' $(src_dir)/fcoe-utils/configure.ac; \
 	  cd $(src_dir)/fcoe-utils && ./bootstrap.sh; \
 	fi
 	cd $(src_dir)/fcoe-utils && HBAAPI_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
@@ -1065,6 +1070,7 @@ libconfig: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 libnl: glibc
@@ -1077,6 +1083,7 @@ libpciaccess: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 linux_firmware:
