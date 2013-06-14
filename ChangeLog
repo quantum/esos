@@ -1,3 +1,11 @@
+2013-06-14 19:23  msmith626@gmail.com
+
+	* Makefile.in, etc/profile, etc/sysctl.conf,
+	  misc/Python-2.7.3.patch: a number of Makefile changes to resolve
+	  Fedora build issues; updated global profile to allow core dumps
+	  and be a bit more informative if the TUI exits non-zero;
+	  additions to sysctl.conf for core dumps
+
 2013-06-09 22:07  msmith626@gmail.com
 
 	* Makefile.in: more updates to Makefile build setup, too many to
