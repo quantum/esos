@@ -127,6 +127,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		ipmitool-1.8.12.tar.bz2 \
 		less-451.tar.gz \
 		irqbalance-1.0.5.tar.gz \
+		ethtool-3.9.tar.xz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -141,7 +142,8 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			mhash lessfs tokyocabinet fuse db snappy fence_agents \
 			pexpect pycurl curl Net-Telnet python-suds setuptools \
 			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
-			linux_firmware dlm ipmitool sysklogd less irqbalance
+			linux_firmware dlm ipmitool sysklogd less irqbalance \
+			ethtool
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -714,7 +716,7 @@ pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync lib
 	cmap_LIBS="$(LDFLAGS) -lcmap" quorum_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
 	quorum_LIBS="$(LDFLAGS) -lquorum" PYTHON="$(WORK_DIR)/python" \
 	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
-	CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" LIBS="-ltinfo" \
 	./configure --prefix=/usr --disable-upstart --disable-systemd \
 	--without-heartbeat --without-snmp --without-esmtp \
 	--disable-fatal-warnings --disable-ansi --disable-silent-rules \
@@ -1123,6 +1125,12 @@ less: glibc
 	$(TOUCH) $(@)
 
 irqbalance: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+ethtool: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
