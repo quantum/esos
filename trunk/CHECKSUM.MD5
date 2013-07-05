@@ -73,3 +73,8 @@ fa2a8e80f996dc74a7b25a663eb5581b  scst-trunk_r4830.tar.gz
 514d07752c7c746dc9a1d88d441f0ec3  libqb-0.14.4.tar.xz
 b6403fa067c96adce448a48c9993654d  irqbalance-1.0.5.tar.gz
 5777759e85b3323917c6cc9327f5d99c  ethtool-3.9.tar.xz
+1b433f83d50d1bc61e09026e906d84c7  psycopg2-2.5.1.tar.gz
+6ee5bb53b97da7c6ad9cb0825d3300dd  postgresql-9.2.4.tar.bz2
+bf280949049161aa68cf29e600d9ec79  mysql-5.0.96.tar.gz
+8d79d134bdb59297078143830ecc39cc  MySQLdb-1.2.4.tar.gz
+65d1f3a9f25f3cd558b6001b11392ce1  SQLAlchemy-0.8.1.tar.gz
