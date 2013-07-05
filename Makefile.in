@@ -128,6 +128,11 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		less-451.tar.gz \
 		irqbalance-1.0.5.tar.gz \
 		ethtool-3.9.tar.xz \
+		postgresql-9.2.4.tar.bz2 \
+		psycopg2-2.5.1.tar.gz \
+		mysql-5.0.96.tar.gz \
+		MySQLdb-1.2.4.tar.gz \
+		SQLAlchemy-0.8.1.tar.gz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -143,7 +148,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			pexpect pycurl curl Net-Telnet python-suds setuptools \
 			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
 			linux_firmware dlm ipmitool sysklogd less irqbalance \
-			ethtool
+			ethtool postgresql psycopg2 mysql MySQLdb SQLAlchemy
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -1134,5 +1139,37 @@ ethtool: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+postgresql: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)/src/bin DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/src/include DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/src/interfaces/libpq DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+psycopg2: glibc Python postgresql
+	cd $(src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python ./setup.py build_ext \
+	--pg-config=$(IMAGE_DIR)/usr/bin/pg_config install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+mysql: glibc
+	cd $(src_dir) && ./configure --prefix=/usr --without-server \
+	--without-bench --enable-thread-safe-client
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+MySQLdb: glibc Python mysql
+	$(SED) -i 's/^#mysql_config.*/mysql_config=$(subst /,\/,$(IMAGE_DIR)/usr/bin/mysql_config)/' $(src_dir)/site.cfg
+	cd $(src_dir) && CC="$(esos_cc)" \
+	LD_LIBRARY_PATH=/lib:/usr/lib:/lib64:/usr/lib64:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib $(WORK_DIR)/python ./setup.py build
+	cd $(src_dir) && $(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+SQLAlchemy: glibc Python psycopg2 MySQLdb
+	cd $(src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python ./setup.py \
+	install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
