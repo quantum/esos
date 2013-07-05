@@ -1,3 +1,9 @@
+2013-07-05 13:05  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added psycopg2,
+	  MySQLdb, and SQLAlchemy packages (and required DB client tools /
+	  libs)
+
 2013-06-20 20:08  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, tui/Makefile: more
