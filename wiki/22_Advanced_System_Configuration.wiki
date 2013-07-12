@@ -217,5 +217,15 @@ conf_sync.sh
 
 <br>
 
+=== NIC Bonding ===
+TODO
+
+<br>
+
+=== Ethernet Bridging ===
+TODO
+
+<br>
+
 === What's Next ===
 From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
