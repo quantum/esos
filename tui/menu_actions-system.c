@@ -39,7 +39,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             *broadcast = 0, *iface_mtu = 0;
     CDKRADIO *ip_config = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
-    CDKSELECTION *slave_select = 0;
+    CDKSELECTION *slave_select = 0, *br_member_select = 0;
     WINDOW *net_window = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     dictionary *ini_dict = NULL;
@@ -50,29 +50,37 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     unsigned char* mac_addy = NULL;
     int sock = 0, i = 0, j = 0, net_conf_choice = 0, window_y = 0, window_x = 0,
             traverse_ret = 0, net_window_lines = 0, net_window_cols = 0,
-            poten_slave_cnt = 0, slaves_line_size = 0, slave_val_size = 0;
+            poten_slave_cnt = 0, slaves_line_size = 0, slave_val_size = 0,
+            poten_br_member_cnt = 0, br_members_line_size = 0,
+            br_member_val_size = 0, temp_int = 0;
     char *net_scroll_msg[MAX_NET_IFACE] = {NULL},
             *net_if_name[MAX_NET_IFACE] = {NULL},
             *net_if_mac[MAX_NET_IFACE] = {NULL},
             *net_if_speed[MAX_NET_IFACE] = {NULL},
-            *net_if_duplex[MAX_NET_IFACE] = {NULL}, *net_info_msg[MAX_NET_INFO_LINES] = {NULL},
+            *net_if_duplex[MAX_NET_IFACE] = {NULL},
+            *net_info_msg[MAX_NET_INFO_LINES] = {NULL},
             *short_label_msg[NET_SHORT_INFO_LINES] = {NULL},
-            *poten_slaves[MAX_NET_IFACE] = {NULL};
+            *poten_slaves[MAX_NET_IFACE] = {NULL},
+            *poten_br_members[MAX_NET_IFACE] = {NULL};
     char *conf_hostname = NULL, *conf_domainname = NULL, *conf_defaultgw = NULL,
             *conf_nameserver1 = NULL, *conf_nameserver2 = NULL,
             *conf_bootproto = NULL, *conf_ipaddr = NULL, *conf_netmask = NULL,
             *conf_broadcast = NULL, *error_msg = NULL, *conf_if_mtu = NULL,
-            *temp_pstr = NULL, *conf_slaves = NULL, *strtok_result = NULL;
+            *temp_pstr = NULL, *conf_slaves = NULL, *conf_brmembers = NULL,
+            *strtok_result = NULL;
     static char *ip_opts[] = {"Disabled", "Static", "DHCP"},
             *choice_char[] = {"[ ] ", "[*] "};
     char eth_duplex[MISC_STRING_LEN] = {0}, temp_str[MISC_STRING_LEN] = {0},
             temp_ini_str[MAX_INI_VAL] = {0},
-            slaves_list_line_buffer[MAX_SLAVES_LIST_BUFF] = {0};
+            slaves_list_line_buffer[MAX_SLAVES_LIST_BUFF] = {0},
+            br_members_list_line_buffer[MAX_BR_MEMBERS_LIST_BUFF] = {0};
     __be16 eth_speed = 0;
     boolean question = FALSE;
     short saved_ifr_flags = 0;
     enum bonding_t net_if_bonding[MAX_NET_IFACE] = {0};
     static char *bonding_map[] = {"None", "Master", "Slave"};
+    struct stat bridge_test = {0};
+    boolean net_if_bridge[MAX_NET_IFACE] = {FALSE};
 
     /* Get socket handle */
     sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
@@ -120,26 +128,46 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                         mac_addy[0], mac_addy[1], mac_addy[2], mac_addy[3],
                         mac_addy[4], mac_addy[5]);
 
+                /* Check if interface is a bridge */
+                snprintf(temp_str, MISC_STRING_LEN, "%s/%s/bridge",
+                        SYSFS_NET, ifr.ifr_name);
+                if (stat(temp_str, &bridge_test) == 0) {
+                    net_if_bridge[j] = TRUE;
+                    snprintf(temp_str, MISC_STRING_LEN, "Ethernet Bridge");
+                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
+                            net_if_name[j], net_if_mac[j], temp_str);
+                    /* We can continue to the next iteration if its a bridge */
+                    j++;
+                    i++;
+                    continue;
+                } else {
+                    net_if_bridge[j] = FALSE;
+                }
+
                 /* Check for NIC bonding */
                 if (saved_ifr_flags & IFF_MASTER) {
                     net_if_bonding[j] = MASTER;
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
                             bonding_map[net_if_bonding[j]]);
                     asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
-                            net_if_name[j], net_if_mac[j],
-                            temp_str);
+                            net_if_name[j], net_if_mac[j], temp_str);
                     /* We can continue to the next iteration if its a master */
                     j++;
                     i++;
                     continue;
                 } else if (saved_ifr_flags & IFF_SLAVE) {
                     net_if_bonding[j] = SLAVE;
+                    /* Already a bonding slave interface, add it to the list */
                     asprintf(&poten_slaves[poten_slave_cnt], "%s", net_if_name[j]);
                     poten_slave_cnt++;
                 } else {
                     net_if_bonding[j] = NO_BONDING;
+                    /* No bonding for this interface, add it to the list */
                     asprintf(&poten_slaves[poten_slave_cnt], "%s", net_if_name[j]);
                     poten_slave_cnt++;
+                    /* For now we only grab interfaces that have no part in bonding */
+                    asprintf(&poten_br_members[poten_br_member_cnt], "%s", net_if_name[j]);
+                    poten_br_member_cnt++;
                 }
 
                 /* Get additional Ethernet interface information */
@@ -542,6 +570,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         conf_broadcast = iniparser_getstring(ini_dict, temp_ini_str, "");
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:slaves", net_if_name[net_conf_choice]);
         conf_slaves = iniparser_getstring(ini_dict, temp_ini_str, "");
+        snprintf(temp_ini_str, MAX_INI_VAL, "%s:brmembers", net_if_name[net_conf_choice]);
+        conf_brmembers = iniparser_getstring(ini_dict, temp_ini_str, "");
 
         /* If value doesn't exist, use a default MTU based on the interface type */
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name[net_conf_choice]);
@@ -550,6 +580,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         else if (strstr(net_if_name[net_conf_choice], "ib") != NULL)
             conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_IB_MTU);
         else if (strstr(net_if_name[net_conf_choice], "bond") != NULL)
+            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_ETH_MTU);
+        else if (strstr(net_if_name[net_conf_choice], "br") != NULL)
             conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, DEFAULT_ETH_MTU);
         else
             conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, "");
@@ -638,8 +670,9 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKEntryBoxAttribute(iface_mtu, COLOR_DIALOG_INPUT);
         setCDKEntryValue(iface_mtu, conf_if_mtu);
 
-        /* If the interface is a master (bonding) then they can select slaves */
+        // TODO: For now, bridging and bonding are mutually exclusive
         if (net_if_bonding[net_conf_choice] == MASTER) {
+            /* If the interface is a master (bonding) then they can select slaves */
             slave_select = newCDKSelection(net_screen, (window_x + 35), (window_y + 12),
                     RIGHT, 3, 20, "</B>Bonding Slaves:", poten_slaves, poten_slave_cnt,
                     choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -654,6 +687,26 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 for (i = 0; i < poten_slave_cnt; i++) {
                     if (strstr(strStrip(strtok_result), poten_slaves[i]))
                         setCDKSelectionChoice(slave_select, i, 1);
+                }
+                strtok_result = strtok(NULL, ",");
+            }
+
+        } else if (net_if_bridge[net_conf_choice] == TRUE) {
+            /* If the interface is a bridge interface then they can select members */
+            br_member_select = newCDKSelection(net_screen, (window_x + 35), (window_y + 12),
+                    RIGHT, 3, 20, "</B>Bridge Members:", poten_br_members, poten_br_member_cnt,
+                    choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
+            if (!br_member_select) {
+                errorDialog(main_cdk_screen, "Couldn't create selection widget!", NULL);
+                goto cleanup;
+            }
+            setCDKSelectionBackgroundAttrib(br_member_select, COLOR_DIALOG_TEXT);
+            /* Parse the existing members (if any) */
+            strtok_result = strtok(conf_brmembers, ",");
+            while (strtok_result != NULL) {
+                for (i = 0; i < poten_br_member_cnt; i++) {
+                    if (strstr(strStrip(strtok_result), poten_br_members[i]))
+                        setCDKSelectionChoice(br_member_select, i, 1);
                 }
                 strtok_result = strtok(NULL, ",");
             }
@@ -772,10 +825,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                  * interfaces were selected (or removed) */
                 for (i = 0; i < poten_slave_cnt; i++) {
                     if (slave_select->selections[i] == 1) {
-                        if (i == (poten_slave_cnt - 1))
-                            asprintf(&temp_pstr, "%s", poten_slaves[i]);
-                        else
-                            asprintf(&temp_pstr, "%s,", poten_slaves[i]);
+                        asprintf(&temp_pstr, "%s,", poten_slaves[i]);
                         /* We add one extra for the null byte */
                         slave_val_size = strlen(temp_pstr) + 1;
                         slaves_line_size = slaves_line_size + slave_val_size;
@@ -790,12 +840,54 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                             strcat(slaves_list_line_buffer, temp_pstr);
                             freeChar(temp_pstr);
                         }
-                        /* Remove to slave interface sections from the INI file */
+                        /* Remove the slave interface sections from the INI file */
                         iniparser_unset(ini_dict, poten_slaves[i]);
                     }
                 }
+                /* Remove the trailing comma (if any) */
+                if (slaves_list_line_buffer[0] != '\0') {
+                    temp_int = strlen(slaves_list_line_buffer) - 1;
+                    if (slaves_list_line_buffer[temp_int] == ',')
+                        slaves_list_line_buffer[temp_int] = '\0';
+                }
                 snprintf(temp_ini_str, MAX_INI_VAL, "%s:slaves", net_if_name[net_conf_choice]);
                 if (iniparser_set(ini_dict, temp_ini_str, slaves_list_line_buffer) == -1) {
+                    errorDialog(main_cdk_screen, "Couldn't set configuration file value!", NULL);
+                    goto cleanup;
+                }
+            }
+
+            if (net_if_bridge[net_conf_choice] == TRUE) {
+                /* For bridge interfaces, we need to check if any member
+                 * interfaces were selected (or removed) */
+                for (i = 0; i < poten_br_member_cnt; i++) {
+                    if (br_member_select->selections[i] == 1) {
+                        asprintf(&temp_pstr, "%s,", poten_br_members[i]);
+                        /* We add one extra for the null byte */
+                        br_member_val_size = strlen(temp_pstr) + 1;
+                        br_members_line_size = br_members_line_size + br_member_val_size;
+                        // TODO: This totes needs to be tested (strcat)
+                        if (br_members_line_size >= MAX_BR_MEMBERS_LIST_BUFF) {
+                            errorDialog(main_cdk_screen,
+                                    "The maximum bridge members list line buffer size has been reached!",
+                                    NULL);
+                            freeChar(temp_pstr);
+                            goto cleanup;
+                        } else {
+                            strcat(br_members_list_line_buffer, temp_pstr);
+                            freeChar(temp_pstr);
+                        }
+                    }
+                }
+                /* Remove the trailing comma (if any) */
+                if (br_members_list_line_buffer[0] != '\0') {
+                    temp_int = strlen(br_members_list_line_buffer) - 1;
+                    if (br_members_list_line_buffer[temp_int] == ',')
+                        br_members_list_line_buffer[temp_int] = '\0';
+                }
+                /* Set the INI value */
+                snprintf(temp_ini_str, MAX_INI_VAL, "%s:brmembers", net_if_name[net_conf_choice]);
+                if (iniparser_set(ini_dict, temp_ini_str, br_members_list_line_buffer) == -1) {
                     errorDialog(main_cdk_screen, "Couldn't set configuration file value!", NULL);
                     goto cleanup;
                 }

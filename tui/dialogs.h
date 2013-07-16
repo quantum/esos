@@ -98,14 +98,15 @@ extern "C" {
 #define MAX_VDISK_NAME          32
 
 /* Misc. limits */
-#define MAX_FILE_SYSTEMS        128
-#define MAX_FS_ATTR_LEN         64
-#define MAX_MNT_LINE_BUFFER     4096
-#define MAX_BLOCK_DEVS          64
-#define MAX_ZONEINFO_PATH       64
-#define MAX_TZ_FILES            1024
-#define MAX_PD_INFO_LINE_BUFF   4096
-#define MAX_SLAVES_LIST_BUFF    512
+#define MAX_FILE_SYSTEMS                128
+#define MAX_FS_ATTR_LEN                 64
+#define MAX_MNT_LINE_BUFFER             4096
+#define MAX_BLOCK_DEVS                  64
+#define MAX_ZONEINFO_PATH               64
+#define MAX_TZ_FILES                    1024
+#define MAX_PD_INFO_LINE_BUFF           4096
+#define MAX_SLAVES_LIST_BUFF            512
+#define MAX_BR_MEMBERS_LIST_BUFF        512
 
 /* Character validation */
 #define VALID_NAME_CHAR(c)      ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.')) ? 1 : 0)
