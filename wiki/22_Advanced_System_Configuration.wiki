@@ -218,7 +218,7 @@ conf_sync.sh
 <br>
 
 === NIC Bonding ===
-Linux bonding (EtherChannel) is supported in ESOS; NIC bonding interface settings are configured using the `/etc/modprobe.conf` file. By default. two (2) bond interfaces are enabled using the "balance-alb" mode. Be sure to use the modprobe configuration file to change NIC bonding settings and not the sysfs interface. _Bonding settings will not be retained between reboots if you use sysfs to manipulate settings._
+Linux bonding (EtherChannel) is supported in ESOS; NIC bonding interface settings are configured using the `/etc/modprobe.conf` file in the ESOS shell (Interface -> Exit to Shell). By default, two (2) bond interfaces are enabled using the "balance-alb" mode. Be sure to use the modprobe configuration file to change NIC bonding settings and not the sysfs interface. _Bonding settings will not be retained between reboots if you use sysfs to manipulate settings._
 
 After you update the modprobe configuration file, run the following commands to make the changes take effect:
 {{{
@@ -229,6 +229,8 @@ modprobe bonding
 Use 'modinfo bonding' to get a list of all the available configuration parameters.
 
 After your NIC bonding interfaces are configured, you can then use the TUI to enslave interfaces to the bonding master interfaces (System -> Network Settings). When you choose a "Master" bonding interface in the TUI you can then select the slave interfaces. You can then restart the networking when prompted to do so for the changes to take effect. _When you select another interface as a slave, if it has any current IP configuration set, those settings will be removed since it will now be a slave to a master bonding interface._
+
+_*Be sure to use the naming format bondX for all NIC bonding interfaces!*_
 
 <br>
 
