@@ -235,7 +235,16 @@ _*Be sure to use the naming format bondX for all NIC bonding interfaces!*_
 <br>
 
 === Ethernet Bridging ===
-TODO
+Linux bridge support is also enabled in ESOS. New bridge interfaces need to be created from the CLI (Interface -> Exit to Shell) before using the TUI to configure them.
+
+To add a new bridge interface:
+{{{
+brctl addbr br0
+}}}
+
+Once you've created a bridge, you can then exit the shell, and from the TUI configure the bridge interface (System -> Network Settings). Select the bridge interface then you can select the IP setting (DHCP or static) and select the bridge member interfaces. Apply the settings be restarting the network stack when prompted.
+
+_*Be sure to use the naming format brX for all bridge interfaces!*_
 
 <br>
 
