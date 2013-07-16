@@ -226,7 +226,9 @@ rmmod bonding
 modprobe bonding
 }}}
 
-Use 'modinfo bonding' to get a list of all the available configuration parameters. After your NIC bonding interfaces are configured, you can then use the TUI to enslave interfaces to the bonding master interfaces (System -> Network Settings). When you choose a "Master" bonding interface in the TUI you can then select the slave interfaces. You can then restart the networking when prompted to do so for the changes to take effect. _When you select another interface as a slave, if it has any current IP configuration set, those settings will be removed since it will now be a slave to a master bonding interface._
+Use 'modinfo bonding' to get a list of all the available configuration parameters.
+
+After your NIC bonding interfaces are configured, you can then use the TUI to enslave interfaces to the bonding master interfaces (System -> Network Settings). When you choose a "Master" bonding interface in the TUI you can then select the slave interfaces. You can then restart the networking when prompted to do so for the changes to take effect. _When you select another interface as a slave, if it has any current IP configuration set, those settings will be removed since it will now be a slave to a master bonding interface._
 
 <br>
 
