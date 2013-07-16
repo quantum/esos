@@ -130,6 +130,7 @@ extern "C" {
 #define SYSFS_SCSI_DISK         "/sys/class/scsi_disk"
 #define SYSFS_SCSI_DEVICE       "/sys/class/scsi_device"
 #define SYSFS_BLOCK             "/sys/block"
+#define SYSFS_NET               "/sys/class/net"
 #define MAX_SYSFS_ATTR_SIZE     256
 #define MAX_SYSFS_PATH_SIZE     256
 #define SCSI_CHANGER_TYPE       8

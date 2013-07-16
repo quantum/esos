@@ -20,6 +20,7 @@ my $route_prog = "/sbin/route";
 my $hostname_prog = "/bin/hostname";
 my $ip_prog = "/bin/ip";
 my $ifenslave_prog = "/sbin/ifenslave";
+my $brctl_prog = "/usr/sbin/brctl";
 my $net_if_dir = "/sys/class/net";
 my $section;
 my @sections;
@@ -105,7 +106,56 @@ if ($ARGV[0] eq "start") {
                 }
             }
         }
-        if (($each =~ "eth") || ($each =~ "ib") || ($each =~ "bond")) {
+        if ($each =~ "br") {
+            if (!exists($ini_hash{$each . ":brmembers"})) {
+                print("ERROR: The 'brmembers' name is missing!\n");
+                next;
+            }
+            my $brmembers = $ini_hash{$each . ":brmembers"};
+            if ($brmembers eq "") {
+                print("WARNING: The 'brmembers' value is empty!\n");
+            }
+            # Create the bridge interface
+            print("Creating bridge interface $each...\n");
+            system($brctl_prog . " addbr " . $each . " 2>&1");
+            if ($? == -1) {
+                print("ERROR: Running $brctl_prog failed: $!\n");
+                next;
+            }
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $brctl_prog program exited with value $exit_status.\n");
+                next;
+            }
+            # Bring up the new bridge interface
+            print("Bringing up bridge interface $each...\n");
+            system($ifconfig_prog . " " . $each . " up 2>&1");
+            if ($? == -1) {
+                print("ERROR: Running $ifconfig_prog failed: $!\n");
+                next;
+            }
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                next;
+            }
+            # Add the member interfaces to the bridge
+            my @brmember_vals = split(',', $brmembers);
+            foreach my $each_brmember (@brmember_vals) {
+                print("Adding member interface $each_brmember to bridge $each...\n");
+                system($brctl_prog . " addif " . $each . " " . $each_brmember . " 2>&1");
+                if ($? == -1) {
+                    print("ERROR: Running $brctl_prog failed: $!\n");
+                    next;
+                }
+                my $exit_status = $? >> 8;
+                if ($exit_status != 0) {
+                    print("ERROR: The $brctl_prog program exited with value $exit_status.\n");
+                    next;
+                }
+            }
+        }
+        if (($each =~ "eth") || ($each =~ "ib") || ($each =~ "bond") || ($each =~ "br")) {
             my $hash_key = $each . ":bootproto";
             if (exists($ini_hash{$hash_key})) {
                 if (lc($ini_hash{$hash_key}) eq "dhcp") {
@@ -311,6 +361,7 @@ if ($ARGV[0] eq "start") {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
+        # Remove slaves from bond interface
         if ($iface =~ /bond[0-9]/) {
             my @raw_bond_slaves = glob($net_if_dir . "/" . $iface . "/slave_*");
             foreach my $raw_slave_iface (@raw_bond_slaves) {
@@ -328,7 +379,8 @@ if ($ARGV[0] eq "start") {
                 }
             }
         }
-        if (($iface =~ /eth[0-9]/) || ($iface =~ /ib[0-9]/) || ($iface =~ /bond[0-9]/)) {
+        # Bring down interface
+        if (($iface =~ /eth[0-9]/) || ($iface =~ /ib[0-9]/) || ($iface =~ /bond[0-9]/) || ($iface =~ /br[0-9]/)) {
             print("Bringing down interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " 0.0.0.0 down 2>&1");
             if ($? == -1) {
@@ -338,6 +390,20 @@ if ($ARGV[0] eq "start") {
             my $exit_status = $? >> 8;
             if ($exit_status != 0) {
                 print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                next;
+            }
+        }
+        # Delete bridge interface
+        if ($iface =~ /br[0-9]/) {
+            print("Deleting bridge interface $iface...\n");
+            system($brctl_prog . " delbr " . $iface . " 2>&1");
+            if ($? == -1) {
+                print("ERROR: Running $brctl_prog failed: $!\n");
+                next;
+            }
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $brctl_prog program exited with value $exit_status.\n");
                 next;
             }
         }
