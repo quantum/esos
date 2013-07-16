@@ -1,3 +1,10 @@
+2013-07-16 15:57  msmith626@gmail.com
+
+	* etc/ld.so.conf, etc/rc.d/rc.network, tui/dialogs.h,
+	  tui/menu_actions-system.c, tui/system.h: fixed library path issue
+	  with Python MySQL module; updated network rc script and TUI to
+	  complete bridging and bonding support
+
 2013-07-05 13:05  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added psycopg2,
