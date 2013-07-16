@@ -242,7 +242,7 @@ To add a new bridge interface:
 brctl addbr br0
 }}}
 
-Once you've created a bridge, you can then exit the shell, and from the TUI configure the bridge interface (System -> Network Settings). Select the bridge interface then you can select the IP setting (DHCP or static) and select the bridge member interfaces. Apply the settings be restarting the network stack when prompted.
+Once you've created a bridge, you can then exit the shell, and from the TUI configure the bridge interface (System -> Network Settings). Select the bridge interface then you can select the IP setting (DHCP or static) and select the bridge member interfaces. Apply the settings by restarting the network stack when prompted.
 
 _*Be sure to use the naming format brX for all bridge interfaces!*_
 
