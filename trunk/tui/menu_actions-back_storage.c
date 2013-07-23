@@ -1910,7 +1910,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     long long bytes_free = 0ll, bytes_total = 0ll, new_vdisk_bytes = 0ll,
             new_vdisk_mib = 0ll;
     off_t position = 0;
-    ssize_t bytes_written = 0;
+    ssize_t bytes_written = 0, write_length = 0;
     
     /* Have the user select a file system to remove */
     getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type, &mounted);
@@ -2103,42 +2103,63 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             goto cleanup;
         }
 
-        /* Zero-out the new virtual disk file to the length specified (size) */
-        memset(zero_buff, 0, VDISK_WRITE_SIZE);
+        /* Open our (new) virtual disk file */
         if ((new_vdisk_fd = open(new_vdisk_file, O_WRONLY | O_CREAT)) == -1) {
             asprintf(&error_msg, "open(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             freeChar(error_msg);
             goto cleanup;
         }
-        for (position = 0; position < new_vdisk_bytes; position += bytes_written) {
-            bytes_written = write(new_vdisk_fd, zero_buff,
-                    MIN((new_vdisk_bytes - position), VDISK_WRITE_SIZE));
-            if (bytes_written == 0) {
-                /* We've completed writing the new file; update the progress bar */
-                setCDKHistogram(vdisk_progress, vPERCENT, CENTER, COLOR_DIALOG_TEXT,
-                        0, new_vdisk_mib, new_vdisk_mib,
-                        ' ' | A_REVERSE, TRUE);
-                drawCDKHistogram(vdisk_progress, TRUE);
-                break;
-            } else if (bytes_written == -1) {
-                asprintf(&error_msg, "write(): %s", strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                freeChar(error_msg);
-                close(new_vdisk_fd);
-                goto cleanup;
+
+        /* Zero-out the new virtual disk file to the length specified (size) */
+        memset(zero_buff, 0, VDISK_WRITE_SIZE);
+        for (position = 0; position < new_vdisk_bytes; position += write_length) {
+            write_length = MIN((new_vdisk_bytes - position), VDISK_WRITE_SIZE);
+            /* Use fallocate() for modern file systems, and write() for others */
+            if ((strcmp(fs_type, "xfs") == 0) || (strcmp(fs_type, "ext4") == 0)) {
+                if (fallocate(new_vdisk_fd, 0, position,
+                        write_length) == -1) {
+                    asprintf(&error_msg, "fallocate(): %s", strerror(errno));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                    close(new_vdisk_fd);
+                    goto cleanup;
+                }
+            } else {
+                bytes_written = write(new_vdisk_fd, zero_buff, write_length);
+                if (bytes_written == -1) {
+                    asprintf(&error_msg, "write(): %s", strerror(errno));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    freeChar(error_msg);
+                    close(new_vdisk_fd);
+                    goto cleanup;
+                } else if (bytes_written != write_length) {
+                    errorDialog(main_cdk_screen,
+                            "The number of bytes written is different",
+                            "than the requested write length!");
+                    close(new_vdisk_fd);
+                    goto cleanup;
+                }
             }
-            /* This controls how often the progress bar is updated; it can adversely 
-             * affect performance of the write operation if its updated too frequently */
+            /* This controls how often the progress bar is updated; it can
+             * adversely affect performance of the write operation if its
+             * updated too frequently */
             if ((position % (VDISK_WRITE_SIZE * 1000)) == 0) {
                 /* Since our maximum size was checked above against an int type,
                  * we'll assume we're safe if we made it this far */
-                setCDKHistogram(vdisk_progress, vPERCENT, CENTER, COLOR_DIALOG_TEXT,
-                        0, new_vdisk_mib, (position / MEBIBYTE_SIZE),
-                        ' ' | A_REVERSE, TRUE);
+                setCDKHistogram(vdisk_progress, vPERCENT, CENTER,
+                        COLOR_DIALOG_TEXT, 0, new_vdisk_mib,
+                        (position / MEBIBYTE_SIZE), ' ' | A_REVERSE, TRUE);
                 drawCDKHistogram(vdisk_progress, TRUE);
             }
         }
+
+        /* We've completed writing the new file; update the progress bar */
+        setCDKHistogram(vdisk_progress, vPERCENT, CENTER, COLOR_DIALOG_TEXT,
+                0, new_vdisk_mib, new_vdisk_mib,
+                ' ' | A_REVERSE, TRUE);
+        drawCDKHistogram(vdisk_progress, TRUE);
+        
         // TODO: Do we actually need to flush to disk before returning?
         if (fsync(new_vdisk_fd) == -1) {
             asprintf(&error_msg, "fsync(): %s", strerror(errno));
