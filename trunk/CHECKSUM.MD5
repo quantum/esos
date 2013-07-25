@@ -78,3 +78,5 @@ b6403fa067c96adce448a48c9993654d  irqbalance-1.0.5.tar.gz
 bf280949049161aa68cf29e600d9ec79  mysql-5.0.96.tar.gz
 8d79d134bdb59297078143830ecc39cc  MySQLdb-1.2.4.tar.gz
 65d1f3a9f25f3cd558b6001b11392ce1  SQLAlchemy-0.8.1.tar.gz
+367affa587f346f9ddc064bcce4206cf  infiniband-diags-1.5.13.tar.gz
+fe88bdfa48626d01ffad8b2fde87466e  libibmad-1.3.8.tar.gz
