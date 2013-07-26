@@ -183,7 +183,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
  * Run the Add Device dialog
  */
 void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
-    CDKSCROLL *dev_list = 0;
+    CDKSCROLL *dev_list = 0, *fio_type_list = 0;
     CDKFSELECT *file_select = 0;
     CDKSCREEN *dev_screen = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
@@ -198,20 +198,21 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         "<C>vcdrom", "<C>vdisk_blockio", "<C>vdisk_fileio", "<C>vdisk_nullio",
         "<C>dev_changer", "<C>dev_tape", "<C>dev_tape_perf"},
             *bs_list[] = {"512", "1024", "2048", "4096", "8192"},
-            *no_yes[] = {"No (0)", "Yes (1)"};
-    char attr_path[MAX_SYSFS_PATH_SIZE] = {0}, attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
-            fileio_file[MAX_SYSFS_ATTR_SIZE] = {0}, temp_str[MAX_SCST_DEV_NAME_LEN] = {0},
-            device_id[MAX_SYSFS_ATTR_SIZE] = {0}, fs_name[MAX_FS_ATTR_LEN] = {0},
-            fs_path[MAX_FS_ATTR_LEN] = {0}, fs_type[MAX_FS_ATTR_LEN] = {0},
-            real_blk_dev[MAX_SYSFS_PATH_SIZE] = {0};
+            *no_yes[] = {"No (0)", "Yes (1)"},
+            *fio_types[] = {"<C>File System", "<C>Block Device"};
+    char attr_path[MAX_SYSFS_PATH_SIZE] = {0},
+            attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
+            fileio_file[MAX_SYSFS_PATH_SIZE] = {0},
+            temp_str[MAX_SCST_DEV_NAME_LEN] = {0},
+            fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
+            fs_type[MAX_FS_ATTR_LEN] = {0};
     char *scsi_disk = NULL, *scsi_chgr = NULL, *scsi_tape = NULL,
             *error_msg = NULL, *selected_file = NULL, *iso_file_name = NULL,
-            *dev_id_ptr = NULL, *cmd_str = NULL, *block_dev = NULL;
+            *block_dev = NULL;
     char *dev_info_msg[ADD_DEV_INFO_LINES] = {NULL};
     int dev_window_lines = 0, dev_window_cols = 0, window_y = 0, window_x = 0,
             dev_choice = 0, temp_int = 0, i = 0, traverse_ret = 0,
-            exit_stat = 0, ret_val = 0;
-    FILE *scsi_id_cmd = NULL;
+            fio_type_choice = 0;
     boolean mounted = FALSE;
 
     /* Prompt for new device type */
@@ -321,48 +322,6 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             if ((block_dev = getBlockDevChoice(main_cdk_screen)) == NULL)
                 break;
 
-            if ((strstr(block_dev, "/dev/sd")) != NULL) {
-                /* Get a unique ID for the device using the scsi_id.sh script; this
-                 * is then used for the device node link that exists in /dev */
-                asprintf(&cmd_str, "%s %s 2>&1", SCSI_ID_TOOL, block_dev);
-                scsi_id_cmd = popen(cmd_str, "r");
-                fgets(device_id, sizeof (device_id), scsi_id_cmd);
-                dev_id_ptr = strStrip(device_id);
-
-                if ((exit_stat = pclose(scsi_id_cmd)) == -1) {
-                    ret_val = -1;
-                } else {
-                    if (WIFEXITED(exit_stat))
-                        ret_val = WEXITSTATUS(exit_stat);
-                    else
-                        ret_val = -1;
-                }
-                freeChar(cmd_str);
-                if (ret_val != 0) {
-                    asprintf(&error_msg, "The %s command exited with %d.",
-                            SCSI_ID_TOOL, ret_val);
-                    errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
-                    break;
-                }
-                snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "/dev/disk-by-id/%s",
-                        dev_id_ptr);
-
-            } else if ((strstr(block_dev, "/dev/dm-")) != NULL) {
-                /* A /dev/dm-* device, we're assuming its an LVM logical volume */
-                if ((dev_id_ptr = strstr(block_dev, "dm-")) != NULL) {
-                    snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/%s/dm/name",
-                            SYSFS_BLOCK, dev_id_ptr);
-                    readAttribute(attr_path, attr_value);
-                    snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "/dev/mapper/%s",
-                            attr_value);
-                }
-
-            } else {
-                /* Not a normal SCSI disk block device (md, drbd, etc.) */
-                snprintf(real_blk_dev, MAX_SYSFS_PATH_SIZE, "%s", block_dev);
-            }
-
             /* New CDK screen */
             dev_window_lines = 18;
             dev_window_cols = 60;
@@ -385,7 +344,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Information label */
             asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_blockio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "</B>SCSI Block Device:<!B> %.35s", real_blk_dev);
+            asprintf(&dev_info_msg[2], "</B>SCSI Block Device:<!B> %.35s", block_dev);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
@@ -523,7 +482,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         SYSFS_SCST_TGT);
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                         "add_device %s filename=%s; blocksize=%s; write_through=%d; nv_cache=%d; read_only=%d; removable=%d; rotational=%d",
-                        getCDKEntryValue(dev_name_field), real_blk_dev,
+                        getCDKEntryValue(dev_name_field), block_dev,
                         bs_list[getCDKItemlistCurrentItem(block_size)],
                         getCDKRadioSelectedItem(write_through),
                         getCDKRadioSelectedItem(nv_cache),
@@ -540,39 +499,75 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
         /* vdisk_fileio */
         case 4:
-            /* Have the user select a file system */
-            getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type, &mounted);
-            if (fs_name[0] == '\0')
-                return;
-
-            if (!mounted) {
-                errorDialog(main_cdk_screen, "The selected file system is not mounted!", NULL);
+            /* Choose block device or file on a file system */
+            fio_type_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE,
+                    8, 26, "<C></31/B>Choose a Back-End Type\n", fio_types, 2,
+                    FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+            if (!fio_type_list) {
+                errorDialog(main_cdk_screen, "Couldn't create scroll widget!",
+                        NULL);
                 break;
             }
+            setCDKScrollBoxAttribute(fio_type_list, COLOR_DIALOG_BOX);
+            setCDKScrollBackgroundAttrib(fio_type_list, COLOR_DIALOG_TEXT);
+            fio_type_choice = activateCDKScroll(fio_type_list, 0);
 
-            /* Create the file selector widget */
-            file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER, 20, 40,
-                    "<C></31/B>Choose a Back-End File\n", "File: ",
-                    COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
-                    A_REVERSE, "</N>", "</B>", "</N>", "</N>", TRUE, FALSE);
-            if (!file_select) {
-                errorDialog(main_cdk_screen, "Couldn't create file selector widget!", NULL);
-                break;
-            }
-            setCDKFselectBoxAttribute(file_select, COLOR_DIALOG_BOX);
-            setCDKFselectBackgroundAttrib(file_select, COLOR_DIALOG_TEXT);
-            setCDKFselectDirectory(file_select, fs_path);
-
-            /* Activate the widget and let the user choose a file */
-            selected_file = activateCDKFselect(file_select, 0);
-            if (file_select->exitType == vESCAPE_HIT) {
-                destroyCDKFselect(file_select);
+            /* Check exit from widget */
+            if (fio_type_list->exitType == vESCAPE_HIT) {
+                destroyCDKScroll(fio_type_list);
                 refreshCDKScreen(main_cdk_screen);
                 break;
-            } else if (file_select->exitType == vNORMAL) {
-                strncpy(fileio_file, selected_file, MAX_SYSFS_ATTR_SIZE);
-                destroyCDKFselect(file_select);
+            } else if (fio_type_list->exitType == vNORMAL) {
+                destroyCDKScroll(fio_type_list);
                 refreshCDKScreen(main_cdk_screen);
+
+                if (fio_type_choice == 0) {
+                    /* Have the user select a file system */
+                    getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type,
+                            &mounted);
+                    if (fs_name[0] == '\0')
+                        return;
+
+                    if (!mounted) {
+                        errorDialog(main_cdk_screen,
+                                "The selected file system is not mounted!",
+                                NULL);
+                        break;
+                    }
+                    /* Create the file selector widget */
+                    file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER,
+                            20, 40,
+                            "<C></31/B>Choose a Back-End File\n", "File: ",
+                            COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
+                            A_REVERSE, "</N>", "</B>", "</N>", "</N>",
+                            TRUE, FALSE);
+                    if (!file_select) {
+                        errorDialog(main_cdk_screen,
+                                "Couldn't create file selector widget!", NULL);
+                        break;
+                    }
+                    setCDKFselectBoxAttribute(file_select, COLOR_DIALOG_BOX);
+                    setCDKFselectBackgroundAttrib(file_select, COLOR_DIALOG_TEXT);
+                    setCDKFselectDirectory(file_select, fs_path);
+                    /* Activate the widget and let the user choose a file */
+                    selected_file = activateCDKFselect(file_select, 0);
+                    if (file_select->exitType == vESCAPE_HIT) {
+                        destroyCDKFselect(file_select);
+                        refreshCDKScreen(main_cdk_screen);
+                        break;
+                    } else if (file_select->exitType == vNORMAL) {
+                        strncpy(fileio_file, selected_file, MAX_SYSFS_PATH_SIZE);
+                        destroyCDKFselect(file_select);
+                        refreshCDKScreen(main_cdk_screen);
+                    }
+
+                } else {
+                    /* Get block device choice from user */
+                    if ((block_dev = getBlockDevChoice(main_cdk_screen)) == NULL)
+                        break;
+                    else
+                        strncpy(fileio_file, block_dev, MAX_SYSFS_PATH_SIZE);
+                }
             }
 
             /* New CDK screen */
@@ -597,7 +592,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Information label */
             asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_fileio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "</B>Virtual Disk File:<!B> %.35s", fileio_file);
+            asprintf(&dev_info_msg[2], "</B>Back-End File/Device:<!B> %.35s", fileio_file);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
