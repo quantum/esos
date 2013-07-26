@@ -1077,16 +1077,23 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
  */
 char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     CDKSCROLL *block_dev_list = 0;
-    int blk_dev_choice = 0, i = 0, dev_cnt = 0;
-    char *blk_dev_name[MAX_BLOCK_DEVS] = {NULL}, *blk_dev_info[MAX_BLOCK_DEVS] = {NULL},
-            *blk_dev_size[MAX_BLOCK_DEVS] = {NULL}, *blk_dev_scroll_lines[MAX_BLOCK_DEVS] = {NULL};
+    int blk_dev_choice = 0, i = 0, dev_cnt = 0, exit_stat = 0, ret_val = 0;
+    char *blk_dev_name[MAX_BLOCK_DEVS] = {NULL},
+            *blk_dev_info[MAX_BLOCK_DEVS] = {NULL},
+            *blk_dev_size[MAX_BLOCK_DEVS] = {NULL},
+            *blk_dev_scroll_lines[MAX_BLOCK_DEVS] = {NULL};
     static char *list_title = "<C></31/B>Choose a Block Device\n";
-    char *error_msg = NULL, *boot_dev_node = NULL;
-    static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
+    char *error_msg = NULL, *boot_dev_node = NULL, *dev_id_ptr = NULL,
+            *cmd_str = NULL, *block_dev = NULL;
+    static char ret_buff[MAX_SYSFS_PATH_SIZE] = {0};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
-            tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
+            tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0},
+            attr_path[MAX_SYSFS_PATH_SIZE] = {0},
+            attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
+            device_id[MAX_SYSFS_ATTR_SIZE] = {0};
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
+    FILE *scsi_id_cmd = NULL;
 
     /* Went with the static char array method from this article:
      * http://www.eskimo.com/~scs/cclass/int/sx5.html
@@ -1201,11 +1208,55 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     } else if (block_dev_list->exitType == vNORMAL) {
         destroyCDKScroll(block_dev_list);
         refreshCDKScreen(cdk_screen);
-        snprintf(ret_buff, MAX_SYSFS_ATTR_SIZE, "/dev/%s", blk_dev_name[blk_dev_choice]);
+
+        /* Return a unique block device node */
+        asprintf(&block_dev, "/dev/%s", blk_dev_name[blk_dev_choice]);
+        if ((strstr(block_dev, "/dev/sd")) != NULL) {
+            /* Get a unique ID for the device using the scsi_id.sh script; this
+             * is then used for the device node link that exists in /dev */
+            asprintf(&cmd_str, "%s %s 2>&1", SCSI_ID_TOOL, block_dev);
+            scsi_id_cmd = popen(cmd_str, "r");
+            fgets(device_id, sizeof (device_id), scsi_id_cmd);
+            dev_id_ptr = strStrip(device_id);
+
+            if ((exit_stat = pclose(scsi_id_cmd)) == -1) {
+                ret_val = -1;
+            } else {
+                if (WIFEXITED(exit_stat))
+                    ret_val = WEXITSTATUS(exit_stat);
+                else
+                    ret_val = -1;
+            }
+            freeChar(cmd_str);
+            if (ret_val != 0) {
+                asprintf(&error_msg, "The %s command exited with %d.",
+                        SCSI_ID_TOOL, ret_val);
+                errorDialog(cdk_screen, error_msg, NULL);
+                freeChar(error_msg);
+                goto cleanup;
+            }
+            snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "/dev/disk-by-id/%s",
+                    dev_id_ptr);
+
+        } else if ((strstr(block_dev, "/dev/dm-")) != NULL) {
+            /* A /dev/dm-* device, we're assuming its an LVM logical volume */
+            if ((dev_id_ptr = strstr(block_dev, "dm-")) != NULL) {
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/%s/dm/name",
+                        SYSFS_BLOCK, dev_id_ptr);
+                readAttribute(attr_path, attr_value);
+                snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "/dev/mapper/%s",
+                        attr_value);
+            }
+
+        } else {
+            /* Not a normal SCSI disk block device (md, drbd, etc.) */
+            snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "%s", block_dev);
+        }
     }
 
     /* Done */
     cleanup:
+    freeChar(block_dev);
     for (i = 0; i < MAX_BLOCK_DEVS; i++) {
         freeChar(blk_dev_name[i]);
         freeChar(blk_dev_info[i]);

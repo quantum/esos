@@ -1640,7 +1640,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             i = 0;
 
             /* Setup the new partition -- only on SCSI block devices, not the others;
-             * using the transport type may be a better check the device nodes */
+             * using the transport type may be a better check for the device nodes */
             if ((strstr(block_dev, "/dev/md") == NULL) &&
                     (strstr(block_dev, "/dev/dm-") == NULL) &&
                     (strstr(block_dev, "/dev/drbd") == NULL)) {

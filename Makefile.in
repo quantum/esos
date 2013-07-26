@@ -700,6 +700,7 @@ opensm: glibc gcc libibumad libibverbs
 	$(MAKE) --directory=$(src_dir)/opensm DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/osmtest DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/complib DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/libvendor DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
@@ -1183,6 +1184,7 @@ infiniband-diags: glibc libibumad libibverbs libibmad opensm
 	./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 libibmad: glibc libibumad libibverbs
