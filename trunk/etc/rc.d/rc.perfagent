@@ -1,0 +1,34 @@
+#! /usr/bin/python
+
+# $Id$
+
+# The ESOS performance agent, written by Marcin Czupryniak; this daemon
+# will dump various performance statistics/metrics into the configured
+# database. Use the '/etc/perf-agent.conf' file for configuration.
+
+import os
+import sys
+# Change the CWD into the agent directory
+sys.path.append('/usr/local/perf-agent')
+os.chdir('/usr/local/perf-agent')
+
+from daemon import runner
+import perfagentmain
+
+class App():
+
+    def __init__(self):
+        self.stdin_path = '/dev/null'
+        self.stdout_path = '/dev/null'
+        self.stderr_path = '/dev/null'
+        self.pidfile_path = '/var/run/perf-agent.pid'
+        self.pidfile_timeout = 5
+    
+
+    def run(self):
+        perfagentmain.start()
+
+app = App()
+daemon_runner = runner.DaemonRunner(app)
+daemon_runner.do_action()
+
