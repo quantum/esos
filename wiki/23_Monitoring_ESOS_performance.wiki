@@ -77,6 +77,6 @@ Enabling the agent to start automatically on boot, will enable a sample reducer 
 
   * Samples of the previous day (starting at 00:00 ending at 23:59) reduce to 15 minutes (average or sum depending of the field) and keep them for the next 7 days
   * Samples of 7 days ago (starting at 00:00 ending at 23:59) reduce to hourly samples
-  * Samples of 31 days ago (starting at 00:00 enging at 23:59) reduce to 1 daily sample
+  * Samples of 31 days ago (starting at 00:00 ending at 23:59) reduce to 1 daily sample
 
 If you don't want to reduce the samples or you will automatically purge them by other means then simply comment out the line in `/etc/crontab` which contains the croncompact.py reference.
