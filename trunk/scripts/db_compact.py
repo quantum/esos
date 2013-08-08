@@ -1,7 +1,4 @@
-#! /usr/bin/python
-
-# $Id$
-
+#!/usr/bin/python
 '''
 Created on Jul 27, 2013
 
@@ -69,7 +66,8 @@ def getcur(**kwargs):
     
     # no args needed for mySQL
     if dbtype == 'postgres': return mvars.dbconn.cursor(**kwargs)
-    return mvars.dbconn.cursor()
+    if dbtype == 'mysql': return mvars.dbconn.cursor()
+
 
 def connectDB():
     if dbtype == 'postgres':
@@ -85,12 +83,38 @@ def connectDB():
             print 'Unable to connect to DB'
             print err
             exit(1)
+    if dbtype == 'mysql':
+        global mysql
+        global DictCursor
+        
+        
+        import MySQLdb
+        import MySQLdb.cursors 
+        
+        DictCursor = None
 
+        dburi = mvars.cfg.get('Database','DBURI')
+        
+        import urlparse
+        
+        # not very nice but it does the job
+        dbuser = urlparse.urlparse(dburi)[1].split(':')[0]
+        dbpass = urlparse.urlparse(dburi)[1].split(':')[1].split('@')[0]
+        dbhost = urlparse.urlparse(dburi)[1].split('@')[1]
+        dbname = urlparse.urlparse(dburi)[2].split('/')[1]
+                
+        try:
+            mvars.dbconn = MySQLdb.connect(host=dbhost,user=dbuser,passwd=dbpass,db=dbname, cursorclass=MySQLdb.cursors.DictCursor)
+        except Exception as err:
+            print 'Unable to connect to DB'
+            print err
+            exit(1)
+            
 def getmyhostid():
     myhost = mvars.cfg.get('Database','System')
     query = "select id from hosts where host = %s"
     
-    cur = getcur()
+    cur = getcur(cursor_factory=DictCursor)
     
     cur.execute(query,(myhost,))
     res = cur.fetchone()
@@ -98,21 +122,22 @@ def getmyhostid():
     
     # If my system is not in the DB exit with error status
     if res == None: exit(1)
-        
-    return res[0]
+    
+    return res['id']
+
 
 def getmydevices(myhostid):
     idlist = []
     query = 'select id from devices where host = %s'
 
-    cur = getcur()
+    cur = getcur(cursor_factory=DictCursor)
     
     cur.execute(query,(myhostid,))
     
     res = cur.fetchall()
     
     for rec in res:
-        idlist.append(rec[0])
+        idlist.append(rec['id'])
         
     cur.close()
     
@@ -149,7 +174,7 @@ def interavg(host,device):
         dates.append(d)
     enddate = startdate.replace(hour=23, minute=59, second=59,microsecond=999999)
     dates.append(enddate)
-        
+       
     for i in xrange(0,96):
         # Select Query Block
         cur = getcur(cursor_factory=DictCursor)
