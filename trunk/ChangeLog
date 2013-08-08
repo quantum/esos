@@ -1,3 +1,15 @@
+2013-08-08 21:06  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
+	  etc/crontab, etc/group, etc/nrpe.cfg, etc/passwd, etc/rc.conf,
+	  etc/rc.d/common, etc/rc.d/rc.nrpe, etc/shadow,
+	  misc/linux-3.8.5.config, scripts/db_compact.py: added DB
+	  compactor cron job (and script) for perfagent stats (thanks
+	  Marcin); enabled support for CCISS devices in kernel; added
+	  option to check for openssl in configured script (needed for the
+	  nrpe pacakage); added Nagios Remote Plugin Executor (nrpe)
+	  including new rc script and user/group
+
 2013-07-29 21:10  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/perf-agent.conf,
