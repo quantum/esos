@@ -1,3 +1,13 @@
+2013-08-12 20:31  msmith626@gmail.com
+
+	* scripts/db_compact.py, tui/menu_actions-back_storage.c: fixed
+	  issue when attempting to create file systems on a SCSI disk block
+	  device (thanks for the heads-up Gooba)
+
+2013-08-08 21:18  martino87rm
+
+	* scripts/db_compact.py: Fixed support for MySQL
+
 2013-08-08 21:06  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
