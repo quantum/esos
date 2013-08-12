@@ -1378,7 +1378,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     char fs_label_buff[MAX_FS_LABEL] = {0}, mkfs_cmd[MAX_SHELL_CMD_LEN] = {0},
             mount_cmd[MAX_SHELL_CMD_LEN] = {0},
             new_mnt_point[MAX_FS_ATTR_LEN] = {0},
-            new_blk_dev_node[MAX_FS_ATTR_LEN] = {0};
+            new_blk_dev_node[MAX_FS_ATTR_LEN] = {0},
+            real_blk_dev_node[MAX_SYSFS_PATH_SIZE] = {0};
     char *block_dev = NULL, *error_msg = NULL, *confirm_msg = NULL,
             *dev_node = NULL, *device_size = NULL, *tmp_str_ptr = NULL;
     char *fs_dialog_msg[MAX_FS_DIALOG_INFO_LINES] = {NULL},
@@ -1399,10 +1400,23 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     PedFileSystemType *file_system_type = NULL;
     PedConstraint *constraint = NULL;
     boolean confirm = FALSE, question = FALSE;
-    
+
     /* Get block device choice from user */
     if ((block_dev = getBlockDevChoice(main_cdk_screen)) == NULL)
         return;
+
+    if (strstr(block_dev, "/dev/disk-by-id") != NULL) {
+        /* If its a SCSI disk, we need the real block device node */
+        if (readlink(block_dev, real_blk_dev_node, MAX_SYSFS_PATH_SIZE) == -1) {
+            asprintf(&error_msg, "readlink(): %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            goto cleanup;
+        }
+    } else {
+        /* Its not, so use what we have */
+        snprintf(real_blk_dev_node, MAX_SYSFS_PATH_SIZE, "%s", block_dev);
+    }
 
     /* Open the file system tab file */
     if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
@@ -1417,7 +1431,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     while ((fstab_entry = getmntent(fstab_file)) != NULL) {
         /* We consider the FS device/name from the fstab file the haystack since 
          * these entries would typically have a number at the end for the partition */
-        if (strstr(fstab_entry->mnt_fsname, block_dev) != NULL) {
+        if (strstr(fstab_entry->mnt_fsname, real_blk_dev_node) != NULL) {
             errorDialog(main_cdk_screen,
                     "It appears the selected block device already has a fstab entry.", NULL);
             endmntent(fstab_file);
@@ -1428,7 +1442,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             if ((dev_node = blkid_get_devname(NULL, fstab_entry->mnt_fsname, NULL)) == NULL) {
                 // TODO: It seems this function returns NULL for an error AND if the FS wasn't found
             }
-            if ((strstr(dev_node, block_dev) != NULL)) {
+            if ((strstr(dev_node, real_blk_dev_node) != NULL)) {
                 errorDialog(main_cdk_screen,
                         "It appears the selected block device already has a fstab entry.", NULL);
                 endmntent(fstab_file);
@@ -1461,7 +1475,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     wrefresh(fs_window);
 
     /* Grab the device information */
-    if ((device = ped_device_get(block_dev)) == NULL) {
+    if ((device = ped_device_get(real_blk_dev_node)) == NULL) {
         errorDialog(main_cdk_screen, "Calling ped_device_get() failed.", NULL);
         goto cleanup;
     }
@@ -1481,7 +1495,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Information label */
     asprintf(&fs_dialog_msg[0],
-            "</31/B>Creating new file system (on block device %s)...", block_dev);
+            "</31/B>Creating new file system (on block device %.20s)...", real_blk_dev_node);
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&fs_dialog_msg[1], " ");
     asprintf(&fs_dialog_msg[2], "</B>Model:<!B>\t%-20.20s </B>Transport:<!B>\t%s",
@@ -1620,7 +1634,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Get confirmation before applying block device changes */
         asprintf(&confirm_msg, "You are about to write a new file system to '%s';",
-                block_dev);
+                real_blk_dev_node);
         confirm = confirmDialog(main_cdk_screen, confirm_msg,
                 "this will destroy all data on the device. Are you sure?");
         freeChar(confirm_msg);
@@ -1641,15 +1655,15 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Setup the new partition -- only on SCSI block devices, not the others;
              * using the transport type may be a better check for the device nodes */
-            if ((strstr(block_dev, "/dev/md") == NULL) &&
-                    (strstr(block_dev, "/dev/dm-") == NULL) &&
-                    (strstr(block_dev, "/dev/drbd") == NULL)) {
+            if ((strstr(real_blk_dev_node, "/dev/md") == NULL) &&
+                    (strstr(real_blk_dev_node, "/dev/mapper") == NULL) &&
+                    (strstr(real_blk_dev_node, "/dev/drbd") == NULL)) {
                 if (i < MAX_MAKE_FS_INFO_LINES) {
                     asprintf(&swindow_info[i], "<C>Creating new disk label and partition...");
                     addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
                     i++;
                 }
-                if ((device = ped_device_get(block_dev)) == NULL) {
+                if ((device = ped_device_get(real_blk_dev_node)) == NULL) {
                     errorDialog(main_cdk_screen, "Calling ped_device_get() failed.", NULL);
                     goto cleanup;
                 }
@@ -1678,9 +1692,10 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                     goto cleanup;
                 }
                 ped_disk_destroy(disk);
-                snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s1", block_dev);
+                snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s1", real_blk_dev_node);
             } else {
-                snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s", block_dev);
+                /* For other block devices that are not a SCSI disk */
+                snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s", real_blk_dev_node);
             }
 
             /* Create the file system */
