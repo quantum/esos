@@ -49,7 +49,7 @@ case "$0" in
 esac
 
 /bin/echo "Synchronizing configuration..."
-/usr/local/sbin/conf_sync.sh
+/usr/local/sbin/usb_sync.sh
 
 /bin/echo "Saving log files..."
 /usr/local/sbin/archive_logs.sh
