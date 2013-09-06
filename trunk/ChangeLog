@@ -1,3 +1,16 @@
+2013-09-06 15:18  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.0,
+	  etc/rc.d/rc.sysinit, scripts/conf_sync.sh, scripts/usb_sync.sh,
+	  tui/system.h: updated SCST to the latest trunk revision (4988) --
+	  this should resolve issue # 26 (soft lock-ups with SRP); change
+	  conf_sync.sh to now dump SCST config to file AND sync with the
+	  USB flash drive (conf_sync.sh contents moved to usb_sync.sh to
+	  maintain compatibility with USB-sync-only operation in TUI,
+	  etc.); disabled documentation install for the glue package to
+	  hopefully avoid a common build error; updated rc scripts and TUI
+	  to use usb_sync.sh tool
+
 2013-08-12 20:31  msmith626@gmail.com
 
 	* scripts/db_compact.py, tui/menu_actions-back_storage.c: fixed
