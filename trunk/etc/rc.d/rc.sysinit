@@ -16,7 +16,7 @@
 /bin/touch /var/log/lastlog
 
 /bin/echo "Performing initial configuration sync..."
-/usr/local/sbin/conf_sync.sh
+/usr/local/sbin/usb_sync.sh
 
 if [ ! -L "/etc/localtime" ]; then
     /bin/ln -s /usr/share/zoneinfo/posix/Factory /etc/localtime

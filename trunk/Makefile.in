@@ -77,7 +77,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		linux-3.8.5.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-trunk_r4830.tar.gz \
+		scst-trunk_r4988.tar.gz \
 		kexec-tools-2.0.3.tar.gz \
 		drbd-8.4.2.tar.gz \
 		LVM2-2.02.97.tar.gz \
@@ -237,6 +237,7 @@ image: $(build_targets)
 	--root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
 	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(CWD)/misc/grub.cfg > $(MOUNT_DIR)/boot/grub/grub.cfg
 	$(INSTALL) $(CWD)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
+	$(INSTALL) $(CWD)/scripts/usb_sync.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/startup.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(CWD)/scripts/health_chk.sh $(MOUNT_DIR)/usr/local/sbin/
@@ -867,7 +868,7 @@ glue: glibc libaio libxml2 bzip2 curl
 	XML2CONFIG="$(IMAGE_DIR)/usr/bin/xml2-config --prefix=$(IMAGE_DIR)/usr" \
 	ac_cv_path_PKGCONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	LIBS="-lz -lm -ldl -lxml2" ./configure --prefix=/usr --disable-ansi --disable-fatal-warnings \
-	--sysconfdir=/etc --localstatedir=/var
+	--sysconfdir=/etc --localstatedir=/var --disable-doc
 	$(MAKE) --directory=$(src_dir) CC="$(cc_base)"
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/replace DESTDIR=$(IMAGE_DIR) install
@@ -875,7 +876,7 @@ glue: glibc libaio libxml2 bzip2 curl
 	$(MAKE) --directory=$(src_dir)/lrm DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/logd DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/hb_report DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
+	#$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/config DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
