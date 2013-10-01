@@ -1,3 +1,8 @@
+2013-10-01 21:59  msmith626@gmail.com
+
+	* misc/linux-3.10.13.config: added the new config file for kernel
+	  3.10.13 (ya, we need this)
+
 2013-10-01 20:50  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
