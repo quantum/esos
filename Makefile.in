@@ -74,7 +74,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
-		linux-3.8.5.tar.xz \
+		linux-3.10.13.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r4988.tar.gz \
@@ -139,6 +139,9 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		lockfile-0.9.1.tar.gz \
 		python-daemon-1.5.5.tar.gz \
 		nrpe-2.14.tar.gz \
+		bcache-tools-master_20130930.tar.gz \
+		EnhanceIO-master_20130930.tar.gz \
+		util-linux-2.23.2.tar.bz2 \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -155,7 +158,8 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
 			linux_firmware dlm ipmitool sysklogd less irqbalance \
 			ethtool postgresql psycopg2 mysql MySQLdb SQLAlchemy \
-			infiniband-diags libibmad lockfile python-daemon nrpe
+			infiniband-diags libibmad lockfile python-daemon nrpe \
+			bcache-tools EnhanceIO util-linux
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -385,18 +389,19 @@ image_setup:
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): scst_src = $(wildcard $(BUILD_DIR)/scst-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): mhvtl_src = $(wildcard $(BUILD_DIR)/mhvtl-*)
+$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): eio_src = $(wildcard $(BUILD_DIR)/EnhanceIO-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kern_suffix = $(subst scst_kernel,,$(@))
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	### Kernel prerequisites for SCST
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/scst_exec_req_fifo.patch/ \
-	  -p1 < $(scst_src)/scst/kernel/scst_exec_req_fifo-3.8.patch; \
+	  -p1 < $(scst_src)/scst/kernel/scst_exec_req_fifo-3.10.patch; \
 	fi
 	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/put_page_callback.patch/ \
-	  -p1 < $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.8.patch; \
+	  -p1 < $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.10.patch; \
 	fi
 	$(RM) $(linux_src)/drivers/scsi/qla2xxx
 	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
@@ -407,6 +412,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) extraclean
 	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean
 	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) distclean
+	$(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio clean
 	if [ "$(@)" = "scst_kernel$(prod_suffix)" ]; then \
 	  $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
 	  $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
@@ -435,6 +441,10 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	### Build/install mhVTL module
 	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix)
 	$(INSTALL) -m 644 $(mhvtl_src)/kernel/mhvtl.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/kernel/drivers/scsi/
+	### Build/install the EnhanceIO driver
+	$(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_SOURCE_VERSION=$(kernel_ver)$(kern_suffix) KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio
+	$(INSTALL) -d $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/extra/enhanceio
+	$(INSTALL) -m 755 $(eio_src)/Driver/enhanceio/*.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/extra/enhanceio/
 	### Done
 	$(TOUCH) $(@)
 
@@ -574,11 +584,13 @@ ncurses: glibc gcc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-e2fsprogs: glibc
+e2fsprogs: glibc util-linux
 	$(MKDIR) $(WORK_DIR)/e2fsprogs-build
-	cd $(WORK_DIR)/e2fsprogs-build && LIBS="-lpthread" $(src_dir)/configure --prefix=/usr \
-	--enable-elf-shlibs --sysconfdir=/etc --enable-verbose-makecmds
-	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build CC="$(esos_cc)" LD="$(cc_base)"
+	cd $(WORK_DIR)/e2fsprogs-build && LIBS="-lpthread" $(src_dir)/configure \
+	--prefix=/usr --enable-elf-shlibs --sysconfdir=/etc --enable-verbose-makecmds \
+	--disable-libuuid --disable-libblkid --disable-uuidd
+	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build CC="$(esos_cc)" LD="$(cc_base)" \
+	LIBUUID="-luuid" LIBBLKID="-lblkid"
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build DESTDIR=$(IMAGE_DIR) install-libs
 	$(TOUCH) $(@)
@@ -674,7 +686,7 @@ LVM2: glibc corosync dlm
 	$(MAKE) --directory=$(src_dir)/daemons DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-xfsprogs: glibc e2fsprogs
+xfsprogs: glibc util-linux
 	cd $(src_dir) && CFLAGS="-DNO_ENDIAN_DEP_TYPES $(CPPFLAGS)" ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir) BUILD_VERBOSE=1 CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DIST_ROOT=$(IMAGE_DIR) install
@@ -697,7 +709,7 @@ mdadm: glibc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-parted: glibc e2fsprogs LVM2
+parted: glibc util-linux LVM2
 	cd $(src_dir) && CFLAGS="-D_BLKID_TYPES_H" ./configure --prefix=/usr \
 	--without-readline
 	$(MAKE) --directory=$(src_dir) CC="$(cc_base)"
@@ -724,7 +736,7 @@ libqb: glibc
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
-pacemaker: glibc libqb e2fsprogs glib libxml2 libtool ncurses bzip2 corosync libxslt glue Python
+pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 corosync libxslt glue Python
 	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
 	  cd $(src_dir) && ./autogen.sh; \
 	fi
@@ -1224,5 +1236,30 @@ nrpe: glibc openssl
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) \
 	NAGIOS_INSTALL_OPTS="" NRPE_INSTALL_OPTS="" install
+	$(TOUCH) $(@)
+
+bcache-tools: glibc util-linux
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" \
+	LDLIBS="-lssl -lcrypto -ldl -lblkid -luuid" \
+	CFLAGS="-I$(IMAGE_DIR)/usr/include/blkid -I$(IMAGE_DIR)/usr/include/uuid"
+	$(INSTALL) -m 0755 $(src_dir)/make-bcache $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(src_dir)/bcache-super-show $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(src_dir)/probe-bcache $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(src_dir)/bcache-register $(IMAGE_DIR)/usr/libexec/
+	$(INSTALL) -m 0644 $(src_dir)/*.8 $(IMAGE_DIR)/usr/share/man/man8/
+	$(TOUCH) $(@)
+
+EnhanceIO: glibc
+	$(INSTALL) -m 0755 $(src_dir)/CLI/eio_cli $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0644 $(src_dir)/CLI/eio_cli.8 $(IMAGE_DIR)/usr/share/man/man8/
+	$(TOUCH) $(@)
+
+util-linux: glibc
+	cd $(src_dir) && ./configure --prefix=/usr --disable-most-builds \
+	--disable-bash-completion --without-ncurses
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) install-usrlib_execLTLIBRARIES DESTDIR=$(IMAGE_DIR)
+	$(MAKE) --directory=$(src_dir) install-data-recursive DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 

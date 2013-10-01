@@ -67,7 +67,6 @@ e025414bc6cd79579cc7a32a45d3ae1c  busybox-1.20.2.tar.bz2
 cfdfd15b6ee471c19a7a7e6b47233963  ipmitool-1.8.12.tar.bz2
 e053094e8103165f98ddafe828f6ae4b  sysklogd-1.5.tar.gz
 765f082658002b2b46b86af4a0da1842  less-451.tar.gz
-55e77da0eef1f348b4adfaad4ced830a  linux-3.8.5.tar.xz
 b081f1046adda1d51ba351c40a8b1107  drbd-8.4.2.tar.gz
 514d07752c7c746dc9a1d88d441f0ec3  libqb-0.14.4.tar.xz
 b6403fa067c96adce448a48c9993654d  irqbalance-1.0.5.tar.gz
@@ -83,3 +82,7 @@ fe88bdfa48626d01ffad8b2fde87466e  libibmad-1.3.8.tar.gz
 1f6cd41473c2e201021a0aeef395b2b1  python-daemon-1.5.5.tar.gz
 105857720e21674083a6d6be99e102c7  nrpe-2.14.tar.gz
 d80edad0e7adf4c34270608dbc3167a1  scst-trunk_r4988.tar.gz
+64ffe74249442fd7452d12348955ccfd  linux-3.10.13.tar.xz
+6b6e8bed3ce737ffb21f3c8ee2704dba  bcache-tools-master_20130930.tar.gz
+d11cb2e6204f19a4e9f51d32137cd43a  EnhanceIO-master_20130930.tar.gz
+39a02ad0b3b37824c394f40930b7aa38  util-linux-2.23.2.tar.bz2

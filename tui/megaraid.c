@@ -399,10 +399,9 @@ MRDISK *getMRDisk(int adapter_id, int encl_id, int slot) {
                 strtok_result = strtok(NULL, ":");
                 strncpy(disk->speed, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
 
-            } else if (strstr(line, "Drive's postion:")) {
+            } else if (strstr(line, "Drive's position:")) {
                 /* If the PD entry contains the string above, then its
-                 * part of a logical drive (LD). Yes, MegaCLI has the string
-                 * above spelled wrong. */
+                 * part of a logical drive (LD). */
                 disk->part_of_ld = TRUE;
             }
         }
