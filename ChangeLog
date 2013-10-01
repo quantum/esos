@@ -1,3 +1,16 @@
+2013-10-01 20:50  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
+	  tui/megaraid.c: updated the Linux kernel to 3.10.13 to support
+	  SSD caching options (bcache, dm-cache); enabled NETXEN_NIC in the
+	  kernel (resolves issue # 32); added bcache-tools and util-linux
+	  as a dependency (only using libuuid and libblkid); updated other
+	  packages to make use of libuuid/libblkid from util-linux instead
+	  of e2fsprogs; fixed a TUI bug that affected the display of
+	  available drives when adding a MegaRAID VD; added EnhanceIO SSD
+	  caching software (module build and Python tool install); updated
+	  rc runlevel 2 script to load EnhanceIO modules
+
 2013-09-06 15:18  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.0,
