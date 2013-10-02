@@ -1254,9 +1254,9 @@ EnhanceIO: glibc
 	$(INSTALL) -m 0644 $(src_dir)/CLI/eio_cli.8 $(IMAGE_DIR)/usr/share/man/man8/
 	$(TOUCH) $(@)
 
-util-linux: glibc
+util-linux: glibc ncurses
 	cd $(src_dir) && ./configure --prefix=/usr --disable-most-builds \
-	--disable-bash-completion --without-ncurses
+	--disable-bash-completion --with-ncurses --disable-silent-rules
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) install-usrlib_execLTLIBRARIES DESTDIR=$(IMAGE_DIR)
 	$(MAKE) --directory=$(src_dir) install-data-recursive DESTDIR=$(IMAGE_DIR)
