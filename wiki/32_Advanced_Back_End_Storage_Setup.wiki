@@ -344,7 +344,12 @@ You now have a file system that supports inline data de-duplication and can be u
 <br>
 
 === Block Layer Caching ===
-TODO
+Several different block level (layer) caching solutions exist in ESOS. These software options allow you to use some type of fast storage (eg, an SSD) as a caching device to improve the performance of some other lower-end (probably large) storage. These would be similar or an alternative to controller-side (hardware) caching options like MegaRAID CacheCade or Adaptec maxCache. At the time of writing this, Enterprise Storage OS includes the following options:
+  * bcache [http://bcache.evilpiepirate.org/]
+  * dm-cache[http://visa.cs.fiu.edu/tiki/dm-cache]
+  * EnhanceIO [https://github.com/stec-inc/EnhanceIO]
+
+We'll attempt to give a brief setup example for each of these; please consult each project for additional information.
 
 <br>
 
