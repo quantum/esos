@@ -1,3 +1,8 @@
+2013-10-02 01:09  msmith626@gmail.com
+
+	* Makefile.in: fixed a build issue with the new util-linux package
+	  (ncurses)
+
 2013-10-01 21:59  msmith626@gmail.com
 
 	* misc/linux-3.10.13.config: added the new config file for kernel
