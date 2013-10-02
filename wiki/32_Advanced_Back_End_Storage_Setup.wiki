@@ -346,10 +346,33 @@ You now have a file system that supports inline data de-duplication and can be u
 === Block Layer Caching ===
 Several different block level (layer) caching solutions exist in ESOS. These software options allow you to use some type of fast storage (eg, an SSD) as a caching device to improve the performance of some other lower-end (probably large) storage. These would be similar or an alternative to controller-side (hardware) caching options like MegaRAID CacheCade or Adaptec maxCache. At the time of writing this, Enterprise Storage OS includes the following options:
   * bcache [http://bcache.evilpiepirate.org/]
-  * dm-cache[http://visa.cs.fiu.edu/tiki/dm-cache]
+  * dm-cache [http://visa.cs.fiu.edu/tiki/dm-cache]
   * EnhanceIO [https://github.com/stec-inc/EnhanceIO]
 
-We'll attempt to give a brief setup example for each of these; please consult each project for additional information.
+We'll attempt to give a brief setup example for each of these; please consult the project web sites above for additional information.
+
+For bcache, you'll first need to identify a caching device (like an SSD drive, or array of SSDs) and a backing device (a slow hard drive, or RAID array of spinning disks). The steps go something like this:
+  # Create and register the caching device.
+  # Create and register the backing device.
+  # Attach the caching device to the backing device.
+  # You can now use the new bcache block device as any other block device in ESOS (eg, create a virtual disk file system for vdisk_fileio, use the raw block device for LVM, directly with vdisk_blockio, etc.).
+
+Here is a real example of the commands for a bcache device; '/dev/sdc' is the caching device, '/dev/sdd' is the backing device, and the UUID comes from 'cset.uuid' in the bcache-super-show command:
+{{{
+make-bcache -C /dev/sdc
+echo "/dev/sdc" > /sys/fs/bcache/register
+make-bcache -B /dev/sdd
+echo "/dev/sdd" > /sys/fs/bcache/register
+bcache-super-show /dev/sdc
+echo "6d4ab278-0844-4a50-8e74-87aeda4fd353" > /sys/block/sdd/bcache/attach
+}}}
+
+You should now have a /dev/bcacheX device node that you can use.
+
+TODO: dm-cache
+
+TODO: EnhanceIO
+
 
 <br>
 
