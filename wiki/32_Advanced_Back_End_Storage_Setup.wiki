@@ -343,6 +343,11 @@ You now have a file system that supports inline data de-duplication and can be u
 
 <br>
 
+=== Block Layer Caching ===
+TODO
+
+<br>
+
 === File Systems & Virtual Disk Files ===
 After you have setup/configured your advanced back-end storage, it will still appear as a block device, just as described in the basic back-storage wiki document.
 
