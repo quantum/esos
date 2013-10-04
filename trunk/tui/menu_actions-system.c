@@ -1068,7 +1068,8 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* The 'g' makes the swindow widget scroll to the top, then activate */
-    injectCDKSwindow(net_restart_info, 'g');
+    // TODO: Lets not scroll to the top in this one for now, its kind of annoying
+    //injectCDKSwindow(net_restart_info, 'g');
     activateCDKSwindow(net_restart_info, 0);
 
     /* Done */
