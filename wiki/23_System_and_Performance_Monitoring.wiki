@@ -1,0 +1,82 @@
+#summary Monitoring your ESOS system performance.
+
+= Introduction =
+
+Since ESOS r512 a new daemon was specifically written and integated into the install image, its purpose is to collect and store performance metrics into a Database.
+While there are many existing tools which accomplish this, many of them require complex configuration directives and additional software to work correctly.
+
+At current stage the daemon collects and stores block device metrics only, it can use PostgreSQL and MySQL as backends and takes care of compacting the samples to avoid excessive record numbers.
+
+= Configuring the agent =
+
+The agent uses a single configuration file: `/etc/perf-agent.con` which contains all of the relevant options. The database connection string is formatted using a standard URL notation. Example of Postgres and MySQL connection strings:
+
+{{{
+#Postgres
+DBURI = postgres://username:password@host/database
+
+#MySQL
+DBURI = mysql://username:password@host/database
+}}}
+
+You need to provide the agent with an empty database, it will take care itself of creating all of the tables.
+
+The `System` option is used to identify your host in case of multiple ESOS agents logging to the same database. You can ignore the `HostAddress` option as it is not used.
+
+`PollingInterval` sets the samples resolution and by default it's equal to 5 seconds. Changing the resolution is strongly discouraged and it may later disappear as a configurable parameter.
+
+`BlockDevices` is a white-space separated list of devices to monitor.
+Example:
+{{{
+# Monitor /dev/sda /dev/sdb /dev/sdc
+BlockDevices = sda sdb sdc
+}}}
+== Starting the agent ==
+
+The agent can be started by the init script:
+{{{
+/etc/rc.d/rc.perfagent start
+}}}
+
+Or in debug mode (which will print messages to stdout):
+{{{
+python /usr/local/perf-agent/perfagentmain.py
+}}}
+To terminate the agent in debug mode press `CTRL+C`
+
+To start the agent automatically upon boot, change the `/etc/rc.conf` file as follows:
+{{{
+#rc.perfagent_enable=NO
+rc.perfagent_enable=YES
+}}}
+
+= Agent details =
+
+The following block device metrics are stored into the database, the first column is equal to the one in the database:
+
+{{{
+readscompleted = BigInteger # n of read reqs completed
+readsmerged = BigInteger # n of reads merged by scheduler
+sectorsread = BigInteger # n of sectors read during sample period
+writescompleted = BigInteger # n of write requests completed
+sectorswritten = BigInteger # sectors written during period
+kbwritten = BigInteger # sum of Kb written during sample period
+kbread = BigInteger # sum of Kb read during sample period
+averagereadtime = Integer # avg of ms spent doing writes
+averagewritetime = Integer # avg of ms spent doing reads
+iotime = Integer # Combined I/O execution time in ms
+interval = Integer # Sample interval in s
+writespeed = Integer # W in Kb/s
+readspeed = Integer # R in Kb/s
+devicerate = Integer # Rate of combined R+W in KB/s
+}}} 
+
+=== Auto-compacter ===
+
+Enabling the agent to start automatically on boot, will enable a sample reducer to be run once every 24 hours (`croncompact.py`), the reducer will compute averages of samples following this schema:
+
+  * Samples of the previous day (starting at 00:00 ending at 23:59) reduce to 15 minutes (average or sum depending of the field) and keep them for the next 7 days
+  * Samples of 7 days ago (starting at 00:00 ending at 23:59) reduce to hourly samples
+  * Samples of 31 days ago (starting at 00:00 ending at 23:59) reduce to 1 daily sample
+
+If you don't want to reduce the samples or you will automatically purge them by other means then simply comment out the line in `/etc/crontab` which contains the croncompact.py reference.
