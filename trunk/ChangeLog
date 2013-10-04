@@ -1,3 +1,14 @@
+2013-10-04 02:29  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/drbd-8.4.3.patch, scripts/dev_nodes.sh,
+	  tui/menu_actions-system.c: updated drbd user-land to 8.4.3 to
+	  match recent kernel version bump; updated nrpe to 2.15; TUI:
+	  don't scroll to the top of the network-restart dialog; updates to
+	  dev_nodes.sh to support /dev/bcacheX devices (registers
+	  cache/backing devices on boot)... more to come for dm-cache and
+	  EnhanceIO
+
 2013-10-02 01:09  msmith626@gmail.com
 
 	* Makefile.in: fixed a build issue with the new util-linux package
