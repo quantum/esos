@@ -1,14 +1,14 @@
-#summary Monitoring your ESOS system performance.
+#summary Monitoring your ESOS system and performance statistics.
 
-= Introduction =
-
+=== Introduction ===
 Since ESOS r512 a new daemon was specifically written and integated into the install image, its purpose is to collect and store performance metrics into a Database.
 While there are many existing tools which accomplish this, many of them require complex configuration directives and additional software to work correctly.
 
 At current stage the daemon collects and stores block device metrics only, it can use PostgreSQL and MySQL as backends and takes care of compacting the samples to avoid excessive record numbers.
 
-= Configuring the agent =
+<br>
 
+=== Configuring the Performance Statistics Agent ===
 The agent uses a single configuration file: `/etc/perf-agent.con` which contains all of the relevant options. The database connection string is formatted using a standard URL notation. Example of Postgres and MySQL connection strings:
 
 {{{
@@ -31,8 +31,10 @@ Example:
 # Monitor /dev/sda /dev/sdb /dev/sdc
 BlockDevices = sda sdb sdc
 }}}
-== Starting the agent ==
 
+<br>
+
+=== Starting the Agent ===
 The agent can be started by the init script:
 {{{
 /etc/rc.d/rc.perfagent start
@@ -50,8 +52,9 @@ To start the agent automatically upon boot, change the `/etc/rc.conf` file as fo
 rc.perfagent_enable=YES
 }}}
 
-= Agent details =
+<br>
 
+=== Agent details ===
 The following block device metrics are stored into the database, the first column is equal to the one in the database:
 
 {{{
@@ -71,8 +74,9 @@ readspeed = Integer # R in Kb/s
 devicerate = Integer # Rate of combined R+W in KB/s
 }}} 
 
-=== Auto-compacter ===
+<br>
 
+=== Auto-Compacter ===
 Enabling the agent to start automatically on boot, will enable a sample reducer to be run once every 24 hours (`croncompact.py`), the reducer will compute averages of samples following this schema:
 
   * Samples of the previous day (starting at 00:00 ending at 23:59) reduce to 15 minutes (average or sum depending of the field) and keep them for the next 7 days
@@ -80,3 +84,10 @@ Enabling the agent to start automatically on boot, will enable a sample reducer 
   * Samples of 31 days ago (starting at 00:00 ending at 23:59) reduce to 1 daily sample
 
 If you don't want to reduce the samples or you will automatically purge them by other means then simply comment out the line in `/etc/crontab` which contains the croncompact.py reference.
+
+<br>
+
+=== Nagios ===
+TODO
+
+<br>
