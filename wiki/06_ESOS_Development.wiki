@@ -1,0 +1,11 @@
+#summary Information on development, contributing, and work that needs to be completed.
+
+=== Contributing to the ESOS Project ===
+TODO
+
+<br>
+
+=== What's Needed ===
+Here is a wish-list of improvements that need/should be done, or potential issues that need addressing; possible implementation ideas are also listed for some (in no particular order).
+  * blah
+  * blah
