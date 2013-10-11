@@ -1,3 +1,14 @@
+2013-10-11 21:01  msmith626@gmail.com
+
+	* Makefile.in, TODO, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.2,
+	  etc/rc.d/rc.eio, misc/EnhanceIO-master_20130930.patch,
+	  scripts/dev_nodes.sh: created a patch for eio_cli so it doesn't
+	  need udev and lots of cleanup, still needs more love... someone
+	  owes me a beer for that one; new rc script for EnhanceIO (uses
+	  INI file created by new eio_cli); removed EIO stuff from rc.2
+	  (now in its own rc script); for mdev setup, use register_quiet
+	  with bcache
+
 2013-10-04 02:29  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
