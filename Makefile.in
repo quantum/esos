@@ -1250,6 +1250,7 @@ bcache-tools: glibc util-linux
 	$(TOUCH) $(@)
 
 EnhanceIO: glibc
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/$(notdir $(src_dir)).patch
 	$(INSTALL) -m 0755 $(src_dir)/CLI/eio_cli $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) -m 0644 $(src_dir)/CLI/eio_cli.8 $(IMAGE_DIR)/usr/share/man/man8/
 	$(TOUCH) $(@)

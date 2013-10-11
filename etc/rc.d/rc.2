@@ -44,12 +44,6 @@ fi
 /bin/echo "Loading the QLogic Fibre Channel HBA module..."
 /sbin/modprobe qla2xxx
 
-/bin/echo "Loading the EnhanceIO modules..."
-/sbin/modprobe enhanceio_fifo
-/sbin/modprobe enhanceio_lru
-/sbin/modprobe enhanceio_rand
-/sbin/modprobe enhanceio
-
 /bin/echo "Starting irqbalance..."
 /usr/sbin/irqbalance
 
