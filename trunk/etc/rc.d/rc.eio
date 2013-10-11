@@ -1,0 +1,179 @@
+#! /usr/bin/perl
+
+# $Id$
+
+# An rc script for the EnhanceIO driver; this will parse the EIO INI
+# configuration file and create cache devices.
+# Original INI parsing sample code came from here:
+# http://stackoverflow.com/questions/2014862/how-can-i-access-ini-files-from-perl
+
+use strict;
+use File::Path;
+
+my @eio_modules = ("enhanceio", "enhanceio_fifo", "enhanceio_lru", "enhanceio_rand");
+my $ini_file = "/etc/eio.conf";
+my $modprobe_prog = "/sbin/modprobe";
+my $rmmod_prog = "/sbin/rmmod";
+my $eio_cli_prog = "/usr/sbin/eio_cli";
+my $eio_proc_dir = "/proc/enhanceio";
+my $section;
+my @sections;
+my %ini_hash;
+
+# Check arguments
+if ((@ARGV != 1) || (($ARGV[0] ne "start") && ($ARGV[0] ne "stop"))) {
+    print("Usage: $0 {start | stop}\n");
+    exit(1);
+}
+
+if ($ARGV[0] eq "start") {
+    # Load the modules
+    print("Loading the EnhanceIO modules...\n");
+    foreach my $each (@eio_modules) {
+        system($modprobe_prog . " " . $each . " 2>&1");
+        if ($? == -1) {
+            print("ERROR: Running $modprobe_prog failed: $!\n");
+            exit 1;
+        } else {
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $modprobe_prog program exited with value $exit_status.\n");
+                exit 1;
+            }
+        }
+    }
+
+    # Parse the EnhanceIO configuration file
+    open(INI, "$ini_file") || die("ERROR: Can't open $ini_file: $!");
+    while (<INI>) {
+        chomp;
+        # Get the INI file section
+        if (/^\s*\[(\w+)\].*/) {
+            $section = $1;
+            push(@sections, $section);
+            next;
+        }
+        # Get the INI file keyword/value pairs
+        if (/^(.*)\s*=\s*(.*)$/) {
+            (my $keyword, my $value) = split(/=/, $_);
+            $keyword =~ s/^\s+//;
+            $keyword =~ s/\s+$//;
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+            # Put them into a hash
+            $ini_hash{$section . ":" . $keyword} = $value;
+        }
+    }
+    close(INI);
+
+    # Configure each EnhanceIO cache device
+    foreach my $each (@sections) {
+        # The 'mode' option
+        if (!exists($ini_hash{$each . ":mode"})) {
+            print("ERROR: The 'mode' name is missing!\n");
+            next;
+        }
+        my $mode = $ini_hash{$each . ":mode"};
+        if ($mode eq "") {
+            print("ERROR: The 'mode' value is empty!\n");
+            next;
+        }
+        # The 'block_size' option
+        if (!exists($ini_hash{$each . ":block_size"})) {
+            print("ERROR: The 'block_size' name is missing!\n");
+            next;
+        }
+        my $block_size = $ini_hash{$each . ":block_size"};
+        if ($block_size eq "") {
+            print("ERROR: The 'block_size' value is empty!\n");
+            next;
+        }
+        # The 'policy' option
+        if (!exists($ini_hash{$each . ":policy"})) {
+            print("ERROR: The 'policy' name is missing!\n");
+            next;
+        }
+        my $policy = $ini_hash{$each . ":policy"};
+        if ($policy eq "") {
+            print("ERROR: The 'policy' value is empty!\n");
+            next;
+        }
+        # The 'src_name' option
+        if (!exists($ini_hash{$each . ":src_name"})) {
+            print("ERROR: The 'src_name' name is missing!\n");
+            next;
+        }
+        my $src_name = $ini_hash{$each . ":src_name"};
+        if ($src_name eq "") {
+            print("ERROR: The 'src_name' value is empty!\n");
+            next;
+        }
+        # The 'ssd_name' option
+        if (!exists($ini_hash{$each . ":ssd_name"})) {
+            print("ERROR: The 'ssd_name' name is missing!\n");
+            next;
+        }
+        my $ssd_name = $ini_hash{$each . ":ssd_name"};
+        if ($ssd_name eq "") {
+            print("ERROR: The 'ssd_name' value is empty!\n");
+            next;
+        }
+
+        my $cache_name = $each;
+        print("Enabling cache $cache_name...\n");
+
+        # Enable the EnhanceIO cache device
+        system($eio_cli_prog . " enable -d " . $src_name . " -s " . $ssd_name . " -m " . $mode . " -b " . $block_size . " -p " . $policy . " -c " . $cache_name . " 2>&1");
+        if ($? == -1) {
+            print("ERROR: Running $eio_cli_prog failed: $!\n");
+            next;
+        }
+        my $exit_status = $? >> 8;
+        if ($exit_status != 0) {
+            print("ERROR: The $eio_cli_prog program exited with value $exit_status.\n");
+            next;
+        }
+    }
+
+} elsif ($ARGV[0] eq "stop") {
+    # We want to remove/delete any configured cache devices
+    my @cache_devs = glob($eio_proc_dir . "/*");
+    foreach my $each (@cache_devs) {
+        my @values = split("$eio_proc_dir" . "/", $each);
+        # This one isn't a cache device
+        if (@values[1] eq "version") {
+            next;
+        }
+
+        my $cache_name = @values[1];
+        print("Disabling cache $cache_name...\n");
+
+        # Disable the EnhanceIO cache device
+        system($eio_cli_prog . " disable -c " . $cache_name . " 2>&1");
+        if ($? == -1) {
+            print("ERROR: Running $eio_cli_prog failed: $!\n");
+            next;
+        }
+        my $exit_status = $? >> 8;
+        if ($exit_status != 0) {
+            print("ERROR: The $eio_cli_prog program exited with value $exit_status.\n");
+            next;
+        }
+    }
+
+    # Unload the modules
+    print("Unloading the EnhanceIO modules...\n");
+    foreach my $each (reverse(@eio_modules)) {
+        system($rmmod_prog . " " . $each . " 2>&1");
+        if ($? == -1) {
+            print("ERROR: Running $rmmod_prog failed: $!\n");
+            exit 1;
+        } else {
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $rmmod_prog program exited with value $exit_status.\n");
+                exit 1;
+            }
+        }
+    }
+}

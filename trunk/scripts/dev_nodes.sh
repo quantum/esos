@@ -20,7 +20,7 @@ if [ "x${MDEV:0:2}" = "xsd" ]; then
     if [ "x${bcache_probe}" != "x" ]; then
         export ${bcache_probe}
         if [ "x${ID_FS_TYPE}" = "xbcache" ]; then
-            echo "/dev/${MDEV}" > /sys/fs/bcache/register
+            echo "/dev/${MDEV}" > /sys/fs/bcache/register_quiet
         fi
     fi
 elif [ "x${MDEV:0:3}" = "xdlm" ]; then
