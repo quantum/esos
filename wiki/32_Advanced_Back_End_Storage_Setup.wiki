@@ -371,8 +371,12 @@ You should now have a /dev/bcacheX device node that you can use.
 
 TODO: dm-cache
 
-TODO: EnhanceIO
+The setup procedure for EnhanceIO cache devices is pretty clear-cut; the source or backing device (the device you want to "enhance") can already contain data and even have a mounted file system while adding/deleting a cache. The `eio_cli` tool that comes with ESOS is a special version that supports non-udev setups (like mdev in ESOS). EnhanceIO is disabled in ESOS by default; edit the /etc/rc.conf file and set `rc.eio_enable` to "YES". Next, you'll need to setup your cache device using the `eio_cli` tool (be sure to always use the "-u" option to disable support for udev):
+{{{
+eio_cli create -u -d /dev/disk-by-id/SERIAL-B8CEA82A -s /dev/disk-by-id/SERIAL-A65CBA25 -m wb -c my_cache
+}}}
 
+Your backing/source device ("/dev/disk-by-id/SERIAL-B8CEA82A" in this example) is now enhanced! The configuration file that eio_cli and rc.eio use is located here: /etc/eio.conf
 
 <br>
 
