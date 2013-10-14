@@ -1,7 +1,7 @@
 #summary DRBD, software RAID (md), LVM2, and CLI RAID tool information.
 
 === Distributed Replicated Block Device (DRBD) ===
-DRBD makes an excellent partner to SCST for creating highly available disk arrays and/or replicating data to a remote site for business continuity or disaster recovery purposes. ESOS includes a mostly vanilla DRBD install with the full set of user-land tools and DRBD functionality built-in to the kernel; we are currently using the 8.3 version of DRBD. The DRBD [http://www.drbd.org/users-guide-8.3/ documentation] is quite excellent, so we won't even try to emulate that here. _Use the official 8.3 DRBD documentation._
+DRBD makes an excellent partner to SCST for creating highly available disk arrays and/or replicating data to a remote site for business continuity or disaster recovery purposes. ESOS includes a mostly vanilla DRBD install with the full set of user-land tools and DRBD functionality built-in to the kernel; we are currently using the 8.4 version of DRBD. The DRBD [http://www.drbd.org/users-guide-8.4/ documentation] is quite excellent, so we won't even try to emulate that here. _Use the official 8.4 DRBD documentation._
 
 Since DRBD resources (starting/stopping) are typically handled by the cluster stack (Pacemaker + Corosync), the stand-alone DRBD service is disabled by default. To setup/configure the DRBD resources on boot, edit the /etc/rc.conf file and set `rc.drbd_enable` to "YES".
 
@@ -369,7 +369,11 @@ echo "6d4ab278-0844-4a50-8e74-87aeda4fd353" > /sys/block/sdd/bcache/attach
 
 You should now have a /dev/bcacheX device node that you can use.
 
-TODO: dm-cache
+Now we'll take a look at setting up dm-cache. Two different block devices (or segments) are needed for dm-cache: (1) for the cache metadata, and (1) for the cache regions. For this example setup, we created both on one single SSD-backed volume using LVM. See [http://blog.kylemanna.com/linux/2013/06/30/ssd-caching-using-dmcache-tutorial/ this] article for a more in-depth example; for the example shown below, metadata size was not taken into account.
+{{{
+TODO
+}}}
+
 
 The setup procedure for EnhanceIO cache devices is pretty clear-cut; the source or backing device (the device you want to "enhance") can already contain data and even have a mounted file system while adding/deleting a cache. The `eio_cli` tool that comes with ESOS is a special version that supports non-udev setups (like mdev in ESOS). EnhanceIO is disabled in ESOS by default; edit the /etc/rc.conf file and set `rc.eio_enable` to "YES". Next, you'll need to setup your cache device using the `eio_cli` tool (be sure to always use the "-u" option to disable support for udev):
 {{{
