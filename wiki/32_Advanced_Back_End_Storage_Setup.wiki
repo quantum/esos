@@ -382,7 +382,19 @@ blockdev --getsz /dev/mapper/slow_disk_vg-data_vol
 dmsetup create cached_dev --table '0 209715200 cache /dev/mapper/ssd_vg-ssd_metadata /dev/mapper/ssd_vg-ssd_blocks /dev/mapper/slow_disk_vg-data_vol 512 1 writeback default 0'
 }}}
 
-You would now have a '/dev/mapper/cached_dev' device node that can be used for a partition table & file system, raw block device, etc.
+You would now have a '/dev/mapper/cached_dev' device node that can be used for a partition table & file system, raw block device, etc. To make dm-cache devices persist across reboots, you'll need to enable the rc script (rc.dmcache) in the /etc/rc.conf file. Then you'll need to add the commands to create/destroy the dm-cache device(s) using files "/etc/dm-cache.start" and "/etc/dm-cache.stop"; below are examples following suit from above.
+
+`/etc/dm-cache.start`:
+{{{
+dmsetup create cached_dev --table '0 209715200 cache /dev/mapper/ssd_vg-ssd_metadata /dev/mapper/ssd_vg-ssd_blocks /dev/mapper/slow_disk_vg-data_vol 512 1 writeback default 0'
+dmsetup resume cached_dev
+}}}
+
+`/etc/dm-cache.stop`:
+{{{
+dmsetup suspend cached_dev
+dmsetup remove cached_dev
+}}}
 
 The setup procedure for EnhanceIO cache devices is pretty clear-cut; the source or backing device (the device you want to "enhance") can already contain data and even have a mounted file system while adding/deleting a cache. The `eio_cli` tool that comes with ESOS is a special version that supports non-udev setups (like mdev in ESOS). EnhanceIO is disabled in ESOS by default; edit the /etc/rc.conf file and set `rc.eio_enable` to "YES". Next, you'll need to setup your cache device using the `eio_cli` tool (be sure to always use the "-u" option to disable support for udev):
 {{{
