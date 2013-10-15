@@ -1,0 +1,39 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+DMCACHE_START="/etc/dm-cache.start"
+DMCACHE_STOP="/etc/dm-cache.stop"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    # If our dm-cache.start file exists, run it
+    if [ -f ${DMCACHE_START} ]; then
+        /bin/echo "Found the dm-cache start script; running..."
+        /bin/sh ${DMCACHE_START}
+    else
+        /bin/echo "The dm-cache start script wasn't found!"
+        exit 1
+    fi
+}
+
+stop() {
+    # If our dm-cache.stop file exists, run it
+    if [ -f ${DMCACHE_STOP} ]; then
+        /bin/echo "Found the dm-cache stop script; running..."
+        /bin/sh ${DMCACHE_STOP}
+    else
+        /bin/echo "The dm-cache stop script wasn't found!"
+        exit 1
+    fi
+}
+
+# Perform specified action
+${1}
