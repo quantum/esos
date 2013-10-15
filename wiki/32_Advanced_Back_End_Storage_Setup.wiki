@@ -371,9 +371,18 @@ You should now have a /dev/bcacheX device node that you can use.
 
 Now we'll take a look at setting up dm-cache. Two different block devices (or segments) are needed for dm-cache: (1) for the cache metadata, and (1) for the cache regions. For this example setup, we created both on one single SSD-backed volume using LVM. See [http://blog.kylemanna.com/linux/2013/06/30/ssd-caching-using-dmcache-tutorial/ this] article for a more in-depth example; for the example shown below, metadata size was not taken into account.
 {{{
-TODO
+pvcreate /dev/sda
+vgcreate ssd_vg /dev/sda
+lvcreate -L 10G -n ssd_metadata ssd_vg
+lvcreate -L 150G -n ssd_blocks ssd_vg
+pvcreate /dev/sdb
+vgcreate slow_disk_vg /dev/sdb
+lvcreate -L 100G -n data_vol slow_disk_vg
+blockdev --getsz /dev/mapper/slow_disk_vg-data_vol
+dmsetup create cached_dev --table '0 209715200 cache /dev/mapper/ssd_vg-ssd_metadata /dev/mapper/ssd_vg-ssd_blocks /dev/mapper/slow_disk_vg-data_vol 512 1 writeback default 0'
 }}}
 
+You would now have a '/dev/mapper/cached_dev' device node that can be used for a partition table & file system, raw block device, etc.
 
 The setup procedure for EnhanceIO cache devices is pretty clear-cut; the source or backing device (the device you want to "enhance") can already contain data and even have a mounted file system while adding/deleting a cache. The `eio_cli` tool that comes with ESOS is a special version that supports non-udev setups (like mdev in ESOS). EnhanceIO is disabled in ESOS by default; edit the /etc/rc.conf file and set `rc.eio_enable` to "YES". Next, you'll need to setup your cache device using the `eio_cli` tool (be sure to always use the "-u" option to disable support for udev):
 {{{
