@@ -1,3 +1,10 @@
+2013-10-15 20:12  msmith626@gmail.com
+
+	* etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.dmcache: set pacemaker
+	  and corosync to disabled in rc.conf (new default); added new
+	  dm-cache rc script and now dm-cache devices can be persistent via
+	  dm-cache.start and dm-cache.stop files (see wiki documentation)
+
 2013-10-11 21:01  msmith626@gmail.com
 
 	* Makefile.in, TODO, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.2,
