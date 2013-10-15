@@ -42,6 +42,10 @@ The setup and configuration of the cluster stack is well beyond the scope of thi
   * [http://clusterlabs.org/doc/en-US/Pacemaker/1.1-crmsh/html/Clusters_from_Scratch/index.html Clusters from Scratch]
   * [http://clusterlabs.org/doc/en-US/Pacemaker/1.1-crmsh/html/Pacemaker_Explained/index.html Pacemaker Explained]
 
+The Pacemaker and Corosync rc scripts (rc.pacemaker & rc.corosync) are both disabled by default in ESOS. To enable them, edit the `/etc/rc.conf` file and set `rc.corosync_enable` and `rc.pacemaker_enable` to "YES". You'll then need to start both services:
+  * /etc/rc.d/rc.corosync start
+  * /etc/rc.d/rc.pacemaker start
+
 A SCST resource agent (ocf:esos:scst) is included with ESOS. It can be configured either as a normal resource (start/stop) or a multi-state resource (master/slave); the MS resource mode relies on the implicit Asymmetric Logical Unit Assignment (ALUA) functionality in SCST, so this must also be configured when using `ocf:esos:scst` as master/slave.
 
 When using `ocf:esos:scst` as a "normal" resource, the supporting user-land daemons and SCST modules are loaded when started, and when stopped, all daemons and modules are unloaded. This is important to know since when loading SCST, it expects whatever devices you have defined in /etc/scst.conf to be available (eg, /dev/drbd0 block device, or a virtual disk file on a file system). SCST will remove these from the configuration if they are not available when started; please keep this in mind when designing your cluster.
