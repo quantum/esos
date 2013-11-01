@@ -2,10 +2,14 @@
 
 # $Id$
 
-/bin/echo "Setting up mdev (/dev)..."
+/bin/echo "Mounting special file systems..."
 /bin/mount -t tmpfs mdev /dev
 /bin/mount -t proc none /proc
 /bin/mount -t sysfs none /sys
+/bin/mkdir /dev/pts
+/bin/mount -t devpts none /dev/pts
+/bin/mkdir /dev/shm
+/bin/mount -t tmpfs none /dev/shm
 
 /bin/echo "Populating /dev with device nodes..."
 /bin/echo /sbin/mdev > /proc/sys/kernel/hotplug

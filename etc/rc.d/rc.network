@@ -48,7 +48,7 @@ if ($ARGV[0] eq "start") {
         }
         # Get the INI file keyword/value pairs
         if (/^(.*)\s*=\s*(.*)$/) {
-            (my $keyword, my $value) = split(/=/, $_);
+            (my $keyword, my $value) = split(/=/, $_, 2);
             $keyword =~ s/^\s+//;
             $keyword =~ s/\s+$//;
             $value =~ s/^\s+//;
@@ -63,7 +63,7 @@ if ($ARGV[0] eq "start") {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
-        if (($iface =~ /eth[0-9]/) || ($iface =~ /ib[0-9]/) || ($iface =~ /bond[0-9]/)) {
+        if (($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) || ($iface =~ /bond\d+/)) {
             print("Bringing up interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " up 2>&1");
             if ($? == -1) {
@@ -80,18 +80,108 @@ if ($ARGV[0] eq "start") {
 
     # Configure the network interfaces
     foreach my $each (@sections) {
-        if ($each =~ "bond") {
+        # For bonding interfaces
+        if ($each =~ /bond\d+/) {
+            my $bm_file = "$net_if_dir" . "/bonding_masters";
+            my $bond_iface_file = "$net_if_dir" . "/" . "$each";
+
+            # If the bonding interface doesn't exist, create it
+            if (! -e "$bond_iface_file") {
+                print("Creating bonding interface $each...\n");
+                open(BONDING_MASTERS, "> $bm_file") || die("ERROR: Can't open $bm_file: $!");
+                print(BONDING_MASTERS "+$each");
+                close(BONDING_MASTERS);
+            }
+
+            # Parse the bonding options
+            if (!exists($ini_hash{$each . ":bondopts"})) {
+                print("ERROR: The 'bondopts' name is missing!\n");
+                next;
+            }
+            my $bondopts = $ini_hash{$each . ":bondopts"};
+            if ($bondopts eq "") {
+                print("WARNING: The 'bondopts' value is empty!\n");
+            } else {
+
+                # Bring down the bond interface before modifying settings
+                print("Bringing down bonding interface $each...\n");
+                system($ifconfig_prog . " " . $each . " 0.0.0.0 down 2>&1");
+                if ($? == -1) {
+                    print("ERROR: Running $ifconfig_prog failed: $!\n");
+                    next;
+                }
+                my $exit_status = $? >> 8;
+                if ($exit_status != 0) {
+                    print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                    next;
+                }
+
+                # Loop through the bonding options and set each
+                my @bondopt_vals = split(/ /, $bondopts);
+                foreach my $each_bondopt (@bondopt_vals) {
+                    # Split each option into a key/value pair
+                    (my $bondopt_key, my $bondopt_val) = split(/=/, $each_bondopt, 2);
+                    # Read the arp_ip_target file
+                    my $arp_ip_tgt_file = "$net_if_dir" . "/" . "$each" . "/bonding/arp_ip_target";
+                    open(ARP_IP_TGT, "$arp_ip_tgt_file") || die("ERROR: Can't open $arp_ip_tgt_file: $!");
+                    my @arp_ip_tgt_lines = <ARP_IP_TGT>;
+                    close(ARP_IP_TGT);
+                    # For new style syntax (eg, arp_ip_target=192.168.1.1,192.168.1.2)
+                    if ("$bondopt_key" eq "arp_ip_target" && substr($bondopt_val, 0, 1) ne "+") {
+                        my @arp_ip_vals = split(/,/, $bondopt_val);
+                        foreach my $each_arp_ip (@arp_ip_vals) {
+                            if (! grep(/$each_arp_ip/, @arp_ip_tgt_lines)) {
+                                print("$each: $bondopt_key -> +$each_arp_ip\n");
+                                open(ARP_IP_TGT, "> $arp_ip_tgt_file") || die("ERROR: Can't open $arp_ip_tgt_file: $!");
+                                print(ARP_IP_TGT "+$each_arp_ip");
+                                close(ARP_IP_TGT);
+                            }
+                        }
+                    # For old style synax (eg, arp_ip_target=+192.168.1.1 arp_ip_target=+192.168.1.2)
+                    } elsif ("$bondopt_key" eq "arp_ip_target") {
+                        my $arp_ip_no_plus = substr($bondopt_val, 1);
+                        if (! grep(/$arp_ip_no_plus/, @arp_ip_tgt_lines)) {
+                            print("$each: $bondopt_key -> +$arp_ip_no_plus\n");
+                            open(ARP_IP_TGT, "> $arp_ip_tgt_file") || die("ERROR: Can't open $arp_ip_tgt_file: $!");
+                            print(ARP_IP_TGT "+$arp_ip_no_plus");
+                            close(ARP_IP_TGT);
+                        }
+                    # For any other key that is not "primary"
+                    } elsif ("$bondopt_key" ne "primary") {
+                        print("$each: $bondopt_key -> $bondopt_val\n");
+                        my $bonding_sysfs_file = "$net_if_dir" . "/" . "$each" . "/bonding/" . "$bondopt_key";
+                        open(SYSFS_FILE, "> $bonding_sysfs_file") || die("ERROR: Can't open $bonding_sysfs_file: $!");
+                        print(SYSFS_FILE "$bondopt_val");
+                        close(SYSFS_FILE);
+                    }
+                }
+            }
+
+            # Bring up the bond interface
+            print("Bringing up bonding interface $each...\n");
+            system($ifconfig_prog . " " . $each . " up 2>&1");
+            if ($? == -1) {
+                print("ERROR: Running $ifconfig_prog failed: $!\n");
+                next;
+            }
+            my $exit_status = $? >> 8;
+            if ($exit_status != 0) {
+                print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
+                next;
+            }
+
+            # Parse the bonding slaves
             if (!exists($ini_hash{$each . ":slaves"})) {
                 print("ERROR: The 'slaves' name is missing!\n");
                 next;
             }
             my $slaves = $ini_hash{$each . ":slaves"};
             if ($slaves eq "") {
-                print("ERROR: The 'slaves' value is empty!\n");
-                next;
+                print("WARNING: The 'slaves' value is empty!\n");
             }
+
             # Add the slaves to the master bonding interface
-            my @slave_vals = split(',', $slaves);
+            my @slave_vals = split(/,/, $slaves);
             foreach my $each_slave (@slave_vals) {
                 print("Enslaving device $each_slave to interface $each...\n");
                 system($ifenslave_prog . " " . $each . " " . $each_slave . " 2>&1");
@@ -105,8 +195,34 @@ if ($ARGV[0] eq "start") {
                     next;
                 }
             }
+
+            # Parse the bonding options (again)
+            if (!exists($ini_hash{$each . ":bondopts"})) {
+                print("ERROR: The 'bondopts' name is missing!\n");
+                next;
+            }
+            my $bondopts = $ini_hash{$each . ":bondopts"};
+            if ($bondopts eq "") {
+                print("WARNING: The 'bondopts' value is empty!\n");
+            } else {
+                my @bondopt_vals = split(/ /, $bondopts);
+                foreach my $each_bondopt (@bondopt_vals) {
+                    # Split each option into a key/value pair
+                    (my $bondopt_key, my $bondopt_val) = split(/=/, $each_bondopt, 2);
+                    # This is the only post-enslavement parameter we care about
+                    if ("$bondopt_key" eq "primary") {
+                        print("$each: $bondopt_key -> $bondopt_val\n");
+                        my $bonding_sysfs_file = "$net_if_dir" . "/" . "$each" . "/bonding/" . "$bondopt_key";
+                        open(SYSFS_FILE, "> $bonding_sysfs_file") || die("ERROR: Can't open $bonding_sysfs_file: $!");
+                        print(SYSFS_FILE "$bondopt_val");
+                        close(SYSFS_FILE);
+                    }
+                }
+            }
         }
-        if ($each =~ "br") {
+
+        # For bridge interfaces
+        if ($each =~ /br\d+/) {
             if (!exists($ini_hash{$each . ":brmembers"})) {
                 print("ERROR: The 'brmembers' name is missing!\n");
                 next;
@@ -115,6 +231,7 @@ if ($ARGV[0] eq "start") {
             if ($brmembers eq "") {
                 print("WARNING: The 'brmembers' value is empty!\n");
             }
+
             # Create the bridge interface
             print("Creating bridge interface $each...\n");
             system($brctl_prog . " addbr " . $each . " 2>&1");
@@ -127,6 +244,7 @@ if ($ARGV[0] eq "start") {
                 print("ERROR: The $brctl_prog program exited with value $exit_status.\n");
                 next;
             }
+
             # Bring up the new bridge interface
             print("Bringing up bridge interface $each...\n");
             system($ifconfig_prog . " " . $each . " up 2>&1");
@@ -139,8 +257,9 @@ if ($ARGV[0] eq "start") {
                 print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
                 next;
             }
+
             # Add the member interfaces to the bridge
-            my @brmember_vals = split(',', $brmembers);
+            my @brmember_vals = split(/,/, $brmembers);
             foreach my $each_brmember (@brmember_vals) {
                 print("Adding member interface $each_brmember to bridge $each...\n");
                 system($brctl_prog . " addif " . $each . " " . $each_brmember . " 2>&1");
@@ -155,7 +274,9 @@ if ($ARGV[0] eq "start") {
                 }
             }
         }
-        if (($each =~ "eth") || ($each =~ "ib") || ($each =~ "bond") || ($each =~ "br")) {
+
+        # Interface configuration
+        if (($each =~ /eth\d+/) || ($each =~ /ib\d+/) || ($each =~ /bond\d+/) || ($each =~ /br\d+/)) {
             my $hash_key = $each . ":bootproto";
             if (exists($ini_hash{$hash_key})) {
                 if (lc($ini_hash{$hash_key}) eq "dhcp") {
@@ -293,6 +414,7 @@ if ($ARGV[0] eq "start") {
         print(HOSTS "127.0.0.1\tlocalhost $hostname $fqdn\n");
         print(HOSTS "::1\t\tlocalhost $hostname $fqdn\n");
     }
+
     # If the extra-hosts file exists, add them to our hosts file
     if ((-e $extra_hosts_file) && (-r $extra_hosts_file)) {
         print(HOSTS "\n");
@@ -361,8 +483,9 @@ if ($ARGV[0] eq "start") {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
+
         # Remove slaves from bond interface
-        if ($iface =~ /bond[0-9]/) {
+        if ($iface =~ /bond\d+/) {
             my @raw_bond_slaves = glob($net_if_dir . "/" . $iface . "/slave_*");
             foreach my $raw_slave_iface (@raw_bond_slaves) {
                 my $slave_iface = (split('slave_', $raw_slave_iface))[-1];
@@ -379,8 +502,9 @@ if ($ARGV[0] eq "start") {
                 }
             }
         }
+
         # Bring down interface
-        if (($iface =~ /eth[0-9]/) || ($iface =~ /ib[0-9]/) || ($iface =~ /bond[0-9]/) || ($iface =~ /br[0-9]/)) {
+        if (($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) || ($iface =~ /bond\d+/) || ($iface =~ /br\d+/)) {
             print("Bringing down interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " 0.0.0.0 down 2>&1");
             if ($? == -1) {
@@ -393,8 +517,18 @@ if ($ARGV[0] eq "start") {
                 next;
             }
         }
+
+        # Delete bonding interface
+        if ($iface =~ /bond\d+/) {
+            print("Deleting bonding interface $iface...\n");
+            my $bm_file = "$net_if_dir" . "/bonding_masters";
+            open(BONDING_MASTERS, "> $bm_file") || die("ERROR: Can't open $bm_file: $!");
+            print(BONDING_MASTERS "-$iface");
+            close(BONDING_MASTERS);
+        }
+
         # Delete bridge interface
-        if ($iface =~ /br[0-9]/) {
+        if ($iface =~ /br\d+/) {
             print("Deleting bridge interface $iface...\n");
             system($brctl_prog . " delbr " . $iface . " 2>&1");
             if ($? == -1) {
