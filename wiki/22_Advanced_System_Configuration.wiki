@@ -222,17 +222,16 @@ conf_sync.sh
 <br>
 
 === NIC Bonding ===
-Linux bonding (EtherChannel) is supported in ESOS; NIC bonding interface settings are configured using the `/etc/modprobe.conf` file in the ESOS shell (Interface -> Exit to Shell). By default, two (2) bond interfaces are enabled using the "balance-alb" mode. Be sure to use the modprobe configuration file to change NIC bonding settings and not the sysfs interface. _Bonding settings will not be retained between reboots if you use sysfs to manipulate settings._
-
-After you update the modprobe configuration file, run the following commands to make the changes take effect:
+Linux bonding (EtherChannel) is fully supported in ESOS; in order to configure a bond interface you'll need to initially create them using the shell (Interface -> Exit to Shell) like this (the name format bondX is a requirement):
 {{{
-rmmod bonding
-modprobe bonding
+echo +bond0 > /sys/class/net/bonding_masters
 }}}
 
-Use 'modinfo bonding' to get a list of all the available configuration parameters.
+After your NIC bonding interfaces are created, you can then use the TUI to enslave interfaces to the bonding master interfaces (System -> Network Settings). When you choose a "Master" bonding interface in the TUI you can then select the slave interfaces. Then restart the networking when prompted to do so for the changes to take effect. _When you select another interface as a slave, if it has any current IP configuration set, those settings will be removed since it will now be a slave to a master bonding interface._
 
-After your NIC bonding interfaces are configured, you can then use the TUI to enslave interfaces to the bonding master interfaces (System -> Network Settings). When you choose a "Master" bonding interface in the TUI you can then select the slave interfaces. You can then restart the networking when prompted to do so for the changes to take effect. _When you select another interface as a slave, if it has any current IP configuration set, those settings will be removed since it will now be a slave to a master bonding interface._
+NIC bonding interface parameters are also configured using the ESOS TUI in the Network Settings dialog (for a bonding master interface). The format for the "Bonding Options" box is exactly the same as RHEL's "BONDING_OPTS" setting. Use "key=value" pairs separated by a space (eg, "mode=1 miimon=100" in the text input box. See these pages for additional information on the Linux bonding driver parameters:
+  * https://www.kernel.org/doc/Documentation/networking/bonding.txt
+  * https://access.redhat.com/site/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/sec-Using_Channel_Bonding.html
 
 _*Be sure to use the naming format bondX for all NIC bonding interfaces!*_
 
@@ -241,7 +240,7 @@ _*Be sure to use the naming format bondX for all NIC bonding interfaces!*_
 === Ethernet Bridging ===
 Linux bridge support is also enabled in ESOS. New bridge interfaces need to be created from the CLI (Interface -> Exit to Shell) before using the TUI to configure them.
 
-To add a new bridge interface:
+To add a new bridge interface (the name format brX is a requirement):
 {{{
 brctl addbr br0
 }}}
