@@ -107,6 +107,7 @@ extern "C" {
 #define MAX_PD_INFO_LINE_BUFF           4096
 #define MAX_SLAVES_LIST_BUFF            512
 #define MAX_BR_MEMBERS_LIST_BUFF        512
+#define MAX_BOND_OPTS_BUFF              512
 
 /* Character validation */
 #define VALID_NAME_CHAR(c)      ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.')) ? 1 : 0)

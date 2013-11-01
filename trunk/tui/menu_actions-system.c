@@ -37,6 +37,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *host_name = 0, *domain_name = 0, *default_gw = 0,
             *name_server_1 = 0, *name_server_2 = 0, *ip_addy = 0, *netmask = 0,
             *broadcast = 0, *iface_mtu = 0;
+    CDKMENTRY *bond_opts = 0;
     CDKRADIO *ip_config = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
     CDKSELECTION *slave_select = 0, *br_member_select = 0;
@@ -67,13 +68,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             *conf_bootproto = NULL, *conf_ipaddr = NULL, *conf_netmask = NULL,
             *conf_broadcast = NULL, *error_msg = NULL, *conf_if_mtu = NULL,
             *temp_pstr = NULL, *conf_slaves = NULL, *conf_brmembers = NULL,
-            *strtok_result = NULL;
+            *strtok_result = NULL, *conf_bondopts = NULL;
     static char *ip_opts[] = {"Disabled", "Static", "DHCP"},
             *choice_char[] = {"[ ] ", "[*] "};
     char eth_duplex[MISC_STRING_LEN] = {0}, temp_str[MISC_STRING_LEN] = {0},
             temp_ini_str[MAX_INI_VAL] = {0},
             slaves_list_line_buffer[MAX_SLAVES_LIST_BUFF] = {0},
-            br_members_list_line_buffer[MAX_BR_MEMBERS_LIST_BUFF] = {0};
+            br_members_list_line_buffer[MAX_BR_MEMBERS_LIST_BUFF] = {0},
+            bond_opts_buffer[MAX_BOND_OPTS_BUFF] = {0};
     __be16 eth_speed = 0;
     boolean question = FALSE;
     short saved_ifr_flags = 0;
@@ -572,6 +574,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         conf_slaves = iniparser_getstring(ini_dict, temp_ini_str, "");
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:brmembers", net_if_name[net_conf_choice]);
         conf_brmembers = iniparser_getstring(ini_dict, temp_ini_str, "");
+        snprintf(temp_ini_str, MAX_INI_VAL, "%s:bondopts", net_if_name[net_conf_choice]);
+        conf_bondopts = iniparser_getstring(ini_dict, temp_ini_str, "");
 
         /* If value doesn't exist, use a default MTU based on the interface type */
         snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name[net_conf_choice]);
@@ -594,6 +598,18 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             goto cleanup;
         }
         setCDKLabelBackgroundAttrib(net_label, COLOR_DIALOG_TEXT);
+
+        /* Interface MTU field */
+        iface_mtu = newCDKEntry(net_screen, (window_x + 50), (window_y + 3),
+                "</B>Interface MTU:  ", NULL,
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
+                15, 0, 15, FALSE, FALSE);
+        if (!iface_mtu) {
+            errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+            goto cleanup;
+        }
+        setCDKEntryBoxAttribute(iface_mtu, COLOR_DIALOG_INPUT);
+        setCDKEntryValue(iface_mtu, conf_if_mtu);
 
         /* IP settings radio */
         ip_config = newCDKRadio(net_screen, (window_x + 1), (window_y + 7),
@@ -621,7 +637,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             goto cleanup;
         }
         setCDKLabelBackgroundAttrib(short_label, COLOR_DIALOG_TEXT);
-        
+
         /* IP address field */
         ip_addy = newCDKEntry(net_screen, (window_x + 20), (window_y + 8),
                 NULL, "</B>IP address: ",
@@ -658,21 +674,22 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         setCDKEntryBoxAttribute(broadcast, COLOR_DIALOG_INPUT);
         setCDKEntryValue(broadcast, conf_broadcast);
 
-        /* Interface MTU field */
-        iface_mtu = newCDKEntry(net_screen, (window_x + 1), (window_y + 12),
-                NULL, "</B>Interface MTU:  ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
-                12, 0, 12, FALSE, FALSE);
-        if (!iface_mtu) {
-            errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(iface_mtu, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(iface_mtu, conf_if_mtu);
-
         // TODO: For now, bridging and bonding are mutually exclusive
         if (net_if_bonding[net_conf_choice] == MASTER) {
-            /* If the interface is a master (bonding) then they can select slaves */
+            /* If the interface is a master (bonding) they can set options */
+            bond_opts = newCDKMentry(net_screen, (window_x + 1), (window_y + 11),
+                    "</B>Bonding Options:", NULL,
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    25, 2, 50, 0, TRUE, FALSE);
+            if (!bond_opts) {
+                errorDialog(main_cdk_screen, "Couldn't create multiple line entry widget!", NULL);
+                goto cleanup;
+            }
+            // TODO: Some tweaking to make this widget look like the others; CDK bug?
+            setCDKMentryBoxAttribute(bond_opts, COLOR_PAIR(55));
+            setCDKMentryBackgroundAttrib(bond_opts, COLOR_DIALOG_TEXT);
+            setCDKMentryValue(bond_opts, conf_bondopts);
+            /* They can also select slaves for the bond interface */
             slave_select = newCDKSelection(net_screen, (window_x + 35), (window_y + 12),
                     RIGHT, 3, 20, "</B>Bonding Slaves:", poten_slaves, poten_slave_cnt,
                     choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
@@ -821,6 +838,17 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
 
             if (net_if_bonding[net_conf_choice] == MASTER) {
+                /* If its a bonding master, store bonding options */
+                snprintf(bond_opts_buffer, MAX_BOND_OPTS_BUFF, "%s",
+                        getCDKMentryValue(bond_opts));
+                snprintf(temp_ini_str, MAX_INI_VAL, "%s:bondopts",
+                        net_if_name[net_conf_choice]);
+                if (iniparser_set(ini_dict, temp_ini_str, bond_opts_buffer) == -1) {
+                    errorDialog(main_cdk_screen,
+                            "Couldn't set configuration file value!", NULL);
+                    goto cleanup;
+                }
+
                 /* For master interfaces, we need to check if any slave
                  * interfaces were selected (or removed) */
                 for (i = 0; i < poten_slave_cnt; i++) {

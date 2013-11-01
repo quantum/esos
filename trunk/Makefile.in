@@ -77,7 +77,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		linux-3.10.13.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-trunk_r4988.tar.gz \
+		scst-trunk_r5081.tar.gz \
 		kexec-tools-2.0.3.tar.gz \
 		drbd-8.4.3.tar.gz \
 		LVM2-2.02.97.tar.gz \
