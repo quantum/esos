@@ -1,3 +1,16 @@
+2013-11-01 18:17  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/modprobe.conf,
+	  etc/rc.d/rc.network, etc/rc.d/rc.sysinit, tui/dialogs.h,
+	  tui/menu_actions-system.c: up'd SCST to latest trunk (resolves
+	  issue with unloading SCST when using bcache); move special FS
+	  mounts into rc.sysinit (/dev/pts, /dev/shm) so everything works
+	  correctly incase fsck bombs in rc.fsmount (resolves issue # 17);
+	  major overhaul on Linux bonding driver support: we now set
+	  modprobe options so no interfaces are created initially and all
+	  configuration is done via sysfs interface; updated TUI and rc
+	  network script to support new 'bonding options'
+
 2013-10-15 20:12  msmith626@gmail.com
 
 	* etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.dmcache: set pacemaker
