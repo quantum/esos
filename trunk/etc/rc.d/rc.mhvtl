@@ -24,8 +24,17 @@ start() {
 }
 
 stop() {
-    # Do nothing
-    :
+    /bin/echo "Stopping mhVTL services..."
+    # Close drive tapes
+    for i in `ps -eo args | awk '/^vtltape -q/ {print $3}'`; do
+        /usr/bin/vtlcmd ${i} exit
+        /bin/usleep 100
+    done
+    # Close libraries
+    for i in `ps -eo args | awk '/^vtllibrary -q/ {print $3}'`; do
+        /usr/bin/vtlcmd ${i} exit
+        /bin/usleep 100
+    done
 }
 
 # Perform specified action
