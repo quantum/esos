@@ -142,6 +142,9 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		EnhanceIO-master_20130930.tar.gz \
 		util-linux-2.23.2.tar.bz2 \
 		nrpe-2.15.tar.gz \
+		thin-provisioning-tools-0.2.8.tar.gz \
+		expat-1.95.8.tar.gz \
+		boost-1_55_0.tar.xz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -159,7 +162,8 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			linux_firmware dlm ipmitool sysklogd less irqbalance \
 			ethtool postgresql psycopg2 mysql MySQLdb SQLAlchemy \
 			infiniband-diags libibmad lockfile python-daemon nrpe \
-			bcache-tools EnhanceIO util-linux
+			bcache-tools EnhanceIO util-linux thin-provisioning-tools \
+			expat boost
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -233,7 +237,7 @@ image: $(build_targets)
 	$(MOUNT) $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p2 $(MOUNT_DIR) 
 	$(MKDIR) $(MOUNT_DIR)/boot
 	$(MOUNT) $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p1 $(MOUNT_DIR)/boot
-	cd $(IMAGE_DIR) && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)
+	cd $(IMAGE_DIR) && $(FIND) . -depth ! -path "./usr/include*" ! -path "*.a" | $(CPIO) -pmdvu $(MOUNT_DIR)
 	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)/etc
 	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install \
 	--grub-setup=$(WORK_DIR)/grub-bios-setup --grub-mkimage=$(WORK_DIR)/grub-mkimage \
@@ -669,14 +673,16 @@ cdk: glibc ncurses
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-LVM2: glibc corosync dlm
+LVM2: glibc corosync dlm thin-provisioning-tools
 	cd $(src_dir) && COROSYNC_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
 	COROSYNC_LIBS="$(LDFLAGS)" QUORUM_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
         QUORUM_LIBS="$(LDFLAGS) -lquorum -lrt" CPG_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
         CPG_LIBS="$(LDFLAGS) -lcpg -lrt -lpthread" CMAP_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
         CMAP_LIBS="$(LDFLAGS) -lcmap" DLM_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
         DLM_LIBS="$(LDFLAGS) -ldlm -lpthread" ./configure --with-lvm1=none --disable-selinux --prefix=/usr \
-	--with-clvmd=corosync --with-cluster=internal --enable-ocf --enable-cmirrord --disable-readline
+	--with-clvmd=corosync --with-cluster=internal --enable-ocf \
+	--enable-cmirrord --disable-readline --with-thin=internal \
+	--with-thin-check=$(IMAGE_DIR)/usr/sbin/thin_check
 	$(MAKE) --directory=$(src_dir) CLDFLAGS+="$(LDFLAGS)" CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
@@ -888,7 +894,6 @@ glue: glibc libaio libxml2 bzip2 curl
 	$(MAKE) --directory=$(src_dir)/lrm DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/logd DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/hb_report DESTDIR=$(IMAGE_DIR) install
-	#$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/config DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
@@ -925,12 +930,12 @@ mhvtl: glibc lzo zlib
 	$(MAKE) --directory=$(src_dir) MHVTL_HOME_PATH="/mnt/mhvtl" CC="$(esos_cc)"
 	$(INSTALL) -m 755 $(src_dir)/usr/libvtlscsi.so $(IMAGE_DIR)/usr/lib/
 	$(INSTALL) -m 755 $(src_dir)/usr/libvtlcart.so $(IMAGE_DIR)/usr/lib/
-	$(INSTALL) -m 750 $(src_dir)/usr/vtltape $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 750 $(src_dir)/usr/vtllibrary $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 750 $(src_dir)/usr/vtlcmd $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 750 $(src_dir)/usr/mktape $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 750 $(src_dir)/usr/dump_tape $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 750 $(src_dir)/usr/edit_tape $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 755 $(src_dir)/usr/vtltape $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 755 $(src_dir)/usr/vtllibrary $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 755 $(src_dir)/usr/vtlcmd $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 755 $(src_dir)/usr/mktape $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 755 $(src_dir)/usr/dump_tape $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 755 $(src_dir)/usr/edit_tape $(IMAGE_DIR)/usr/bin/
 	$(INSTALL) -m 755 $(src_dir)/usr/tapeexerciser $(IMAGE_DIR)/usr/bin/
 	$(INSTALL) -m 700 $(src_dir)/usr/build_library_config $(IMAGE_DIR)/usr/bin/
 	$(INSTALL) -m 700 $(src_dir)/usr/make_vtl_media $(IMAGE_DIR)/usr/bin/
@@ -1262,5 +1267,34 @@ util-linux: glibc ncurses
 	$(MAKE) --directory=$(src_dir) install-usrlib_execLTLIBRARIES DESTDIR=$(IMAGE_DIR)
 	$(MAKE) --directory=$(src_dir) install-data-recursive DESTDIR=$(IMAGE_DIR)
 	$(call clean_la_files)
+	$(TOUCH) $(@)
+
+thin-provisioning-tools: glibc expat boost
+	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/thin-provisioning-tools-0.2.8.patch
+	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  cd $(src_dir) && autoconf; \
+	fi
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir) V="" CC="$(esos_cc)" CXX="$(esos_cxx) -D_GLIBCXX_BITSET"
+	$(MAKE) --directory=$(src_dir) install MANDIR=/usr/share/man DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+expat: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) prefix=$(IMAGE_DIR)/usr install
+	$(call clean_la_files)
+	$(TOUCH) $(@)
+
+boost: glibc
+	$(QUIET) if [ ! -f "$(src_dir)/b2" ]; then \
+	  cd $(src_dir) && ./bootstrap.sh --prefix=$(IMAGE_DIR)/usr; \
+	fi
+	cd $(src_dir) && ./b2 install --without-atomic --without-chrono --without-context \
+	--without-coroutine --without-date_time --without-exception --without-filesystem \
+	--without-graph --without-graph_parallel --without-iostreams --without-locale \
+	--without-log --without-math --without-mpi --without-program_options --without-python \
+	--without-random --without-regex --without-serialization --without-signals --without-system \
+	--without-test --without-thread --without-timer --without-wave
 	$(TOUCH) $(@)
 

@@ -31,4 +31,5 @@ nobody::65534:
 sshd:x:22:
 cron:x:16:
 haclient:x:101:hacluster
+vtl:x:102:vtl
 nagios:x:498:nagios
