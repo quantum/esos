@@ -1,3 +1,18 @@
+2013-12-02 20:51  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/group,
+	  etc/passwd, etc/rc.d/rc.mhvtl, misc/linux-3.10.13.config,
+	  misc/thin-provisioning-tools-0.2.8.patch: added 'vtl' group for
+	  mhVTL and updated UID of 'vtl' user to match; enabled
+	  DM-thin-provisioning option kernel; updated LVM2 build to enable
+	  thin provisioning; added thin-provisioning-tools package and
+	  dependencies (boost + expat) -- thanks for the suggestion Morgan;
+	  the rc.mhvtl script now has a complete stop() function to
+	  un-configure VTLs (thanks for the contrib Philippe); we now
+	  filter static libs (*.a) and /usr/include when creating the image
+	  so they are not included; updated permissions on the mhVTL
+	  binaries
+
 2013-11-26 21:35  msmith626@gmail.com
 
 	* misc/linux-3.10.13.config: enabled the CONFIG_CHR_DEV_ST option
