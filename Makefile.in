@@ -181,12 +181,14 @@ cc_base		= gcc -specs=$(spec_file) -nostdinc \
 		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include \
 		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include-fixed
 esos_cc		= $(cc_base) $(CPPFLAGS)
+export CC	= $(esos_cc)
 cxx_base	= g++ -specs=$(spec_file) -nostdinc \
 		-idirafter $(dir $(shell g++ -print-libgcc-file-name))include \
 		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include-fixed
 esos_cxx	= $(cxx_base) $(CPPFLAGS) \
 		-idirafter $(wildcard $(IMAGE_DIR)/usr/include/c++/*) \
 		-idirafter $(wildcard $(IMAGE_DIR)/usr/include/c++/*/x86_64-unknown-linux-gnu)
+export CXX	= $(esos_cxx)
 
 define clean_la_files
 	$(FIND) $(IMAGE_DIR)/usr/lib -type f -iname *.la -exec $(RM) {} \;
@@ -226,7 +228,7 @@ image: $(build_targets)
 	$(ECHO) -e "4097,204800,L,*\n208897,2048000,L\n2256897,204800,L\n2461697,4096000,L\n" | \
 	$(SFDISK) --no-reread -uS -L $(img_file)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
-	$(KPARTX) -a $(loop_dev)
+	$(KPARTX) -a -s $(loop_dev)
 	$(MKE2FS) -L esos_boot $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p1
 	$(MKE2FS) -L esos_root $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p2
 	$(MKE2FS) -L esos_conf $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p3
@@ -509,7 +511,8 @@ glibc: kernel_headers
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
 	cd $(WORK_DIR)/glibc-build && \
-	CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" LDFLAGS="" $(src_dir)/configure --prefix=/usr --without-selinux
+	CC="" CXX="" CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" \
+	LDFLAGS="" $(src_dir)/configure --prefix=/usr --without-selinux
 	$(MAKE) --jobs=4 --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(SED) -i 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libc.so
@@ -519,8 +522,11 @@ glibc: kernel_headers
 	$(TOUCH) $(@)
 
 perl: glibc
-	cd $(src_dir) && ./configure.gnu --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	cd $(src_dir) && ./configure.gnu --prefix=/usr --verbose \
+	-Dusrinc=$(IMAGE_DIR)/usr/include -Dincpth=$(IMAGE_DIR)/usr/include \
+	-Dlocincpth=$(IMAGE_DIR)/usr/include -Dlibpth="$(IMAGE_DIR)/lib $(IMAGE_DIR)/usr/lib" \
+	-Dloclibpth="$(IMAGE_DIR)/lib $(IMAGE_DIR)/usr/lib"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) install.perl DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
 	$(TOUCH) $(@)
 
@@ -543,7 +549,7 @@ scstadmin: perl
 openssh: glibc zlib openssl
 	cd $(src_dir) && LD_LIBRARY_PATH=/lib64:/lib/x86_64-linux-gnu:/usr/lib64:/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib \
 	./configure --prefix="" --exec-prefix=/usr --without-openssl-header-check --sysconfdir=/etc/ssh
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-files
 	$(INSTALL) -D -m 644 $(src_dir)/moduli.out $(IMAGE_DIR)/etc/ssh/moduli
 	$(TOUCH) $(@)
@@ -570,13 +576,13 @@ openssl: glibc
 	cd $(src_dir) && ./config shared --prefix=/usr \
 	-I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/include $(LDFLAGS)
 	$(SED) -i '/LD_LIBRARY_PATH/d' $(src_dir)/Makefile.shared
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) INSTALL_PREFIX=$(IMAGE_DIR) install_sw
 	$(TOUCH) $(@)
 
 zlib: glibc
 	cd $(src_dir) && CFLAGS="$(CPPFLAGS)" ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -584,7 +590,7 @@ ncurses: glibc gcc
 	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/ncurses-5.7.patch
 	cd $(src_dir) && ./configure --prefix=/usr --with-shared \
 	--without-gpm --mandir=/usr/share/man --with-termlib
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" CXX="$(esos_cxx)" CXXLIBS="-lstdc++"
+	$(MAKE) --directory=$(src_dir) CXXLIBS="-lstdc++"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -602,41 +608,41 @@ e2fsprogs: glibc util-linux
 ssmtp: glibc openssl
 	cd $(src_dir) && CFLAGS="$(CPPFLAGS) $(LDFLAGS) -lcrypto" ./configure \
 	--enable-ssl --prefix="" --exec-prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(INSTALL) $(STRIP) -m 755 $(src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
 	$(TOUCH) $(@)
 
 libibumad: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 libibverbs: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 srptools: glibc libibumad libibverbs
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-exec-am
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-man
 	$(TOUCH) $(@)
 
 lsscsi: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 sg3_utils: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
@@ -683,7 +689,7 @@ LVM2: glibc corosync dlm thin-provisioning-tools
 	--with-clvmd=corosync --with-cluster=internal --enable-ocf \
 	--enable-cmirrord --disable-readline --with-thin=internal \
 	--with-thin-check=$(IMAGE_DIR)/usr/sbin/thin_check
-	$(MAKE) --directory=$(src_dir) CLDFLAGS+="$(LDFLAGS)" CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) CLDFLAGS+="$(LDFLAGS)"
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/libdm DESTDIR=$(IMAGE_DIR) install
@@ -694,7 +700,7 @@ LVM2: glibc corosync dlm thin-provisioning-tools
 
 xfsprogs: glibc util-linux
 	cd $(src_dir) && CFLAGS="-DNO_ENDIAN_DEP_TYPES $(CPPFLAGS)" ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) BUILD_VERBOSE=1 CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) BUILD_VERBOSE=1
 	$(MAKE) --directory=$(src_dir) DIST_ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -704,7 +710,7 @@ drbd: glibc
 	--without-udev --without-xen --with-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic \
 	--sysconfdir=/etc --localstatedir=/var --with-utils
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" tools doc
+	$(MAKE) --directory=$(src_dir) tools doc
 	$(MAKE) --directory=$(src_dir)/user DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/documentation DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/scripts DESTDIR=$(IMAGE_DIR) install
@@ -725,7 +731,7 @@ parted: glibc util-linux LVM2
 
 opensm: glibc gcc libibumad libibverbs
 	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-data
 	$(MAKE) --directory=$(src_dir)/opensm DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/osmtest DESTDIR=$(IMAGE_DIR) install-exec
@@ -737,7 +743,7 @@ opensm: glibc gcc libibumad libibverbs
 
 libqb: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
@@ -785,7 +791,7 @@ corosync: glibc libqb nss
 	nss_LIBS="$(LDFLAGS) -lnss3" LIBQB_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/qb" \
 	LIBQB_LIBS="$(LDFLAGS) -lqb" ./configure --prefix=/usr --sysconfdir=/etc \
 	--localstatedir=/var
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/common_lib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/lib DESTDIR=$(IMAGE_DIR) install
@@ -815,13 +821,13 @@ nss: glibc zlib
 
 glib: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 libxml2: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --without-python
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -830,14 +836,14 @@ libxslt: glibc libxml2
 	./configure --prefix=/usr --with-libxml-prefix="$(IMAGE_DIR)/usr" \
 	--with-libxml-include-prefix="$(IMAGE_DIR)/usr/include/libxml2" \
 	--with-libxml-libs-prefix="$(IMAGE_DIR)/usr/lib" --without-python
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 libtool: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -867,7 +873,7 @@ crmsh: glibc Python glue pacemaker
 	PYTHON="$(WORK_DIR)/python" \
 	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
 	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -900,7 +906,7 @@ glue: glibc libaio libxml2 bzip2 curl
 
 readline: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" SHOBJ_CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir) SHOBJ_CC="$(esos_cc)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -915,10 +921,10 @@ resource_agents: glib glue
 	CFLAGS="$(CPPFLAGS)" \
 	./configure --prefix=/usr --disable-ansi --disable-fatal-warnings \
 	--sysconfdir=/etc --localstatedir=/var
-	$(MAKE) --directory=$(src_dir)/rgmanager CC="$(esos_cc)"
-	$(MAKE) --directory=$(src_dir)/include CC="$(esos_cc)"
-	$(MAKE) --directory=$(src_dir)/heartbeat CC="$(esos_cc)"
-	$(MAKE) --directory=$(src_dir)/tools CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)/rgmanager
+	$(MAKE) --directory=$(src_dir)/include
+	$(MAKE) --directory=$(src_dir)/heartbeat
+	$(MAKE) --directory=$(src_dir)/tools
 	$(MAKE) --directory=$(src_dir)/rgmanager DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/heartbeat DESTDIR=$(IMAGE_DIR) install
@@ -943,14 +949,14 @@ mhvtl: glibc lzo zlib
 
 lzo: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --enable-shared
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 mhash: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -959,19 +965,19 @@ lessfs: glibc mhash openssl lzo fuse db tokyocabinet snappy
 	DEPS_LIBS="$(LDFLAGS) -ltokyocabinet -lfuse -lbz2 -lssl -lcrypto -lpthread" \
         ./configure --prefix=/usr \
 	--with-crypto --with-lzo --with-snappy --without-hamsterdb --with-berkeleydb
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 tokyocabinet: glibc bzip2
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 fuse: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/lib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/doc DESTDIR=$(IMAGE_DIR) install
@@ -990,7 +996,7 @@ db: glibc
 
 snappy: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
@@ -1003,7 +1009,7 @@ fence_agents: glibc nss pexpect pycurl Net-Telnet python-suds
         nss_LIBS="$(LDFLAGS) -lnss3 -lssl3 -lnssutil3" nspr_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
 	nspr_LIBS="$(LDFLAGS) -lnspr4" ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
 	$(MAKE) --directory=$(src_dir) PATH="$(WORK_DIR):$$PATH" \
-	PERL5LIB="$(wildcard $(IMAGE_DIR)/usr/lib/perl5/site_perl/5.*)" CC="$(esos_cc)"
+	PERL5LIB="$(wildcard $(IMAGE_DIR)/usr/lib/perl5/site_perl/5.*)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -1020,7 +1026,7 @@ pycurl: Python curl
 curl: glibc
 	cd $(src_dir) && LD_LIBRARY_PATH=$(IMAGE_DIR)/usr/lib: ./configure --prefix=/usr \
 	--disable-static --without-libssh2 --without-libidn
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -1049,7 +1055,7 @@ fio: glibc libaio
 
 bash: glibc ncurses
 	cd $(src_dir) && ./configure --prefix=/usr --exec-prefix=/ --with-curses
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -1059,7 +1065,7 @@ open-fcoe: glibc open-lldp libpciaccess
 	  cd $(src_dir)/libHBAAPI && ./bootstrap.sh; \
 	fi
 	cd $(src_dir)/libHBAAPI && ./configure --prefix=/usr --sysconfdir=/etc
-	$(MAKE) --directory=$(src_dir)/libHBAAPI CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)/libHBAAPI
 	$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install-libLTLIBRARIES
 	$(MAKE) --directory=$(src_dir)/libHBAAPI DESTDIR=$(IMAGE_DIR) install-data
 	$(QUIET) if [ ! -f "$(src_dir)/libhbalinux/configure" ]; then \
@@ -1069,7 +1075,7 @@ open-fcoe: glibc open-lldp libpciaccess
 	cd $(src_dir)/libhbalinux && PCIACCESS_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
 	PCIACCESS_LIBS="$(LDFLAGS) -lpciaccess" HBAAPI_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
 	HBAAPI_LIBS="$(LDFLAGS) -lHBAAPI -ldl" ./configure --prefix=/usr --sysconfdir=/etc
-	$(MAKE) --directory=$(src_dir)/libhbalinux CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)/libhbalinux
 	$(MAKE) --directory=$(src_dir)/libhbalinux DESTDIR=$(IMAGE_DIR) install
 	$(QUIET) if [ ! -f "$(src_dir)/fcoe-utils/configure" ]; then \
 	  $(SED) -i 's/-Werror//' $(src_dir)/fcoe-utils/configure.ac; \
@@ -1080,7 +1086,7 @@ open-fcoe: glibc open-lldp libpciaccess
 	LLDPAD_LIBS="$(LDFLAGS) -llldp_clif" LIBHBALINUX_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
 	LIBHBALINUX_LIBS="$(LDFLAGS) -lhbalinux" \
 	./configure --prefix=/usr --sysconfdir=/etc
-	$(MAKE) --directory=$(src_dir)/fcoe-utils CC="$(esos_cc)" \
+	$(MAKE) --directory=$(src_dir)/fcoe-utils \
 	LIBS="-lHBAAPI -ldl -lhbalinux -lrt"
 	$(MAKE) --directory=$(src_dir)/fcoe-utils DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(src_dir)/fcoe-utils DESTDIR=$(IMAGE_DIR) install-man
@@ -1110,7 +1116,7 @@ open-lldp: glibc libconfig libnl
 
 libconfig: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
@@ -1123,7 +1129,7 @@ libnl: glibc
 
 libpciaccess: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
@@ -1145,7 +1151,7 @@ dlm: glibc corosync
 
 ipmitool: glibc openssl
 	cd $(src_dir) && ./configure --prefix=/usr --enable-intf-lan --enable-intf-lanplus
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -1160,25 +1166,25 @@ sysklogd: glibc
 
 less: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 irqbalance: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 ethtool: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 postgresql: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir)/src/bin DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/src/include DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/src/interfaces/libpq DESTDIR=$(IMAGE_DIR) install
@@ -1192,7 +1198,7 @@ psycopg2: glibc Python postgresql
 mysql: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --without-server \
 	--without-bench --enable-thread-safe-client
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -1211,14 +1217,14 @@ SQLAlchemy: glibc Python psycopg2 MySQLdb
 infiniband-diags: glibc libibumad libibverbs libibmad opensm
 	cd $(src_dir) && CPPFLAGS="$(CPPFLAGS) -idirafter $(IMAGE_DIR)/usr/include/infiniband" \
 	./configure --prefix=/usr --sysconfdir=/etc
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 libibmad: glibc libibumad libibverbs
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
@@ -1238,7 +1244,7 @@ nrpe: glibc openssl
 	--with-ssl-inc=$(IMAGE_DIR)/usr/include/openssl \
 	--with-ssl-lib=$(IMAGE_DIR)/usr/lib
 	$(OPENSSL) dhparam -noout -C 512 > $(src_dir)/include/dh.h
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) \
 	NAGIOS_INSTALL_OPTS="" NRPE_INSTALL_OPTS="" install
 	$(TOUCH) $(@)
@@ -1260,10 +1266,10 @@ EnhanceIO: glibc
 	$(INSTALL) -m 0644 $(src_dir)/CLI/eio_cli.8 $(IMAGE_DIR)/usr/share/man/man8/
 	$(TOUCH) $(@)
 
-util-linux: glibc ncurses
+util-linux: glibc ncurses zlib
 	cd $(src_dir) && ./configure --prefix=/usr --disable-most-builds \
 	--disable-bash-completion --with-ncurses --disable-silent-rules
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) install-usrlib_execLTLIBRARIES DESTDIR=$(IMAGE_DIR)
 	$(MAKE) --directory=$(src_dir) install-data-recursive DESTDIR=$(IMAGE_DIR)
 	$(call clean_la_files)
@@ -1275,20 +1281,20 @@ thin-provisioning-tools: glibc expat boost
 	  cd $(src_dir) && autoconf; \
 	fi
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) V="" CC="$(esos_cc)" CXX="$(esos_cxx) -D_GLIBCXX_BITSET"
+	$(MAKE) --directory=$(src_dir) V="" CXX="$(esos_cxx) -D_GLIBCXX_BITSET"
 	$(MAKE) --directory=$(src_dir) install MANDIR=/usr/share/man DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
 
 expat: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) prefix=$(IMAGE_DIR)/usr install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 boost: glibc
 	$(QUIET) if [ ! -f "$(src_dir)/b2" ]; then \
-	  cd $(src_dir) && ./bootstrap.sh --prefix=$(IMAGE_DIR)/usr; \
+	  cd $(src_dir) && CC="" CXX="" ./bootstrap.sh --prefix=$(IMAGE_DIR)/usr; \
 	fi
 	cd $(src_dir) && ./b2 install --without-atomic --without-chrono --without-context \
 	--without-coroutine --without-date_time --without-exception --without-filesystem \
