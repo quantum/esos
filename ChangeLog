@@ -1,3 +1,10 @@
+2013-12-06 03:41  msmith626@gmail.com
+
+	* Makefile.in: lots of build updates... we now set CC and CXX
+	  globally using export so the configure scripts guess options
+	  correctly; use the '-s' option with kpartx when creating the
+	  image so it waits (thanks Mauricio)
+
 2013-12-02 20:51  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/group,
