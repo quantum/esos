@@ -1,3 +1,11 @@
+2013-12-08 03:48  msmith626@gmail.com
+
+	* Makefile.in: more build fixes... changed wildcard function to
+	  static path since this is not re-evaluated (for CXX, fixes
+	  thin-provisioning-tools build issue); resolved build issue with
+	  CDK that was causing ESOS TUI to not work properly when built on
+	  some hosts
+
 2013-12-06 03:41  msmith626@gmail.com
 
 	* Makefile.in: lots of build updates... we now set CC and CXX
