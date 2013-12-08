@@ -186,8 +186,8 @@ cxx_base	= g++ -specs=$(spec_file) -nostdinc \
 		-idirafter $(dir $(shell g++ -print-libgcc-file-name))include \
 		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include-fixed
 esos_cxx	= $(cxx_base) $(CPPFLAGS) \
-		-idirafter $(wildcard $(IMAGE_DIR)/usr/include/c++/*) \
-		-idirafter $(wildcard $(IMAGE_DIR)/usr/include/c++/*/x86_64-unknown-linux-gnu)
+		-idirafter $(IMAGE_DIR)/usr/include/c++/4.4.5 \
+		-idirafter $(IMAGE_DIR)/usr/include/c++/4.4.5/x86_64-unknown-linux-gnu
 export CXX	= $(esos_cxx)
 
 define clean_la_files
@@ -673,9 +673,10 @@ iniparser: glibc
 
 cdk: glibc ncurses
 	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/cdk-5.0-20120323.patch
-	cd $(src_dir) && NCURSES_CONFIG="$(IMAGE_DIR)/usr/bin/ncurses5-config" \
+	cd $(src_dir) && \
+	NCURSES_CONFIG="$(IMAGE_DIR)/usr/bin/ncurses5-config --prefix=$(IMAGE_DIR)/usr --exec-prefix=$(IMAGE_DIR)/usr" \
 	./configure --prefix=/usr --with-ncurses --with-libtool
-	$(MAKE) --directory=$(src_dir) CC="$(cc_base)" LIBS="-lncurses"
+	$(MAKE) --directory=$(src_dir) LIBS="-lncurses"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
