@@ -240,7 +240,9 @@ image: $(build_targets)
 	$(MKDIR) $(MOUNT_DIR)/boot
 	$(MOUNT) $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p1 $(MOUNT_DIR)/boot
 	cd $(IMAGE_DIR) && $(FIND) . -depth ! -path "./usr/include*" ! -path "*.a" | $(CPIO) -pmdvu $(MOUNT_DIR)
-	cd $(CWD)/etc && $(FIND) . -depth | $(CPIO) -pmdvu $(MOUNT_DIR)/etc
+	$(INSTALL) -D $(wildcard $(IMAGE_DIR)/usr/include/python*/pyconfig.h) \
+	$(MOUNT_DIR)/usr/include/$(notdir $(wildcard $(IMAGE_DIR)/usr/include/python*))/pyconfig.h
+	cd $(CWD)/etc && $(FIND) . -depth ! -path "*/.svn*" | $(CPIO) -pmdvu $(MOUNT_DIR)/etc
 	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install \
 	--grub-setup=$(WORK_DIR)/grub-bios-setup --grub-mkimage=$(WORK_DIR)/grub-mkimage \
 	--grub-mkrelpath=$(WORK_DIR)/grub-mkrelpath --grub-probe=$(WORK_DIR)/grub-probe \
@@ -264,7 +266,6 @@ image: $(build_targets)
 	$(FIND) $(MOUNT_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
 	$(FIND) $(MOUNT_DIR)/etc -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(MOUNT_DIR)/etc/rc.d -type f -print0 | $(XARGS) -0 $(CHMOD) 0755
-	$(FIND) $(MOUNT_DIR) -type d -name .svn -print0 | $(XARGS) -0 $(RM)
 	$(CHMOD) 4750 $(MOUNT_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/shadow
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
@@ -836,7 +837,8 @@ libxslt: glibc libxml2
 	cd $(src_dir) && \
 	./configure --prefix=/usr --with-libxml-prefix="$(IMAGE_DIR)/usr" \
 	--with-libxml-include-prefix="$(IMAGE_DIR)/usr/include/libxml2" \
-	--with-libxml-libs-prefix="$(IMAGE_DIR)/usr/lib" --without-python
+	--with-libxml-libs-prefix="$(IMAGE_DIR)/usr/lib" --without-python \
+	--without-crypto
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
