@@ -1,3 +1,10 @@
+2013-12-12 15:39  msmith626@gmail.com
+
+	* Makefile.in: fixed issue with python... it requires the use of a
+	  single include file (pyconfig.h); fixed build issue with libxslt;
+	  filter .svn directories in the find/cpio command instead of
+	  removing them after
+
 2013-12-08 03:48  msmith626@gmail.com
 
 	* Makefile.in: more build fixes... changed wildcard function to
