@@ -1,3 +1,23 @@
+2013-12-16 21:41  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bttab, etc/fstab,
+	  etc/mdev.conf, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.btier,
+	  etc/rc.d/rc.sysinit, misc/initramfs_init, scripts/dev_nodes.sh,
+	  tui/menu_actions-back_storage.c, tui/menu_actions.c: initial
+	  commit of BTIER (including new rc script, config file example,
+	  module, user-land tools, etc.); over-haul of mdev.conf to set
+	  permissions on /dev nodes and add sym links; removed un-needed
+	  lines from initramfs script; clean-up of rc.sysinit mounting
+	  special FS's (and addition to fstab); added support for cciss
+	  devices in the block-dev-choice dialog (in TUI); added new widget
+	  in create-FS dialog to give option of partitioning entire disk or
+	  not (enabled by default); fixed bug in create-FS dialog when
+	  non-existent FS is checked (from fstab); we now use
+	  ped_partition_get_path() to determine a device node partition
+	  path in create-FS dialog; updated dev_nodes script since we now
+	  make sym links for IB and dlm devs in the mdev config file
+	  instead
+
 2013-12-12 15:39  msmith626@gmail.com
 
 	* Makefile.in: fixed issue with python... it requires the use of a
