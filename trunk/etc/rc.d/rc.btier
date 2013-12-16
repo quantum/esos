@@ -1,0 +1,45 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+BTTAB="/etc/bttab"
+BTIER_SETUP="/usr/sbin/btier_setup"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Loading btier devices..."
+    # Make sure the module is loaded
+    /sbin/modprobe btier || exit 1
+    # Loop over the bttab file and setup devices
+    for i in `/bin/cat ${BTTAB} | /bin/grep -v "^#"`; do
+        ${BTIER_SETUP} -f ${i}
+        if [ ${?} != 0 ]; then
+            /bin/echo "Failed to setup btier device: ${BTIER_SETUP} -f ${i}"
+            exit 1
+        fi
+    done
+}
+
+stop() {
+    /bin/echo "Unloading btier devices..."
+    # Loop over the bttab file and deregister devices
+    for i in `/bin/ls /dev/sdtier* | /usr/bin/sort -r`; do
+        ${BTIER_SETUP} -d ${i}
+        if [ ${?} != 0 ]; then
+            /bin/echo "Failed to deregister btier device: ${BTIER_SETUP} -d ${i}"
+            exit 1
+        fi
+    done
+    # Unload the btier module
+    /sbin/rmmod -w btier
+}
+
+# Perform specified action
+${1}

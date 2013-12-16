@@ -23,16 +23,4 @@ if [ "x${MDEV:0:2}" = "xsd" ]; then
             echo "/dev/${MDEV}" > /sys/fs/bcache/register_quiet
         fi
     fi
-elif [ "x${MDEV:0:3}" = "xdlm" ]; then
-    # For DLM device nodes, we simply make a link to the given device
-    # node in the /dev/misc directory.
-    mkdir -m 0755 -p /dev/misc
-    ln -s /dev/${MDEV} /dev/misc/${MDEV}
-elif [ "x${MDEV:0:4}" = "xumad" ] ||
-    [ "x${MDEV:0:4}" = "xissm" ] ||
-    [ "x${MDEV:0:6}" = "xuverbs" ]; then
-    # With IB device nodes, simply create a link in /dev/infiniband for
-    # each (most applications seem to expect this location).
-    mkdir -m 0755 -p /dev/infiniband
-    ln -s /dev/${MDEV} /dev/infiniband/${MDEV}
 fi

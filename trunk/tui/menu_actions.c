@@ -1169,7 +1169,21 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 readAttribute(dir_name, tmp_buff);
                 asprintf(&blk_dev_info[dev_cnt], "Name: %s", tmp_buff);
                 dev_cnt++;
+            /* For Compaq SMART array controllers */
+            } else if ((strstr(dir_entry->d_name, "cciss")) != NULL) {
+                asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/raid_level",
+                        SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                readAttribute(dir_name, tmp_buff);
+                asprintf(&blk_dev_info[dev_cnt], "RAID Level: %s", tmp_buff);
+                dev_cnt++;
             }
+            // TODO: Still more controller block devices (ida, rd) need to be
+            // added but we need hardware so we can confirm sysfs attributes
         }
     }
 
@@ -1184,7 +1198,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
 
     /* Fill the list (pretty) for our CDK label with block devices */
     for (i = 0; i < dev_cnt; i++) {
-        asprintf(&blk_dev_scroll_lines[i], "<C>/dev/%-5.5s Size: %-12.12s %-30.30s",
+        asprintf(&blk_dev_scroll_lines[i], "<C>%-10.10s Size: %-12.12s %-30.30s",
                 blk_dev_name[i], blk_dev_size[i], blk_dev_info[i]);
     }
 

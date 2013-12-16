@@ -1,8 +1,9 @@
 # $Id$
 
+tmpfs			/dev			tmpfs	mode=0755	0 0
 proc			/proc			proc	defaults	0 0
 sysfs			/sys			sysfs	defaults	0 0
-devpts			/dev/pts		devpts	defaults	0 0
+devpts			/dev/pts		devpts	gid=5,mode=620	0 0
 tmpfs			/dev/shm		tmpfs	defaults	0 0
 LABEL=esos_boot		/boot			ext2	sync,noauto	1 1
 LABEL=esos_root		/mnt/root		ext2	sync,noauto	1 1

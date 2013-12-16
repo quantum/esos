@@ -145,6 +145,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		thin-provisioning-tools-0.2.8.tar.gz \
 		expat-1.95.8.tar.gz \
 		boost-1_55_0.tar.xz \
+		btier-1.1.1.tar.gz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -163,7 +164,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			ethtool postgresql psycopg2 mysql MySQLdb SQLAlchemy \
 			infiniband-diags libibmad lockfile python-daemon nrpe \
 			bcache-tools EnhanceIO util-linux thin-provisioning-tools \
-			expat boost
+			expat boost btier
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -397,6 +398,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kernel_ver = $(subst li
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): scst_src = $(wildcard $(BUILD_DIR)/scst-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): mhvtl_src = $(wildcard $(BUILD_DIR)/mhvtl-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): eio_src = $(wildcard $(BUILD_DIR)/EnhanceIO-*)
+$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): btier_src = $(wildcard $(BUILD_DIR)/btier-*)
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kern_suffix = $(subst scst_kernel,,$(@))
 $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	### Kernel prerequisites for SCST
@@ -447,11 +449,14 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) fcst_install
 	### Build/install mhVTL module
 	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix)
-	$(INSTALL) -m 644 $(mhvtl_src)/kernel/mhvtl.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/kernel/drivers/scsi/
+	$(INSTALL) -m 755 $(mhvtl_src)/kernel/mhvtl.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/kernel/drivers/scsi/
 	### Build/install the EnhanceIO driver
 	$(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_SOURCE_VERSION=$(kernel_ver)$(kern_suffix) KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio
 	$(INSTALL) -d $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/extra/enhanceio
 	$(INSTALL) -m 755 $(eio_src)/Driver/enhanceio/*.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/extra/enhanceio/
+	### Build/install BTIER module
+	$(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) M=$(btier_src)/kernel/btier modules
+	$(INSTALL) -D -m 755 $(btier_src)/kernel/btier/btier.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/kernel/drivers/block/btier.ko
 	### Done
 	$(TOUCH) $(@)
 
@@ -1305,5 +1310,16 @@ boost: glibc
 	--without-log --without-math --without-mpi --without-program_options --without-python \
 	--without-random --without-regex --without-serialization --without-signals --without-system \
 	--without-test --without-thread --without-timer --without-wave
+	$(TOUCH) $(@)
+
+btier: glibc
+	$(CC) -Wall -D_FILE_OFFSET_BITS=64 $(src_dir)/cli/btier_setup.c -o $(src_dir)/cli/btier_setup
+	$(CC) -Wall -D_FILE_OFFSET_BITS=64 $(src_dir)/cli/btier_inspect.c -o $(src_dir)/cli/btier_inspect
+	$(CC) -Wall $(src_dir)/tools/writetest.c -o $(src_dir)/tools/writetest
+	$(CC) -Wall $(src_dir)/tools/show_block_details.c -o $(src_dir)/tools/show_block_details
+	$(INSTALL) -D -m 755 $(STRIP) $(src_dir)/cli/btier_setup $(IMAGE_DIR)/usr/sbin/btier_setup
+	$(INSTALL) -D -m 755 $(STRIP) $(src_dir)/cli/btier_inspect $(IMAGE_DIR)/usr/sbin/btier_inspect
+	$(INSTALL) -D -m 644 $(src_dir)/man/btier_setup.1 $(IMAGE_DIR)/usr/share/man/man1/btier_setup.1
+	$(INSTALL) -D -m 644 $(src_dir)/man/btier_inspect.1 $(IMAGE_DIR)/usr/share/man/man1/btier_inspect.1
 	$(TOUCH) $(@)
 

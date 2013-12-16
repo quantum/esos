@@ -1372,7 +1372,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *add_fs_info = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
     CDKENTRY *fs_label = 0;
-    CDKRADIO *fs_type = 0;
+    CDKRADIO *fs_type = 0, *add_part = 0;
     CDKSWINDOW *make_fs_info = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     char fs_label_buff[MAX_FS_LABEL] = {0}, mkfs_cmd[MAX_SHELL_CMD_LEN] = {0},
@@ -1385,8 +1385,9 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     char *fs_dialog_msg[MAX_FS_DIALOG_INFO_LINES] = {NULL},
             *swindow_info[MAX_MAKE_FS_INFO_LINES] = {NULL};
     static char *transport[] = {"unknown", "scsi", "ide", "dac960", "cpqarray",
-    "file", "ataraid", "i2o", "ubd", "dasd", "viodasd", "sx8", "dm"};
-    static char *fs_type_opts[] = {"xfs", "ext2", "ext3", "ext4"};
+            "file", "ataraid", "i2o", "ubd", "dasd", "viodasd", "sx8", "dm"},
+            *fs_type_opts[] = {"xfs", "ext2", "ext3", "ext4"},
+            *no_yes[] = {"No (0)", "Yes (1)"};
     FILE *fstab_file = NULL, *new_fstab_file = NULL;
     struct mntent *fstab_entry = NULL,
             addtl_fstab_entry; /* Not a pointer */
@@ -1439,14 +1440,13 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
         } else if ((strstr(fstab_entry->mnt_fsname, "LABEL=") != NULL) ||
                 (strstr(fstab_entry->mnt_fsname, "UUID=") != NULL)) {
             /* Find the device node for the given file system */
-            if ((dev_node = blkid_get_devname(NULL, fstab_entry->mnt_fsname, NULL)) == NULL) {
-                // TODO: It seems this function returns NULL for an error AND if the FS wasn't found
-            }
-            if ((strstr(dev_node, real_blk_dev_node) != NULL)) {
-                errorDialog(main_cdk_screen,
-                        "It appears the selected block device already has a fstab entry.", NULL);
-                endmntent(fstab_file);
-                return;
+            if ((dev_node = blkid_get_devname(NULL, fstab_entry->mnt_fsname, NULL)) != NULL) {
+                if ((strstr(dev_node, real_blk_dev_node) != NULL)) {
+                    errorDialog(main_cdk_screen,
+                            "It appears the selected block device already has a fstab entry.", NULL);
+                    endmntent(fstab_file);
+                    return;
+                }
             }
         }
     }
@@ -1498,9 +1498,9 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             "</31/B>Creating new file system (on block device %.20s)...", real_blk_dev_node);
     /* Using asprintf for a blank space makes it easier on clean-up (free) */
     asprintf(&fs_dialog_msg[1], " ");
-    asprintf(&fs_dialog_msg[2], "</B>Model:<!B>\t%-20.20s </B>Transport:<!B>\t%s",
+    asprintf(&fs_dialog_msg[2], "</B>Model:<!B> %-20.20s </B>Transport:<!B>  %s",
             device->model, transport[device->type]);
-    asprintf(&fs_dialog_msg[3], "</B>Size:<!B>\t%-20.20s </B>Disk label:<!B>\t%s",
+    asprintf(&fs_dialog_msg[3], "</B>Size:<!B>  %-20.20s </B>Disk label:<!B> %s",
             device_size, (disk_type) ? disk_type->name : "none");
     asprintf(&fs_dialog_msg[4], "</B>Sector size (logical/physical):<!B>\t%lldB/%lldB",
             device->sector_size, device->phys_sector_size);
@@ -1560,6 +1560,18 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     setCDKRadioBackgroundAttrib(fs_type, COLOR_DIALOG_TEXT);
+
+    /* Partition yes/no widget (radio) */
+    add_part = newCDKRadio(fs_screen, (window_x + 42), (window_y + 13),
+            NONE, 3, 10, "</B>Partition Device", no_yes, 2,
+            '#' | COLOR_DIALOG_SELECT, 1,
+            COLOR_DIALOG_SELECT, FALSE, FALSE);
+    if (!add_part) {
+        errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+        goto cleanup;
+    }
+    setCDKRadioBackgroundAttrib(add_part, COLOR_DIALOG_TEXT);
+    setCDKRadioCurrentItem(add_part, 1);
 
     /* Buttons */
     ok_button = newCDKButton(fs_screen, (window_x + 26), (window_y + 19),
@@ -1653,11 +1665,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             drawCDKSwindow(make_fs_info, TRUE);
             i = 0;
 
-            /* Setup the new partition -- only on SCSI block devices, not the others;
-             * using the transport type may be a better check for the device nodes */
-            if ((strstr(real_blk_dev_node, "/dev/md") == NULL) &&
-                    (strstr(real_blk_dev_node, "/dev/mapper") == NULL) &&
-                    (strstr(real_blk_dev_node, "/dev/drbd") == NULL)) {
+            if (getCDKRadioSelectedItem(add_part) == 1) {
+                /* Setup the new partition (if chosen) */
                 if (i < MAX_MAKE_FS_INFO_LINES) {
                     asprintf(&swindow_info[i], "<C>Creating new disk label and partition...");
                     addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
@@ -1691,10 +1700,10 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                     errorDialog(main_cdk_screen, "Calling ped_disk_commit_to_os() failed.", NULL);
                     goto cleanup;
                 }
+                snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s", ped_partition_get_path(partition));
                 ped_disk_destroy(disk);
-                snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s1", real_blk_dev_node);
             } else {
-                /* For other block devices that are not a SCSI disk */
+                /* Don't partition */
                 snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s", real_blk_dev_node);
             }
 

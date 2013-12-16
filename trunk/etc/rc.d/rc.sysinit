@@ -3,24 +3,24 @@
 # $Id$
 
 /bin/echo "Mounting special file systems..."
-/bin/mount -t tmpfs mdev /dev
-/bin/mount -t proc none /proc
-/bin/mount -t sysfs none /sys
+/bin/mount /dev
+/bin/mount /proc
+/bin/mount /sys
 /bin/mkdir /dev/pts
-/bin/mount -t devpts none /dev/pts
+/bin/mount /dev/pts
 /bin/mkdir /dev/shm
-/bin/mount -t tmpfs none /dev/shm
+/bin/mount /dev/shm
 
 /bin/echo "Populating /dev with device nodes..."
 /bin/echo /sbin/mdev > /proc/sys/kernel/hotplug
 /sbin/mdev -s
 
+/bin/echo "Performing initial configuration sync..."
+/usr/local/sbin/usb_sync.sh
+
 /bin/grep -v rootfs /proc/mounts > /etc/mtab
 /bin/touch /var/log/wtmp
 /bin/touch /var/log/lastlog
-
-/bin/echo "Performing initial configuration sync..."
-/usr/local/sbin/usb_sync.sh
 
 if [ ! -L "/etc/localtime" ]; then
     /bin/ln -s /usr/share/zoneinfo/posix/Factory /etc/localtime
