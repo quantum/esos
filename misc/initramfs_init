@@ -49,8 +49,6 @@ done
 printf "\b"
 cd /
 cp -a /dev/* /mnt/root/dev/
-mkdir -p /dev/pts
-mkdir -p /dev/shm
 ln -s busybox /mnt/root/bin/sh
 chroot /mnt/root /bin/sh -c "/bin/busybox --install -s"
 

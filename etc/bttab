@@ -1,0 +1,5 @@
+# $Id$
+#
+# EXAMPLE modify before copy to /etc
+#/data/ssd.img:/data/sata.img
+#/dev/sdxx:/dev/sdyy
