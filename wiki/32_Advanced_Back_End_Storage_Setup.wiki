@@ -405,6 +405,11 @@ Your backing/source device ("/dev/disk-by-id/SERIAL-B8CEA82A" in this example) i
 
 <br>
 
+=== Automatic Tiered Block Devices (BTIER) ===
+TODO
+
+<br>
+
 === File Systems & Virtual Disk Files ===
 After you have setup/configured your advanced back-end storage, it will still appear as a block device, just as described in the basic back-storage wiki document.
 
