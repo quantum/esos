@@ -1,3 +1,11 @@
+2013-12-27 05:29  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: pulled new
+	  linux-firmware package from git, which fixes issue # 39; fixed
+	  man page placement for expat and cdk packages; added
+	  enable-xmlconf and enable-rdma to corosync; new package librdmacm
+	  as a dependency (for new corosync build option)
+
 2013-12-16 21:41  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bttab, etc/fstab,
