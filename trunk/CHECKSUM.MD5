@@ -61,7 +61,6 @@ b6ee0ce2b3ef844bad7cac2803a90634  libconfig-1.4.9.tar.gz
 1e05be84b3bf238c27a2751ad033bf7b  libnl-1.1.2.tar.gz
 5f6f65bdd17a3c9f0a5f00f62126e593  open-lldp-0.9.45.tar.gz
 399a419ac6a54f0fc07c69c9bdf452dc  libpciaccess-0.13.1.tar.bz2
-5c62ca8f9b028ce60f74771fe3d382da  linux_firmware-20130306.tar.xz
 e025414bc6cd79579cc7a32a45d3ae1c  busybox-1.20.2.tar.bz2
 3cd0b0830b1f5fcfdc58c83c5c2ca37b  dlm-4.0.1.tar.bz2
 cfdfd15b6ee471c19a7a7e6b47233963  ipmitool-1.8.12.tar.bz2
@@ -90,3 +89,5 @@ e4fb704756d9b8956ab421be9645ed08  scst-trunk_r5081.tar.gz
 aff487543845a82fe262e6e2922b4c8e  expat-1.95.8.tar.gz
 df544913242f925a2bc6fc255d7e7067  boost-1_55_0.tar.xz
 28649879b7cc718f139df2d1ef71ac53  btier-1.1.1.tar.gz
+4ac2db0bee3632c8089a39131047b75b  linux_firmware-20131226.tar.xz
+0053fd9a7368f04e72287923eb58ea36  librdmacm-1.0.15.tar.gz
