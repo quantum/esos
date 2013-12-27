@@ -122,7 +122,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		libconfig-1.4.9.tar.gz \
 		libnl-1.1.2.tar.gz \
 		libpciaccess-0.13.1.tar.bz2 \
-		linux_firmware-20130306.tar.xz \
+		linux_firmware-20131226.tar.xz \
 		dlm-4.0.1.tar.bz2 \
 		sysklogd-1.5.tar.gz \
 		ipmitool-1.8.12.tar.bz2 \
@@ -146,6 +146,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		expat-1.95.8.tar.gz \
 		boost-1_55_0.tar.xz \
 		btier-1.1.1.tar.gz \
+		librdmacm-1.0.15.tar.gz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -164,7 +165,7 @@ build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
 			ethtool postgresql psycopg2 mysql MySQLdb SQLAlchemy \
 			infiniband-diags libibmad lockfile python-daemon nrpe \
 			bcache-tools EnhanceIO util-linux thin-provisioning-tools \
-			expat boost btier
+			expat boost btier librdmacm
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -681,7 +682,7 @@ cdk: glibc ncurses
 	- $(PATCH) -r - -N -d $(src_dir) -p1 < $(CWD)/misc/cdk-5.0-20120323.patch
 	cd $(src_dir) && \
 	NCURSES_CONFIG="$(IMAGE_DIR)/usr/bin/ncurses5-config --prefix=$(IMAGE_DIR)/usr --exec-prefix=$(IMAGE_DIR)/usr" \
-	./configure --prefix=/usr --with-ncurses --with-libtool
+	./configure --prefix=/usr --with-ncurses --with-libtool --mandir=/usr/share/man
 	$(MAKE) --directory=$(src_dir) LIBS="-lncurses"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
@@ -793,11 +794,13 @@ pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 corosync li
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
-corosync: glibc libqb nss
+corosync: glibc libqb nss librdmacm libibverbs
 	cd $(src_dir) && nss_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
 	nss_LIBS="$(LDFLAGS) -lnss3" LIBQB_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/qb" \
-	LIBQB_LIBS="$(LDFLAGS) -lqb" ./configure --prefix=/usr --sysconfdir=/etc \
-	--localstatedir=/var
+	LIBQB_LIBS="$(LDFLAGS) -lqb" rdmacm_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/rdma" \
+	rdmacm_LIBS="$(LDFLAGS) -lrdmacm" ibverbs_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/infiniband" \
+	ibverbs_LIBS="$(LDFLAGS) -libverbs" ./configure --prefix=/usr --sysconfdir=/etc \
+	--localstatedir=/var --enable-xmlconf --enable-rdma
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir)/include DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/common_lib DESTDIR=$(IMAGE_DIR) install
@@ -809,6 +812,7 @@ corosync: glibc libqb nss
 	$(MAKE) --directory=$(src_dir)/pkgconfig DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/qdevices DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/conf DESTDIR=$(IMAGE_DIR) install-corosysxmlxsltDATA
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
@@ -1296,7 +1300,7 @@ thin-provisioning-tools: glibc expat boost
 expat: glibc
 	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
-	$(MAKE) --directory=$(src_dir) prefix=$(IMAGE_DIR)/usr install
+	$(MAKE) --directory=$(src_dir) prefix=$(IMAGE_DIR)/usr man1dir=$(IMAGE_DIR)/usr/share/man/man1 install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
@@ -1321,5 +1325,12 @@ btier: glibc
 	$(INSTALL) -D -m 755 $(STRIP) $(src_dir)/cli/btier_inspect $(IMAGE_DIR)/usr/sbin/btier_inspect
 	$(INSTALL) -D -m 644 $(src_dir)/man/btier_setup.1 $(IMAGE_DIR)/usr/share/man/man1/btier_setup.1
 	$(INSTALL) -D -m 644 $(src_dir)/man/btier_inspect.1 $(IMAGE_DIR)/usr/share/man/man1/btier_inspect.1
+	$(TOUCH) $(@)
+
+librdmacm: glibc libibverbs
+	cd $(src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
