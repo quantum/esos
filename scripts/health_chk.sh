@@ -17,7 +17,7 @@ TMP_PATH="/tmp"
 
 # Check MegaRAID logical drives (if any)
 if [ -x "${MEGACLI}" ]; then
-	echo "Starting MegaRAID logical drive checks..."
+	echo "Starting MegaRAID health checks..."
 	# Get the number of adapters on the system
 	# Adapter numbers start with 0 for MegaRAID
 	adp_count=`${MEGACLI} -adpCount -NoLog | grep "Controller Count:" | \
@@ -26,6 +26,7 @@ if [ -x "${MEGACLI}" ]; then
 	for adapter in `seq 0 $(expr ${adp_count} - 1)`; do
 		# Get the number of logical drives for the adapter
 		# Logical drive numbers start with 0 for MegaRAID
+		echo "Checking logical drives..."
 		ld_count=`${MEGACLI} -AdpAllInfo -a${adapter} -NoLog | \
 			grep "Virtual Drives" | cut -d: -f2 | tr -d ' ' | tr -d '\n'`
 		echo "Adapter ${adapter} has ${ld_count} logical drive(s)."
@@ -33,10 +34,30 @@ if [ -x "${MEGACLI}" ]; then
 			ld_state=`${MEGACLI} -LDInfo -L${logical_drv} -a${adapter} -NoLog | \
 				grep "State" | cut -d: -f2 | tr -d ' ' | tr -d '\n'`
 			if [ "${ld_state}" != "Optimal" ]; then
-				echo "** Warning! MegaRAID logical drive ${logical_drv} on adapter ${adapter} is not optimal!" 1>&2
-				${MEGACLI} -LDInfo -L${logical_drv} -a${adapter} -NoLog 1>&2
+				echo "** Warning! MegaRAID logical drive ${logical_drv} on" \
+					"adapter ${adapter} is not optimal!" 1>&2
+				echo "** Logical drive state: ${ld_state}" 1>&2
 			fi
 		done
+		# Check the physical drives for the adapter
+		echo "Checking physical drives..."
+		pd_count=0
+		SAVED_IFS=${IFS}
+		IFS=$(echo -en "\n\b")
+		for i in `${MEGACLI} -PDList -a${adapter} -NoLog`; do
+			if echo "${i}" | grep "Firmware state:" > /dev/null 2>&1; then
+				pd_count=$(expr ${pd_count} + 1)
+				drv_state=`echo "${i}" | cut -d: -f2 | sed 's/^ *//' | tr -d '\n'`
+				if [ "${drv_state}" != "Unconfigured(good), Spun Up" ] &&
+					[ "${drv_state}" != "Online, Spun Up" ]; then
+					echo "** Warning! It appears a MegaRAID physical drive has" \
+						"failed on adapter ${adapter}!" 1>&2
+					echo "** Physical drive state: ${drv_state}" 1>&2
+				fi
+			fi
+		done
+		IFS=${SAVED_IFS}
+		echo "Checked ${pd_count} physical drive(s)."
 	done
 else
 	echo "It appears the '${MEGACLI}' tool is not installed, or at least"
@@ -45,7 +66,7 @@ fi
 
 # Check AACRAID logical drives (if any)
 if [ -x "${ARCCONF}" ]; then
-	echo "Starting AACRAID logical drive checks..."
+	echo "Starting AACRAID health checks..."
 	# Get the number of adapters on the system
 	# Adapter numbers start with 1 for AACRAID
 	adp_count=`${ARCCONF} GETVERSION nologs | grep "Controllers found:" | \
@@ -63,10 +84,31 @@ if [ -x "${ARCCONF}" ]; then
 				grep "Status of logical device" | cut -d: -f2 | \
 				tr -d ' ' | tr -d '\n'`
 			if [ "${ld_state}" != "Optimal" ]; then
-				echo "** Warning! AACRAID logical drive ${logical_drv} on adapter ${adapter} is not optimal!" 1>&2
-				${ARCCONF} GETCONFIG ${adapter} LD ${logical_drv} nologs 1>&2
+				echo "** Warning! AACRAID logical drive ${logical_drv} on" \
+					"adapter ${adapter} is not optimal!" 1>&2
+				echo "** Logical drive state: ${ld_state}" 1>&2
 			fi
 		done
+		# Check the physical drives for the adapter
+		echo "Checking physical drives..."
+		pd_count=0
+		SAVED_IFS=${IFS}
+		IFS=$(echo -en "\n\b")
+		for i in `${ARCCONF} GETCONFIG ${adapter} PD nologs`; do
+			if echo "${i}" | grep "State                              :" > /dev/null 2>&1; then
+				pd_count=$(expr ${pd_count} + 1)
+				drv_state=`echo "${i}" | cut -d: -f2 | sed 's/^ *//' | tr -d '\n'`
+				if [ "${drv_state}" != "Online" ] &&
+					[ "${drv_state}" != "Ready" ] &&
+					[ "${drv_state}" != "Hot Spare" ]; then
+					echo "** Warning! It appears a AACRAID physical drive has" \
+						"failed on adapter ${adapter}!" 1>&2
+					echo "** Physical drive state: ${drv_state}" 1>&2
+				fi
+			fi
+		done
+		IFS=${SAVED_IFS}
+		echo "Checked ${pd_count} physical drive(s)."
 	done
 else
 	echo "It appears the '${ARCCONF}' tool is not installed, or at least"
@@ -83,7 +125,7 @@ mem_used=`expr ${mem_total} - ${mem_avail}`
 echo "Physical RAM check..."
 echo -e "Total Memory:\t\t${mem_total} kB\nUsed Memory:\t\t${mem_used} kB\nAvailable Memory:\t${mem_avail} kB"
 prct_mem_used=`echo "${mem_used} ${mem_total}" | awk '{ printf("%.1g", $1 / $2) }'`
-echo "Memory used percent: ${prct_mem_used}"
+echo -e "Memory used percent:\t${prct_mem_used}"
 if expr ${prct_mem_used} '>' ${MEM_PRCT_THRESH} > /dev/null; then
 	echo "** Warning! Maximum memory used threshold (${MEM_PRCT_THRESH}) has been exceeded..." 1>&2
 	echo "Total Physical RAM: ${mem_total} kB" 1>&2
@@ -97,7 +139,7 @@ disk_avail=`df -m / | grep tmpfs | awk '{print $4}'`
 echo "Disk (/ -> root tmpfs) space check..."
 echo -e "Total Disk Space:\t${disk_total} MB\nUsed Disk Space:\t${disk_used} MB\nAvail. Disk Space:\t${disk_avail} MB"
 prct_disk_used=`echo "${disk_used} ${disk_total}" | awk '{ printf("%.1g", $1 / $2) }'`
-echo "Disk space used percent: ${prct_disk_used}"
+echo -e "Disk used percent:\t${prct_disk_used}"
 if expr ${prct_disk_used} '>' ${DISK_PRCT_THRESH} > /dev/null; then
 	echo "** Warning! Maximum disk space used threshold (${DISK_PRCT_THRESH}) has been exceeded..." 1>&2
 	echo "Total Disk Space: ${disk_total} MB" 1>&2

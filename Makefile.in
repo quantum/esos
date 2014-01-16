@@ -74,10 +74,10 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
-		linux-3.10.13.tar.xz \
+		linux-3.12.7.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-trunk_r5081.tar.gz \
+		scst-trunk_r5194.tar.gz \
 		kexec-tools-2.0.3.tar.gz \
 		drbd-8.4.3.tar.gz \
 		LVM2-2.02.97.tar.gz \
@@ -406,12 +406,12 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/scst_exec_req_fifo.patch/ \
-	  -p1 < $(scst_src)/scst/kernel/scst_exec_req_fifo-3.10.patch; \
+	  -p1 < $(scst_src)/scst/kernel/scst_exec_req_fifo-3.12.patch; \
 	fi
 	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/put_page_callback.patch/ \
-	  -p1 < $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.10.patch; \
+	  -p1 < $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.12.patch; \
 	fi
 	$(RM) $(linux_src)/drivers/scsi/qla2xxx
 	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
@@ -423,6 +423,7 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean
 	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) distclean
 	$(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio clean
+	$(MAKE) --directory=$(btier_src)/kernel/btier clean
 	if [ "$(@)" = "scst_kernel$(prod_suffix)" ]; then \
 	  $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
 	  $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
