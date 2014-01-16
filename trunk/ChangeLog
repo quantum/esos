@@ -1,3 +1,11 @@
+2014-01-16 05:05  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/linux-3.12.7.config, scripts/health_chk.sh: version bump for
+	  SCST (trunk); updated Linux kernel to 3.12; updates/improvements
+	  to health-check script which now checks for "failed" physical
+	  drives (MegaRAID/AACRAID)
+
 2013-12-27 05:29  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: pulled new
