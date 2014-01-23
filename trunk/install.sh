@@ -5,14 +5,19 @@
 TEMP_DIR=`mktemp -u -d /tmp/esos_install.XXXXX` || exit 1
 MNT_DIR="${TEMP_DIR}/mnt"
 REQD_TOOLS="tar rpm2cpio cpio dd md5sum sha256sum grep blockdev unzip"
-PROP_TOOLS="MegaCLI arcconf hpacucli linuxcli 3DM2_CLI"
+PROP_TOOLS="MegaCLI StorCLI arcconf hpacucli linuxcli 3DM2_CLI"
 MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
 
-TOOL_DESC_MegaCLI="LSI Logic MegaRAID Controllers"
+TOOL_DESC_MegaCLI="LSI Logic MegaRAID Controllers (MegaCLI)"
 TOOL_FILE_MegaCLI="8.07.06_MegaCLI.zip"
 TOOL_URL_MegaCLI="http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.07.06_MegaCLI.zip"
 TOOL_INSTALL_CMD_MegaCLI="unzip -o *_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm | cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/MegaCli64"
+
+TOOL_DESC_StorCLI="LSI Logic Syncro/MegaRAID Controllers (StorCLI)"
+TOOL_FILE_StorCLI="1_05_07_CS1_1_StorCLI.zip"
+TOOL_URL_StorCLI="http://www.lsi.com/downloads/Public/Syncro%20Shared%20Storage/downloads/1_05_07_CS1_1_StorCLI.zip"
+TOOL_INSTALL_CMD_StorCLI="unzip -o *_StorCLI.zip && rpm2cpio Linux/storcli-*.rpm | cpio -idmv && cp opt/MegaRAID/storcli/storcli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/storcli64 && cp opt/MegaRAID/storcli/libstorelibir* ${MNT_DIR}/opt/lib/ && chmod 755 ${MNT_DIR}/opt/lib/libstorelibir*"
 
 TOOL_DESC_arcconf="Adaptec AACRAID Controllers"
 TOOL_FILE_arcconf="arcconf_v1_00_20206.zip"
@@ -125,6 +130,7 @@ echo "### Checking downloaded packages..."
 for i in ${PROP_TOOLS}; do
     tool_file=TOOL_FILE_${i}
     if [ -e "${TEMP_DIR}/${!tool_file}" ]; then
+        echo "${TEMP_DIR}/${!tool_file}: Adding to the install list."
         install_list="${install_list} ${i}"
     else
         echo "${TEMP_DIR}/${!tool_file}: File not found."

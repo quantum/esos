@@ -87,7 +87,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		gcc-4.4.5_gmp_mpfr.tar.bz2 \
 		libqb-0.14.4.tar.xz \
 		pacemaker-1.1.8.tar.gz \
-		corosync-2.3.0.tar.gz \
+		corosync-2.3.3.tar.gz \
 		nss-3.14.1.tar.gz \
 		glib-2.16.6.tar.bz2 \
 		libxml2-2.9.0.tar.gz \
