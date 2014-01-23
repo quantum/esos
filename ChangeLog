@@ -1,3 +1,11 @@
+2014-01-23 19:44  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, install.sh,
+	  misc/Python-2.7.3.patch: updated the installer script to include
+	  the StorCLI tool from LSI (supports Syncro controllers); updated
+	  corosync to 2.3.3; Python fix for build platforms that have
+	  ncursesw installed (fixes issue # 43)
+
 2014-01-16 05:05  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
