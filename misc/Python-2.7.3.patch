@@ -12,3 +12,16 @@
          # Workaround for Mac OS X: The Carbon-based modules cannot be
          # reliably imported into a command-line Python
          if 'Carbon' in ext.extra_link_args:
+--- a/setup.py	2014-01-22 21:52:25.725510048 -0500
++++ b/setup.py	2014-01-22 21:53:01.539274302 -0500
+@@ -642,8 +642,8 @@
+         # use the same library for the readline and curses modules.
+         if 'curses' in readline_termcap_library:
+             curses_library = readline_termcap_library
+-        elif self.compiler.find_library_file(lib_dirs, 'ncursesw'):
+-            curses_library = 'ncursesw'
++#        elif self.compiler.find_library_file(lib_dirs, 'ncursesw'):
++#            curses_library = 'ncursesw'
+         elif self.compiler.find_library_file(lib_dirs, 'ncurses'):
+             curses_library = 'ncurses'
+         elif self.compiler.find_library_file(lib_dirs, 'curses'):
