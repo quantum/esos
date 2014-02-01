@@ -17,10 +17,10 @@ Here is a list of the build host system requirements:
   * A lot of time! Unfortunately, several larger projects (GCC, Linux kernel, glibc, etc.) are required that take quite a while to compile.
   * Internet connectivity; packages are fetched from the dist. file repository.
 
-Using _Red Hat Enterprise Linux 6.2 Server x86_64_ as your build host:
+Using _Red Hat Enterprise Linux (or CentOS) 6.2 Server x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * yum groupinstall "Development tools"
-  * yum install lsscsi kpartx libxslt
+  * yum install lsscsi kpartx libxslt bc wget
 
 Using _Fedora 16 Desktop Edition x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
