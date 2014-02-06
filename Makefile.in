@@ -145,27 +145,27 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		thin-provisioning-tools-0.2.8.tar.gz \
 		expat-1.95.8.tar.gz \
 		boost-1_55_0.tar.xz \
-		btier-1.1.1.tar.gz \
+		btier-1.2.1.tar.gz \
 		librdmacm-1.0.15.tar.gz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
-build_targets		:= scst_kernel$(prod_suffix) scst_kernel$(debug_suffix) \
-			kernel_headers esos_tui busybox sysvinit grub glibc perl \
-			qlogic_fw scstadmin openssh vixie-cron gcc openssl zlib \
-			ncurses e2fsprogs ssmtp libibumad libibverbs srptools \
-			lsscsi sg3_utils groff kexec-tools iniparser cdk LVM2 \
-			xfsprogs drbd mdadm parted opensm libqb pacemaker \
-			corosync nss glib libxml2 libxslt libtool bzip2 Python \
-			crmsh libaio glue readline resource_agents mhvtl lzo \
-			mhash lessfs tokyocabinet fuse db snappy fence_agents \
-			pexpect pycurl curl Net-Telnet python-suds setuptools \
-			fio bash open-fcoe open-lldp libconfig libnl libpciaccess \
-			linux_firmware dlm ipmitool sysklogd less irqbalance \
-			ethtool postgresql psycopg2 mysql MySQLdb SQLAlchemy \
-			infiniband-diags libibmad lockfile python-daemon nrpe \
-			bcache-tools EnhanceIO util-linux thin-provisioning-tools \
-			expat boost btier librdmacm
+build_targets		:= esos_kernels kernel_headers esos_tui busybox \
+			sysvinit grub glibc perl qlogic_fw scstadmin openssh \
+			vixie-cron gcc openssl zlib ncurses e2fsprogs ssmtp \
+			libibumad libibverbs srptools lsscsi sg3_utils groff \
+			kexec-tools iniparser cdk LVM2 xfsprogs drbd mdadm \
+			parted opensm libqb pacemaker corosync nss glib libxml2 \
+			libxslt libtool bzip2 Python crmsh libaio glue readline \
+			resource_agents mhvtl lzo mhash lessfs tokyocabinet \
+			fuse db snappy fence_agents pexpect pycurl curl \
+			Net-Telnet python-suds setuptools fio bash open-fcoe \
+			open-lldp libconfig libnl libpciaccess linux_firmware \
+			dlm ipmitool sysklogd less irqbalance ethtool postgresql \
+			psycopg2 mysql MySQLdb SQLAlchemy infiniband-diags \
+			libibmad lockfile python-daemon nrpe bcache-tools \
+			EnhanceIO util-linux thin-provisioning-tools expat boost \
+			btier librdmacm
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -197,7 +197,7 @@ define clean_la_files
 endef
 
 
-# all - The default goal; complete every target except install.
+# all - The default goal; complete every target except image.
 .PHONY: all
 all: fetch extract build ;
 
@@ -395,14 +395,12 @@ image_setup:
 	$(MKDIR) $(INITRAMFS_DIR)/mnt/{root,tmp}
 	$(MKDIR) $(INITRAMFS_DIR)/usr/{bin,sbin}
 
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): scst_src = $(wildcard $(BUILD_DIR)/scst-*)
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): mhvtl_src = $(wildcard $(BUILD_DIR)/mhvtl-*)
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): eio_src = $(wildcard $(BUILD_DIR)/EnhanceIO-*)
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): btier_src = $(wildcard $(BUILD_DIR)/btier-*)
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): kern_suffix = $(subst scst_kernel,,$(@))
-$(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
-	### Kernel prerequisites for SCST
+esos_kernels: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
+esos_kernels: scst_src = $(wildcard $(BUILD_DIR)/scst-*)
+esos_kernels: mhvtl_src = $(wildcard $(BUILD_DIR)/mhvtl-*)
+esos_kernels: eio_src = $(wildcard $(BUILD_DIR)/EnhanceIO-*)
+esos_kernels: btier_src = $(wildcard $(BUILD_DIR)/btier-*)
+esos_kernels: glibc
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b -B $(linux_src)/scst_exec_req_fifo.patch/ \
@@ -415,51 +413,52 @@ $(addprefix scst_kernel,$(prod_suffix) $(debug_suffix)): glibc
 	fi
 	$(RM) $(linux_src)/drivers/scsi/qla2xxx
 	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
-	### Setup for prod or debug
-	$(MAKE) --directory=$(linux_src) clean
-	$(MAKE) --directory=$(linux_src) distclean
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) clean
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) extraclean
-	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean
-	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) distclean
-	$(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio clean
-	$(MAKE) --directory=$(btier_src)/kernel/btier clean
-	if [ "$(@)" = "scst_kernel$(prod_suffix)" ]; then \
-	  $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
-	  $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
-	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2perf; \
-	fi
-	if [ "$(@)" = "scst_kernel$(debug_suffix)" ]; then \
-	  $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
-	  $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
-	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2debug; \
-	fi
-	### Build/install the Linux kernel
-	$(MAKE) --jobs=4 --directory=$(linux_src)
-	$(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage $(IMAGE_DIR)/boot/bzImage$(kern_suffix)
-	$(MAKE) --directory=$(linux_src) INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install
-	### Build/install SCST core and target drivers
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) scst
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) DESTDIR=$(IMAGE_DIR) INSTALL_DIR_H=$(IMAGE_DIR)/usr/include/scst scst_install
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) qla
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) qla_install
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) LOCAL_LD_FLAGS="$(LDFLAGS)" iscsi
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) SBINDIR=$(IMAGE_DIR)/usr/sbin MANDIR=$(IMAGE_DIR)/usr/share/man INSTALL_MOD_PATH=$(IMAGE_DIR) iscsi_install
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) srpt
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) srpt_install
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) fcst
-	$(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) INSTALL_MOD_PATH=$(IMAGE_DIR) fcst_install
-	### Build/install mhVTL module
-	$(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) KVER=$(kernel_ver)$(kern_suffix)
-	$(INSTALL) -m 755 $(mhvtl_src)/kernel/mhvtl.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/kernel/drivers/scsi/
-	### Build/install the EnhanceIO driver
-	$(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_SOURCE_VERSION=$(kernel_ver)$(kern_suffix) KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio
-	$(INSTALL) -d $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/extra/enhanceio
-	$(INSTALL) -m 755 $(eio_src)/Driver/enhanceio/*.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/extra/enhanceio/
-	### Build/install BTIER module
-	$(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$(kern_suffix) M=$(btier_src)/kernel/btier modules
-	$(INSTALL) -D -m 755 $(btier_src)/kernel/btier/btier.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$(kern_suffix)/kernel/drivers/block/btier.ko
-	### Done
+	$(QUIET) for i in $(prod_suffix) $(debug_suffix); do \
+	  $(ECHO) "### Cleaning source directories..."; \
+	  $(MAKE) --directory=$(linux_src) clean; \
+	  $(MAKE) --directory=$(linux_src) distclean; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) clean; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) extraclean; \
+	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean; \
+	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) distclean; \
+	  $(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio clean; \
+	  $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
+	  if [ "$$i" = "$(prod_suffix)" ]; then \
+	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
+	    $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
+	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2perf; \
+	  fi; \
+	  if [ "$$i" = "$(debug_suffix)" ]; then \
+	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
+	    $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
+	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2debug; \
+	  fi; \
+	  $(ECHO) "### Building the Linux kernel..."; \
+	  $(MAKE) --directory=$(linux_src); \
+	  $(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage $(IMAGE_DIR)/boot/bzImage$$i; \
+	  $(MAKE) --directory=$(linux_src) INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install; \
+	  $(ECHO) "### Building the SCST core and target drivers"; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i scst; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i DESTDIR=$(IMAGE_DIR) INSTALL_DIR_H=$(IMAGE_DIR)/usr/include/scst scst_install; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i qla; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) qla_install; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i LOCAL_LD_FLAGS="$(LDFLAGS)" iscsi; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i SBINDIR=$(IMAGE_DIR)/usr/sbin MANDIR=$(IMAGE_DIR)/usr/share/man INSTALL_MOD_PATH=$(IMAGE_DIR) iscsi_install; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i srpt; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) srpt_install; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i fcst; \
+	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) fcst_install; \
+	  $(ECHO) "### Building the mhVTL module"; \
+	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) KVER=$(kernel_ver)$$i; \
+	  $(INSTALL) -m 755 $(mhvtl_src)/kernel/mhvtl.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/; \
+	  $(ECHO) "### Building the EnhanceIO driver"; \
+	  $(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_SOURCE_VERSION=$(kernel_ver)$$i KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio; \
+	  $(INSTALL) -d $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio; \
+	  $(INSTALL) -m 755 $(eio_src)/Driver/enhanceio/*.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio/; \
+	  $(ECHO) "### Building the BTIER module"; \
+	  $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i M=$(btier_src)/kernel/btier modules; \
+	  $(INSTALL) -D -m 755 $(btier_src)/kernel/btier/btier.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/block/btier.ko; \
+	done
 	$(TOUCH) $(@)
 
 kernel_headers:
@@ -521,7 +520,7 @@ glibc: kernel_headers
 	cd $(WORK_DIR)/glibc-build && \
 	CC="" CXX="" CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" \
 	LDFLAGS="" $(src_dir)/configure --prefix=/usr --without-selinux
-	$(MAKE) --jobs=4 --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
+	$(MAKE) --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build install_root=$(IMAGE_DIR) install
 	$(SED) -i 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libc.so
 	$(SED) -i 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' $(IMAGE_DIR)/usr/lib/libpthread.so
