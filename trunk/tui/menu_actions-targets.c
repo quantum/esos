@@ -133,7 +133,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
     now = time(NULL);
     tm_now = localtime(&now);
     strftime(nice_date, sizeof(nice_date), "%Y-%m", tm_now);
-    if (gethostname(hostname, sizeof(hostname)) == -1)
+    if (gethostname(hostname, ((sizeof hostname) - 1)) == -1)
         snprintf(hostname, sizeof(hostname), "hostname");
     tmp_pstr = strchr(hostname, '.');
     if (tmp_pstr)

@@ -141,7 +141,7 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Set the message */
     readAttribute(ESOS_VER_FILE, esos_ver);
-    if (gethostname(hostname, sizeof(hostname)) == -1)
+    if (gethostname(hostname, ((sizeof hostname) - 1)) == -1)
         snprintf(hostname, sizeof(hostname), "hostname");
     asprintf(&message[0], "<C></31/B>About ESOS");
     asprintf(&message[1], " ");
