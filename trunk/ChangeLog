@@ -1,3 +1,16 @@
+2014-02-16 18:57  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/ssmtp/ssmtp.conf,
+	  misc/busybox-1.20.2.config, tui/menu_actions-interface.c,
+	  tui/menu_actions-system.c, tui/menu_actions-targets.c: removed
+	  'rewritedomain' option in ssmtp.conf (not used by default);
+	  updated mail-settings dialog to get system hostname and set
+	  'hostname' key in ssmtp.conf (issue # 47); set size value used in
+	  gethostname() instances to one less; removed iostat and mpstat
+	  programs from busybox bin; new sysstat package (for advanced
+	  iostat features); catch errors properly while inside for loop in
+	  kernels target; fix build issue with util-linux (issue # 37)
+
 2014-02-06 02:10  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: updated btier to
