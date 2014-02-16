@@ -1132,7 +1132,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             tmp_auth_user[MAX_SMTP_USER_LEN] = {0},
             tmp_auth_pass[MAX_SMTP_PASS_LEN] = {0},
             new_mailhub[MAX_INI_VAL] = {0}, new_authmethod[MAX_INI_VAL] = {0},
-            new_usetls[MAX_INI_VAL] = {0}, new_usestarttls[MAX_INI_VAL] = {0};
+            new_usetls[MAX_INI_VAL] = {0}, new_usestarttls[MAX_INI_VAL] = {0},
+            hostname[MISC_STRING_LEN] = {0};
     char *conf_root = NULL, *conf_mailhub = NULL, *conf_authuser = NULL,
             *conf_authpass = NULL, *conf_authmethod = NULL,
             *conf_usetls = NULL, *conf_usestarttls = NULL,
@@ -1156,6 +1157,14 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     conf_usetls = iniparser_getstring(ini_dict, ":usetls", "");
     conf_usestarttls = iniparser_getstring(ini_dict, ":usestarttls", "");
 
+    /* Get the host name here (used below in sSMTP configuration) */
+    if (gethostname(hostname, ((sizeof hostname) - 1)) == -1) {
+        asprintf(&error_msg, "gethostname(): %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        freeChar(error_msg);
+        goto cleanup;
+    }
+    
     /* Setup a new CDK screen for mail setup */
     mail_window_lines = 17;
     mail_window_cols = 68;
@@ -1422,6 +1431,10 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         else
             snprintf(new_usestarttls, MAX_INI_VAL, "NO");
         if (iniparser_set(ini_dict, ":usestarttls", new_usestarttls) == -1) {
+            errorDialog(main_cdk_screen, "Couldn't set configuration file value!", NULL);
+            goto cleanup;
+        }
+        if (iniparser_set(ini_dict, ":hostname", hostname) == -1) {
             errorDialog(main_cdk_screen, "Couldn't set configuration file value!", NULL);
             goto cleanup;
         }
