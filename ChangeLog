@@ -1,3 +1,9 @@
+2014-02-20 14:33  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/busybox-1.20.2.config: added the pciutils package (for the
+	  good lspci) and disabled lspci in busybox
+
 2014-02-16 18:57  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/ssmtp/ssmtp.conf,
