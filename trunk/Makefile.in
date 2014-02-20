@@ -148,6 +148,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		btier-1.2.1.tar.gz \
 		librdmacm-1.0.15.tar.gz \
 		sysstat-10.2.1.tar.gz \
+		pciutils-3.2.1.tar.gz \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -166,7 +167,7 @@ build_targets		:= esos_kernels kernel_headers esos_tui busybox \
 			psycopg2 mysql MySQLdb SQLAlchemy infiniband-diags \
 			libibmad lockfile python-daemon nrpe bcache-tools \
 			EnhanceIO util-linux thin-provisioning-tools expat boost \
-			btier librdmacm sysstat
+			btier librdmacm sysstat pciutils
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -1348,5 +1349,10 @@ sysstat: glibc
 	$(INSTALL) -m 0644 $(src_dir)/man/pidstat.1 $(IMAGE_DIR)/usr/share/man/man1/
 	$(INSTALL) -m 0644 $(src_dir)/man/nfsiostat.1 $(IMAGE_DIR)/usr/share/man/man1/
 	$(INSTALL) -m 0644 $(src_dir)/man/cifsiostat.1 $(IMAGE_DIR)/usr/share/man/man1/
+	$(TOUCH) $(@)
+
+pciutils: glibc zlib
+	$(MAKE) --directory=$(src_dir) PREFIX=/usr
+	$(MAKE) --directory=$(src_dir) PREFIX=/usr DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
