@@ -5,7 +5,8 @@ STOP_TIMEOUT=120
 
 # User settable services; started in this order and reversed on shutdown
 EARLY_SERVICES="rc.openibd rc.opensm"
-LATE_SERVICES="rc.sshd rc.mdraid rc.lvm2 rc.eio rc.dmcache rc.btier rc.drbd rc.corosync rc.dlm rc.clvmd rc.pacemaker rc.fsmount rc.mhvtl rc.scst rc.perfagent rc.nrpe"
+LATE_SERVICES="rc.sshd rc.mdraid rc.lvm2 rc.eio rc.dmcache rc.btier rc.drbd rc.corosync rc.dlm \
+rc.clvmd rc.pacemaker rc.fsmount rc.mhvtl rc.scst rc.perfagent rc.nrpe rc.snmpd rc.snmptrapd rc.nut"
 
 # Check if the service is enabled, or not
 check_enabled() {

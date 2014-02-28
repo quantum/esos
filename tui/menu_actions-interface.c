@@ -70,7 +70,7 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
 void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     CDKDIALOG *bundle_dialog = 0;
     char tar_cmd[MAX_SHELL_CMD_LEN] = {0}, nice_date[MISC_STRING_LEN] = {0},
-            bundle_file[MISC_STRING_LEN] = {0};
+            bundle_file[MISC_STRING_LEN] = {0}, file_name[MISC_STRING_LEN] = {0};
     char *error_msg = NULL;
     char *message[SUPPORT_PKG_MSG_SIZE] = {NULL};
     static char *tmp_base = "/tmp";
@@ -83,13 +83,13 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     now = time(NULL);
     tm_now = localtime(&now);
     strftime(nice_date, sizeof(nice_date), "%s", tm_now);
-    snprintf(bundle_file, MISC_STRING_LEN, "%s/esos_support_pkg-%s.tgz",
-            tmp_base, nice_date);
+    snprintf(file_name, MISC_STRING_LEN, "esos_support_pkg-%s", nice_date);
+    snprintf(bundle_file, MISC_STRING_LEN, "%s/%s.tgz", tmp_base, file_name);
 
     /* Archive the configuration files and logs */
     snprintf(tar_cmd, MAX_SHELL_CMD_LEN,
-            "%s cpfz %s --exclude='rc.d' --exclude='ssh' --exclude='shadow*' --exclude='ssmtp' /etc /var/log > /dev/null 2>&1",
-            TAR_BIN, bundle_file);
+            "%s cpfz %s --transform 's,^,%s/,' --exclude='rc.d' --exclude='ssh' --exclude='shadow*' --exclude='ssmtp' /etc /var/log > /dev/null 2>&1",
+            TAR_BIN, bundle_file, file_name);
     ret_val = system(tar_cmd);
     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
         asprintf(&error_msg, "Running %s failed; exited with %d.", TAR_BIN, exit_stat);
