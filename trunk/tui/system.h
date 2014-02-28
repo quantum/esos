@@ -120,7 +120,7 @@ extern "C" {
 #define DELGROUP_BIN    "/bin/delgroup"
 #define RC_NETWORK      "/etc/rc.d/rc.network"
 #define SSMTP_BIN       "/usr/sbin/ssmtp"
-#define TAR_BIN         "/bin/tar"
+#define TAR_BIN         "/usr/bin/tar"
 #define CRM_TOOL        "/usr/sbin/crm"
 
 /* A few sysfs settings */

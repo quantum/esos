@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+SNMPD="/usr/sbin/snmpd"
+SNMPD_LOCK="/var/lock/snmpd"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Starting snmpd..."
+    ${SNMPD} -LS0-6d -Lf /dev/null -p /var/run/snmpd.pid > /dev/null 2>&1 || exit 1
+    /bin/touch ${SNMPD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping snmpd..."
+    /bin/kill -TERM $(/bin/pidof ${SNMPD}) || exit 1
+    wait_for_stop ${SNMPD} && /bin/rm -f ${SNMPD_LOCK}
+}
+
+# Perform specified action
+${1}

@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+SNMPTRAPD="/usr/sbin/snmptrapd"
+SNMPTRAPD_LOCK="/var/lock/snmptrapd"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Starting snmptrapd..."
+    ${SNMPTRAPD} -Lsd -p /var/run/snmptrapd.pid > /dev/null 2>&1 || exit 1
+    /bin/touch ${SNMPTRAPD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping snmptrapd..."
+    /bin/kill -TERM $(/bin/pidof ${SNMPTRAPD}) || exit 1
+    wait_for_stop ${SNMPTRAPD} && /bin/rm -f ${SNMPTRAPD_LOCK}
+}
+
+# Perform specified action
+${1}
