@@ -1,3 +1,28 @@
+2014-02-28 21:53  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
+	  etc/group, etc/passwd, etc/rc.conf, etc/rc.d/common,
+	  etc/rc.d/rc.nut, etc/rc.d/rc.snmpd, etc/rc.d/rc.snmptrapd,
+	  etc/shadow, etc/snmp, etc/snmp/snmpd.conf, etc/ups.conf,
+	  etc/upsd.conf, etc/upsd.users, etc/upsmon.conf,
+	  etc/upssched.conf, misc/busybox-1.20.2.config,
+	  misc/linux-3.12.7.config, scripts/health_chk.sh,
+	  scripts/usb_sync.sh, tui/menu_actions-interface.c, tui/system.h:
+	  fixed bug in health check script where we assumed all LDs were
+	  sequential, we now use a real list (resolves issue # 49); we now
+	  include GNU tar which gives us the --transform option so we can
+	  make pretty tarballs (eg, About->Support Bundle); initial
+	  addition of NUT (Network UPS Tools) -- more work/tweaks will
+	  likely be needed for this package (issue # 54); initial addition
+	  of net-snmp package -- more work/tweaks will likely be needed for
+	  this package (issue # 55); enabled IPMI device drivers in kernel
+	  config (should resolve issue # 56); disabled support for tar in
+	  Busybox since we now use real tar; updated usb_sync.sh to handle
+	  dirs/files with spaces (issue # 59); new user/group added for
+	  NUT; added libusb (and compat-) as dependencies for NUT; use 644
+	  perms for kernel modules; added default/example config files for
+	  NUT and net-snmp packages
+
 2014-02-20 14:33  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
