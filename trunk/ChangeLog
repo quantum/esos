@@ -1,3 +1,12 @@
+2014-03-03 17:08  msmith626@gmail.com
+
+	* etc/rc.d/rc.nut, etc/snmp/snmpd.conf, scripts/archive_logs.sh,
+	  tui/main.c: handle returning from shell when we don't have a
+	  terminal attached (fixes issue # 61); fixed typo in rc.nut;
+	  updated default configuration for snmpd.conf; over-haul for
+	  archive_logs script (thank you Mahir) so it now checks for free
+	  disk space in esos_logs and removes old files if needed
+
 2014-02-28 21:53  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
