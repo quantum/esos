@@ -11,6 +11,7 @@
 #include <cdk.h>
 #include <sys/wait.h>
 #include <syslog.h>
+#include <fcntl.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -29,7 +30,7 @@ int main(int argc, char** argv) {
     char *error_msg = NULL;
     int selection = 0, key_pressed = 0, menu_choice = 0, submenu_choice = 0,
             screen_x = 0, screen_y = 0, orig_scr_x = 0, orig_scr_y = 0,
-            child_status = 0, proc_status = 0;
+            child_status = 0, proc_status = 0, tty_fd = 0;
     static char *adapters_label_title = "FC HBAs / IB HCAs / FCoE Adapters",
             *devices_label_title = "SCST Devices",
             *targets_label_title = "iSCSI Targets";
@@ -303,7 +304,17 @@ int main(int argc, char** argv) {
                     freeChar(adapters_label_msg[0]);
                     freeChar(devices_label_msg[0]);
                     freeChar(targets_label_msg[0]);
-                    goto start;
+                    /* Check and see if we're still attached to our terminal */
+                    if ((tty_fd = open("/dev/tty", O_RDONLY)) == -1) {
+                        /* Guess not, so we're done */
+                        delwin(sub_window);
+                        delwin(main_window);
+                        system(CLEAR_BIN);
+                        exit(EXIT_SUCCESS);
+                    } else {
+                        close(tty_fd);
+                        goto start;
+                    }
                 }
 
             } else if (menu_choice == INTERFACE_MENU &&
