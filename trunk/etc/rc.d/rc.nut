@@ -20,7 +20,7 @@ fi
 
 start() {
     /bin/echo "Starting NUT UPS drivers..."
-    ${UPSDRVCTL} -u ${NUT_USER} || exit 1
+    ${UPSDRVCTL} -u ${NUT_USER} start || exit 1
     /bin/touch ${UPSDRVCTL_LOCK}
     /bin/echo "Starting NUT UPS daemon..."
     ${UPSD} -u ${NUT_USER} || exit 1
