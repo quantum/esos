@@ -1,20 +1,18 @@
 #summary Learn how to upgrade ESOS on your system.
 
 === About Upgrading ESOS ===
-First, if the storage server is not part of a cluster, the upgrade process for ESOS is disruptive and will require a small amount of down time. The upgrade procedure goes something like this:
-  * You install the new version of ESOS to an entirely new, fresh USB flash drive.
-  * Next, you copy the configuration files from the current (old) ESOS flash drive from your ESOS storage server to the new USB device.
-  * Finally you remove the old flash drive from the server, and replace it with the new flash drive and reboot your storage server.
-
-While this upgrade procedure does involve some down time, it has one important benefit: It is very easy to revert to your old ESOS version if there is some type of problem when running the new version -- simply power off the storage server, and swap USB flash drives (use the old one).
+First, if the storage server is not part of a cluster, the upgrade process for Enterprise Storage OS is disruptive and will require a small amount of down time. There are a couple different methods/options for upgrading ESOS:
+  * For the paranoid, you can install the new version of ESOS to an entirely new, fresh USB flash drive. You'll then copy your configuration files from the current (old) ESOS flash drive to the new USB device. Finally you remove the old flash drive from the server, and replace it with the new flash drive and reboot your storage server. While this upgrade procedure is cumbersome, and does involve some down time, it has one important benefit: It is very easy to revert to your old ESOS version if there is some type of problem when running the new version -- simply power off the storage server, and swap USB flash drives (use the old one).
+  * Another more practical approach to upgrading ESOS: Either take the existing USB flash drive from the running server, or an entirely new USB device and use the ESOS installer script (on another system) to write the new image file and add any proprietary RAID CLI tools. Then plug the new (or updated) drive into the running ESOS server, and synchronize the configuration (in the TUI or CLI with `conf_sync.sh`). This will dump the running configuration to the USB flash drive. Double-check your configuration files are there, and then reboot.
+  * The final method is for the brave (or confident). This would be an ideal upgrade method if you don't easily have access to the physical server. You will also need enough physical RAM on the server so you extract the Enterprise Storage OS installation package. You'll transfer the ESOS tarball to the server, extract it, and then run the installer (`install.sh`) as normal. Once the image has been written and any proprietary tools added, you can then synchronize the configuration (in the TUI or CLI with `conf_sync.sh`). Check that all of your configuration is on the flash drive (esos_conf) and reboot.
 
 _It is highly recommended to label your ESOS USB flash drives with some details such host name, ESOS version, date, etc. to keep organized._
 
-Follow the steps below to upgrade ESOS.
+Choose an upgrade method and follow the steps below to upgrade Enterprise Storage OS.
 
 <br>
 
-=== Upgrade Procedure ===
+=== Upgrade Procedure # 1 (Paranoid) ===
 The first step is to install the new ESOS version to an entirely new USB flash device. Follow the [12_Installation] guide.
 
 After you have successfully created your new ESOS flash drive, its probably not a bad idea to try it on another computer/server to at least make sure it boots. This could save you some down time if there is a problem with the new ESOS USB device.
@@ -56,6 +54,16 @@ umount /mnt/new_esos
 }}}
 
 You can now insert the newly created (upgraded) ESOS USB flash drive into the USB port on your ESOS storage server, and then reboot the machine. When it comes back up, it will be running off of the new USB drive and the upgraded version of ESOS will be loaded.
+
+<br>
+
+=== Upgrade Procedure # 2 (Normal) ===
+TODO
+
+<br>
+
+=== Upgrade Procedure # 3 (Brave) ===
+TODO
 
 <br>
 
