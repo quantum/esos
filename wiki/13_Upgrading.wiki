@@ -64,6 +64,9 @@ TODO
 
 === Upgrade Procedure # 3 (Brave) ===
 TODO
+{{{
+mount -o remount,size=5G /tmp
+}}}
 
 <br>
 
