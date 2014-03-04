@@ -58,7 +58,9 @@ You can now insert the newly created (upgraded) ESOS USB flash drive into the US
 <br>
 
 === Upgrade Procedure # 2 (Normal) ===
-TODO
+With this method, you can use either a brand new USB flash drive (safer) or remove the existing USB device from your running ESOS server. Take that flash drive to another Linux system and follow the 12_Installation guide.
+
+Once the image has been installed to the flash drive, insert the USB drive into your running Enterprise Storage OS server, and run `conf_sync.sh` to synchronize your configuration with the new device.
 
 <br>
 
