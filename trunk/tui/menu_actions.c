@@ -322,7 +322,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[
  */
 int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], char tgt_group[]) {
     CDKSCROLL *lun_scroll = 0;
-    int lun_choice = 0, i = 0, j = 0, ret_val = 0;
+    int lun_choice = 0, i = 0, j = 0, ret_val = 0, dev_path_size = 0;
     int luns[MAX_SCST_LUNS] = {0};
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
@@ -354,7 +354,10 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
                 snprintf(link_path, MAX_SYSFS_PATH_SIZE,
                         "%s/targets/%s/%s/ini_groups/%s/luns/%d/device",
                         SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group, luns[j]);
-                readlink(link_path, dev_path, MAX_SYSFS_PATH_SIZE);
+                /* Read the link to get device name (doesn't append null byte) */
+                dev_path_size = readlink(link_path, dev_path, MAX_SYSFS_PATH_SIZE);
+                if (dev_path_size < MAX_SYSFS_PATH_SIZE)
+                        *(dev_path + dev_path_size) = '\0';
                 /* For our scroll widget */
                 asprintf(&scst_lun_list[j], "<C>LUN %d (Device: %s)", luns[j],
                         (strrchr(dev_path, '/') + 1));

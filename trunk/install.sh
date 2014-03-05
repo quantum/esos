@@ -145,7 +145,7 @@ if [ -z "${install_list}" ]; then
 else
     echo "### Installing proprietary CLI tools..."
     mkdir -p ${MNT_DIR} || exit 1
-    mount -L esos_root ${MNT_DIR} || exit 1
+    mount LABEL=esos_root ${MNT_DIR} || exit 1
     cd ${TEMP_DIR}
     for i in ${install_list}; do
         tool_install_cmd=TOOL_INSTALL_CMD_${i}
