@@ -58,17 +58,28 @@ You can now insert the newly created (upgraded) ESOS USB flash drive into the US
 <br>
 
 === Upgrade Procedure # 2 (Normal) ===
-With this method, you can use either a brand new USB flash drive (safer) or remove the existing USB device from your running ESOS server. Take that flash drive to another Linux system and follow the 12_Installation guide.
+With this method, you can use either a brand new USB flash drive (safer) or remove the existing USB device from your running ESOS server. Take that flash drive to another Linux system and follow the [12_Installation guide] wiki page.
 
 Once the image has been installed to the flash drive, insert the USB drive into your running Enterprise Storage OS server, and run `conf_sync.sh` to synchronize your configuration with the new device.
 
 <br>
 
 === Upgrade Procedure # 3 (Brave) ===
-TODO
+This is the "in-place" upgrade method and is best used when you don't have physical access to the server, or you'd like to be _efficient_ in your work. This method requires you have enough physical RAM in your server as the ESOS installation package will be transferred to the running Enterprise Storage OS server (via SCP/SFTP) and then extracted.
+
+So, the first step is to make sure you have enough space in the /tmp file system. The /tmp tmpfs file system defaults to half of your available physical RAM. It needs to be big enough to hold the ESOS install tarball, the extracted image (4 GB), and any proprietary tools you want copy up for installation. Use this command to change the size of the /tmp file system (don't make it bigger than your amount of physical RAM):
 {{{
 mount -o remount,size=5G /tmp
 }}}
+
+Next we need to get the new ESOS package to your running storage server:
+{{{
+scp esos-0.1-r579.tar.xz root@10.26.2.70:/tmp
+}}}
+
+Now you can proceed with the normal installation procedure found on the [12_Installation guide] page. You'll SCP/SFTP any proprietary CLI RAID tools to the running ESOS storage server location (that the install script gives you).
+
+After the install is complete, run `conf_sync.sh` to synchronize your configuration with the USB flash drive. Its not a bad idea to double-check your configuration synchronized correctly by mounting the `esos_conf` file system and giving it a once-over. Then you can reboot and you'll be running the new Enterprise Storage OS image!
 
 <br>
 
