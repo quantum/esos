@@ -1,3 +1,15 @@
+2014-03-05 17:15  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/fstab,
+	  install.sh, tui/menu_actions.c: updated install script so it will
+	  run correctly on ESOS now; modified default fstab so we use a
+	  separate /tmp FS and restrict the size of /dev and /dev/shm;
+	  version bump for net-snmp; enabled embedded-perl option for
+	  net-snmp; added freeipmi package (for NUT) along with libgcrypt
+	  and libgpg-error as dependencies; updated nut build to use
+	  freeipmi; fixed display bug in getSCSTLUNChoice() (resolves issue
+	  # 67)
+
 2014-03-03 17:08  msmith626@gmail.com
 
 	* etc/rc.d/rc.nut, etc/snmp/snmpd.conf, scripts/archive_logs.sh,
