@@ -58,7 +58,7 @@ You can now insert the newly created (upgraded) ESOS USB flash drive into the US
 <br>
 
 === Upgrade Procedure # 2 (Normal) ===
-With this method, you can use either a brand new USB flash drive (safer) or remove the existing USB device from your running ESOS server. Take that flash drive to another Linux system and follow the [12_Installation guide] wiki page.
+With this method, you can use either a brand new USB flash drive (safer) or remove the existing USB device from your running ESOS server. Take that flash drive to another Linux system and follow the [12_Installation] wiki page.
 
 Once the image has been installed to the flash drive, insert the USB drive into your running Enterprise Storage OS server, and run `conf_sync.sh` to synchronize your configuration with the new device.
 
@@ -77,11 +77,11 @@ Next we need to get the new ESOS package to your running storage server:
 scp esos-0.1-r579.tar.xz root@10.26.2.70:/tmp
 }}}
 
-Now you can proceed with the normal installation procedure found on the [12_Installation guide] page. You'll SCP/SFTP any proprietary CLI RAID tools to the running ESOS storage server location (that the install script gives you).
+Now you can proceed with the normal installation procedure found on the [12_Installation] guide page. You'll SCP/SFTP any proprietary CLI RAID tools to the running ESOS storage server location (that the install script gives you).
 
 After the install is complete, run `conf_sync.sh` to synchronize your configuration with the USB flash drive. Its not a bad idea to double-check your configuration synchronized correctly by mounting the `esos_conf` file system and giving it a once-over. Then you can reboot and you'll be running the new Enterprise Storage OS image!
 
 <br>
 
 === Post Update ===
-Be sure to keep your old/previous ESOS USB flash drive handy! Should you have any problems running the new version of ESOS, you will want that old, known-to-work copy of ESOS so you can revert quickly.
+Be sure to keep your old/previous ESOS USB flash drive handy if you chose a method that allows this! Should you have any problems running the new version of ESOS, you will want that old, known-to-work copy of ESOS so you can revert quickly.
