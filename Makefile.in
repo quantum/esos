@@ -150,10 +150,13 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		sysstat-10.2.1.tar.gz \
 		pciutils-3.2.1.tar.gz \
 		tar-1.27.tar.gz \
-		net-snmp-5.7.2.tar.gz \
+		net-snmp-5.7.2.1.tar.gz \
 		nut-2.7.1.tar.gz \
 		libusb-1.0.9.tar.bz2 \
 		libusb-compat-0.1.4.tar.bz2 \
+		freeipmi-1.4.1.tar.gz \
+		libgcrypt-1.6.1.tar.bz2 \
+		libgpg-error-1.12.tar.bz2 \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
 
@@ -173,7 +176,7 @@ build_targets		:= esos_kernels kernel_headers esos_tui busybox \
 			libibmad lockfile python-daemon nrpe bcache-tools \
 			EnhanceIO util-linux thin-provisioning-tools expat boost \
 			btier librdmacm sysstat pciutils tar net-snmp nut libusb \
-			libusb-compat
+			libusb-compat freeipmi libgcrypt libgpg-error
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
@@ -1373,18 +1376,22 @@ net-snmp: glibc
 	cd $(src_dir) && ./configure --prefix=/usr --with-default-snmp-version="3" \
 	--with-sys-contact="@@no.where" --with-sys-location="Unknown" \
 	--with-logfile="/var/log/snmpd.log" --with-persistent-directory="/var/lib/net-snmp" \
-	--without-perl-modules --disable-embedded-perl --without-python-modules \
-	--without-mysql --sysconfdir=/etc
+	--without-perl-modules --enable-embedded-perl --disable-perl-cc-checks \
+	--without-python-modules --without-mysql --sysconfdir=/etc \
+	--enable-minimalist --disable-deprecated \
+	--with-mib-modules="ucd-snmp/diskio etherlike-mib" --disable-manuals \
+	--disable-scripts
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
-nut: glibc net-snmp libusb-compat
+nut: glibc net-snmp libusb-compat freeipmi
 	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--without-dev --with-serial --with-usb --with-snmp --without-cgi \
-	--with-user=ups --with-group=nut --without-avahi \
-	--with-usb-libs="-lusb" --with-snmp-libs="-lnetsnmp"
+	--with-user=nutmon --with-group=nut --without-avahi \
+	--with-usb-libs="-lusb" --with-snmp-libs="-lnetsnmp" \
+	--with-ipmi --with-freeipmi --with-freeipmi-libs="-lfreeipmi"
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir)/common DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/clients DESTDIR=$(IMAGE_DIR) install
@@ -1407,6 +1414,55 @@ libusb: glibc
 libusb-compat: glibc libusb
 	cd $(src_dir) && LIBUSB_1_0_CFLAGS="-I$(IMAGE_DIR)/usr/include/libusb-1.0" \
 	LIBUSB_1_0_LIBS="-lusb-1.0" ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
+	$(TOUCH) $(@)
+
+freeipmi: glibc libgcrypt
+	cd $(src_dir) && am_cv_prog_tar_ustar='fake_ustar_cmd' ./configure --prefix=/usr \
+	--sysconfdir=/etc --localstatedir=/var --disable-init-scripts
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir)/common DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/libfreeipmi DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/libipmiconsole DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/libipmimonitoring DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/libipmidetect DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/man DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/bmc-info DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/bmc-device DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/bmc-watchdog DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-chassis DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-config DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-dcmi DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-fru DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-oem DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-pet DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-raw DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-sel DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-sensors DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmi-locate DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmiconsole DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmidetect DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmidetectd DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmiping DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmipower DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/ipmiseld DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/rmcpping DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/contrib DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
+	$(TOUCH) $(@)
+
+libgcrypt: glibc libgpg-error
+	cd $(src_dir) && GPG_ERROR_CONFIG="$(IMAGE_DIR)/usr/bin/gpg-error-config" \
+	./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
+	$(TOUCH) $(@)
+
+libgpg-error: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
