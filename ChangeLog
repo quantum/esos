@@ -1,3 +1,8 @@
+2014-03-06 20:50  msmith626@gmail.com
+
+	* Makefile.in: updated log directory location for fence_agents
+	  package; fixed build issue with net-snmp
+
 2014-03-05 17:15  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/fstab,
