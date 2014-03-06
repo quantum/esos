@@ -1026,11 +1026,14 @@ snappy: glibc
 
 fence_agents: glibc nss pexpect pycurl Net-Telnet python-suds
 	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  $(SED) -i 's/\/log\/cluster/\/log/' $(src_dir)/configure.ac; \
 	  cd $(src_dir) && ./autogen.sh; \
 	fi
 	cd $(src_dir) && nss_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
-        nss_LIBS="$(LDFLAGS) -lnss3 -lssl3 -lnssutil3" nspr_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
-	nspr_LIBS="$(LDFLAGS) -lnspr4" ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
+	nss_LIBS="$(LDFLAGS) -lnss3 -lssl3 -lnssutil3" \
+	nspr_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
+	nspr_LIBS="$(LDFLAGS) -lnspr4" \
+	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
 	$(MAKE) --directory=$(src_dir) PATH="$(WORK_DIR):$$PATH" \
 	PERL5LIB="$(wildcard $(IMAGE_DIR)/usr/lib/perl5/site_perl/5.*)"
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
@@ -1380,7 +1383,7 @@ net-snmp: glibc
 	--without-python-modules --without-mysql --sysconfdir=/etc \
 	--enable-minimalist --disable-deprecated \
 	--with-mib-modules="ucd-snmp/diskio etherlike-mib" --disable-manuals \
-	--disable-scripts
+	--disable-scripts --enable-ipv6
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
