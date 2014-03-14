@@ -16,24 +16,24 @@
 #include "prototypes.h"
 #include "system.h"
 #include "dialogs.h"
+#include "strings.h"
 
 int main(int argc, char** argv) {
     CDKSCREEN *cdk_screen = 0;
     WINDOW *main_window = 0, *sub_window = 0;
     CDKMENU *menu = 0;
-    CDKLABEL *adapters_label = 0, *targets_label = 0, *devices_label = 0;
+    CDKLABEL *targets_label = 0, *sessions_label = 0;
     const char *menu_list[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}};
-    int submenu_size[CDK_MENU_MAX_SIZE] = {0}, menu_loc[CDK_MENU_MAX_SIZE] = {0};
-    char *adapters_label_msg[ADAPTERS_LABEL_ROWS] = {NULL};
-    char *targets_label_msg[TARGETS_LABEL_ROWS] = {NULL};
-    char *devices_label_msg[DEVICES_LABEL_ROWS] = {NULL};
+    char *tgt_label_msg[MAX_INFO_LABEL_ROWS] = {NULL},
+            *sess_label_msg[MAX_INFO_LABEL_ROWS] = {NULL};
     char *error_msg = NULL;
     int selection = 0, key_pressed = 0, menu_choice = 0, submenu_choice = 0,
-            screen_x = 0, screen_y = 0, orig_scr_x = 0, orig_scr_y = 0,
-            child_status = 0, proc_status = 0, tty_fd = 0;
-    static char *adapters_label_title = "FC HBAs / IB HCAs / FCoE Adapters",
-            *devices_label_title = "SCST Devices",
-            *targets_label_title = "iSCSI Targets";
+            screen_x = 0, screen_y = 0, latest_scr_y = 0, latest_scr_x = 0,
+            i = 0, child_status = 0, proc_status = 0, tty_fd = 0,
+            labels_last_scr_y = 0, labels_last_scr_x = 0,
+            last_tgt_lbl_rows = 0, last_sess_lbl_rows = 0;
+    int submenu_size[CDK_MENU_MAX_SIZE] = {0},
+            menu_loc[CDK_MENU_MAX_SIZE] = {0};
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
 
@@ -49,9 +49,9 @@ int main(int argc, char** argv) {
     if (screen_y < MIN_SCR_Y || screen_x < MIN_SCR_X) termSize(main_window);
 
     /* Setup CDK */
-    sub_window = newwin(LINES-2, COLS-2, 1, 1);
-    orig_scr_y = LINES;
-    orig_scr_x = COLS;
+    sub_window = newwin((LINES - 2), (COLS - 2), 1, 1);
+    latest_scr_y = LINES;
+    latest_scr_x = COLS;
     wbkgd(main_window, COLOR_MAIN_TEXT);
     wbkgd(sub_window, COLOR_MAIN_TEXT);
     cdk_screen = initCDKScreen(sub_window);
@@ -116,8 +116,8 @@ int main(int argc, char** argv) {
     /* Set menu sizes and locations */
     submenu_size[SYSTEM_MENU]       = 12;
     menu_loc[SYSTEM_MENU]           = LEFT;
-    submenu_size[BACK_STORAGE_MENU]  = 13;
-    menu_loc[BACK_STORAGE_MENU]      = LEFT;
+    submenu_size[BACK_STORAGE_MENU] = 13;
+    menu_loc[BACK_STORAGE_MENU]     = LEFT;
     submenu_size[HOSTS_MENU]        = 5;
     menu_loc[HOSTS_MENU]            = LEFT;
     submenu_size[DEVICES_MENU]      = 7;
@@ -130,52 +130,20 @@ int main(int argc, char** argv) {
     /* Create the menu */
     menu = newCDKMenu(cdk_screen, menu_list, 6, submenu_size, menu_loc,
             TOP, A_NORMAL, COLOR_MENU_TEXT);
-    if (menu != NULL) {
-        setCDKMenuBackgroundColor(menu, "</5>");
+    if (!menu) {
+        errorDialog(cdk_screen, "Couldn't create menu widget!", NULL);
+        goto quit;
     }
-
-    /* Set the initial label messages; the number of characters
-     * controls the label width (using white space as padding for width) */
-    asprintf(&adapters_label_msg[0], "</21/B/U>%s<!21><!B><!U>%*s",
-            adapters_label_title,
-            (int) (ADAPTERS_LABEL_COLS-strlen(adapters_label_title)), "");
-    asprintf(&devices_label_msg[0], "</21/B/U>%s<!21><!B><!U>%*s",
-            devices_label_title,
-            (int) (DEVICES_LABEL_COLS-strlen(devices_label_title)), "");
-    asprintf(&targets_label_msg[0], "</21/B/U>%s<!21><!B><!U>%*s",
-            targets_label_title,
-            (int) (TARGETS_LABEL_COLS-strlen(targets_label_title)), "");
-    
-    /* Create the information/status labels */
-    adapters_label = newCDKLabel(cdk_screen,
-            1, 2,
-            adapters_label_msg, ADAPTERS_LABEL_ROWS, TRUE, FALSE);
-    if (adapters_label != NULL) {
-        setCDKLabelBoxAttribute(adapters_label, COLOR_MAIN_BOX);
-        setCDKLabelBackgroundAttrib(adapters_label, COLOR_MAIN_TEXT);
-    }
-    devices_label = newCDKLabel(cdk_screen,
-            1, 4+ADAPTERS_LABEL_ROWS,
-            devices_label_msg, DEVICES_LABEL_ROWS, TRUE, FALSE);
-    if (devices_label != NULL) {
-        setCDKLabelBoxAttribute(devices_label, COLOR_MAIN_BOX);
-        setCDKLabelBackgroundAttrib(devices_label, COLOR_MAIN_TEXT);
-    }
-    targets_label = newCDKLabel(cdk_screen,
-            3+DEVICES_LABEL_COLS, 4+ADAPTERS_LABEL_ROWS,
-            targets_label_msg, TARGETS_LABEL_ROWS, TRUE, FALSE);
-    if (targets_label != NULL) {
-        setCDKLabelBoxAttribute(targets_label, COLOR_MAIN_BOX);
-        setCDKLabelBackgroundAttrib(targets_label, COLOR_MAIN_TEXT);
-    }
+    setCDKMenuBackgroundColor(menu, "</5>");
 
     /* We need root privileges; for the short term I don't see any other way
      around this; long term we can hopefully do something else */
     saved_uid = getuid();
     if (setresuid(0, -1, saved_uid) == -1) {
         asprintf(&error_msg, "setresuid(): %s", strerror(errno));
-        errorDialog(cdk_screen, error_msg, "Your capabilities may be reduced...");
-        freeChar(error_msg);
+        errorDialog(cdk_screen, error_msg,
+                "Your capabilities may be reduced...");
+        FREE_NULL(error_msg);
     }
 
     /* Draw the CDK screen */
@@ -188,20 +156,15 @@ int main(int argc, char** argv) {
                 "of the TUI functions will not work.");
     }
 
-    /* Loop refreshing the labels and waiting for input */
+    /* Loop, refreshing the labels and waiting for input */
     halfdelay(REFRESH_DELAY);
     for (;;) {
-        /* Update the adapters label message */
-        readAdapterData(adapters_label_msg);
-        setCDKLabelMessage(adapters_label, adapters_label_msg, ADAPTERS_LABEL_ROWS);
-
-        /* Update the devices label message */
-        readDeviceData(devices_label_msg);
-        setCDKLabelMessage(devices_label, devices_label_msg, DEVICES_LABEL_ROWS);
-
-        /* Update the disks label message */
-        readTargetData(targets_label_msg);
-        setCDKLabelMessage(targets_label, targets_label_msg, TARGETS_LABEL_ROWS);
+        /* Update the information labels */
+        if (!updateInfoLabels(cdk_screen, targets_label, tgt_label_msg,
+                sessions_label, sess_label_msg,
+                &labels_last_scr_y, &labels_last_scr_x,
+                &last_tgt_lbl_rows, &last_sess_lbl_rows))
+            goto quit;
 
         /* Get user input */
         wrefresh(sub_window);
@@ -247,13 +210,17 @@ int main(int argc, char** argv) {
 
         } else if (key_pressed == KEY_RESIZE) {
             /* Screen re-size */
-            screenResize(cdk_screen, main_window, orig_scr_x, orig_scr_y);
+            screenResize(cdk_screen, main_window, sub_window,
+                    &latest_scr_y, &latest_scr_x);
+            continue;
 
         } else if (key_pressed == ERR) {
             /* Looks like the user didn't press anything (half-delay mode) */
+            continue;
 
         } else {
             beep();
+            continue;
         }
 
         if (menu->exitType == vNORMAL) {
@@ -267,24 +234,27 @@ int main(int argc, char** argv) {
                 if (setresuid(saved_uid, 0, -1) == -1) {
                     asprintf(&error_msg, "setresuid(): %s", strerror(errno));
                     errorDialog(cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
                 /* Fork and execute a shell */
                 if ((child_pid = fork()) < 0) {
                     /* Could not fork */
                     asprintf(&error_msg, "fork(): %s", strerror(errno));
                     errorDialog(cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 } else if (child_pid == 0) {
                     /* Child; fix up the terminal and execute the shell */
                     endwin();
                     curs_set(1);
                     echo();
                     system(CLEAR_BIN);
-                    /* Execute the shell; if we fail, print something useful to syslog */
-                    if ((execl(SHELL_BIN, SHELL_BIN, "--rcfile", GLOBAL_BASHRC, "-i", (char *) NULL)) == -1) {
+                    /* Execute the shell; if we fail, print something 
+                     * useful to syslog */
+                    if ((execl(SHELL_BIN, SHELL_BIN, "--rcfile", GLOBAL_BASHRC,
+                            "-i", (char *) NULL)) == -1) {
                         openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-                        syslog(LOG_ERR, "Calling execl() failed: %s", strerror(errno));
+                        syslog(LOG_ERR, "Calling execl() failed: %s",
+                                strerror(errno));
                         closelog();
                     }
                     exit(2);
@@ -301,16 +271,12 @@ int main(int argc, char** argv) {
                     destroyCDKScreenObjects(cdk_screen);
                     destroyCDKScreen(cdk_screen);
                     endCDK();
-                    freeChar(adapters_label_msg[0]);
-                    freeChar(devices_label_msg[0]);
-                    freeChar(targets_label_msg[0]);
+                    cdk_screen = NULL;
+
                     /* Check and see if we're still attached to our terminal */
                     if ((tty_fd = open("/dev/tty", O_RDONLY)) == -1) {
                         /* Guess not, so we're done */
-                        delwin(sub_window);
-                        delwin(main_window);
-                        system(CLEAR_BIN);
-                        exit(EXIT_SUCCESS);
+                        goto quit;
                     } else {
                         close(tty_fd);
                         goto start;
@@ -319,16 +285,9 @@ int main(int argc, char** argv) {
 
             } else if (menu_choice == INTERFACE_MENU &&
                     submenu_choice == INTERFACE_QUIT - 1) {
-                /* Synchronize the configuration */
+                /* Synchronize the configuration and quit */
                 syncConfig(cdk_screen);
-                /* All done -- clean up */
-                destroyCDKScreenObjects(cdk_screen);
-                destroyCDKScreen(cdk_screen);
-                endCDK();
-                delwin(sub_window);
-                delwin(main_window);
-                system(CLEAR_BIN);
-                exit(EXIT_SUCCESS);
+                goto quit;
 
             } else if (menu_choice == INTERFACE_MENU &&
                     submenu_choice == INTERFACE_HELP - 1) {
@@ -545,32 +504,54 @@ int main(int argc, char** argv) {
             curs_set(0);
         }
 
-        /* Done with the menu, go back to halfdelay mode */
+        /* Done with the menu, go back to half-delay mode */
         halfdelay(REFRESH_DELAY);
     }
+
+    /* All done -- clean up */
+quit:
+    if (cdk_screen != NULL) {
+        destroyCDKScreenObjects(cdk_screen);
+        destroyCDKScreen(cdk_screen);
+        endCDK();
+    }
+    delwin(sub_window);
+    delwin(main_window);
+    for (i = 0; i < MAX_INFO_LABEL_ROWS; i++) {
+        FREE_NULL(tgt_label_msg[i]);
+        FREE_NULL(sess_label_msg[i]);
+    }
+    system(CLEAR_BIN);
+    exit(EXIT_SUCCESS);
 }
 
 
 /*
- * Helper to fix initial terminal/screen size (before CDK initialization)
+ * Helper to fix initial terminal/screen size (before CDK initialization). If
+ * the screen size is less than the minimum, keep displaying the message until
+ * the user resizes to the minimum values.
  */
 void termSize(WINDOW *screen) {
     int input_char = 0, screen_x = 0, screen_y = 0;
-    char *size_msgs[3] = {NULL};
-    int size_msg_lens[3] = {0};
+    char curr_term_size[MISC_STRING_LEN] = {0},
+            reqd_screen_size[MISC_STRING_LEN] = {0};
+    boolean first_run = true;
 
-    /* This seems bad using goto, but I can't think of a better
-     * solution at the moment */
-    goto resize_start;
+    /* Start half-delay mode */
     halfdelay(REFRESH_DELAY);
 
-    /* Wait for a resize event or escape */
     for (;;) {
-        wrefresh(screen);
-        input_char = wgetch(screen);
+        /* We only want to wait for input if this is not the first loop */
+        if (!first_run) {
+            wrefresh(screen);
+            input_char = wgetch(screen);
+        } else {
+            input_char = KEY_RESIZE;
+        }
 
+        /* Wait for a resize event or escape */
         if (input_char == KEY_RESIZE) {
-            resize_start:
+            first_run = false;
             clear();
             refresh();
             getmaxyx(screen, screen_y, screen_x);
@@ -579,26 +560,19 @@ void termSize(WINDOW *screen) {
             if (screen_y >= MIN_SCR_Y && screen_x >= MIN_SCR_X) {
                 return;
             } else {
-                size_msgs[0] = "Your terminal is not the correct size!";
-                size_msg_lens[0] = strlen(size_msgs[0]);
-                asprintf(&size_msgs[1],
-                        "Current screen size: %d rows X %d columns",
-                        screen_y, screen_x);
-                size_msg_lens[1] = strlen(size_msgs[1]);
-                asprintf(&size_msgs[2],
-                        "(Screen must be at least %d rows and %d columns.)",
-                        MIN_SCR_Y, MIN_SCR_X);
-                size_msg_lens[2] = strlen(size_msgs[2]);
                 mvaddstr(((screen_y / 2) - 1),
-                        ((screen_x - size_msg_lens[0]) / 2), size_msgs[0]);
-                mvaddstr((screen_y / 2), ((screen_x - size_msg_lens[1]) / 2),
-                        size_msgs[1]);
+                        ((screen_x - strlen(TOO_SMALL_TERM)) / 2),
+                        TOO_SMALL_TERM);
+                snprintf(curr_term_size, MISC_STRING_LEN,
+                        CURR_TERM_SIZE, screen_y, screen_x);
+                mvaddstr((screen_y / 2),
+                        ((screen_x - strlen(curr_term_size)) / 2),
+                        curr_term_size);
+                snprintf(reqd_screen_size, MISC_STRING_LEN,
+                        REQD_SCREEN_SIZE, MIN_SCR_Y, MIN_SCR_X);
                 mvaddstr(((screen_y / 2) + 1),
-                        ((screen_x - size_msg_lens[2]) / 2), size_msgs[2]);
-
-                //freeChar(size_msgs[0]);
-                //freeChar(size_msgs[1]);
-                //freeChar(size_msgs[2]);
+                        ((screen_x - strlen(reqd_screen_size)) / 2),
+                        reqd_screen_size);
             }
 
         } else if (input_char == KEY_ESC) {
@@ -612,50 +586,52 @@ void termSize(WINDOW *screen) {
 
 
 /*
- * Handle terminal resize (SIGWINCH / KEY_RESIZE)
+ * Handle terminal resize (SIGWINCH / KEY_RESIZE). If the screen is made
+ * smaller than the last size, we display a message to the user until
+ * they exit. If its larger, we try to handle that gracefully.
  */
-void screenResize(CDKSCREEN *cdk, WINDOW *main_screen,
-        int orig_term_x, int orig_term_y) {
+void screenResize(CDKSCREEN *cdk_screen, WINDOW *main_window,
+        WINDOW *sub_window, int *latest_term_y, int *latest_term_x) {
     int input_char = 0, screen_y = 0, screen_x = 0;
-    char *size_msgs[3] = {NULL};
-    int size_msg_lens[3] = {0};
+    boolean first_run = true;
 
-    size_msgs[0] = "Aw, snap! CDK doesn't currently support SIGWINCH.";
-    size_msg_lens[0] = strlen(size_msgs[0]);
-    size_msgs[1] = "You can not make the terminal smaller while using the interface.";
-    size_msg_lens[1] = strlen(size_msgs[1]);
-    size_msgs[2] = "Press any key to exit...";
-    size_msg_lens[2] = strlen(size_msgs[2]);
-
-    getmaxyx(main_screen, screen_y, screen_x);
-
-    if (screen_y < orig_term_y || screen_x < orig_term_x) {
+    getmaxyx(main_window, screen_y, screen_x);
+    if ((screen_y < *latest_term_y) || (screen_x < *latest_term_x)) {
         /* Screen is smaller than it should be */
-        destroyCDKScreenObjects(cdk);
-        destroyCDKScreen(cdk);
+        destroyCDKScreenObjects(cdk_screen);
+        destroyCDKScreen(cdk_screen);
         endCDK();
         halfdelay(REFRESH_DELAY);
-        goto small_scr_start;
 
-        /* Wait for keyboard input */
         for (;;) {
-            wrefresh(main_screen);
-            input_char = wgetch(main_screen);
+            /* We only want to wait for input if this is not the first loop */
+            if (!first_run) {
+                wrefresh(main_window);
+                input_char = wgetch(main_window);
+            } else {
+                input_char = KEY_RESIZE;
+            }
+
+            /* A SIGWINCH generates a KEY_RESIZE character with our ncurses */
             if (input_char == KEY_RESIZE) {
-                /* Screen resize */
-                small_scr_start:
+                first_run = false;
                 clear();
                 refresh();
-                getmaxyx(main_screen, screen_y, screen_x);
+                getmaxyx(main_window, screen_y, screen_x);
+                /* The screen size has changed so print a fancy message */
                 mvaddstr(((screen_y / 2) - 1),
-                        ((screen_x - size_msg_lens[0]) / 2), size_msgs[0]);
-                mvaddstr((screen_y / 2), ((screen_x - size_msg_lens[1]) / 2),
-                        size_msgs[1]);
+                        ((screen_x - strlen(NO_RESIZE)) / 2),
+                        NO_RESIZE);
+                mvaddstr((screen_y / 2),
+                        ((screen_x - strlen(NO_SMALL_TERM)) / 2),
+                        NO_SMALL_TERM);
                 mvaddstr(((screen_y / 2) + 1),
-                        ((screen_x - size_msg_lens[2]) / 2), size_msgs[2]);
+                        ((screen_x - strlen(ANY_KEY_EXIT)) / 2),
+                        ANY_KEY_EXIT);
 
             } else if (input_char == ERR) {
                 /* Timed out waiting for input -- loop */
+                continue;
 
             } else {
                 /* User hit a key to exit */
@@ -663,41 +639,20 @@ void screenResize(CDKSCREEN *cdk, WINDOW *main_screen,
                 printf("\n");
                 exit(EXIT_SUCCESS);
             }
-
         }
 
     } else {
-        /* Screen grew in size so try to make it pretty */
-        wclear(main_screen);
-        wrefresh(main_screen);
-        statusBar(main_screen);
-        refreshCDKScreen(cdk);
+        /* Screen grew in size so make it pretty */
+        wresize(sub_window, (screen_y - 2), (screen_x - 2));
+        wclear(main_window);
+        wrefresh(main_window);
+        statusBar(main_window);
+        refreshCDKScreen(cdk_screen);
+        /* Set these for the next trip */
+        *latest_term_y = screen_y;
+        *latest_term_x = screen_x;
         return;
     }
-}
-
-
-/*
- * Strip whitespace and trailing newline from a string.
- * Originally from Linux kernel lib/string.c (strim()).
- */
-char *strStrip(char *string) {
-    size_t size = 0;
-    char *end = NULL;
-
-    while (isspace(*string))
-        ++string;
-
-    size = strlen(string);
-    if (!size)
-        return string;
-
-    end = string + size - 1;
-    while (end >= string && isspace(*end))
-        end--;
-    *(end + 1) = '\0';
-
-    return string;
 }
 
 
@@ -707,7 +662,8 @@ char *strStrip(char *string) {
  */
 void statusBar(WINDOW *window) {
     FILE *ver_file = NULL;
-    char esos_ver[STAT_BAR_ESOS_VER_MAX] = {0}, esos_ver_str[STAT_BAR_ESOS_VER_MAX] = {0},
+    char esos_ver[STAT_BAR_ESOS_VER_MAX] = {0},
+            esos_ver_str[STAT_BAR_ESOS_VER_MAX] = {0},
             username_str[STAT_BAR_UNAME_MAX] = {0};
     int esos_ver_size = 0, username_size = 0, bar_space = 0, junk = 0;
     uid_t ruid = 0, euid = 0, suid = 0;
@@ -747,69 +703,6 @@ void statusBar(WINDOW *window) {
     wrefresh(window);
 
     /* Done */
-    freeChar(status_msg);
+    FREE_NULL(status_msg);
     return;
-}
-
-
-/*
- * Read a sysfs attribute value
- */
-void readAttribute(char sysfs_attr[], char attr_value[]) {
-     FILE *sysfs_file = NULL;
-     char *remove_me = NULL;
-
-     /* Open the file and retrieve the value */
-     if ((sysfs_file = fopen(sysfs_attr, "r")) == NULL) {
-         sprintf(attr_value, "fopen(): %s", strerror(errno));
-         return;
-     } else {
-         fgets(attr_value, MAX_SYSFS_ATTR_SIZE, sysfs_file);
-         fclose(sysfs_file);
-     }
-
-     /* Get rid of the newline character */
-     remove_me = strrchr(attr_value, '\n');
-     if (remove_me) {
-         *remove_me = '\0';
-     }
-
-     /* Done */
-     return;
-}
-
-
-/*
- * Write a sysfs attribute value; if an error is encountered, we return
- * errno, otherwise 0
- */
-int writeAttribute(char sysfs_attr[], char attr_value[]) {
-     FILE *sysfs_file = NULL;
-     int ret_val = 0;
-
-     /* Open the file and write the value */
-     if ((sysfs_file = fopen(sysfs_attr, "w")) == NULL) {
-         return errno;
-     } else {
-         fprintf(sysfs_file, "%s", attr_value);
-         if ((ret_val = fclose(sysfs_file)) == 0) {
-             return ret_val;
-         } else {
-             return errno;
-         }
-     }
-}
-
-
-/*
- * Test if SCST is loaded on the current machine. For now we have a very
- * simple test using the SCST sysfs directory; return TRUE (1) if the
- * directory exists and return FALSE (0) if it doesn't.
- */
-boolean isSCSTLoaded() {
-    struct stat scst_test = {0};
-    if (stat(SYSFS_SCST_TGT, &scst_test) == 0)
-        return TRUE;
-    else
-        return FALSE;
 }

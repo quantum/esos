@@ -16,6 +16,7 @@
 #include "prototypes.h"
 #include "system.h"
 #include "dialogs.h"
+#include "strings.h"
 
 /*
  * Generic error dialog; takes an error message and displays a nice red
@@ -128,29 +129,31 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
  * Optionally, if tgt_driver is set, then we will only display targets for
  * that driver.
  */
-void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[]) {
+void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
+        char tgt_driver[]) {
     CDKSCROLL *scst_tgt_list = 0;
     int tgt_choice = 0, i = 0, j = 0, k = 0, driver_cnt = 0;
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
     char *scst_tgt_name[MAX_SCST_TGTS] = {NULL},
             *scst_tgt_driver[MAX_SCST_TGTS] = {NULL},
-            *scst_tgt_info[MAX_SCST_TGTS] = {NULL},
-            *drivers[MAX_SCST_DRIVERS] = {NULL};
+            *scst_tgt_info[MAX_SCST_TGTS] = {NULL};
     char *error_msg = NULL;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
+    char drivers[MAX_SCST_DRIVERS][MISC_STRING_LEN] = {{0}, {0}};
 
     if (tgt_driver[0] != '\0') {
         /* If a driver is given, then we only want targets for that driver */
         driver_cnt = 1;
-        asprintf(&drivers[0], "%s", tgt_driver);
+        snprintf(drivers[0], MISC_STRING_LEN, "%s", tgt_driver);
     } else {
-        /* No driver was given, so we provide all of them */
-        driver_cnt = 4;
-        asprintf(&drivers[0], "ib_srpt");
-        asprintf(&drivers[1], "iscsi");
-        asprintf(&drivers[2], "qla2x00t");
-        asprintf(&drivers[3], "fcst");
+        /* No driver was given, so get a list of them */
+        if (!listSCSTTgtDrivers(drivers, &driver_cnt)) {
+            asprintf(&error_msg, "%s", TGT_DRIVERS_ERR);
+            errorDialog(cdk_screen, error_msg, NULL);
+            freeChar(error_msg);
+            goto cleanup;
+        }
     }
 
     /* Loop over each SCST target driver and get targets */
@@ -174,7 +177,8 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
                 if (k > 1) {
                     asprintf(&scst_tgt_name[j], "%s", dir_entry->d_name);
                     asprintf(&scst_tgt_driver[j], "%s", drivers[i]);
-                    asprintf(&scst_tgt_info[j], "<C>%s (Driver: %s)", dir_entry->d_name, drivers[i]);
+                    asprintf(&scst_tgt_info[j], "<C>%s (Driver: %s)",
+                            dir_entry->d_name, drivers[i]);
                     j++;
                 }
                 k++;
@@ -214,7 +218,8 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
         strncpy(tgt_name, scst_tgt_name[tgt_choice], MAX_SYSFS_ATTR_SIZE);
         /* We only set the target driver if we weren't given an initial value */
         if (tgt_driver[0] == '\0')
-            strncpy(tgt_driver, scst_tgt_driver[tgt_choice], MAX_SYSFS_ATTR_SIZE);
+            strncpy(tgt_driver, scst_tgt_driver[tgt_choice],
+                    MAX_SYSFS_ATTR_SIZE);
     }
 
     /* Done */
@@ -223,9 +228,6 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
         freeChar(scst_tgt_name[i]);
         freeChar(scst_tgt_driver[i]);
         freeChar(scst_tgt_info[i]);
-    }
-    for (i = 0; i < MAX_SCST_DRIVERS; i++) {
-        freeChar(drivers[i]);
     }
     return;
 }
@@ -236,7 +238,8 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[])
  * driver / target name combination is passed in and we then fill the
  * char array with the selected group name.
  */
-void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], char tgt_group[]) {
+void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
+        char tgt_driver[], char tgt_group[]) {
     CDKSCROLL *scst_grp_list = 0;
     int group_choice = 0, i = 0, j = 0;
     DIR *dir_stream = NULL;
@@ -726,7 +729,8 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
 
     /* Open the directory */
-    snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/%s/initiators",
+    snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+            "%s/targets/%s/%s/ini_groups/%s/initiators",
             SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group);
     if ((dir_stream = opendir(dir_name)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));

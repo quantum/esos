@@ -9,38 +9,45 @@
 extern "C" {
 #endif
 
+#include "system.h"
 #include "megaraid.h"
 
 /* main.c */
 void termSize(WINDOW *screen);
-void screenResize(CDKSCREEN *cdk, WINDOW *main_screen, int orig_term_x, int orig_term_y);
-char *strStrip(char *string);
+void screenResize(CDKSCREEN *cdk, WINDOW *main_screen, WINDOW *sub_screen,
+        int *latest_term_y, int *latest_term_x);
 void statusBar(WINDOW *window);
-void readAttribute(char sysfs_attr[], char attr_value[]);
-int writeAttribute(char sysfs_attr[], char attr_value[]);
-int isSCSTLoaded();
 
-/* label_data.c */
-void readAdapterData(char *label_msg[]);
-void readDeviceData(char *label_msg[]);
-void readTargetData(char *label_msg[]);
+/* info_labels.c */
+boolean updateInfoLabels(CDKSCREEN *cdk_screen, CDKLABEL *tgt_info,
+        char *tgt_info_msg[], CDKLABEL *sess_info, char *sess_info_msg[],
+        int *last_scr_x, int *last_scr_y,
+        int *last_tgt_rows, int *last_sess_rows);
+int readTargetData(char *label_msg[]);
+int readSessionData(char *label_msg[]);
 
 /* menu_actions.c */
 void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 void okButtonCB(CDKBUTTON *button);
 void cancelButtonCB(CDKBUTTON *button);
-void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[]);
-void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], char tgt_group[]);
-int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], char tgt_group[]);
+void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
+        char tgt_driver[]);
+void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
+        char tgt_driver[], char tgt_group[]);
+int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
+        char tgt_group[]);
 char *getSCSIDiskChoice(CDKSCREEN *cdk_screen);
-void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]);
+void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
+        char dev_handler[]);
 int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]);
-void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], char tgt_group[], char initiator[]);
+void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
+        char tgt_driver[], char tgt_group[], char initiator[]);
 void syncConfig(CDKSCREEN *main_cdk_screen);
 void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]);
 boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
-void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_type[], boolean *mounted);
+void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
+        char fs_type[], boolean *mounted);
 char *getBlockDevChoice(CDKSCREEN *cdk_screen);
 char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type);
 
@@ -95,6 +102,16 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen);
 void helpDialog(CDKSCREEN *main_cdk_screen);
 void supportArchDialog(CDKSCREEN *main_cdk_screen);
 void aboutDialog(CDKSCREEN *main_cdk_screen);
+
+/* utility.c */
+char *strStrip(char *string);
+void readAttribute(char sysfs_attr[], char attr_value[]);
+int writeAttribute(char sysfs_attr[], char attr_value[]);
+int isSCSTLoaded();
+boolean isSCSTInitInGroup(char tgt_name[], char tgt_driver[],
+        char group_name[], char init_name[]);
+int countSCSTInitUses(char tgt_name[], char tgt_driver[], char init_name[]);
+boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN], int *driver_cnt);
 
 #ifdef	__cplusplus
 }

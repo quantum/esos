@@ -97,12 +97,11 @@ extern "C" {
 #define MISC_STRING_LEN         128
 
 /* Main screen information labels */
-#define ADAPTERS_LABEL_ROWS     8
-#define ADAPTERS_LABEL_COLS     76
-#define DEVICES_LABEL_ROWS      9
-#define DEVICES_LABEL_COLS      37
-#define TARGETS_LABEL_ROWS      9
-#define TARGETS_LABEL_COLS      37
+#define MAX_INFO_LABEL_ROWS     512
+#define TARGETS_LABEL_COLS      76
+#define SESSIONS_LABEL_COLS     76
+#define TARGETS_LABEL_TITLE     "FC HBAs / IB HCAs / FCoE Adapters"
+#define SESSIONS_LABEL_TITLE    "Active Sessions"
 
 /* System tools and utilities (binaries and scripts) */
 #define CLEAR_BIN       "clear"
@@ -163,6 +162,9 @@ extern "C" {
 #define MAX_SCST_DEVS           128
 #define MAX_SCST_INITS          128
 #define MAX_SCST_DRIVERS        16
+#define MAX_SCST_SESSNS         512
+#define MAX_FC_ADAPTERS         64
+#define MAX_IB_ADAPTERS         64
 #define SCST_ISCSI_TGT_LEN      32
 #define MAX_SCST_ISCSI_TGT_LEN  SCST_ISCSI_TGT_LEN + 1
 #define SCST_DEV_NAME_LEN       16
@@ -177,6 +179,9 @@ extern "C" {
 #define LOG_PREFIX      "esos_tui"
 #define LOG_OPTIONS     LOG_PID
 #define LOG_FACILITY    LOG_LOCAL2
+
+/* Other useful macros */
+#define FREE_NULL(p) if ((p) != 0) { free (p); p = 0; }
 
 #ifdef	__cplusplus
 }
