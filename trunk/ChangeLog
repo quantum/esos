@@ -1,3 +1,20 @@
+2014-03-14 20:24  msmith626@gmail.com
+
+	* misc/linux-3.12.7.config, tui/info_labels.c, tui/label_data.c,
+	  tui/main.c, tui/menu_actions-hosts.c, tui/menu_actions.c,
+	  tui/prototypes.h, tui/strings.h, tui/system.h, tui/utility.c:
+	  split out some TUI functions (driver list, initiator-use count,
+	  etc.) into new utility.c file; started moving all strings into a
+	  separate strings.h header file; complete revamp/overhaul of main
+	  TUI information labels -- now we have 2 dynamic labels for
+	  targets and sessions that can expand in size; started converting
+	  to new FREE_NULL macro instead of freeChar(); enabled kernel
+	  support for MS Hyper-V drivers; major update to the "Add
+	  Initiator" dialog which will now allow the user to select
+	  initiators from a list that are visible; we now use a function to
+	  gather target driver types instead of a static list (TUI); many,
+	  many more code tweaks and clean-up in TUI
+
 2014-03-06 20:50  msmith626@gmail.com
 
 	* Makefile.in: updated log directory location for fence_agents
