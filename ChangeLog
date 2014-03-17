@@ -1,3 +1,9 @@
+2014-03-17 15:54  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.conf,
+	  etc/rc.d/common, etc/rc.d/rc.smartd, etc/smartd.conf: fixed build
+	  issue with wget certificate check; added smartmontools package
+
 2014-03-17 03:21  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
