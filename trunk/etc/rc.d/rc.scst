@@ -4,7 +4,8 @@
 
 source /etc/rc.d/common
 
-SCST_MODS="scst qla2x00tgt iscsi_scst ib_srpt scst_disk scst_vdisk scst_tape scst_changer fcst"
+SCST_MODS="scst qla2x00tgt iscsi_scst ib_srpt \
+scst_disk scst_vdisk scst_tape scst_changer fcst"
 SCST_CFG="/etc/scst.conf"
 SCSTADMIN="/usr/sbin/scstadmin"
 ISCSI_SCSTD="/usr/sbin/iscsi-scstd"
@@ -13,6 +14,11 @@ LLDPAD="/usr/sbin/lldpad"
 LLDPAD_LOCK="/var/lock/lldpad"
 FCOEMON="/usr/sbin/fcoemon"
 FCOEMON_LOCK="/var/lock/fcoemon"
+
+# For optional SCST modules
+if [ -f "/lib/modules/$(/bin/uname -r)/extra/ocs_fc_scst.ko" ]; then
+    SCST_MODS="${SCST_MODS} ocs_fc_scst"
+fi
 
 # Check arguments
 if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then

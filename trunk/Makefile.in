@@ -1,21 +1,21 @@
 # $Id$
 
-# ESOS Makefile[.in]
+# Enterprise Storage OS (ESOS) Makefile[.in]
 # Makefile is generated from Makefile.in via the configure script.
 # Please see the README/INSTALL documents for help.
 
-CWD		:= $(shell pwd)
-WORK_DIR	:= $(CWD)/work
-DISTFILES_DIR	:= $(WORK_DIR)/distfiles
-BUILD_DIR	:= $(WORK_DIR)/build
-IMAGE_DIR	:= $(WORK_DIR)/image
-INITRAMFS_DIR	:= $(WORK_DIR)/initramfs
-MOUNT_DIR	:= $(WORK_DIR)/mnt
+CWD		:= @cwd@
+WORK_DIR	:= @work_dir@
+DISTFILES_DIR	:= @distfiles_dir@
+BUILD_DIR	:= @build_dir@
+IMAGE_DIR	:= @image_dir@
+INITRAMFS_DIR	:= @initramfs_dir@
+MOUNT_DIR	:= @mount_dir@
 
 QUIET		:= @
 STRIP		:= -s
 
-SHELL		:= /bin/bash
+SHELL		:= @bash@
 
 WGET		:= @wget@ -t 5
 MKDIR		:= @mkdir@ -p
@@ -53,6 +53,12 @@ OPENSSL		:= @openssl@
 esos_ver	:= 0.1-r$(shell svnversion $(CWD))
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
+
+enable_gdb	:= @enable_gdb@
+enable_valgrind	:= @enable_valgrind@
+with_ocs_sdk	:= @with_ocs_sdk@
+ocs_sdk_dir	:= @ocs_sdk_dir@
+build_opts	:= @build_opts@
 
 distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		busybox-1.20.2.tar.bz2 \
@@ -158,31 +164,45 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		libgcrypt-1.6.1.tar.bz2 \
 		libgpg-error-1.12.tar.bz2 \
 		fio-2.0.13.tar.bz2)
-distfiles_repo	= http://enterprise-storage-os.googlecode.com/files
+distfiles_repo	= http://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
-build_targets		:= esos_kernels kernel_headers esos_tui busybox \
-			sysvinit grub glibc perl qlogic_fw scstadmin openssh \
-			vixie-cron gcc openssl zlib ncurses e2fsprogs ssmtp \
-			libibumad libibverbs srptools lsscsi sg3_utils groff \
-			kexec-tools iniparser cdk LVM2 xfsprogs drbd mdadm \
-			parted opensm libqb pacemaker corosync nss glib libxml2 \
-			libxslt libtool bzip2 Python crmsh libaio glue readline \
-			resource_agents mhvtl lzo mhash lessfs tokyocabinet \
-			fuse db snappy fence_agents pexpect pycurl curl \
-			Net-Telnet python-suds setuptools fio bash open-fcoe \
-			open-lldp libconfig libnl libpciaccess linux_firmware \
-			dlm ipmitool sysklogd less irqbalance ethtool postgresql \
-			psycopg2 mysql MySQLdb SQLAlchemy infiniband-diags \
-			libibmad lockfile python-daemon nrpe bcache-tools \
-			EnhanceIO util-linux thin-provisioning-tools expat boost \
-			btier librdmacm sysstat pciutils tar net-snmp nut libusb \
-			libusb-compat freeipmi libgcrypt libgpg-error
+build_targets	:= esos_kernels kernel_headers esos_tui busybox \
+		sysvinit grub glibc perl qlogic_fw scstadmin openssh \
+		vixie-cron gcc openssl zlib ncurses e2fsprogs ssmtp \
+		libibumad libibverbs srptools lsscsi sg3_utils groff \
+		kexec-tools iniparser cdk LVM2 xfsprogs drbd mdadm \
+		parted opensm libqb pacemaker corosync nss glib libxml2 \
+		libxslt libtool bzip2 Python crmsh libaio glue readline \
+		resource_agents mhvtl lzo mhash lessfs tokyocabinet \
+		fuse db snappy fence_agents pexpect pycurl curl \
+		Net-Telnet python-suds setuptools fio bash open-fcoe \
+		open-lldp libconfig libnl libpciaccess linux_firmware \
+		dlm ipmitool sysklogd less irqbalance ethtool postgresql \
+		psycopg2 mysql MySQLdb SQLAlchemy infiniband-diags \
+		libibmad lockfile python-daemon nrpe bcache-tools \
+		EnhanceIO util-linux thin-provisioning-tools expat boost \
+		btier librdmacm sysstat pciutils tar net-snmp nut libusb \
+		libusb-compat freeipmi libgcrypt libgpg-error
+
+# Check if we should enable additional build options
+ifeq ($(enable_gdb),yes)
+	distfiles += $(addprefix $(DISTFILES_DIR)/,gdb-7.7.tar.bz2)
+	build_targets += gdb
+endif
+ifeq ($(enable_valgrind),yes)
+	distfiles += $(addprefix $(DISTFILES_DIR)/,valgrind-3.9.0.tar.bz2)
+	build_targets += valgrind
+endif
+ifeq ($(with_ocs_sdk),yes)
+	build_targets += ocs_sdk
+endif
+
 clean_targets		:= $(addprefix clean-,$(build_targets))
 src_dir			= $(wildcard $(BUILD_DIR)/$(@)-*)
 linux_src		= $(wildcard $(BUILD_DIR)/linux-*)
 tarball_src_dirs	= $(addprefix $(BUILD_DIR)/,$(subst .tar.xz,,$(subst .tar.bz2,,$(subst .tar.gz,,$(notdir $(distfiles))))))
 
-# We now modify ld scripts (eg, libc.so) in place and fix them after installing
+# The ld scripts (eg, libc.so) are modified in-place and then fixed after installing
 export LDFLAGS	= -L$(IMAGE_DIR)/lib -L$(IMAGE_DIR)/usr/lib \
 		-Wl,-rpath-link,$(IMAGE_DIR)/lib -Wl,-rpath-link,$(IMAGE_DIR)/usr/lib
 export CPPFLAGS	= -idirafter $(IMAGE_DIR)/usr/include -idirafter $(WORK_DIR)/kernel_headers/include
@@ -378,33 +398,7 @@ $(tarball_src_dirs):
 
 # build - Configure/compile/build all of the required projects.
 .PHONY: build
-build: image_setup $(build_targets) ;
-
-.PHONY: image_setup
-image_setup:
-	$(MKDIR) $(IMAGE_DIR)/{etc,bin,sbin,dev,proc,sys,root,home}
-	$(MKDIR) $(IMAGE_DIR)/boot/grub
-	$(MKDIR) $(IMAGE_DIR)/mnt/{root,conf,logs,vdisks,mhvtl}
-	$(MKDIR) $(IMAGE_DIR)/lib/firmware
-	$(MKDIR) $(IMAGE_DIR)/usr/{bin,sbin,libexec,lib}
-	$(MKDIR) $(IMAGE_DIR)/usr/local/{bin,sbin}
-	$(MKDIR) $(IMAGE_DIR)/opt/{bin,sbin,lib}
-	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/tmp
-	$(MKDIR) $(IMAGE_DIR)/var/{spool,lock,run,state,cache,log}
-	$(INSTALL) -m 755 -d $(IMAGE_DIR)/var/empty
-	$(INSTALL) -m 1777 -d $(IMAGE_DIR)/var/tmp
-	$(INSTALL) -m 710 -d $(IMAGE_DIR)/var/cron
-	$(INSTALL) -m 700 -d $(IMAGE_DIR)/var/cron/tabs
-	$(MKDIR) $(IMAGE_DIR)/var/lib/corosync
-	$(MKDIR) $(IMAGE_DIR)/var/lib/pacemaker/{cores,pengine,cib,blackbox}
-	$(MKDIR) $(IMAGE_DIR)/var/lib/pacemaker/cores/{root,hacluster}
-	$(MKDIR) $(IMAGE_DIR)/var/run/crm
-	$(MKDIR) $(IMAGE_DIR)/var/lib/heartbeat/{cores,lrm}
-	$(LN) lib $(IMAGE_DIR)/lib64
-	$(LN) lib $(IMAGE_DIR)/usr/lib64
-	$(MKDIR) $(INITRAMFS_DIR)/{bin,sbin,proc,sys,dev}
-	$(MKDIR) $(INITRAMFS_DIR)/mnt/{root,tmp}
-	$(MKDIR) $(INITRAMFS_DIR)/usr/{bin,sbin}
+build: $(build_targets) ;
 
 esos_kernels: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
 esos_kernels: scst_src = $(wildcard $(BUILD_DIR)/scst-*)
@@ -434,6 +428,9 @@ esos_kernels: glibc
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) distclean; \
 	  $(MAKE) --directory=$(eio_src)/Driver/enhanceio KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio clean; \
 	  $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
+	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
+	    $(MAKE) --directory=$(linux_src) M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst clean; \
+	  fi; \
 	  if [ "$$i" = "$(prod_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
 	    $(CWD)/misc/$(notdir $(linux_src)).config > $(linux_src)/.config; \
@@ -469,6 +466,13 @@ esos_kernels: glibc
 	  $(ECHO) "### Building the BTIER module"; \
 	  $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i M=$(btier_src)/kernel/btier modules; \
 	  $(INSTALL) -D -m 0644 $(btier_src)/kernel/btier/btier.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/block/btier.ko; \
+	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
+	    $(ECHO) "### Building the Emulex OCS SCST module"; \
+	    $(CP) $(IMAGE_DIR)/usr/include/scst/Module.symvers $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/; \
+	    $(SED) -i 's/#if 0/#if 1/' $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/ocs_lnx.c; \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst SCST_PREFERRED=$(scst_src)/scst/include modules; \
+	    $(INSTALL) -D -m 0644 $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/ocs_fc_scst.ko $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/ocs_fc_scst.ko; \
+	  fi; \
 	done
 	$(TOUCH) $(@)
 
@@ -479,8 +483,32 @@ kernel_headers:
 	$(TOUCH) $(@)
 
 esos_tui: glibc ncurses cdk iniparser parted
-	$(MAKE) --directory=$(CWD)/tui CC="$(esos_cc)"
+	$(MAKE) --directory=$(CWD)/tui CC="$(esos_cc)" -DBUILD_OPTS="$(build_opts)"
 	$(INSTALL) -m 755 $(CWD)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
+	$(TOUCH) $(@)
+
+gdb: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
+	$(TOUCH) $(@)
+
+valgrind: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+ocs_sdk: glibc
+	$(MAKE) --directory=$(ocs_sdk_dir)/tools/user/elxsdkutil CC="$(esos_cc)"
+	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/user/elxsdkutil/elxsdkutil $(IMAGE_DIR)/usr/sbin/
+	$(SED) -e 's/sudo //g' $(ocs_sdk_dir)/tools/bin/ocs_perf_config > \
+	$(IMAGE_DIR)/usr/sbin/ocs_perf_config
+	$(CHMOD) 0755 $(IMAGE_DIR)/usr/sbin/ocs_perf_config
+	$(SED) -e 's/--delimiter=','/-d,/g;s/--field=/-f/g;s/sudo //g' \
+	$(ocs_sdk_dir)/tools/bin/ocsmknod > $(IMAGE_DIR)/usr/sbin/ocsmknod
+	$(CHMOD) 0755 $(IMAGE_DIR)/usr/sbin/ocsmknod
 	$(TOUCH) $(@)
 
 busybox: glibc
@@ -1470,4 +1498,5 @@ libgpg-error: glibc
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
 	$(TOUCH) $(@)
+
 
