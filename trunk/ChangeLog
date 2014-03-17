@@ -1,3 +1,20 @@
+2014-03-17 03:21  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
+	  etc/rc.d/rc.scst, misc/linux-3.12.7.config, misc/ocf/scst,
+	  tui/dialogs.h, tui/menu_actions-interface.c: updated the rc.scst
+	  and scst RA scripts to check for the new optional ocs_fc_scst
+	  module; new optional user-land packages gdb and valgrind; update
+	  to the about dialog that will now display any additonal build
+	  options that were used; some renovations to the autoconf script:
+	  gdb, valgrind, and the Emulex OCS SCST driver (ocs_fc_scst)
+	  driver are now options that can be set, and we also set/create
+	  build/image directory structure with configure script; enabled
+	  additional kernel drivers for VMware VM hardware, including
+	  vmxnet3 and also enabled MS Hyper-V NIC driver; many updates for
+	  Makefile to accomodate new optional ocs_fc_scst target driver,
+	  gdb, and valgrind; distfiles repo is now on Google Drive
+
 2014-03-14 20:24  msmith626@gmail.com
 
 	* misc/linux-3.12.7.config, tui/info_labels.c, tui/label_data.c,
