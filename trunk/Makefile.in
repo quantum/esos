@@ -163,8 +163,9 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		freeipmi-1.4.1.tar.gz \
 		libgcrypt-1.6.1.tar.bz2 \
 		libgpg-error-1.12.tar.bz2 \
+		smartmontools-6.2.tar.gz \
 		fio-2.0.13.tar.bz2)
-distfiles_repo	= http://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
+distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
 build_targets	:= esos_kernels kernel_headers esos_tui busybox \
 		sysvinit grub glibc perl qlogic_fw scstadmin openssh \
@@ -182,7 +183,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui busybox \
 		libibmad lockfile python-daemon nrpe bcache-tools \
 		EnhanceIO util-linux thin-provisioning-tools expat boost \
 		btier librdmacm sysstat pciutils tar net-snmp nut libusb \
-		libusb-compat freeipmi libgcrypt libgpg-error
+		libusb-compat freeipmi libgcrypt libgpg-error smartmontools
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -366,7 +367,7 @@ distclean: clean
 fetch: $(distfiles) ;
 
 $(distfiles):
-	$(WGET) -P $(DISTFILES_DIR) $(distfiles_repo)/$(notdir $(@))
+	$(WGET) --no-check-certificate -P $(DISTFILES_DIR) $(distfiles_repo)/$(notdir $(@))
 	$(QUIET) cd $(DISTFILES_DIR) && if ! $(GREP) $(notdir $(@)) $(CWD)/CHECKSUM.MD5 | $(MD5SUM) -c -; then \
 	  $(RM) $(@); \
 	  exit 1; \
@@ -1499,4 +1500,12 @@ libgpg-error: glibc
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
+smartmontools: glibc
+	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--with-initscriptdir=no
+	$(MAKE) --directory=$(src_dir)
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-sbinPROGRAMS
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-sbinSCRIPTS
+	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install-data
+	$(TOUCH) $(@)
 
