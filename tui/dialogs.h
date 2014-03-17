@@ -80,7 +80,7 @@ extern "C" {
 #define NET_SHORT_INFO_LINES            1
 #define HELP_MSG_SIZE                   17
 #define SUPPORT_PKG_MSG_SIZE            7
-#define ABOUT_MSG_SIZE                  10
+#define ABOUT_MSG_SIZE                  12
     
 /* Field/entry/name/value sizing limits */
 #define MAX_EMAIL_LEN           32
@@ -123,6 +123,11 @@ extern "C" {
 
 /* Linux NIC bonding mode */
 enum bonding_t {NO_BONDING, MASTER, SLAVE};
+
+/* This would normally be set via the ESOS build */
+#ifndef BUILD_OPTS
+#define BUILD_OPTS ""
+#endif
 
 #ifdef	__cplusplus
 }

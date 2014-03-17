@@ -101,3 +101,5 @@ d27d2c0f460aae9a876e4baa49ce760d  net-snmp-5.7.2.1.tar.gz
 09b726f3c7bcb09fa0ca2f060b7d1cc6  freeipmi-1.4.1.tar.gz
 a5a5060dc2f80bcac700ab0236ea47dc  libgcrypt-1.6.1.tar.bz2
 8f0eb41a344d19ac2aa9bd101dfb9ce6  libgpg-error-1.12.tar.bz2
+271a18f41858a7e98b28ae4eb91287c9  gdb-7.7.tar.bz2
+0947de8112f946b9ce64764af7be6df2  valgrind-3.9.0.tar.bz2

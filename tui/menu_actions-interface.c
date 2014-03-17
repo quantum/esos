@@ -148,11 +148,13 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&message[2], "</B>This Host:<!B>\t%-.40s", hostname);
     asprintf(&message[3], "</B>Running:<!B>\t%-.40s", esos_ver);
     asprintf(&message[4], " ");
-    asprintf(&message[5], "</B>License Information");
-    asprintf(&message[6], "ESOS is released under the GNU General Public License, version 3.");
-    asprintf(&message[7], "QLogic Binary Firmware License: %s", QLA_FW_LICENSE);
-    asprintf(&message[8], " ");
-    asprintf(&message[9], " ");
+    asprintf(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
+    asprintf(&message[6], " ");
+    asprintf(&message[7], "</B>License Information");
+    asprintf(&message[8], "ESOS is released under the GNU General Public License, version 3.");
+    asprintf(&message[9], "QLogic Binary Firmware License: %s", QLA_FW_LICENSE);
+    asprintf(&message[10], " ");
+    asprintf(&message[11], " ");
 
     /* Display the dialog box */
     about_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message, ABOUT_MSG_SIZE,

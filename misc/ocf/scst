@@ -20,6 +20,11 @@ PRE_SCST_CONF="/etc/pre-scst_xtra_conf"
 POST_SCST_CONF="/etc/post-scst_xtra_conf"
 SCST_SYSFS="/sys/kernel/scst_tgt"
 
+# For optional SCST modules
+if [ -f "/lib/modules/$(uname -r)/extra/ocs_fc_scst.ko" ]; then
+	MODULES="${MODULES} ocs_fc_scst"
+fi
+
 scst_start() {
 	# Exit immediately if configuration is not valid
 	scst_validate_all || exit $?
