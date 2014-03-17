@@ -484,7 +484,8 @@ kernel_headers:
 	$(TOUCH) $(@)
 
 esos_tui: glibc ncurses cdk iniparser parted
-	$(MAKE) --directory=$(CWD)/tui CC="$(esos_cc)" -DBUILD_OPTS="$(build_opts)"
+	$(MAKE) --directory=$(CWD)/tui CC="$(esos_cc)" \
+	CFLAGS="-DBUILD_OPTS=\"\\\"$(if $(build_opts),$(build_opts),N/A)\\\"\""
 	$(INSTALL) -m 755 $(CWD)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
 	$(TOUCH) $(@)
 

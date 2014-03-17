@@ -3,6 +3,7 @@
 CC		?= gcc
 RM		?= rm
 CPPFLAGS	:= $(CPPFLAGS)
+CFLAGS		:= $(CFLAGS)
 LDFLAGS		:= $(LDFLAGS)
 SRC_FILES	:= $(wildcard *.c)
 OBJ_FILES	:= $(patsubst %.c,%.o,$(SRC_FILES))
@@ -16,7 +17,7 @@ clean:
 	$(RM) esos_tui
 
 %.o: %.c
-	$(CC) -m64 -Wall -c -g $(CPPFLAGS) $< -D_GNU_SOURCE -o $@
+	$(CC) -m64 -Wall -c -g $(CPPFLAGS) $(CFLAGS) -D_GNU_SOURCE -o $@ $<
 
 esos_tui: $(OBJ_FILES)
 	$(CC) -m64 -Wall $(LDFLAGS) $(OBJ_FILES) -lncurses -ltinfo -lcdk -liniparser -lparted -lblkid -o $@

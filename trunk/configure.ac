@@ -143,6 +143,7 @@ if test  "x${with_ocs_sdk}" = "xyes"; then
 	if test -f "${ocs_sdk_file}"; then
 		AC_MSG_NOTICE([extracting the ocs_sdk package file...])
 		ocs_sdk_dir="${build_dir}/ocs_sdk"
+		${mkdir} -p ${ocs_sdk_dir} || exit 1
 		${tar} xfz ${ocs_sdk_file} -C ${ocs_sdk_dir} || exit 1
 	else
 		AC_MSG_ERROR([unable to access the ocs_sdk file: ${ocs_sdk_file}])
