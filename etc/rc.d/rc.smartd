@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+SMARTD="/usr/sbin/smartd"
+SMARTD_LOCK="/var/lock/smartd"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Starting smartd..."
+    ${SMARTD} -q never > /dev/null 2>&1 || exit 1
+    /bin/touch ${SMARTD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping smartd..."
+    /bin/kill -TERM $(/bin/pidof ${SMARTD}) || exit 1
+    wait_for_stop ${SMARTD} && /bin/rm -f ${SMARTD_LOCK}
+}
+
+# Perform specified action
+${1}
