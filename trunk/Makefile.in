@@ -83,7 +83,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		linux-3.12.7.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-trunk_r5194.tar.gz \
+		scst-trunk_r5338.tar.gz \
 		kexec-tools-2.0.3.tar.gz \
 		drbd-8.4.3.tar.gz \
 		LVM2-2.02.97.tar.gz \
@@ -263,6 +263,7 @@ image: $(build_targets)
 	$(SFDISK) --no-reread -uS -L $(img_file)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
 	$(KPARTX) -a -s $(loop_dev)
+	$(SLEEP) 1
 	$(MKE2FS) -L esos_boot $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p1
 	$(MKE2FS) -L esos_root $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p2
 	$(MKE2FS) -L esos_conf $$($(ECHO) $(loop_dev) | $(SED) 's/^\/dev/\/dev\/mapper/')p3
@@ -508,7 +509,7 @@ ocs_sdk: glibc
 	$(SED) -e 's/sudo //g' $(ocs_sdk_dir)/tools/bin/ocs_perf_config > \
 	$(IMAGE_DIR)/usr/sbin/ocs_perf_config
 	$(CHMOD) 0755 $(IMAGE_DIR)/usr/sbin/ocs_perf_config
-	$(SED) -e 's/--delimiter=','/-d,/g;s/--field=/-f/g;s/sudo //g' \
+	$(SED) -e "s/--delimiter=','/-d,/g;s/--field=/-f/g;s/sudo //g" \
 	$(ocs_sdk_dir)/tools/bin/ocsmknod > $(IMAGE_DIR)/usr/sbin/ocsmknod
 	$(CHMOD) 0755 $(IMAGE_DIR)/usr/sbin/ocsmknod
 	$(TOUCH) $(@)

@@ -37,7 +37,8 @@ int main(int argc, char** argv) {
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
 
-    /* Make sure the umask is something sane (per the man page, this call always succeeds) */
+    /* Make sure the umask is something sane (per the man
+     * page, this call always succeeds) */
     umask(0022);
 
     /* Initialize screen and check size */
@@ -160,8 +161,8 @@ int main(int argc, char** argv) {
     halfdelay(REFRESH_DELAY);
     for (;;) {
         /* Update the information labels */
-        if (!updateInfoLabels(cdk_screen, targets_label, tgt_label_msg,
-                sessions_label, sess_label_msg,
+        if (!updateInfoLabels(cdk_screen, &targets_label, tgt_label_msg,
+                &sessions_label, sess_label_msg,
                 &labels_last_scr_y, &labels_last_scr_x,
                 &last_tgt_lbl_rows, &last_sess_lbl_rows))
             goto quit;

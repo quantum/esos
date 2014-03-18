@@ -974,7 +974,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
     char *fs_names[MAX_FILE_SYSTEMS] = {NULL}, *fs_paths[MAX_FILE_SYSTEMS] = {NULL},
             *fs_types[MAX_FILE_SYSTEMS] = {NULL}, *scroll_list[MAX_USERS] = {NULL};
     char *error_msg = NULL;
-    static char *no_touch = "/proc /sys /dev/pts /dev/shm /boot /mnt/root /mnt/conf /mnt/logs";
+    static char *no_touch = "/proc /sys /dev/pts /dev/shm /boot /mnt/root /mnt/conf /mnt/logs /tmp";
     char mnt_line_buffer[MAX_MNT_LINE_BUFFER] = {0};
     int i = 0, fs_cnt = 0, user_choice = 0, mnt_line_size = 0, mnt_dir_size = 0;
     boolean fs_mounted[MAX_FILE_SYSTEMS] = {FALSE};
