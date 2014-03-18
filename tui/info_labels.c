@@ -24,8 +24,8 @@
  * and message data for each label then act based on this data. It should be
  * called when the terminal is re-sized and frequently to update the display.
  */
-boolean updateInfoLabels(CDKSCREEN *cdk_screen, CDKLABEL *tgt_info,
-        char *tgt_info_msg[], CDKLABEL *sess_info, char *sess_info_msg[],
+boolean updateInfoLabels(CDKSCREEN *cdk_screen, CDKLABEL **tgt_info,
+        char *tgt_info_msg[], CDKLABEL **sess_info, char *sess_info_msg[],
         int *last_scr_x, int *last_scr_y,
         int *last_tgt_rows, int *last_sess_rows) {
     int window_x = 0, window_y = 0, usable_height = 0, half_height = 0,
@@ -91,13 +91,13 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen, CDKLABEL *tgt_info,
     if ((window_y != *last_scr_y) || (window_x != *last_scr_x) ||
             (tgt_lbl_rows != *last_tgt_rows) ||
             (sess_lbl_rows != *last_sess_rows)) {
-        if (tgt_info != NULL) {
-            destroyCDKLabel(tgt_info);
-            tgt_info = NULL;
+        if (*tgt_info != NULL) {
+            destroyCDKLabel(*tgt_info);
+            *tgt_info = NULL;
         }
-        if (sess_info != NULL) {
-            destroyCDKLabel(sess_info);
-            sess_info = NULL;
+        if (*sess_info != NULL) {
+            destroyCDKLabel(*sess_info);
+            *sess_info = NULL;
         }
         /* Set these here for next time around */
         *last_scr_y = window_y;
@@ -107,32 +107,32 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen, CDKLABEL *tgt_info,
     }
 
     /* Create the information/status labels (if they don't exist) */
-    if (tgt_info == NULL) {
-        tgt_info = newCDKLabel(cdk_screen, 1, tgt_y_start,
+    if (*tgt_info == NULL) {
+        *tgt_info = newCDKLabel(cdk_screen, 1, tgt_y_start,
                 tgt_info_msg, tgt_lbl_rows, TRUE, FALSE);
-        if (!tgt_info) {
+        if (!*tgt_info) {
             errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
             success = false;
             goto done;
         }
-        setCDKLabelBoxAttribute(tgt_info, COLOR_MAIN_BOX);
-        setCDKLabelBackgroundAttrib(tgt_info, COLOR_MAIN_TEXT);
+        setCDKLabelBoxAttribute(*tgt_info, COLOR_MAIN_BOX);
+        setCDKLabelBackgroundAttrib(*tgt_info, COLOR_MAIN_TEXT);
     }
-    if (sess_info == NULL) {
-        sess_info = newCDKLabel(cdk_screen, 1, sess_y_start,
+    if (*sess_info == NULL) {
+        *sess_info = newCDKLabel(cdk_screen, 1, sess_y_start,
                 sess_info_msg, sess_lbl_rows, TRUE, FALSE);
-        if (!sess_info) {
+        if (!*sess_info) {
             errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
             success = false;
             goto done;
         }
-        setCDKLabelBoxAttribute(sess_info, COLOR_MAIN_BOX);
-        setCDKLabelBackgroundAttrib(sess_info, COLOR_MAIN_TEXT);
+        setCDKLabelBoxAttribute(*sess_info, COLOR_MAIN_BOX);
+        setCDKLabelBackgroundAttrib(*sess_info, COLOR_MAIN_TEXT);
     }
     
     /* Refresh information label messages */
-    setCDKLabelMessage(tgt_info, tgt_info_msg, tgt_lbl_rows);
-    setCDKLabelMessage(sess_info, sess_info_msg, sess_lbl_rows);
+    setCDKLabelMessage(*tgt_info, tgt_info_msg, tgt_lbl_rows);
+    setCDKLabelMessage(*sess_info, sess_info_msg, sess_lbl_rows);
 
 done:
     return success;
@@ -345,6 +345,11 @@ int readTargetData(char *label_msg[]) {
     }
     
     /* Done */
+    if (row_cnt == 1) {
+        /* Add a blank line if there are no rows of data */
+        asprintf(&label_msg[row_cnt], " ");
+        row_cnt++;
+    }
     return row_cnt;
 }
 
