@@ -1,3 +1,21 @@
+2014-03-24 04:54  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
+	  install.sh, misc/linux-3.12.7.config, tui/dialogs.h,
+	  tui/info_labels.c, tui/main.c, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
+	  tui/menu_actions-interface.c, tui/menu_actions-system.c,
+	  tui/menu_actions-targets.c, tui/prototypes.h, tui/strings.h:
+	  updated TUI components to include new strings.h; autoconf script
+	  now sets "src_dir" and "build_dir"; added cryptsetup and enabled
+	  kernel DM_CRYPT option (resolves issue # 71); updated install
+	  script with latest location on LSI's web site for the MegaCLI
+	  tool, and changed error strings in install.sh to be more
+	  informative; code formatting in main.c and fixed issue with
+	  labels when exiting to shell; tweaked size (rows) of device-info
+	  dialog; lots of updated to Makefile.in... many line/formatting
+	  changes, and make jobs > 1 is now supported
+
 2014-03-18 03:05  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
