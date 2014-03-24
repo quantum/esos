@@ -20,6 +20,7 @@
 #include "prototypes.h"
 #include "system.h"
 #include "dialogs.h"
+#include "strings.h"
 #include "megaraid.h"
 
 /*

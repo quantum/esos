@@ -22,10 +22,6 @@ extern "C" {
 #define COLOR_MENU_TEXT         COLOR_PAIR(31)
 #define COLOR_STATUS_BAR        COLOR_PAIR(7)
 
-/* Canned messages */
-#define CONTINUE_MSG    "<C></B><Press ENTER to continue...>"
-#define NO_SCST_MSG     "<C></B><SCST is not loaded!>"
-
 /* Scrolling window sizing */
 #define ADP_INFO_ROWS                   16
 #define ADP_INFO_COLS                   72
@@ -45,7 +41,7 @@ extern "C" {
 #define SCST_INFO_ROWS                  10
 #define SCST_INFO_COLS                  60
 #define MAX_SCST_INFO_LINES             128
-#define DEV_INFO_ROWS                   18
+#define DEV_INFO_ROWS                   16
 #define DEV_INFO_COLS                   73
 #define MAX_DEV_INFO_LINES              64
 #define MAKE_FS_INFO_ROWS               8
@@ -126,7 +122,7 @@ enum bonding_t {NO_BONDING, MASTER, SLAVE};
 
 /* This would normally be set via the ESOS build */
 #ifndef BUILD_OPTS
-#define BUILD_OPTS ""
+#define BUILD_OPTS "N/A"
 #endif
 
 #ifdef	__cplusplus

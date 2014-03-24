@@ -11,7 +11,7 @@ SHA256_CHECKSUM="dist_sha256sum.txt"
 
 TOOL_DESC_MegaCLI="LSI Logic MegaRAID Controllers (MegaCLI)"
 TOOL_FILE_MegaCLI="8.07.06_MegaCLI.zip"
-TOOL_URL_MegaCLI="http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.07.06_MegaCLI.zip"
+TOOL_URL_MegaCLI="http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/8.07.06_MegaCLI.zip"
 TOOL_INSTALL_CMD_MegaCLI="unzip -o *_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm | cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/MegaCli64"
 
 TOOL_DESC_StorCLI="LSI Logic Syncro/MegaRAID Controllers (StorCLI)"
@@ -51,7 +51,7 @@ fi
 echo "### Checking for required tools..."
 for i in ${REQD_TOOLS}; do
     if ! which ${i} > /dev/null 2>&1; then
-        echo "The '${i}' utility is required to use this installation script."
+        echo "ERROR: The '${i}' utility is required to use this installation script."
         exit 1
     fi
 done
@@ -74,17 +74,17 @@ fi
 echo "### Please type the full path of your USB drive device node (eg, /dev/sdz):" && read dev_node
 echo
 if [ "${dev_node}" = "" ] || [ ! -e ${dev_node} ]; then
-    echo "### That device node doesn't seem to exist."
+    echo "ERROR: That device node doesn't seem to exist."
     exit 1
 fi
 if grep ${dev_node} /proc/mounts > /dev/null; then
-    echo "### It looks like that device is mounted..."
+    echo "ERROR: It looks like that device is mounted; unmount it and try again."
     exit 1
 fi
 dev_sectors=`blockdev --getsz ${dev_node}` || exit 1
 dev_bytes=`expr ${dev_sectors} \\* 512`
 if [ ${dev_bytes} -lt 4000000000 ]; then
-    echo "### Your USB flash drive isn't large enough; it must be at least 4000 MiB."
+    echo "ERROR: Your USB flash drive isn't large enough; it must be at least 4000 MiB."
     exit 1
 fi
 

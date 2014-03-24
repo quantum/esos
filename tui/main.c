@@ -59,60 +59,103 @@ int main(int argc, char** argv) {
     initCDKColor();
 
     /* Create the menu lists */
-    menu_list[SYSTEM_MENU][0]                           = "</29/B/U>S<!29><!U>ystem  <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_SYNC_CONF]            = "</B>Sync. Configuration <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_NETWORK]              = "</B>Network Settings    <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_RESTART_NET]          = "</B>Restart Networking  <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_MAIL]                 = "</B>Mail Setup          <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_TEST_EMAIL]           = "</B>Send Test Email     <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_ADD_USER]             = "</B>Add User            <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_DEL_USER]             = "</B>Delete User         <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_CHG_PASSWD]           = "</B>Change Password     <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_SCST_INFO]            = "</B>SCST Information    <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_CRM_STATUS]           = "</B>CRM Status          <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_DATE_TIME]            = "</B>Date & Time Settings<!B>";
+    menu_list[SYSTEM_MENU][0] = "</29/B/U>S<!29><!U>ystem  <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_SYNC_CONF] = \
+            "</B>Sync. Configuration <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_NETWORK] = \
+            "</B>Network Settings    <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_RESTART_NET] = \
+            "</B>Restart Networking  <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_MAIL] = \
+            "</B>Mail Setup          <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_TEST_EMAIL] = \
+            "</B>Send Test Email     <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_ADD_USER] = \
+            "</B>Add User            <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_DEL_USER] = \
+            "</B>Delete User         <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_CHG_PASSWD] = \
+            "</B>Change Password     <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_SCST_INFO] = \
+            "</B>SCST Information    <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_CRM_STATUS] = \
+            "</B>CRM Status          <!B>";
+    menu_list[SYSTEM_MENU][SYSTEM_DATE_TIME] = \
+            "</B>Date & Time Settings<!B>";
 
-    menu_list[BACK_STORAGE_MENU][0]                             = "</29/B/U>B<!29><!U>ack-End Storage  <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_PROP]         = "</B>Adapter Properties      <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_INFO]         = "</B>Adapter Information     <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VOL]          = "</B>Add Volume              <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VOL]          = "</B>Delete Volume           <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VOL_PROP]         = "</B>Volume Properties       <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DRBD_STAT]        = "</B>DRBD Status             <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_SOFT_RAID_STAT]   = "</B>Software RAID Status    <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_LVM2_INFO]        = "</B>LVM2 LV Information     <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_CREATE_FS]        = "</B>Create File System      <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_REMOVE_FS]        = "</B>Remove File System      <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VDISK_FILE]   = "</B>Add Virtual Disk File   <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VDISK_FILE]   = "</B>Delete Virtual Disk File<!B>";
+    menu_list[BACK_STORAGE_MENU][0] = "</29/B/U>B<!29><!U>ack-End Storage  <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_PROP] = \
+            "</B>Adapter Properties      <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_INFO] = \
+            "</B>Adapter Information     <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VOL] = \
+            "</B>Add Volume              <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VOL] = \
+            "</B>Delete Volume           <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VOL_PROP] = \
+            "</B>Volume Properties       <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DRBD_STAT] = \
+            "</B>DRBD Status             <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_SOFT_RAID_STAT] = \
+            "</B>Software RAID Status    <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_LVM2_INFO] = \
+            "</B>LVM2 LV Information     <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_CREATE_FS] = \
+            "</B>Create File System      <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_REMOVE_FS] = \
+            "</B>Remove File System      <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VDISK_FILE] = \
+            "</B>Add Virtual Disk File   <!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VDISK_FILE] = \
+            "</B>Delete Virtual Disk File<!B>";
 
-    menu_list[HOSTS_MENU][0]                            = "</29/B/U>H<!29><!U>osts  <!B>";
-    menu_list[HOSTS_MENU][HOSTS_ADD_GROUP]              = "</B>Add Group       <!B>";
-    menu_list[HOSTS_MENU][HOSTS_REM_GROUP]              = "</B>Remove Group    <!B>";
-    menu_list[HOSTS_MENU][HOSTS_ADD_INIT]               = "</B>Add Initiator   <!B>";
-    menu_list[HOSTS_MENU][HOSTS_REM_INIT]               = "</B>Remove Initiator<!B>";
+    menu_list[HOSTS_MENU][0] = "</29/B/U>H<!29><!U>osts  <!B>";
+    menu_list[HOSTS_MENU][HOSTS_ADD_GROUP] = \
+            "</B>Add Group       <!B>";
+    menu_list[HOSTS_MENU][HOSTS_REM_GROUP] = \
+            "</B>Remove Group    <!B>";
+    menu_list[HOSTS_MENU][HOSTS_ADD_INIT] = \
+            "</B>Add Initiator   <!B>";
+    menu_list[HOSTS_MENU][HOSTS_REM_INIT] = \
+            "</B>Remove Initiator<!B>";
 
-    menu_list[DEVICES_MENU][0]                          = "</29/B/U>D<!29><!U>evices  <!B>";
-    menu_list[DEVICES_MENU][DEVICES_LUN_LAYOUT]         = "</B>LUN Layout        <!B>";
-    menu_list[DEVICES_MENU][DEVICES_DEV_INFO]           = "</B>Device Information<!B>";
-    menu_list[DEVICES_MENU][DEVICES_ADD_DEV]            = "</B>Add Device        <!B>";
-    menu_list[DEVICES_MENU][DEVICES_DEL_DEV]            = "</B>Delete Device     <!B>";
-    menu_list[DEVICES_MENU][DEVICES_MAP_TO]             = "</B>Map to Group      <!B>";
-    menu_list[DEVICES_MENU][DEVICES_UNMAP_FROM]         = "</B>Unmap from Group  <!B>";
+    menu_list[DEVICES_MENU][0] = "</29/B/U>D<!29><!U>evices  <!B>";
+    menu_list[DEVICES_MENU][DEVICES_LUN_LAYOUT] = \
+            "</B>LUN Layout        <!B>";
+    menu_list[DEVICES_MENU][DEVICES_DEV_INFO] = \
+            "</B>Device Information<!B>";
+    menu_list[DEVICES_MENU][DEVICES_ADD_DEV] = \
+            "</B>Add Device        <!B>";
+    menu_list[DEVICES_MENU][DEVICES_DEL_DEV] = \
+            "</B>Delete Device     <!B>";
+    menu_list[DEVICES_MENU][DEVICES_MAP_TO] = \
+            "</B>Map to Group      <!B>";
+    menu_list[DEVICES_MENU][DEVICES_UNMAP_FROM] = \
+            "</B>Unmap from Group  <!B>";
 
-    menu_list[TARGETS_MENU][0]                          = "</29/B/U>T<!29><!U>argets  <!B>";
-    menu_list[TARGETS_MENU][TARGETS_TGT_INFO]           = "</B>Target Information   <!B>";
-    menu_list[TARGETS_MENU][TARGETS_ADD_ISCSI]          = "</B>Add iSCSI Target     <!B>";
-    menu_list[TARGETS_MENU][TARGETS_REM_ISCSI]          = "</B>Remove iSCSI Target  <!B>";
-    menu_list[TARGETS_MENU][TARGETS_LIP]                = "</B>Issue LIP            <!B>";
-    menu_list[TARGETS_MENU][TARGETS_TOGGLE]             = "</B>Enable/Disable Target<!B>";
+    menu_list[TARGETS_MENU][0] = "</29/B/U>T<!29><!U>argets  <!B>";
+    menu_list[TARGETS_MENU][TARGETS_TGT_INFO] = \
+            "</B>Target Information   <!B>";
+    menu_list[TARGETS_MENU][TARGETS_ADD_ISCSI] = \
+            "</B>Add iSCSI Target     <!B>";
+    menu_list[TARGETS_MENU][TARGETS_REM_ISCSI] = \
+            "</B>Remove iSCSI Target  <!B>";
+    menu_list[TARGETS_MENU][TARGETS_LIP] = \
+            "</B>Issue LIP            <!B>";
+    menu_list[TARGETS_MENU][TARGETS_TOGGLE] = \
+            "</B>Enable/Disable Target<!B>";
 
-    menu_list[INTERFACE_MENU][0]                        = "</29/B/U>I<!29><!U>nterface<!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_QUIT]           = "</B>Quit          <!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_SHELL]          = "</B>Exit to Shell <!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_HELP]           = "</B>Help          <!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_SUPPORT_PKG]    = "</B>Support Bundle<!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_ABOUT]          = "</B>About         <!B>";
+    menu_list[INTERFACE_MENU][0] = "</29/B/U>I<!29><!U>nterface<!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_QUIT] = \
+            "</B>Quit          <!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_SHELL] = \
+            "</B>Exit to Shell <!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_HELP] = \
+            "</B>Help          <!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_SUPPORT_PKG] = \
+            "</B>Support Bundle<!B>";
+    menu_list[INTERFACE_MENU][INTERFACE_ABOUT] = \
+            "</B>About         <!B>";
 
     /* Set menu sizes and locations */
     submenu_size[SYSTEM_MENU]       = 12;
@@ -161,8 +204,8 @@ int main(int argc, char** argv) {
     halfdelay(REFRESH_DELAY);
     for (;;) {
         /* Update the information labels */
-        if (!updateInfoLabels(cdk_screen, &targets_label, tgt_label_msg,
-                &sessions_label, sess_label_msg,
+        if (!updateInfoLabels(cdk_screen, &targets_label, &sessions_label,
+                tgt_label_msg, sess_label_msg,
                 &labels_last_scr_y, &labels_last_scr_x,
                 &last_tgt_lbl_rows, &last_sess_lbl_rows))
             goto quit;
@@ -266,9 +309,12 @@ int main(int argc, char** argv) {
                             break;
                         errno = 0;
                     }
-                    /* Yes, using 'goto' again... ending everything and
-                     * starting fresh seems to work best when switching
-                     * between the shell and UI */
+                    /* Ending everything and starting fresh seems to work
+                     * best when switching between the shell and UI */
+                    destroyCDKLabel(targets_label);
+                    targets_label = NULL;
+                    destroyCDKLabel(sessions_label);
+                    sessions_label = NULL;
                     destroyCDKScreenObjects(cdk_screen);
                     destroyCDKScreen(cdk_screen);
                     endCDK();

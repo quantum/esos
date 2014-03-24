@@ -19,9 +19,10 @@ void screenResize(CDKSCREEN *cdk, WINDOW *main_screen, WINDOW *sub_screen,
 void statusBar(WINDOW *window);
 
 /* info_labels.c */
-boolean updateInfoLabels(CDKSCREEN *cdk_screen, CDKLABEL **tgt_info,
-        char *tgt_info_msg[], CDKLABEL **sess_info, char *sess_info_msg[],
-        int *last_scr_x, int *last_scr_y,
+boolean updateInfoLabels(CDKSCREEN *cdk_screen,
+        CDKLABEL **tgt_info, CDKLABEL **sess_info,
+        char *tgt_info_msg[], char *sess_info_msg[],
+        int *last_scr_y, int *last_scr_x,
         int *last_tgt_rows, int *last_sess_rows);
 int readTargetData(char *label_msg[]);
 int readSessionData(char *label_msg[]);

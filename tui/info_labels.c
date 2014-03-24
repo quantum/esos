@@ -24,9 +24,10 @@
  * and message data for each label then act based on this data. It should be
  * called when the terminal is re-sized and frequently to update the display.
  */
-boolean updateInfoLabels(CDKSCREEN *cdk_screen, CDKLABEL **tgt_info,
-        char *tgt_info_msg[], CDKLABEL **sess_info, char *sess_info_msg[],
-        int *last_scr_x, int *last_scr_y,
+boolean updateInfoLabels(CDKSCREEN *cdk_screen,
+        CDKLABEL **tgt_info, CDKLABEL **sess_info,
+        char *tgt_info_msg[],  char *sess_info_msg[],
+        int *last_scr_y, int *last_scr_x,
         int *last_tgt_rows, int *last_sess_rows) {
     int window_x = 0, window_y = 0, usable_height = 0, half_height = 0,
             tgt_want_rows = 0, sess_want_rows = 0, tgt_lbl_rows = 0,

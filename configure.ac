@@ -61,16 +61,15 @@ MY_PATH_PROG([openssl])
 dnl Setup build directories
 if test x"${PWD}" != x; then
 	AC_MSG_NOTICE([setting up build directories...])
-	AC_SUBST(cwd, ${PWD})
 	work_dir="${PWD}/work"
 	${mkdir} -p ${work_dir} || exit 1
 	AC_SUBST(work_dir, ${work_dir})
 	distfiles_dir="${work_dir}/distfiles"
 	${mkdir} -p ${distfiles_dir} || exit 1
 	AC_SUBST(distfiles_dir, ${distfiles_dir})
-	build_dir="${work_dir}/build"
-	${mkdir} -p ${build_dir} || exit 1
-	AC_SUBST(build_dir, ${build_dir})
+	pkg_src_dir="${work_dir}/build"
+	${mkdir} -p ${pkg_src_dir} || exit 1
+	AC_SUBST(pkg_src_dir, ${pkg_src_dir})
 	image_dir="${work_dir}/image"
 	${mkdir} -p ${image_dir} || exit 1
 	AC_SUBST(image_dir, ${image_dir})
@@ -153,6 +152,10 @@ AS_IF([test "x$with_ocs_sdk" = "xyes"], [build_opts="${build_opts} ocs_sdk"])
 AC_SUBST(ocs_sdk_dir, ${ocs_sdk_dir})
 AC_SUBST(with_ocs_sdk, ${with_ocs_sdk})
 AC_MSG_NOTICE([ocs_sdk: ${with_ocs_sdk}])
+AC_SUBST(src_dir, ${srcdir})
+AC_MSG_NOTICE([src_dir: ${srcdir}])
+AC_SUBST(build_dir, ${PWD})
+AC_MSG_NOTICE([build_dir: ${PWD}])
 
 AC_SUBST(build_opts, m4_strip($(echo ${build_opts})))
 

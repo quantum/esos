@@ -23,6 +23,10 @@ extern "C" {
 /* SCST utility function error messages */
 #define TGT_DRIVERS_ERR "An error occurred while retrieving the list of drivers."
 
+/* Canned dialog messages */
+#define CONTINUE_MSG    "<C></B><Press ENTER to continue...>"
+#define NO_SCST_MSG     "<C></B><SCST is not loaded!>"
+
 #ifdef	__cplusplus
 }
 #endif
