@@ -1,3 +1,9 @@
+2014-03-24 23:06  msmith626@gmail.com
+
+	* Makefile.in: moved user-land SCST progs (iSCSI stuff) to a
+	  separate target; removed glibc dependency from esos_kernels
+	  target; other build fixes (target deps)
+
 2014-03-24 16:15  msmith626@gmail.com
 
 	* Makefile.in, configure.ac: fixed build issue with source
