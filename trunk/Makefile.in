@@ -356,14 +356,15 @@ image: $(build_targets)
 
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
-pkg_dist: img_file = $(notdir $(wildcard $(BUILD_DIR)/esos-*.img))
+pkg_dist: img_file = $(wildcard $(BUILD_DIR)/esos-*.img)
 pkg_dist: $(img_file)
-	$(CHMOD) +x $(SRC_DIR)/install.sh
 	$(MD5SUM) $(img_file) > $(BUILD_DIR)/dist_md5sum.txt
 	$(SHA256SUM) $(img_file) > $(BUILD_DIR)/dist_sha256sum.txt
-	$(TAR) --transform 's,^,esos-$(esos_ver)/,' --show-transformed-names \
+	$(TAR) --transform 's,$(BUILD_DIR)/,,' --transform 's,$(SRC_DIR)/,,' \
+	 --transform 's,^,esos-$(esos_ver)/,' --show-transformed-names \
 	-c -v -J -f $(BUILD_DIR)/esos-$(esos_ver).tar.xz $(img_file) \
-	install.sh INSTALL README COPYING dist_*.txt ChangeLog
+	$(SRC_DIR)/install.sh $(SRC_DIR)/INSTALL $(SRC_DIR)/README \
+	$(SRC_DIR)/COPYING dist_*.txt $(SRC_DIR)/ChangeLog
 
 
 # clean - Remove temporary files, any image/package files, and target files.
@@ -388,7 +389,7 @@ clean-esos_tui::
 distclean: clean
 	$(RM) $(WORK_DIR)
 	$(RM) $(SRC_DIR)/autom4te.cache
-	$(RM) $(SRC_DIR)/config.status
+	$(RM) $(BUILD_DIR)/config.status
 	$(RM) $(BUILD_DIR)/configure
 	$(RM) $(BUILD_DIR)/config.log
 	$(RM) $(BUILD_DIR)/Makefile

@@ -152,8 +152,11 @@ AS_IF([test "x$with_ocs_sdk" = "xyes"], [build_opts="${build_opts} ocs_sdk"])
 AC_SUBST(ocs_sdk_dir, ${ocs_sdk_dir})
 AC_SUBST(with_ocs_sdk, ${with_ocs_sdk})
 AC_MSG_NOTICE([ocs_sdk: ${with_ocs_sdk}])
-AC_SUBST(src_dir, ${srcdir})
-AC_MSG_NOTICE([src_dir: ${srcdir}])
+AS_IF([test "x${srcdir}" = "x."],
+	[real_src_dir="${PWD}"],
+	[real_src_dir="${srcdir}"])
+AC_SUBST(src_dir, ${real_src_dir})
+AC_MSG_NOTICE([src_dir: ${real_src_dir}])
 AC_SUBST(build_dir, ${PWD})
 AC_MSG_NOTICE([build_dir: ${PWD}])
 
