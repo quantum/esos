@@ -24,6 +24,7 @@
 #include "prototypes.h"
 #include "system.h"
 #include "dialogs.h"
+#include "strings.h"
 
 /*
  * Run the Networking dialog
