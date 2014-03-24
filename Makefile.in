@@ -170,7 +170,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
-build_targets	:= esos_kernels kernel_headers esos_tui busybox \
+build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		sysvinit grub glibc perl Python qlogic_fw scstadmin openssh \
 		vixie-cron gcc setuptools openssl zlib ncurses e2fsprogs \
 		ssmtp libibumad libibverbs srptools lsscsi sg3_utils groff \
@@ -360,8 +360,9 @@ pkg_dist: img_file = $(wildcard $(BUILD_DIR)/esos-*.img)
 pkg_dist: $(img_file)
 	$(MD5SUM) $(img_file) > $(BUILD_DIR)/dist_md5sum.txt
 	$(SHA256SUM) $(img_file) > $(BUILD_DIR)/dist_sha256sum.txt
-	$(TAR) --transform 's,$(BUILD_DIR)/,,' --transform 's,$(SRC_DIR)/,,' \
-	 --transform 's,^,esos-$(esos_ver)/,' --show-transformed-names \
+	$(TAR) --transform='s,^,esos-$(esos_ver)/,' \
+	--transform='s,$(BUILD_DIR),,' --transform='s,$(SRC_DIR),,' \
+	--show-transformed-names \
 	-c -v -J -f $(BUILD_DIR)/esos-$(esos_ver).tar.xz $(img_file) \
 	$(SRC_DIR)/install.sh $(SRC_DIR)/INSTALL $(SRC_DIR)/README \
 	$(SRC_DIR)/COPYING dist_*.txt $(SRC_DIR)/ChangeLog
@@ -442,7 +443,7 @@ esos_kernels: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
 esos_kernels: mhvtl_src = $(wildcard $(PKG_SRC_DIR)/mhvtl-*)
 esos_kernels: eio_src = $(wildcard $(PKG_SRC_DIR)/EnhanceIO-*)
 esos_kernels: btier_src = $(wildcard $(PKG_SRC_DIR)/btier-*)
-esos_kernels: glibc
+esos_kernels:
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b \
@@ -500,12 +501,13 @@ esos_kernels: glibc
 	  KVER=$(kernel_ver)$$i qla; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) qla_install; \
-	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i LOCAL_LD_FLAGS="$(LDFLAGS)" iscsi; \
-	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i SBINDIR=$(IMAGE_DIR)/usr/sbin \
-	  MANDIR=$(IMAGE_DIR)/usr/share/man \
-	  INSTALL_MOD_PATH=$(IMAGE_DIR) iscsi_install; \
+	  $(MAKE) --directory=$(scst_src)/iscsi-scst include/iscsi_scst_itf_ver.h; \
+	  $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
+	  KVER=$(kernel_ver)$$i mods; \
+	  $(MAKE) --directory $(linux_src) KDIR=$(linux_src) \
+	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
+	  SUBDIRS=$(scst_src)/iscsi-scst/kernel \
+	  INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i srpt; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
@@ -559,6 +561,21 @@ esos_tui: glibc ncurses cdk iniparser parted
 	$(MAKE) --directory=$(SRC_DIR)/tui CC="$(esos_cc)" \
 	CFLAGS="-DBUILD_OPTS=\"\\\"$(if $(build_opts),$(build_opts),N/A)\\\"\""
 	$(INSTALL) -m 755 $(SRC_DIR)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
+	$(TOUCH) $(@)
+
+scst: glibc
+	$(MAKE) --directory=$(src_dir)/iscsi-scst \
+	SCST_INC_DIR=$(src_dir)/scst/include progs
+	$(INSTALL) -vD -m 755 $(src_dir)/iscsi-scst/usr/iscsi-scstd \
+	$(IMAGE_DIR)/usr/sbin/iscsi-scstd
+	$(INSTALL) -vD -m 644 $(src_dir)/iscsi-scst/doc/manpages/iscsi-scstd.conf.5 \
+	$(IMAGE_DIR)/usr/share/man/man5/iscsi-scstd.conf.5
+	$(INSTALL) -vD -m 644 $(src_dir)/iscsi-scst/doc/manpages/iscsi-scstd.8 \
+	$(IMAGE_DIR)/usr/share/man/man8/iscsi-scstd.8
+	$(INSTALL) -vD -m 755 $(src_dir)/iscsi-scst/usr/iscsi-scst-adm \
+	$(IMAGE_DIR)/usr/sbin/iscsi-scst-adm
+	$(INSTALL) -vD -m 644 $(src_dir)/iscsi-scst/doc/manpages/iscsi-scst-adm.8 \
+	$(IMAGE_DIR)/usr/share/man/man8/iscsi-scst-adm.8
 	$(TOUCH) $(@)
 
 gdb: glibc ncurses
@@ -1421,7 +1438,7 @@ sysklogd: glibc
 	$(IMAGE_DIR)/usr/share/man/man8/klogd.8
 	$(TOUCH) $(@)
 
-less: glibc
+less: glibc ncurses
 	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
@@ -1440,7 +1457,7 @@ ethtool: glibc
 	$(TOUCH) $(@)
 
 postgresql: glibc
-	cd $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr --without-readline
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir)/src/bin DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/src/include DESTDIR=$(IMAGE_DIR) install
@@ -1454,7 +1471,7 @@ psycopg2: glibc Python postgresql
 	--prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
-mysql: glibc
+mysql: glibc ncurses
 	cd $(src_dir) && ./configure --prefix=/usr --without-server \
 	--without-bench --enable-thread-safe-client
 	$(MAKE) --directory=$(src_dir)
@@ -1498,7 +1515,7 @@ lockfile: glibc Python
 	install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
-python-daemon: glibc Python lockfile
+python-daemon: glibc Python lockfile setuptools
 	cd $(src_dir) && $(WORK_DIR)/python ./setup.py \
 	install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
