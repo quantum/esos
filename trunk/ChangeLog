@@ -1,3 +1,8 @@
+2014-03-25 17:04  msmith626@gmail.com
+
+	* Makefile.in: added esos_kernels as a dep for the scst target;
+	  fixed pkg_dist target to name checksums correctly
+
 2014-03-25 01:39  msmith626@gmail.com
 
 	* Makefile.in: resolved build issue with parallel make
