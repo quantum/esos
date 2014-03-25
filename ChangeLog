@@ -1,3 +1,8 @@
+2014-03-25 01:39  msmith626@gmail.com
+
+	* Makefile.in: resolved build issue with parallel make
+	  (kernel_headers vs. esos_kernels clobber issue)
+
 2014-03-24 23:06  msmith626@gmail.com
 
 	* Makefile.in: moved user-land SCST progs (iSCSI stuff) to a
