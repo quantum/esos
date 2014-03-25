@@ -443,7 +443,7 @@ esos_kernels: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
 esos_kernels: mhvtl_src = $(wildcard $(PKG_SRC_DIR)/mhvtl-*)
 esos_kernels: eio_src = $(wildcard $(PKG_SRC_DIR)/EnhanceIO-*)
 esos_kernels: btier_src = $(wildcard $(PKG_SRC_DIR)/btier-*)
-esos_kernels:
+esos_kernels: kernel_headers
 	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b \
@@ -501,7 +501,8 @@ esos_kernels:
 	  KVER=$(kernel_ver)$$i qla; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) qla_install; \
-	  $(MAKE) --directory=$(scst_src)/iscsi-scst include/iscsi_scst_itf_ver.h; \
+	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
+	  include/iscsi_scst_itf_ver.h; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i mods; \
 	  $(MAKE) --directory $(linux_src) KDIR=$(linux_src) \
@@ -568,13 +569,16 @@ scst: glibc
 	SCST_INC_DIR=$(src_dir)/scst/include progs
 	$(INSTALL) -vD -m 755 $(src_dir)/iscsi-scst/usr/iscsi-scstd \
 	$(IMAGE_DIR)/usr/sbin/iscsi-scstd
-	$(INSTALL) -vD -m 644 $(src_dir)/iscsi-scst/doc/manpages/iscsi-scstd.conf.5 \
-	$(IMAGE_DIR)/usr/share/man/man5/iscsi-scstd.conf.5
-	$(INSTALL) -vD -m 644 $(src_dir)/iscsi-scst/doc/manpages/iscsi-scstd.8 \
-	$(IMAGE_DIR)/usr/share/man/man8/iscsi-scstd.8
 	$(INSTALL) -vD -m 755 $(src_dir)/iscsi-scst/usr/iscsi-scst-adm \
 	$(IMAGE_DIR)/usr/sbin/iscsi-scst-adm
-	$(INSTALL) -vD -m 644 $(src_dir)/iscsi-scst/doc/manpages/iscsi-scst-adm.8 \
+	$(INSTALL) -vD -m 644 \
+	$(src_dir)/iscsi-scst/doc/manpages/iscsi-scstd.conf.5 \
+	$(IMAGE_DIR)/usr/share/man/man5/iscsi-scstd.conf.5
+	$(INSTALL) -vD -m 644 \
+	$(src_dir)/iscsi-scst/doc/manpages/iscsi-scstd.8 \
+	$(IMAGE_DIR)/usr/share/man/man8/iscsi-scstd.8
+	$(INSTALL) -vD -m 644 \
+	$(src_dir)/iscsi-scst/doc/manpages/iscsi-scst-adm.8 \
 	$(IMAGE_DIR)/usr/share/man/man8/iscsi-scst-adm.8
 	$(TOUCH) $(@)
 
