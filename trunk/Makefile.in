@@ -358,8 +358,10 @@ image: $(build_targets)
 .PHONY: pkg_dist
 pkg_dist: img_file = $(wildcard $(BUILD_DIR)/esos-*.img)
 pkg_dist: $(img_file)
-	$(MD5SUM) $(img_file) > $(BUILD_DIR)/dist_md5sum.txt
-	$(SHA256SUM) $(img_file) > $(BUILD_DIR)/dist_sha256sum.txt
+	cd $(dir $(img_file)) && $(MD5SUM) $(notdir $(img_file)) > \
+	$(BUILD_DIR)/dist_md5sum.txt
+	cd $(dir $(img_file)) && $(SHA256SUM) $(notdir $(img_file)) > \
+	$(BUILD_DIR)/dist_sha256sum.txt
 	$(TAR) --transform='s,^,esos-$(esos_ver)/,' \
 	--transform='s,$(BUILD_DIR),,' --transform='s,$(SRC_DIR),,' \
 	--show-transformed-names \
@@ -564,7 +566,7 @@ esos_tui: glibc ncurses cdk iniparser parted
 	$(INSTALL) -m 755 $(SRC_DIR)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
 	$(TOUCH) $(@)
 
-scst: glibc
+scst: glibc esos_kernels
 	$(MAKE) --directory=$(src_dir)/iscsi-scst \
 	SCST_INC_DIR=$(src_dir)/scst/include progs
 	$(INSTALL) -vD -m 755 $(src_dir)/iscsi-scst/usr/iscsi-scstd \
