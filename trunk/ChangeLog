@@ -1,3 +1,16 @@
+2014-03-28 20:04  msmith626@gmail.com
+
+	* misc/linux-3.12.7.config, tui/dialogs.h, tui/info_labels.c,
+	  tui/main.c, tui/megaraid.c, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
+	  tui/menu_actions-interface.c, tui/menu_actions-system.c,
+	  tui/menu_actions-targets.c, tui/menu_actions.c, tui/prototypes.h,
+	  tui/strings.h, tui/system.h, tui/utility.c: disabled USB_DEBUG
+	  option in kernel config; added new column to "sessions" info
+	  label for LUN count; changed all free/freeChar to new FREE_NULL
+	  macro in TUI code; lots of TUI code clean up (line/column
+	  formatting, consolidating like code, etc.)
+
 2014-03-25 17:04  msmith626@gmail.com
 
 	* Makefile.in: added esos_kernels as a dep for the scst target;
