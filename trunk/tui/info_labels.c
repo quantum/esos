@@ -365,8 +365,8 @@ int readSessionData(char *label_msg[]) {
     DIR *tgt_dir_stream = NULL, *sess_dir_stream = NULL;
     struct dirent *tgt_dir_entry = NULL, *sess_dir_entry = NULL;
     int i = 0, j = 0, row_cnt = 0, driver_cnt = 0, num_sessions = 0,
-            max_index = 0, tmp_act_cmds = 0;
-    int active_cmds[MAX_SCST_SESSNS] = {0};
+            max_index = 0, tmp_act_cmds = 0, tmp_lun_cnt = 0;
+    int active_cmds[MAX_SCST_SESSNS] = {0}, lun_count[MAX_SCST_SESSNS] = {0};
     unsigned long long read_io_kb[MAX_SCST_SESSNS] = {0},
             write_io_kb[MAX_SCST_SESSNS] = {0};
     unsigned long long tmp_read_io = 0, tmp_write_io = 0;
@@ -386,8 +386,9 @@ int readSessionData(char *label_msg[]) {
     /* Set the initial label messages; the number of characters
      * controls the label width (using white space as padding for width) */
     asprintf(&label_msg[0],
-            "</21/B/U>Session<!21><!B><!U>                   "
-            "   </21/B/U>Commands<!21><!B><!U>"
+            "</21/B/U>Session<!21><!B><!U>                  "
+            "  </21/B/U>LUNs<!21><!B><!U>"
+            "  </21/B/U>Cmds<!21><!B><!U>"
             "       </21/B/U>Read IO (KB)<!21><!B><!U>"
             "      </21/B/U>Write IO (KB)<!21><!B><!U> ");
 
@@ -457,6 +458,9 @@ int readSessionData(char *label_msg[]) {
                         readAttribute(attr_path, attr_val);
                         snprintf(init_names[j], MAX_SYSFS_ATTR_SIZE,
                                 "%s", attr_val);
+                        /* Get the number of LUNs for this session */
+                        lun_count[j] = countSCSTSessLUNs(tgt_dir_entry->d_name,
+                                tgt_drivers[i], sess_dir_entry->d_name);
                         /* Get the active commands attribute */
                         snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
                                 "%s/targets/%s/%s/sessions/%s/active_commands",
@@ -526,16 +530,19 @@ int readSessionData(char *label_msg[]) {
         }
         /* Set temporary variable */
         strncpy(tmp_init_name, init_names[i], MAX_SYSFS_ATTR_SIZE);
+        tmp_lun_cnt = lun_count[i];
         tmp_act_cmds = active_cmds[i];
         tmp_read_io = read_io_kb[i];
         tmp_write_io = write_io_kb[i];
         /* Set current position variable with new maximum */
         strncpy(init_names[i], init_names[max_index], MAX_SYSFS_ATTR_SIZE);
+        lun_count[i] = lun_count[max_index];
         active_cmds[i] = active_cmds[max_index];
         read_io_kb[i] = read_io_kb[max_index];
         write_io_kb[i] = write_io_kb[max_index];
         /* Move variable to old location */
         strncpy(init_names[max_index], tmp_init_name, MAX_SYSFS_ATTR_SIZE);
+        lun_count[max_index] = tmp_lun_cnt;
         active_cmds[max_index] = tmp_act_cmds;
         read_io_kb[max_index] = tmp_read_io;
         write_io_kb[max_index] = tmp_write_io;
@@ -545,8 +552,8 @@ int readSessionData(char *label_msg[]) {
     for (i = 0; i < num_sessions; i++) {
         if (row_cnt < MAX_INFO_LABEL_ROWS) {
             snprintf(line_buffer, SESSIONS_LABEL_COLS,
-                    "%-26.26s %10d %18llu %18llu",
-                    init_names[i], active_cmds[i],
+                    "%-25.25s %5d %5d %18llu %18llu",
+                    init_names[i], lun_count[i], active_cmds[i],
                     read_io_kb[i], write_io_kb[i]);
             asprintf(&label_msg[row_cnt], "%s", line_buffer);
             row_cnt++;

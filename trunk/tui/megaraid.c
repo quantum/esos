@@ -38,7 +38,7 @@ char *getMegaCLIVersion() {
     }
 
     status = pclose(megacli);
-    freeChar(command);
+    FREE_NULL(command);
     if (status != 0) {
         return NULL;
     }
@@ -80,7 +80,7 @@ int getMRAdapterCount() {
      * with MegaCLI, it also returns the adapter count as the exit code */
 
     /* Done */
-    freeChar(command);
+    FREE_NULL(command);
     return count;
 }
 
@@ -100,7 +100,8 @@ MRADAPTER *getMRAdapter(int adapter_id) {
         adapter->adapter_id = adapter_id;
 
         /* MegaCLI command */
-        asprintf(&command, "%s -AdpAllInfo -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+        asprintf(&command, "%s -AdpAllInfo -a%d -NoLog 2>&1",
+                MEGACLI_BIN, adapter_id);
         megacli = popen(command, "r");
 
         /* Loop over command output */
@@ -108,32 +109,38 @@ MRADAPTER *getMRAdapter(int adapter_id) {
             if (strstr(line, "Product Name    :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(adapter->prod_name, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(adapter->prod_name, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Serial No       :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(adapter->serial, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(adapter->serial, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "FW Package Build:")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(adapter->firmware, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(adapter->firmware, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "BBU              :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(adapter->bbu, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(adapter->bbu, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Memory Size      :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(adapter->memory, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(adapter->memory, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Host Interface  :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(adapter->interface, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(adapter->interface, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Virtual Drives    :")) {
                 sscanf(line, "%*s %*s %*s %d", &adapter->logical_drv_cnt);
@@ -144,20 +151,22 @@ MRADAPTER *getMRAdapter(int adapter_id) {
             } else if (strstr(line, "Cluster Permitted     :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(adapter->cluster, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(adapter->cluster, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Cluster Active        :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(adapter->cluster_on, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(adapter->cluster_on, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
             }
         }
 
         /* Done with MegaCLI */
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
-            free(adapter);
+            FREE_NULL(adapter);
             return NULL;
         }
     }
@@ -182,7 +191,8 @@ MRADPPROPS *getMRAdapterProps(int adapter_id) {
         adp_props->adapter_id = adapter_id;
 
         /* Get CacheFlushInterval */
-        asprintf(&command, "%s -AdpGetProp CacheFlushInterval -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+        asprintf(&command, "%s -AdpGetProp CacheFlushInterval -a%d -NoLog 2>&1",
+                MEGACLI_BIN, adapter_id);
         megacli = popen(command, "r");
         while (fgets(line, sizeof(line), megacli) != NULL) {
             if (strstr(line, "Cache Flush Interval")) {
@@ -192,13 +202,14 @@ MRADPPROPS *getMRAdapterProps(int adapter_id) {
             }
         }
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
             return NULL;
         }
 
         /* Get RebuildRate */
-        asprintf(&command, "%s -AdpGetProp RebuildRate -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+        asprintf(&command, "%s -AdpGetProp RebuildRate -a%d -NoLog 2>&1",
+                MEGACLI_BIN, adapter_id);
         megacli = popen(command, "r");
         while (fgets(line, sizeof(line), megacli) != NULL) {
             if (strstr(line, "Rebuild Rate")) {
@@ -208,13 +219,14 @@ MRADPPROPS *getMRAdapterProps(int adapter_id) {
             }
         }
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
             return NULL;
         }
 
         /* Get ClusterEnable */
-        asprintf(&command, "%s -AdpGetProp ClusterEnable -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+        asprintf(&command, "%s -AdpGetProp ClusterEnable -a%d -NoLog 2>&1",
+                MEGACLI_BIN, adapter_id);
         megacli = popen(command, "r");
         while (fgets(line, sizeof(line), megacli) != NULL) {
             if (strstr(line, "Cluster :")) {
@@ -229,29 +241,32 @@ MRADPPROPS *getMRAdapterProps(int adapter_id) {
             }
         }
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
             return NULL;
         }
 
         /* Get NCQDsply */
-        asprintf(&command, "%s -AdpGetProp NCQDsply -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+        asprintf(&command, "%s -AdpGetProp NCQDsply -a%d -NoLog 2>&1",
+                MEGACLI_BIN, adapter_id);
         megacli = popen(command, "r");
         while (fgets(line, sizeof(line), megacli) != NULL) {
             if (strstr(line, "NCQ Status is")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                if (strcmp(strStrip(strtok_result), "NCQ Status is Enabled") == 0) {
+                if (strcmp(strStrip(strtok_result),
+                        "NCQ Status is Enabled") == 0) {
                     adp_props->ncq = TRUE;
-                } else if (strcmp(strStrip(strtok_result), "NCQ Status is Disabled") == 0) {
+                } else if (strcmp(strStrip(strtok_result),
+                        "NCQ Status is Disabled") == 0) {
                     adp_props->ncq = FALSE;
                 }
             }
         }
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
-            free(adp_props);
+            FREE_NULL(adp_props);
             return NULL;
         }
     }
@@ -269,10 +284,11 @@ int setMRAdapterProps(MRADPPROPS *adp_props) {
     int status = 0;
 
     /* Set CacheFlushInterval */
-    asprintf(&command, "%s -AdpSetProp CacheFlushInterval -%d -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+    asprintf(&command, "%s -AdpSetProp CacheFlushInterval -%d -a%d "
+            "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
             adp_props->cache_flush, adp_props->adapter_id);
     status = system(command);
-    freeChar(command);
+    FREE_NULL(command);
     if (status == -1) {
         return -1;
     } else {
@@ -285,10 +301,11 @@ int setMRAdapterProps(MRADPPROPS *adp_props) {
     }
 
     /* Set RebuildRate */
-    asprintf(&command, "%s -AdpSetProp RebuildRate -%d -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+    asprintf(&command, "%s -AdpSetProp RebuildRate -%d -a%d "
+            "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
             adp_props->rebuild_rate, adp_props->adapter_id);
     status = system(command);
-    freeChar(command);
+    FREE_NULL(command);
     if (status == -1) {
         return -1;
     } else {
@@ -301,10 +318,11 @@ int setMRAdapterProps(MRADPPROPS *adp_props) {
     }
 
     /* Set ClusterEnable */
-    asprintf(&command, "%s -AdpSetProp ClusterEnable -%d -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+    asprintf(&command, "%s -AdpSetProp ClusterEnable -%d -a%d "
+            "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
             (int) adp_props->cluster, adp_props->adapter_id);
     status = system(command);
-    freeChar(command);
+    FREE_NULL(command);
     if (status == -1) {
         return -1;
     } else {
@@ -318,13 +336,15 @@ int setMRAdapterProps(MRADPPROPS *adp_props) {
 
     /* Set NCQEnbl/NCQDsbl */
     if (adp_props->ncq == TRUE)
-        asprintf(&command, "%s -AdpSetProp NCQEnbl -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+        asprintf(&command, "%s -AdpSetProp NCQEnbl -a%d "
+                "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
                 adp_props->adapter_id);
     else
-        asprintf(&command, "%s -AdpSetProp NCQDsbl -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+        asprintf(&command, "%s -AdpSetProp NCQDsbl -a%d "
+                "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
                 adp_props->adapter_id);
     status = system(command);
-    freeChar(command);
+    FREE_NULL(command);
     if (status == -1) {
         return -1;
     } else {
@@ -358,7 +378,8 @@ MRDISK *getMRDisk(int adapter_id, int encl_id, int slot) {
         disk->part_of_ld = FALSE;
 
         /* MegaCLI command */
-        asprintf(&command, "%s -pdInfo -PhysDrv[%d:%d] -a%d -NoLog 2>&1", MEGACLI_BIN, encl_id, slot, adapter_id);
+        asprintf(&command, "%s -pdInfo -PhysDrv[%d:%d] -a%d -NoLog 2>&1",
+                MEGACLI_BIN, encl_id, slot, adapter_id);
         megacli = popen(command, "r");
 
         /* Loop over command output */
@@ -377,27 +398,32 @@ MRDISK *getMRDisk(int adapter_id, int encl_id, int slot) {
             } else if (strstr(line, "PD Type:")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(disk->pd_type, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(disk->pd_type, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Raw Size:")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(disk->raw_size, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(disk->raw_size, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Firmware state:")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(disk->state, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(disk->state, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Inquiry Data:")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(disk->inquiry, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(disk->inquiry, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Link Speed:")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(disk->speed, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(disk->speed, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Drive's position:")) {
                 /* If the PD entry contains the string above, then its
@@ -408,9 +434,9 @@ MRDISK *getMRDisk(int adapter_id, int encl_id, int slot) {
 
         /* Done with MegaCLI */
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
-            free(disk);
+            FREE_NULL(disk);
             return NULL;
         }
     }
@@ -438,7 +464,8 @@ MRENCL *getMREnclosure(int adapter_id, int encl_id) {
         enclosure->adapter_id = adapter_id;
 
         /* MegaCLI command */
-        asprintf(&command, "%s -EncInfo -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+        asprintf(&command, "%s -EncInfo -a%d -NoLog 2>&1",
+                MEGACLI_BIN, adapter_id);
         megacli = popen(command, "r");
 
         /* Loop over command output */
@@ -475,30 +502,33 @@ MRENCL *getMREnclosure(int adapter_id, int encl_id) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
                 if (counters[4] == encl_id)
-                    strncpy(enclosure->status, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                    strncpy(enclosure->status, strStrip(strtok_result),
+                            MAX_MR_ATTR_SIZE);
                 counters[4]++;
 
             } else if (strstr(line, "        Vendor Identification     :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
                 if (counters[5] == encl_id)
-                    strncpy(enclosure->vendor, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                    strncpy(enclosure->vendor, strStrip(strtok_result),
+                            MAX_MR_ATTR_SIZE);
                 counters[5]++;
 
             } else if (strstr(line, "        Product Identification    :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
                 if (counters[6] == encl_id)
-                    strncpy(enclosure->product, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                    strncpy(enclosure->product, strStrip(strtok_result),
+                            MAX_MR_ATTR_SIZE);
                 counters[6]++;
             }
         }
 
         /* Done with MegaCLI */
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
-            free(enclosure);
+            FREE_NULL(enclosure);
             return NULL;
         }
     }
@@ -532,7 +562,7 @@ int getMREnclCount(int adapter_id) {
 
     /* Done with MegaCLI */
     status = pclose(megacli);
-    freeChar(command);
+    FREE_NULL(command);
     if (status != 0) {
         return -1;
     }
@@ -558,7 +588,8 @@ int getMRLDCount(int adapter_id) {
     }
 
     /* MegaCLI command */
-    asprintf(&command, "%s -LDGetNum -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+    asprintf(&command, "%s -LDGetNum -a%d -NoLog 2>&1",
+            MEGACLI_BIN, adapter_id);
     megacli = popen(command, "r");
 
     /* Loop over command output */
@@ -575,7 +606,7 @@ int getMRLDCount(int adapter_id) {
      * with MegaCLI, it also returns the LD count as the exit code */
 
     /* Done */
-    freeChar(command);
+    FREE_NULL(command);
     return count;
 }
 
@@ -596,7 +627,8 @@ MRLDRIVE *getMRLogicalDrive(int adapter_id, int ldrive_id) {
         logical_drive->ldrive_id = ldrive_id;
 
         /* MegaCLI command */
-        asprintf(&command, "%s -LDInfo -L%d -a%d -NoLog 2>&1", MEGACLI_BIN, ldrive_id, adapter_id);
+        asprintf(&command, "%s -LDInfo -L%d -a%d -NoLog 2>&1",
+                MEGACLI_BIN, ldrive_id, adapter_id);
         megacli = popen(command, "r");
 
         /* Loop over command output */
@@ -604,22 +636,26 @@ MRLDRIVE *getMRLogicalDrive(int adapter_id, int ldrive_id) {
             if (strstr(line, "RAID Level          :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(logical_drive->raid_lvl, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(logical_drive->raid_lvl, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Size                :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(logical_drive->size, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(logical_drive->size, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "State               :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(logical_drive->state, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(logical_drive->state, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Strip Size          :")) {
                 strtok_result = strtok(line, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(logical_drive->strip_size, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(logical_drive->strip_size, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
 
             } else if (strstr(line, "Number Of Drives    :")) {
                 sscanf(line, "%*s %*s %*s %*s %d", &logical_drive->drive_cnt);
@@ -628,9 +664,9 @@ MRLDRIVE *getMRLogicalDrive(int adapter_id, int ldrive_id) {
 
         /* Done with MegaCLI */
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
-            free(logical_drive);
+            FREE_NULL(logical_drive);
             return NULL;
         }
     }
@@ -650,7 +686,8 @@ int getMRLDDisks(int adapter_id, int ldrive_id, int encl_ids[], int slots[]) {
     int status = 0, ld_drv_cnt = 0, encl_count = 0, slot_count = 0;
 
     /* MegaCLI command */
-    asprintf(&command, "%s -LdPdInfo -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+    asprintf(&command, "%s -LdPdInfo -a%d -NoLog 2>&1",
+            MEGACLI_BIN, adapter_id);
     megacli = popen(command, "r");
 
     /* Loop until LD is found -- then count PDs (and get data) */
@@ -658,7 +695,7 @@ int getMRLDDisks(int adapter_id, int ldrive_id, int encl_ids[], int slots[]) {
     while (fgets(line, sizeof (line), megacli) != NULL) {
         if ((ld_start == FALSE) && (strstr(line, vdrive_line) != NULL)) {
             ld_start = TRUE;
-            freeChar(vdrive_line);
+            FREE_NULL(vdrive_line);
             vdrive_line = NULL;
 
         } else if (ld_start && strstr(line, "Number Of Drives    :") &&
@@ -685,7 +722,7 @@ int getMRLDDisks(int adapter_id, int ldrive_id, int encl_ids[], int slots[]) {
 
     /* Done with MegaCLI */
     status = pclose(megacli);
-    freeChar(command);
+    FREE_NULL(command);
     if (status != 0) {
         return -1;
     }
@@ -711,7 +748,8 @@ MRLDPROPS *getMRLDProps(int adapter_id, int ldrive_id) {
         ld_props->ldrive_id = ldrive_id;
 
         /* Get cache policies */
-        asprintf(&command, "%s -LDGetProp -Cache -L%d -a%d -NoLog 2>&1", MEGACLI_BIN, ldrive_id, adapter_id);
+        asprintf(&command, "%s -LDGetProp -Cache -L%d -a%d -NoLog 2>&1",
+                MEGACLI_BIN, ldrive_id, adapter_id);
         megacli = popen(command, "r");
         while (fgets(line, sizeof(line), megacli) != NULL) {
             if (strstr(line, "Cache Policy:")) {
@@ -728,7 +766,8 @@ MRLDPROPS *getMRLDProps(int adapter_id, int ldrive_id) {
                 } else if (strstr(strStrip(strtok_result), "WriteBack")) {
                     strncpy(ld_props->write_policy, "WB", MAX_MR_ATTR_SIZE);
                 } else {
-                    strncpy(ld_props->write_policy, "UNKNOWN", MAX_MR_ATTR_SIZE);
+                    strncpy(ld_props->write_policy, "UNKNOWN",
+                            MAX_MR_ATTR_SIZE);
                 }
 
                 /* Read policy */
@@ -740,7 +779,8 @@ MRLDPROPS *getMRLDProps(int adapter_id, int ldrive_id) {
                 } else if (strstr(strStrip(strtok_result), "ReadAdaptive")) {
                     strncpy(ld_props->read_policy, "ADRA", MAX_MR_ATTR_SIZE);
                 } else {
-                    strncpy(ld_props->read_policy, "UNKNOWN", MAX_MR_ATTR_SIZE);
+                    strncpy(ld_props->read_policy, "UNKNOWN",
+                            MAX_MR_ATTR_SIZE);
                 }
 
                 /* Cache policy */
@@ -750,28 +790,35 @@ MRLDPROPS *getMRLDProps(int adapter_id, int ldrive_id) {
                 } else if (strstr(strStrip(strtok_result), "Cached")) {
                     strncpy(ld_props->cache_policy, "Cached", MAX_MR_ATTR_SIZE);
                 } else {
-                    strncpy(ld_props->cache_policy, "UNKNOWN", MAX_MR_ATTR_SIZE);
+                    strncpy(ld_props->cache_policy, "UNKNOWN",
+                            MAX_MR_ATTR_SIZE);
                 }
 
                 /* BBU cache policy */
                 strtok_result = strtok(NULL, ",");
-                if (strstr(strStrip(strtok_result), "No Write Cache if bad BBU")) {
-                    strncpy(ld_props->bbu_cache_policy, "NoCachedBadBBU", MAX_MR_ATTR_SIZE);
-                } else if (strstr(strStrip(strtok_result), "Write Cache OK if bad BBU")) {
-                    strncpy(ld_props->bbu_cache_policy, "CachedBadBBU", MAX_MR_ATTR_SIZE);
+                if (strstr(strStrip(strtok_result),
+                        "No Write Cache if bad BBU")) {
+                    strncpy(ld_props->bbu_cache_policy, "NoCachedBadBBU",
+                            MAX_MR_ATTR_SIZE);
+                } else if (strstr(strStrip(strtok_result),
+                        "Write Cache OK if bad BBU")) {
+                    strncpy(ld_props->bbu_cache_policy, "CachedBadBBU",
+                            MAX_MR_ATTR_SIZE);
                 } else {
-                    strncpy(ld_props->bbu_cache_policy, "UNKNOWN", MAX_MR_ATTR_SIZE);
+                    strncpy(ld_props->bbu_cache_policy, "UNKNOWN",
+                            MAX_MR_ATTR_SIZE);
                 }
             }
         }
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
             return NULL;
         }
 
         /* Get Name */
-        asprintf(&command, "%s -LDGetProp -Name -L%d -a%d -NoLog 2>&1", MEGACLI_BIN, ldrive_id, adapter_id);
+        asprintf(&command, "%s -LDGetProp -Name -L%d -a%d -NoLog 2>&1",
+                MEGACLI_BIN, ldrive_id, adapter_id);
         megacli = popen(command, "r");
         while (fgets(line, sizeof(line), megacli) != NULL) {
             if (strstr(line, "Name:")) {
@@ -779,11 +826,12 @@ MRLDPROPS *getMRLDProps(int adapter_id, int ldrive_id) {
                 strtok_result = strtok(NULL, ":");
                 strtok_result = strtok(NULL, ":");
                 strtok_result = strtok(NULL, ":");
-                strncpy(ld_props->name, strStrip(strtok_result), MAX_MR_ATTR_SIZE);
+                strncpy(ld_props->name, strStrip(strtok_result),
+                        MAX_MR_ATTR_SIZE);
             }
         }
         status = pclose(megacli);
-        freeChar(command);
+        FREE_NULL(command);
         if (status != 0) {
             return NULL;
         }
@@ -802,10 +850,11 @@ int setMRLDProps(MRLDPROPS *ld_props) {
     int status = 0;
 
     /* Set cache policy */
-    asprintf(&command, "%s -LDSetProp %s -L%d -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+    asprintf(&command, "%s -LDSetProp %s -L%d -a%d "
+            "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
             ld_props->cache_policy, ld_props->ldrive_id, ld_props->adapter_id);
     status = system(command);
-    freeChar(command);
+    FREE_NULL(command);
     if (status == -1) {
         return -1;
     } else {
@@ -818,10 +867,11 @@ int setMRLDProps(MRLDPROPS *ld_props) {
     }
 
     /* Set write-cache policy */
-    asprintf(&command, "%s -LDSetProp %s -L%d -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+    asprintf(&command, "%s -LDSetProp %s -L%d -a%d "
+            "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
             ld_props->write_policy, ld_props->ldrive_id, ld_props->adapter_id);
     status = system(command);
-    freeChar(command);
+    FREE_NULL(command);
     if (status == -1) {
         return -1;
     } else {
@@ -834,10 +884,11 @@ int setMRLDProps(MRLDPROPS *ld_props) {
     }
 
     /* Set read-cache policy */
-    asprintf(&command, "%s -LDSetProp %s -L%d -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+    asprintf(&command, "%s -LDSetProp %s -L%d -a%d "
+            "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
             ld_props->read_policy, ld_props->ldrive_id, ld_props->adapter_id);
     status = system(command);
-    freeChar(command);
+    FREE_NULL(command);
     if (status == -1) {
         return -1;
     } else {
@@ -850,10 +901,12 @@ int setMRLDProps(MRLDPROPS *ld_props) {
     }
 
     /* Set BBU cache policy */
-    asprintf(&command, "%s -LDSetProp %s -L%d -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
-            ld_props->bbu_cache_policy, ld_props->ldrive_id, ld_props->adapter_id);
+    asprintf(&command, "%s -LDSetProp %s -L%d -a%d "
+            "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+            ld_props->bbu_cache_policy, ld_props->ldrive_id,
+            ld_props->adapter_id);
     status = system(command);
-    freeChar(command);
+    FREE_NULL(command);
     if (status == -1) {
         return -1;
     } else {
@@ -867,10 +920,11 @@ int setMRLDProps(MRLDPROPS *ld_props) {
 
     /* Set LD name (if not empty) */
     if (strlen(ld_props->name) != 0) {
-        asprintf(&command, "%s -LDSetProp -Name %s -L%d -a%d -Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
+        asprintf(&command, "%s -LDSetProp -Name %s -L%d -a%d "
+                "-Silent -NoLog > /dev/null 2>&1", MEGACLI_BIN,
                 ld_props->name, ld_props->ldrive_id, ld_props->adapter_id);
         status = system(command);
-        freeChar(command);
+        FREE_NULL(command);
         if (status == -1) {
             return -1;
         } else {
@@ -950,7 +1004,7 @@ int delMRLogicalDrive(int adapter_id, int ldrive_id) {
     }
 
     /* Done */
-    freeChar(command);
+    FREE_NULL(command);
     return ret_val;
 }
 
@@ -975,16 +1029,16 @@ int addMRLogicalDrive(MRLDPROPS *ld_props, int num_disks, MRDISK *disks[],
         /* We add one extra for the null byte */
         pd_val_size = strlen(temp_pstr) + 1;
         pd_line_size = pd_line_size + pd_val_size;
-        // TODO: This totes needs to be tested (strcat)
         if (pd_line_size >= MAX_MR_PD_LIST_BUFF) {
-            freeChar(temp_pstr);
+            FREE_NULL(temp_pstr);
             return -1;
         } else {
             strcat(pd_list_line_buffer, temp_pstr);
-            freeChar(temp_pstr);
+            FREE_NULL(temp_pstr);
         }
     }
-    asprintf(&command, "%s -CfgLdAdd -r%s[%s] %s %s %s %s -strpsz%s -a%d -Silent -NoLog > /dev/null 2>&1",
+    asprintf(&command, "%s -CfgLdAdd -r%s[%s] %s %s %s %s -strpsz%s -a%d "
+            "-Silent -NoLog > /dev/null 2>&1",
             MEGACLI_BIN, raid_lvl, pd_list_line_buffer, ld_props->write_policy,
             ld_props->read_policy, ld_props->cache_policy,
             ld_props->bbu_cache_policy, strip_size, ld_props->adapter_id);
@@ -1009,7 +1063,7 @@ int addMRLogicalDrive(MRLDPROPS *ld_props, int num_disks, MRDISK *disks[],
     }
 
     /* Done */
-    freeChar(command);
+    FREE_NULL(command);
     return ret_val;
 }
 
@@ -1024,7 +1078,8 @@ int getMRLDIDNums(int adapter_id, int ld_count, int ld_ids[]) {
     int status = 0, ld_line_cnt = 0, ret_val = 0;
 
     /* MegaCLI command */
-    asprintf(&command, "%s -LDInfo -Lall -a%d -NoLog 2>&1", MEGACLI_BIN, adapter_id);
+    asprintf(&command, "%s -LDInfo -Lall -a%d -NoLog 2>&1",
+            MEGACLI_BIN, adapter_id);
     megacli = popen(command, "r");
 
     /* Loop over command output */
@@ -1053,6 +1108,6 @@ int getMRLDIDNums(int adapter_id, int ld_count, int ld_ids[]) {
         ret_val = -1;
 
     /* Done */
-    freeChar(command);
+    FREE_NULL(command);
     return ret_val;
 }

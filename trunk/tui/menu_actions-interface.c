@@ -28,26 +28,36 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&message[0], "<C></31/B>ESOS TUI Help");
     asprintf(&message[1], " ");
     asprintf(&message[2], "</B>Main Menu");
-    asprintf(&message[3], "To activate the main menu, hit any of the menu hot keys. You can");
-    asprintf(&message[4], "then use the arrow keys to navigate the menu, and use ENTER to make");
-    asprintf(&message[5], "a selection. Use ESCAPE to exit the menu without making a selection.");
+    asprintf(&message[3], "To activate the main menu, hit any of the "
+            "menu hot keys. You can");
+    asprintf(&message[4], "then use the arrow keys to navigate the menu, "
+            "and use ENTER to make");
+    asprintf(&message[5], "a selection. Use ESCAPE to exit the menu without "
+            "making a selection.");
     asprintf(&message[6], " ");
     asprintf(&message[7], "</B>Navigating Dialogs");
-    asprintf(&message[8], "On dialogs (screens) that contain more than one widget, you can use");
-    asprintf(&message[9], "TAB and SHIFT+TAB to traverse through the widgets (field entry, radio");
-    asprintf(&message[10], "lists, buttons, etc.) and use ENTER to execute button functions.");
-    asprintf(&message[11], "On selection dialogs, single field entry widgets, etc. you can use");
-    asprintf(&message[12], "ENTER or TAB to make a choice, or use ESCAPE to cancel.");
+    asprintf(&message[8], "On dialogs (screens) that contain more than "
+            "one widget, you can use");
+    asprintf(&message[9], "TAB and SHIFT+TAB to traverse through the "
+            "widgets (field entry, radio");
+    asprintf(&message[10], "lists, buttons, etc.) and use ENTER to execute "
+            "button functions.");
+    asprintf(&message[11], "On selection dialogs, single field entry "
+            "widgets, etc. you can use");
+    asprintf(&message[12], "ENTER or TAB to make a choice, or use ESCAPE "
+            "to cancel.");
     asprintf(&message[13], " ");
     asprintf(&message[14], "</B>Scrolling Windows");
-    asprintf(&message[15], "When a scrolling window widget is active, you can use the arrow keys");
-    asprintf(&message[16], "to scroll through the text and use ENTER or ESCAPE to exit.");
+    asprintf(&message[15], "When a scrolling window widget is active, you "
+            "can use the arrow keys");
+    asprintf(&message[16], "to scroll through the text and use ENTER or "
+            "ESCAPE to exit.");
 
     /* Display the TUI help message dialog box */
-    help_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message, HELP_MSG_SIZE,
-            buttons, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
+    help_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
+            HELP_MSG_SIZE, buttons, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
     if (!help_dialog) {
-        errorDialog(main_cdk_screen, "Couldn't create dialog widget!", NULL);
+        errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKDialogBackgroundAttrib(help_dialog, COLOR_DIALOG_TEXT);
@@ -59,7 +69,7 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
     /* All done */
     cleanup:
     for (i = 0; i < HELP_MSG_SIZE; i++)
-        freeChar(message[i]);
+        FREE_NULL(message[i]);
     refreshCDKScreen(main_cdk_screen);
     return;
 }
@@ -71,7 +81,8 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
 void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     CDKDIALOG *bundle_dialog = 0;
     char tar_cmd[MAX_SHELL_CMD_LEN] = {0}, nice_date[MISC_STRING_LEN] = {0},
-            bundle_file[MISC_STRING_LEN] = {0}, file_name[MISC_STRING_LEN] = {0};
+            bundle_file[MISC_STRING_LEN] = {0},
+            file_name[MISC_STRING_LEN] = {0};
     char *error_msg = NULL;
     char *message[SUPPORT_PKG_MSG_SIZE] = {NULL};
     static char *tmp_base = "/tmp";
@@ -88,31 +99,37 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(bundle_file, MISC_STRING_LEN, "%s/%s.tgz", tmp_base, file_name);
 
     /* Archive the configuration files and logs */
-    snprintf(tar_cmd, MAX_SHELL_CMD_LEN,
-            "%s cpfz %s --transform 's,^,%s/,' --exclude='rc.d' --exclude='ssh' --exclude='shadow*' --exclude='ssmtp' /etc /var/log > /dev/null 2>&1",
-            TAR_BIN, bundle_file, file_name);
+    snprintf(tar_cmd, MAX_SHELL_CMD_LEN, "%s cpfz %s --transform "
+            "'s,^,%s/,' --exclude='rc.d' --exclude='ssh' "
+            "--exclude='shadow*' --exclude='ssmtp' "
+            "/etc /var/log > /dev/null 2>&1", TAR_BIN, bundle_file, file_name);
     ret_val = system(tar_cmd);
     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-        asprintf(&error_msg, "Running %s failed; exited with %d.", TAR_BIN, exit_stat);
+        asprintf(&error_msg, "Running %s failed; exited with %d.",
+                TAR_BIN, exit_stat);
         errorDialog(main_cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         return;
     }
     
     /* Set a message for the dialog */
     asprintf(&message[0], "<C></31/B>ESOS Support Bundle");
     asprintf(&message[1], " ");
-    asprintf(&message[2], "<C>An archive containing configuration files and logs has been");
-    asprintf(&message[3], "<C>created; its located here: </B>%s<!B>", bundle_file);
-    asprintf(&message[4], "<C>You may now retrieve the file from this host via SFTP/SCP.");
+    asprintf(&message[2], "<C>An archive containing configuration files "
+            "and logs has been");
+    asprintf(&message[3], "<C>created; its located here: </B>%s<!B>",
+            bundle_file);
+    asprintf(&message[4], "<C>You may now retrieve the file from this host "
+            "via SFTP/SCP.");
     asprintf(&message[5], " ");
     asprintf(&message[6], " ");
 
     /* Display the dialog box */
     bundle_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
-            SUPPORT_PKG_MSG_SIZE, buttons, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
+            SUPPORT_PKG_MSG_SIZE, buttons, 1, COLOR_DIALOG_SELECT,
+            TRUE, TRUE, FALSE);
     if (!bundle_dialog) {
-        errorDialog(main_cdk_screen, "Couldn't create dialog widget!", NULL);
+        errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKDialogBackgroundAttrib(bundle_dialog, COLOR_DIALOG_TEXT);
@@ -124,7 +141,7 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     /* All done */
     cleanup:
     for (i = 0; i < SUPPORT_PKG_MSG_SIZE; i++)
-        freeChar(message[i]);
+        FREE_NULL(message[i]);
     refreshCDKScreen(main_cdk_screen);
     return;
 }
@@ -152,16 +169,17 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
     asprintf(&message[6], " ");
     asprintf(&message[7], "</B>License Information");
-    asprintf(&message[8], "ESOS is released under the GNU General Public License, version 3.");
+    asprintf(&message[8], "ESOS is released under the GNU General Public "
+            "License, version 3.");
     asprintf(&message[9], "QLogic Binary Firmware License: %s", QLA_FW_LICENSE);
     asprintf(&message[10], " ");
     asprintf(&message[11], " ");
 
     /* Display the dialog box */
-    about_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message, ABOUT_MSG_SIZE,
-            buttons, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
+    about_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
+            ABOUT_MSG_SIZE, buttons, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
     if (!about_dialog) {
-        errorDialog(main_cdk_screen, "Couldn't create dialog widget!", NULL);
+        errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKDialogBackgroundAttrib(about_dialog, COLOR_DIALOG_TEXT);
@@ -173,8 +191,7 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     /* All done */
     cleanup:
     for (i = 0; i < ABOUT_MSG_SIZE; i++)
-        freeChar(message[i]);
+        FREE_NULL(message[i]);
     refreshCDKScreen(main_cdk_screen);
     return;
 }
-

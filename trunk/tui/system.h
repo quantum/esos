@@ -188,4 +188,3 @@ extern "C" {
 #endif
 
 #endif	/* _SYSTEM_H */
-

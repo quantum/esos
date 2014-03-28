@@ -38,7 +38,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
             "<C></31/B>SCST Device Information\n",
             MAX_DEV_INFO_LINES, TRUE, FALSE);
     if (!dev_info) {
-        errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+        errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
     setCDKSwindowBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
@@ -51,7 +51,8 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
             SYSFS_SCST_TGT, scst_hndlr, scst_dev);
     readAttribute(dir_name, tmp_buff);
     asprintf(&swindow_info[2], "</B>Number of Threads:<!B>\t%s", tmp_buff);
-    snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/threads_pool_type",
+    snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+            "%s/handlers/%s/%s/threads_pool_type",
             SYSFS_SCST_TGT, scst_hndlr, scst_dev);
     readAttribute(dir_name, tmp_buff);
     asprintf(&swindow_info[3], "</B>Threads Pool Type:<!B>\t%s", tmp_buff);
@@ -95,7 +96,8 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
         asprintf(&swindow_info[11], "</B>Rotational:<!B>\t%s", tmp_buff);
-        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/write_through",
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                "%s/handlers/%s/%s/write_through",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
         asprintf(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
@@ -126,7 +128,8 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
         asprintf(&swindow_info[11], "</B>Rotational:<!B>\t%s", tmp_buff);
-        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/write_through",
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                "%s/handlers/%s/%s/write_through",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
         asprintf(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
@@ -174,7 +177,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Done */
     for (i = 0; i < MAX_DEV_INFO_LINES; i++ ) {
-        freeChar(swindow_info[i]);
+        FREE_NULL(swindow_info[i]);
     }
     return;
 }
@@ -221,7 +224,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             "<C></31/B>Choose a SCST Device Handler\n", scst_dev_types, 9,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!dev_list) {
-        errorDialog(main_cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(dev_list, COLOR_DIALOG_BOX);
@@ -246,12 +249,15 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Get disk choice from user */
             if ((scsi_disk = getSCSIDiskChoice(main_cdk_screen)) != NULL) {
                 /* Set the sysfs path + attribute value then write it */
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/dev_disk/mgmt", SYSFS_SCST_TGT);
-                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", scsi_disk);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/dev_disk/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
+                        "add_device %s", scsi_disk);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
             break;
@@ -261,12 +267,15 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Get disk choice from user */
             if ((scsi_disk = getSCSIDiskChoice(main_cdk_screen)) != NULL) {
                 /* Set the sysfs path + attribute value then write it */
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/dev_disk_perf/mgmt", SYSFS_SCST_TGT);
-                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", scsi_disk);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/dev_disk_perf/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
+                        "add_device %s", scsi_disk);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
             break;
@@ -274,12 +283,12 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         /* vcdrom */
         case 2:
             /* Create the file selector widget */
-            file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER, 20, 40,
-                    "<C></31/B>Choose an ISO File\n", "File: ",
+            file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER,
+                    20, 40, "<C></31/B>Choose an ISO File\n", "File: ",
                     COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
                     A_REVERSE, "</N>", "</B>", "</N>", "</N>", TRUE, FALSE);
             if (!file_select) {
-                errorDialog(main_cdk_screen, "Couldn't create file selector widget!", NULL);
+                errorDialog(main_cdk_screen, FSELECT_ERR_MSG, NULL);
                 break;
             }
             setCDKFselectBoxAttribute(file_select, COLOR_DIALOG_BOX);
@@ -294,22 +303,29 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             } else if (file_select->exitType == vNORMAL) {
                 /* Add the new virtual CDROM device (sysfs) */
                 iso_file_name = strrchr(selected_file, '/') + 1;
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/vcdrom/mgmt", SYSFS_SCST_TGT);
-                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", iso_file_name);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/vcdrom/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
+                        "add_device %s", iso_file_name);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 } else {
                     /* The device has been created, now set the ISO file */
-                    snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/vcdrom/%s/filename",
+                    snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                            "%s/handlers/vcdrom/%s/filename",
                             SYSFS_SCST_TGT, iso_file_name);
-                    snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%s", selected_file);
-                    if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                        asprintf(&error_msg, "Couldn't update SCST device parameters: %s",
+                    snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
+                            "%s", selected_file);
+                    if ((temp_int = writeAttribute(attr_path,
+                            attr_value)) != 0) {
+                        asprintf(&error_msg,
+                                "Couldn't update SCST device parameters: %s",
                                 strerror(temp_int));
                         errorDialog(main_cdk_screen, error_msg, NULL);
-                        freeChar(error_msg);
+                        FREE_NULL(error_msg);
                     }
                 }
                 destroyCDKFselect(file_select);
@@ -328,14 +344,15 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             dev_window_cols = 60;
             window_y = ((LINES / 2) - (dev_window_lines / 2));
             window_x = ((COLS / 2) - (dev_window_cols / 2));
-            dev_window = newwin(dev_window_lines, dev_window_cols, window_y, window_x);
+            dev_window = newwin(dev_window_lines, dev_window_cols,
+                    window_y, window_x);
             if (dev_window == NULL) {
-                errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+                errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
                 break;
             }
             dev_screen = initCDKScreen(dev_window);
             if (dev_screen == NULL) {
-                errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+                errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
                 break;
             }
             boxWindow(dev_window, COLOR_DIALOG_BOX);
@@ -343,44 +360,47 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             wrefresh(dev_window);
 
             /* Information label */
-            asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_blockio SCST device...");
+            asprintf(&dev_info_msg[0],
+                    "</31/B>Adding new vdisk_blockio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "</B>SCSI Block Device:<!B> %.35s", block_dev);
+            asprintf(&dev_info_msg[2],
+                    "</B>SCSI Block Device:<!B> %.35s", block_dev);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
-                errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+                errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKLabelBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
 
             /* Device name widget (entry) */
-            dev_name_field = newCDKEntry(dev_screen, (window_x + 1), (window_y + 5),
-                    NULL, "</B>SCST Device Name (no spaces): ",
+            dev_name_field = newCDKEntry(dev_screen, (window_x + 1),
+                    (window_y + 5), NULL, "</B>SCST Device Name (no spaces): ",
                     COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
-                errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKEntryBoxAttribute(dev_name_field, COLOR_DIALOG_INPUT);
 
             /* Block size widget (item list) */
-            block_size = newCDKItemlist(dev_screen, (window_x + 1), (window_y + 7),
+            block_size = newCDKItemlist(dev_screen,
+                    (window_x + 1), (window_y + 7),
                     "</B>Block Size", NULL, bs_list, 5, 0, FALSE, FALSE);
             if (!block_size) {
-                errorDialog(main_cdk_screen, "Couldn't create item list widget!", NULL);
+                errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKItemlistBackgroundAttrib(block_size, COLOR_DIALOG_TEXT);
 
             /* Write through widget (radio) */
-            write_through = newCDKRadio(dev_screen, (window_x + 1), (window_y + 11),
-                    NONE, 3, 10, "</B>Write Through", no_yes, 2,
-                    '#' | COLOR_DIALOG_SELECT, 1,
+            write_through = newCDKRadio(dev_screen, (window_x + 1),
+                    (window_y + 11), NONE, 3, 10, "</B>Write Through",
+                    no_yes, 2, '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!write_through) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(write_through, COLOR_DIALOG_TEXT);
@@ -392,19 +412,19 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!nv_cache) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(nv_cache, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(nv_cache, 0);
 
             /* Read only widget (radio) */
-            read_only = newCDKRadio(dev_screen, (window_x + 18), (window_y + 11),
-                    NONE, 3, 10, "</B>Read Only", no_yes, 2,
+            read_only = newCDKRadio(dev_screen, (window_x + 18),
+                    (window_y + 11), NONE, 3, 10, "</B>Read Only", no_yes, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!read_only) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(read_only, COLOR_DIALOG_TEXT);
@@ -416,36 +436,36 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!removable) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(removable, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(removable, 0);
 
             /* Rotational widget (radio) */
-            rotational = newCDKRadio(dev_screen, (window_x + 32), (window_y + 11),
-                    NONE, 3, 10, "</B>Rotational", no_yes, 2,
+            rotational = newCDKRadio(dev_screen, (window_x + 32),
+                    (window_y + 11), NONE, 3, 10, "</B>Rotational", no_yes, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!rotational) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(rotational, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(rotational, 1);
 
             /* Buttons */
-            ok_button = newCDKButton(dev_screen, (window_x + 21), (window_y + 16),
-                    "</B>   OK   ", ok_cb, FALSE, FALSE);
+            ok_button = newCDKButton(dev_screen, (window_x + 21),
+                    (window_y + 16), "</B>   OK   ", ok_cb, FALSE, FALSE);
             if (!ok_button) {
-                errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-            cancel_button = newCDKButton(dev_screen, (window_x + 31), (window_y + 16),
-                    "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            cancel_button = newCDKButton(dev_screen, (window_x + 31),
+                    (window_y + 16), "</B> Cancel ", cancel_cb, FALSE, FALSE);
             if (!cancel_button) {
-                errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
@@ -460,13 +480,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 curs_set(0);
 
                 /* Check device name (field entry) */
-                strncpy(temp_str, getCDKEntryValue(dev_name_field), MAX_SCST_DEV_NAME_LEN);
+                strncpy(temp_str, getCDKEntryValue(dev_name_field),
+                        MAX_SCST_DEV_NAME_LEN);
                 i = 0;
                 while (temp_str[i] != '\0') {
-                    /* If the user didn't input an acceptable name, then cancel out */
+                    /* If the user didn't input an acceptable
+                     * name, then cancel out */
                     if (!VALID_NAME_CHAR(temp_str[i])) {
-                        errorDialog(main_cdk_screen,
-                                "The name entry field contains invalid characters!",
+                        errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
                                 VALID_NAME_CHAR_MSG);
                         goto cleanup;
                     }
@@ -474,15 +495,17 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 /* User didn't provide a device name */
                 if (i == 0) {
-                    errorDialog(main_cdk_screen, "The device name field cannot be empty!", NULL);
+                    errorDialog(main_cdk_screen, EMPTY_FIELD_ERR, NULL);
                     goto cleanup;
                 }
 
                 /* Add the new device */
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/vdisk_blockio/mgmt",
-                        SYSFS_SCST_TGT);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/vdisk_blockio/mgmt", SYSFS_SCST_TGT);
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
-                        "add_device %s filename=%s; blocksize=%s; write_through=%d; nv_cache=%d; read_only=%d; removable=%d; rotational=%d",
+                        "add_device %s filename=%s; blocksize=%s; "
+                        "write_through=%d; nv_cache=%d; read_only=%d; "
+                        "removable=%d; rotational=%d",
                         getCDKEntryValue(dev_name_field), block_dev,
                         bs_list[getCDKItemlistCurrentItem(block_size)],
                         getCDKRadioSelectedItem(write_through),
@@ -491,9 +514,10 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         getCDKRadioSelectedItem(removable),
                         getCDKRadioSelectedItem(rotational));
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
             break;
@@ -505,8 +529,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     8, 26, "<C></31/B>Choose a Back-End Type\n", fio_types, 2,
                     FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
             if (!fio_type_list) {
-                errorDialog(main_cdk_screen, "Couldn't create scroll widget!",
-                        NULL);
+                errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
                 break;
             }
             setCDKScrollBoxAttribute(fio_type_list, COLOR_DIALOG_BOX);
@@ -543,12 +566,12 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             A_REVERSE, "</N>", "</B>", "</N>", "</N>",
                             TRUE, FALSE);
                     if (!file_select) {
-                        errorDialog(main_cdk_screen,
-                                "Couldn't create file selector widget!", NULL);
+                        errorDialog(main_cdk_screen, FSELECT_ERR_MSG, NULL);
                         break;
                     }
                     setCDKFselectBoxAttribute(file_select, COLOR_DIALOG_BOX);
-                    setCDKFselectBackgroundAttrib(file_select, COLOR_DIALOG_TEXT);
+                    setCDKFselectBackgroundAttrib(file_select,
+                            COLOR_DIALOG_TEXT);
                     setCDKFselectDirectory(file_select, fs_path);
                     /* Activate the widget and let the user choose a file */
                     selected_file = activateCDKFselect(file_select, 0);
@@ -557,7 +580,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         refreshCDKScreen(main_cdk_screen);
                         break;
                     } else if (file_select->exitType == vNORMAL) {
-                        strncpy(fileio_file, selected_file, MAX_SYSFS_PATH_SIZE);
+                        strncpy(fileio_file, selected_file,
+                                MAX_SYSFS_PATH_SIZE);
                         destroyCDKFselect(file_select);
                         refreshCDKScreen(main_cdk_screen);
                     }
@@ -576,14 +600,15 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             dev_window_cols = 60;
             window_y = ((LINES / 2) - (dev_window_lines / 2));
             window_x = ((COLS / 2) - (dev_window_cols / 2));
-            dev_window = newwin(dev_window_lines, dev_window_cols, window_y, window_x);
+            dev_window = newwin(dev_window_lines, dev_window_cols,
+                    window_y, window_x);
             if (dev_window == NULL) {
-                errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+                errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
                 break;
             }
             dev_screen = initCDKScreen(dev_window);
             if (dev_screen == NULL) {
-                errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+                errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
                 break;
             }
             boxWindow(dev_window, COLOR_DIALOG_BOX);
@@ -591,44 +616,47 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             wrefresh(dev_window);
 
             /* Information label */
-            asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_fileio SCST device...");
+            asprintf(&dev_info_msg[0],
+                    "</31/B>Adding new vdisk_fileio SCST device...");
             asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2], "</B>Back-End File/Device:<!B> %.35s", fileio_file);
+            asprintf(&dev_info_msg[2],
+                    "</B>Back-End File/Device:<!B> %.35s", fileio_file);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
             if (!dev_info) {
-                errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+                errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKLabelBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
 
             /* Device name widget (entry) */
-            dev_name_field = newCDKEntry(dev_screen, (window_x + 1), (window_y + 5),
-                    NULL, "</B>SCST Device Name (no spaces): ",
+            dev_name_field = newCDKEntry(dev_screen, (window_x + 1),
+                    (window_y + 5), NULL, "</B>SCST Device Name (no spaces): ",
                     COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
-                errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKEntryBoxAttribute(dev_name_field, COLOR_DIALOG_INPUT);
 
             /* Block size widget (item list) */
-            block_size = newCDKItemlist(dev_screen, (window_x + 1), (window_y + 7),
-                    "</B>Block Size", NULL, bs_list, 5, 0, FALSE, FALSE);
+            block_size = newCDKItemlist(dev_screen, (window_x + 1),
+                    (window_y + 7), "</B>Block Size", NULL, bs_list, 5, 0,
+                    FALSE, FALSE);
             if (!block_size) {
-                errorDialog(main_cdk_screen, "Couldn't create item list widget!", NULL);
+                errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKItemlistBackgroundAttrib(block_size, COLOR_DIALOG_TEXT);
 
             /* Write through widget (radio) */
-            write_through = newCDKRadio(dev_screen, (window_x + 1), (window_y + 11),
-                    NONE, 3, 10, "</B>Write Through", no_yes, 2,
-                    '#' | COLOR_DIALOG_SELECT, 1,
+            write_through = newCDKRadio(dev_screen, (window_x + 1),
+                    (window_y + 11), NONE, 3, 10, "</B>Write Through",
+                    no_yes, 2, '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!write_through) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(write_through, COLOR_DIALOG_TEXT);
@@ -640,19 +668,19 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!nv_cache) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(nv_cache, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(nv_cache, 0);
 
             /* Read only widget (radio) */
-            read_only = newCDKRadio(dev_screen, (window_x + 18), (window_y + 11),
-                    NONE, 3, 10, "</B>Read Only", no_yes, 2,
+            read_only = newCDKRadio(dev_screen, (window_x + 18),
+                    (window_y + 11), NONE, 3, 10, "</B>Read Only", no_yes, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!read_only) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(read_only, COLOR_DIALOG_TEXT);
@@ -664,36 +692,36 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!removable) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(removable, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(removable, 0);
 
             /* Rotational widget (radio) */
-            rotational = newCDKRadio(dev_screen, (window_x + 32), (window_y + 11),
-                    NONE, 3, 10, "</B>Rotational", no_yes, 2,
+            rotational = newCDKRadio(dev_screen, (window_x + 32),
+                    (window_y + 11), NONE, 3, 10, "</B>Rotational", no_yes, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!rotational) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(rotational, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(rotational, 1);
 
             /* Buttons */
-            ok_button = newCDKButton(dev_screen, (window_x + 21), (window_y + 16),
-                    "</B>   OK   ", ok_cb, FALSE, FALSE);
+            ok_button = newCDKButton(dev_screen, (window_x + 21),
+                    (window_y + 16), "</B>   OK   ", ok_cb, FALSE, FALSE);
             if (!ok_button) {
-                errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-            cancel_button = newCDKButton(dev_screen, (window_x + 31), (window_y + 16),
-                    "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            cancel_button = newCDKButton(dev_screen, (window_x + 31),
+                    (window_y + 16), "</B> Cancel ", cancel_cb, FALSE, FALSE);
             if (!cancel_button) {
-                errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
@@ -708,13 +736,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 curs_set(0);
 
                 /* Check device name (field entry) */
-                strncpy(temp_str, getCDKEntryValue(dev_name_field), MAX_SCST_DEV_NAME_LEN);
+                strncpy(temp_str, getCDKEntryValue(dev_name_field),
+                        MAX_SCST_DEV_NAME_LEN);
                 i = 0;
                 while (temp_str[i] != '\0') {
-                    /* If the user didn't input an acceptable name, then cancel out */
+                    /* If the user didn't input an acceptable
+                     * name, then cancel out */
                     if (!VALID_NAME_CHAR(temp_str[i])) {
-                        errorDialog(main_cdk_screen,
-                                "The name entry field contains invalid characters!",
+                        errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
                                 VALID_NAME_CHAR_MSG);
                         goto cleanup;
                     }
@@ -722,15 +751,17 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 /* User didn't provide a device name */
                 if (i == 0) {
-                    errorDialog(main_cdk_screen, "The device name field cannot be empty!", NULL);
+                    errorDialog(main_cdk_screen, EMPTY_FIELD_ERR, NULL);
                     goto cleanup;
                 }
 
                 /* Add the new device */
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/vdisk_fileio/mgmt",
-                        SYSFS_SCST_TGT);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/vdisk_fileio/mgmt", SYSFS_SCST_TGT);
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
-                        "add_device %s filename=%s; blocksize=%s; write_through=%d; nv_cache=%d; read_only=%d; removable=%d; rotational=%d",
+                        "add_device %s filename=%s; blocksize=%s; "
+                        "write_through=%d; nv_cache=%d; read_only=%d; "
+                        "removable=%d; rotational=%d",
                         getCDKEntryValue(dev_name_field), fileio_file,
                         bs_list[getCDKItemlistCurrentItem(block_size)],
                         getCDKRadioSelectedItem(write_through),
@@ -739,9 +770,10 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         getCDKRadioSelectedItem(removable),
                         getCDKRadioSelectedItem(rotational));
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
             break;
@@ -753,14 +785,15 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             dev_window_cols = 50;
             window_y = ((LINES / 2) - (dev_window_lines / 2));
             window_x = ((COLS / 2) - (dev_window_cols / 2));
-            dev_window = newwin(dev_window_lines, dev_window_cols, window_y, window_x);
+            dev_window = newwin(dev_window_lines, dev_window_cols,
+                    window_y, window_x);
             if (dev_window == NULL) {
-                errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+                errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
                 break;
             }
             dev_screen = initCDKScreen(dev_window);
             if (dev_screen == NULL) {
-                errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+                errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
                 break;
             }
             boxWindow(dev_window, COLOR_DIALOG_BOX);
@@ -768,32 +801,34 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             wrefresh(dev_window);
 
             /* Information label */
-            asprintf(&dev_info_msg[0], "</31/B>Adding new vdisk_nullio SCST device...");
+            asprintf(&dev_info_msg[0],
+                    "</31/B>Adding new vdisk_nullio SCST device...");
             asprintf(&dev_info_msg[1], " ");
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 2, FALSE, FALSE);
             if (!dev_info) {
-                errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+                errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKLabelBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
             
             /* Device name widget (entry) */
-            dev_name_field = newCDKEntry(dev_screen, (window_x + 1), (window_y + 3),
-                    NULL, "</B>SCST Device Name (no spaces): ",
+            dev_name_field = newCDKEntry(dev_screen, (window_x + 1),
+                    (window_y + 3), NULL, "</B>SCST Device Name (no spaces): ",
                     COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
-                errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKEntryBoxAttribute(dev_name_field, COLOR_DIALOG_INPUT);
 
             /* Block size widget (item list) */
-            block_size = newCDKItemlist(dev_screen, (window_x + 1), (window_y + 5),
-                    "</B>Block Size", NULL, bs_list, 5, 0, FALSE, FALSE);
+            block_size = newCDKItemlist(dev_screen, (window_x + 1),
+                    (window_y + 5), "</B>Block Size", NULL, bs_list, 5, 0,
+                    FALSE, FALSE);
             if (!block_size) {
-                errorDialog(main_cdk_screen, "Couldn't create item list widget!", NULL);
+                errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKItemlistBackgroundAttrib(block_size, COLOR_DIALOG_TEXT);
@@ -804,7 +839,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!read_only) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(read_only, COLOR_DIALOG_TEXT);
@@ -816,36 +851,36 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!removable) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(removable, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(removable, 0);
             
             /* Rotational widget (radio) */
-            rotational = newCDKRadio(dev_screen, (window_x + 18), (window_y + 9),
-                    NONE, 3, 10, "</B>Rotational", no_yes, 2,
+            rotational = newCDKRadio(dev_screen, (window_x + 18),
+                    (window_y + 9), NONE, 3, 10, "</B>Rotational", no_yes, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!rotational) {
-                errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKRadioBackgroundAttrib(rotational, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(rotational, 1);
 
             /* Buttons */
-            ok_button = newCDKButton(dev_screen, (window_x + 16), (window_y + 16),
-                    "</B>   OK   ", ok_cb, FALSE, FALSE);
+            ok_button = newCDKButton(dev_screen, (window_x + 16),
+                    (window_y + 16), "</B>   OK   ", ok_cb, FALSE, FALSE);
             if (!ok_button) {
-                errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-            cancel_button = newCDKButton(dev_screen, (window_x + 26), (window_y + 16),
-                    "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            cancel_button = newCDKButton(dev_screen, (window_x + 26),
+                    (window_y + 16), "</B> Cancel ", cancel_cb, FALSE, FALSE);
             if (!cancel_button) {
-                errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
@@ -860,13 +895,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 curs_set(0);
 
                 /* Check device name (field entry) */
-                strncpy(temp_str, getCDKEntryValue(dev_name_field), MAX_SCST_DEV_NAME_LEN);
+                strncpy(temp_str, getCDKEntryValue(dev_name_field),
+                        MAX_SCST_DEV_NAME_LEN);
                 i = 0;
                 while (temp_str[i] != '\0') {
-                    /* If the user didn't input an acceptable name, then cancel out */
+                    /* If the user didn't input an acceptable
+                     * name, then cancel out */
                     if (!VALID_NAME_CHAR(temp_str[i])) {
-                        errorDialog(main_cdk_screen,
-                                "The name entry field contains invalid characters!",
+                        errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
                                 VALID_NAME_CHAR_MSG);
                         goto cleanup;
                     }
@@ -874,24 +910,26 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 /* User didn't provide a device name */
                 if (i == 0) {
-                    errorDialog(main_cdk_screen, "The device name field cannot be empty!", NULL);
+                    errorDialog(main_cdk_screen, EMPTY_FIELD_ERR, NULL);
                     goto cleanup;
                 }
 
                 /* Add the new device */
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/vdisk_nullio/mgmt",
-                        SYSFS_SCST_TGT);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/vdisk_nullio/mgmt", SYSFS_SCST_TGT);
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
-                        "add_device %s blocksize=%s; read_only=%d; removable=%d; rotational=%d",
+                        "add_device %s blocksize=%s; read_only=%d; "
+                        "removable=%d; rotational=%d",
                         getCDKEntryValue(dev_name_field),
                         bs_list[getCDKItemlistCurrentItem(block_size)],
                         getCDKRadioSelectedItem(read_only),
                         getCDKRadioSelectedItem(removable),
                         getCDKRadioSelectedItem(rotational));
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
             break;
@@ -899,14 +937,18 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         /* dev_changer */
         case 6:
             /* Get changer choice from user */
-            if ((scsi_chgr = getSCSIDevChoice(main_cdk_screen, SCSI_CHANGER_TYPE)) != NULL) {
+            if ((scsi_chgr = getSCSIDevChoice(main_cdk_screen,
+                    SCSI_CHANGER_TYPE)) != NULL) {
                 /* Set the sysfs path + attribute value then write it */
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/dev_changer/mgmt", SYSFS_SCST_TGT);
-                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", scsi_chgr);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/dev_changer/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
+                        "add_device %s", scsi_chgr);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
             break;
@@ -914,14 +956,18 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         /* dev_tape */
         case 7:
             /* Get tape choice from user */
-            if ((scsi_tape = getSCSIDevChoice(main_cdk_screen, SCSI_TAPE_TYPE)) != NULL) {
+            if ((scsi_tape = getSCSIDevChoice(main_cdk_screen,
+                    SCSI_TAPE_TYPE)) != NULL) {
                 /* Set the sysfs path + attribute value then write it */
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/dev_tape/mgmt", SYSFS_SCST_TGT);
-                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", scsi_tape);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/dev_tape/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
+                        "add_device %s", scsi_tape);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
             break;
@@ -929,27 +975,32 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         /* dev_tape_perf */
         case 8:
             /* Get disk choice from user */
-            if ((scsi_tape = getSCSIDevChoice(main_cdk_screen, SCSI_TAPE_TYPE)) != NULL) {
+            if ((scsi_tape = getSCSIDevChoice(main_cdk_screen,
+                    SCSI_TAPE_TYPE)) != NULL) {
                 /* Set the sysfs path + attribute value then write it */
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/dev_tape_perf/mgmt", SYSFS_SCST_TGT);
-                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_device %s", scsi_tape);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/handlers/dev_tape_perf/mgmt", SYSFS_SCST_TGT);
+                snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
+                        "add_device %s", scsi_tape);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s", strerror(temp_int));
+                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                            strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
             break;
 
         default:
-            errorDialog(main_cdk_screen, "Default case reached in switch statement?", NULL);
+            errorDialog(main_cdk_screen,
+                    "Default case reached in switch statement?", NULL);
             break;
     }
 
     /* All done */
     cleanup:
     for (i = 0; i < ADD_DEV_INFO_LINES; i++) {
-        freeChar(dev_info_msg[i]);
+        FREE_NULL(dev_info_msg[i]);
     }
     if (dev_screen != NULL) {
         destroyCDKScreenObjects(dev_screen);
@@ -960,7 +1011,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
     if ((chdir(getenv("HOME"))) == -1) {
         asprintf(&error_msg, "chdir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
     }
     return;
 }
@@ -984,19 +1035,21 @@ void delDeviceDialog(CDKSCREEN *main_cdk_screen) {
         return;
     
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "Are you sure you want to delete SCST device %s (%s)?",
+    asprintf(&confirm_msg,
+            "Are you sure you want to delete SCST device %s (%s)?",
             scst_dev, scst_hndlr);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
-    freeChar(confirm_msg);
+    FREE_NULL(confirm_msg);
     if (confirm) {
         /* Delete the specified SCST device */
         snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/mgmt",
                 SYSFS_SCST_TGT, scst_hndlr);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del_device %s", scst_dev);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't delete SCST device: %s", strerror(temp_int));
+            asprintf(&error_msg, "Couldn't delete SCST device: %s",
+                    strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
         }
     }
 
@@ -1051,12 +1104,12 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
     window_x = ((COLS / 2) - (map_window_cols / 2));
     map_window = newwin(map_window_lines, map_window_cols, window_y, window_x);
     if (map_window == NULL) {
-        errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+        errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
         return;
     }
     map_screen = initCDKScreen(map_window);
     if (map_screen == NULL) {
-        errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+        errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
         return;
     }
     boxWindow(map_window, COLOR_DIALOG_BOX);
@@ -1075,7 +1128,7 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
     map_info = newCDKLabel(map_screen, (window_x + 1), (window_y + 1),
             map_info_msg, MAP_DEV_INFO_LINES, FALSE, FALSE);
     if (!map_info) {
-        errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKLabelBackgroundAttrib(map_info, COLOR_DIALOG_TEXT);
@@ -1085,7 +1138,7 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
             NULL, "</B>Logical Unit Number (LUN)", COLOR_DIALOG_SELECT,
             5, 0, 0, 255, 1, 1, FALSE, FALSE);
     if (!lun) {
-        errorDialog(main_cdk_screen, "Couldn't create scale widget!", NULL);
+        errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScaleBackgroundAttrib(lun, COLOR_DIALOG_TEXT);
@@ -1096,7 +1149,7 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!read_only) {
-        errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+        errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKRadioBackgroundAttrib(read_only, COLOR_DIALOG_TEXT);
@@ -1106,14 +1159,14 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
     ok_button = newCDKButton(map_screen, (window_x + 16), (window_y + 16),
             "</B>   OK   ", ok_cb, FALSE, FALSE);
     if (!ok_button) {
-        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(map_screen, (window_x + 26), (window_y + 16),
             "</B> Cancel ", cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
-        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
@@ -1128,21 +1181,24 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
         curs_set(0);
 
         /* Add the new LUN (map device) */
-        snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/%s/luns/mgmt",
+        snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                "%s/targets/%s/%s/ini_groups/%s/luns/mgmt",
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt, group_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add %s %d read_only=%d",
-                scst_dev, getCDKScaleValue(lun), getCDKRadioSelectedItem(read_only));
+                scst_dev, getCDKScaleValue(lun),
+                getCDKRadioSelectedItem(read_only));
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't map SCST device: %s", strerror(temp_int));
+            asprintf(&error_msg, "Couldn't map SCST device: %s",
+                    strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
         }
     }
 
     /* All done */
     cleanup:
     for (i = 0; i < MAP_DEV_INFO_LINES; i++) {
-        freeChar(map_info_msg[i]);
+        FREE_NULL(map_info_msg[i]);
     }
     if (map_screen != NULL) {
         destroyCDKScreenObjects(map_screen);
@@ -1182,10 +1238,11 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before removing the LUN mapping */
-    asprintf(&confirm_msg, "Are you sure you want to unmap SCST LUN %d (Group: %s)?",
+    asprintf(&confirm_msg,
+            "Are you sure you want to unmap SCST LUN %d (Group: %s)?",
             lun, group_name);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
-    freeChar(confirm_msg);
+    FREE_NULL(confirm_msg);
     if (confirm) {
         /* Remove the specified SCST LUN */
         snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
@@ -1193,9 +1250,10 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt, group_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %d", lun);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't remove SCST LUN: %s", strerror(temp_int));
+            asprintf(&error_msg, "Couldn't remove SCST LUN: %s",
+                    strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
         }
     }
 
@@ -1209,24 +1267,29 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
 void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lun_info = 0;
     char *swindow_info[MAX_LUN_LAYOUT_LINES] = {NULL};
-    int i = 0, line_pos = 0, dev_path_size = 0;
+    int i = 0, line_pos = 0, dev_path_size = 0, driver_cnt = 0;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             link_path[MAX_SYSFS_PATH_SIZE] = {0},
             dev_path[MAX_SYSFS_PATH_SIZE] = {0};
-    DIR *driver_dir_stream = NULL, *tgt_dir_stream = NULL,
-            *group_dir_stream = NULL, *init_dir_stream = NULL,
-            *lun_dir_stream = NULL;
-    struct dirent *driver_dir_entry = NULL, *tgt_dir_entry = NULL,
-            *group_dir_entry = NULL, *init_dir_entry = NULL,
-            *lun_dir_entry = NULL;
-
+    char tgt_drivers[MAX_SCST_DRIVERS][MISC_STRING_LEN] = {{0}, {0}};
+    DIR *tgt_dir_stream = NULL, *group_dir_stream = NULL,
+            *init_dir_stream = NULL, *lun_dir_stream = NULL;
+    struct dirent *tgt_dir_entry = NULL, *group_dir_entry = NULL,
+            *init_dir_entry = NULL, *lun_dir_entry = NULL;
+    
+    /* Fill the array with current SCST target drivers */
+    if (!listSCSTTgtDrivers(tgt_drivers, &driver_cnt)) {
+        errorDialog(main_cdk_screen, TGT_DRIVERS_ERR, NULL);
+        return;
+    }
+    
     /* Setup scrolling window widget */
     lun_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             LUN_LAYOUT_ROWS + 2, LUN_LAYOUT_COLS + 2,
             "<C></31/B>SCST LUN Layout\n",
             MAX_LUN_LAYOUT_LINES, TRUE, FALSE);
     if (!lun_info) {
-        errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+        errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
     setCDKSwindowBackgroundAttrib(lun_info, COLOR_DIALOG_TEXT);
@@ -1234,142 +1297,138 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Loop over each target driver type */
     line_pos = 0;
-    snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets", SYSFS_SCST_TGT);
-    if ((driver_dir_stream = opendir(dir_name)) == NULL) {
-        asprintf(&swindow_info[line_pos], "opendir(): %s", strerror(errno));
-        line_pos++;
-    } else {
-        while ((driver_dir_entry = readdir(driver_dir_stream)) != NULL) {
-            /* The target driver names are directories; skip '.' and '..' */
-            if ((driver_dir_entry->d_type == DT_DIR) &&
-                    (strcmp(driver_dir_entry->d_name, ".") != 0) &&
-                    (strcmp(driver_dir_entry->d_name, "..") != 0)) {
-                /* Loop over each target for current driver type */
-                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s",
-                        SYSFS_SCST_TGT, driver_dir_entry->d_name);
-                if ((tgt_dir_stream = opendir(dir_name)) == NULL) {
+    for (i = 0; i < driver_cnt; i++) {
+        /* Loop over each target for current driver type */
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s",
+                SYSFS_SCST_TGT, tgt_drivers[i]);
+        if ((tgt_dir_stream = opendir(dir_name)) == NULL) {
+            if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                asprintf(&swindow_info[line_pos], "opendir(): %s",
+                        strerror(errno));
+                line_pos++;
+            }
+            break;
+        }
+        while ((tgt_dir_entry = readdir(tgt_dir_stream)) != NULL) {
+            /* The target names are directories; skip '.' and '..' */
+            if ((tgt_dir_entry->d_type == DT_DIR) &&
+                    (strcmp(tgt_dir_entry->d_name, ".") != 0) &&
+                    (strcmp(tgt_dir_entry->d_name, "..") != 0)) {
+                if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                    asprintf(&swindow_info[line_pos], "</B>Target:<!B> %s (%s)",
+                            tgt_dir_entry->d_name, tgt_drivers[i]);
+                    line_pos++;
+                }
+                /* Loop over each security group for the current target */
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                        "%s/targets/%s/%s/ini_groups", SYSFS_SCST_TGT,
+                        tgt_drivers[i], tgt_dir_entry->d_name);
+                if ((group_dir_stream = opendir(dir_name)) == NULL) {
                     if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                        asprintf(&swindow_info[line_pos], "opendir(): %s", strerror(errno));
+                        asprintf(&swindow_info[line_pos], "opendir(): %s",
+                                strerror(errno));
                         line_pos++;
                     }
                     break;
                 }
-                while ((tgt_dir_entry = readdir(tgt_dir_stream)) != NULL) {
-                    /* The target names are directories; skip '.' and '..' */
-                    if ((tgt_dir_entry->d_type == DT_DIR) &&
-                            (strcmp(tgt_dir_entry->d_name, ".") != 0) &&
-                            (strcmp(tgt_dir_entry->d_name, "..") != 0)) {
+                while ((group_dir_entry = readdir(group_dir_stream)) != NULL) {
+                    /* The group names are directories; skip '.' and '..' */
+                    if ((group_dir_entry->d_type == DT_DIR) &&
+                            (strcmp(group_dir_entry->d_name, ".") != 0) &&
+                            (strcmp(group_dir_entry->d_name, "..") != 0)) {
                         if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                            asprintf(&swindow_info[line_pos], "</B>Target:<!B> %s (%s)",
-                                    tgt_dir_entry->d_name, driver_dir_entry->d_name);
+                            asprintf(&swindow_info[line_pos],
+                                    "\t</B>Group:<!B> %s",
+                                    group_dir_entry->d_name);
                             line_pos++;
                         }
-                        /* Loop over each security group for the current target */
+
+                        /* Loop over each initiator for the current group */
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
-                                "%s/targets/%s/%s/ini_groups",
-                                SYSFS_SCST_TGT, driver_dir_entry->d_name,
-                                tgt_dir_entry->d_name);
-                        if ((group_dir_stream = opendir(dir_name)) == NULL) {
+                                "%s/targets/%s/%s/ini_groups/%s/initiators",
+                                SYSFS_SCST_TGT, tgt_drivers[i],
+                                tgt_dir_entry->d_name, group_dir_entry->d_name);
+                        if ((init_dir_stream = opendir(
+                                dir_name)) == NULL) {
                             if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                asprintf(&swindow_info[line_pos], "opendir(): %s",
-                                        strerror(errno));
+                                asprintf(&swindow_info[line_pos],
+                                        "opendir(): %s", strerror(errno));
                                 line_pos++;
                             }
                             break;
                         }
-                        while ((group_dir_entry = readdir(group_dir_stream)) != NULL) {
-                            /* The group names are directories; skip '.' and '..' */
-                            if ((group_dir_entry->d_type == DT_DIR) &&
-                                    (strcmp(group_dir_entry->d_name, ".") != 0) &&
-                                    (strcmp(group_dir_entry->d_name, "..") != 0)) {
+                        while ((init_dir_entry = readdir(init_dir_stream)) !=
+                                NULL) {
+                            /* The initiators are files; skip 'mgmt' */
+                            if ((init_dir_entry->d_type == DT_REG) &&
+                                    (strcmp(init_dir_entry->d_name,
+                                    "mgmt") != 0)) {
                                 if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                    asprintf(&swindow_info[line_pos], "\t</B>Group:<!B> %s",
-                                            group_dir_entry->d_name);
+                                    asprintf(&swindow_info[line_pos],
+                                            "\t\t</B>Initiator:<!B> %s",
+                                            init_dir_entry->d_name);
                                     line_pos++;
                                 }
- 
-                                /* Loop over each initiator for the current group */
-                                snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
-                                        "%s/targets/%s/%s/ini_groups/%s/initiators",
-                                        SYSFS_SCST_TGT, driver_dir_entry->d_name,
-                                        tgt_dir_entry->d_name,
-                                        group_dir_entry->d_name);
-                                if ((init_dir_stream = opendir(dir_name)) == NULL) {
-                                    if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                        asprintf(&swindow_info[line_pos],
-                                                "opendir(): %s", strerror(errno));
-                                        line_pos++;
-                                    }
-                                    break;
-                                }
-                                while ((init_dir_entry = readdir(init_dir_stream)) != NULL) {
-                                    /* The initiators are files; skip 'mgmt' */
-                                    if ((init_dir_entry->d_type == DT_REG) &&
-                                            (strcmp(init_dir_entry->d_name, "mgmt") != 0)) {
-                                        if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                            asprintf(&swindow_info[line_pos],
-                                                    "\t\t</B>Initiator:<!B> %s",
-                                                    init_dir_entry->d_name);
-                                            line_pos++;
-                                        }
-                                    }
-                                }
-                                closedir(init_dir_stream);
-
-                                /* Loop over each LUN for the current group */
-                                snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
-                                        "%s/targets/%s/%s/ini_groups/%s/luns",
-                                        SYSFS_SCST_TGT, driver_dir_entry->d_name,
-                                        tgt_dir_entry->d_name,
-                                        group_dir_entry->d_name);
-                                if ((lun_dir_stream = opendir(dir_name)) == NULL) {
-                                    if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                        asprintf(&swindow_info[line_pos],
-                                                "opendir(): %s", strerror(errno));
-                                        line_pos++;
-                                    }
-                                    break;
-                                }
-                                while ((lun_dir_entry = readdir(lun_dir_stream)) != NULL) {
-                                    /* The LUNs are directories; skip '.' and '..' */
-                                    if ((lun_dir_entry->d_type == DT_DIR) &&
-                                            (strcmp(lun_dir_entry->d_name, ".") != 0) &&
-                                            (strcmp(lun_dir_entry->d_name, "..") != 0)) {
-                                        /* We need to get the device name (link) */
-                                        snprintf(link_path, MAX_SYSFS_PATH_SIZE,
-                                                "%s/targets/%s/%s/ini_groups/%s/luns/%s/device",
-                                                SYSFS_SCST_TGT, driver_dir_entry->d_name,
-                                                tgt_dir_entry->d_name, group_dir_entry->d_name,
-                                                lun_dir_entry->d_name);
-                                        /* Read the link to get device name (doesn't append null byte) */
-                                        dev_path_size = readlink(link_path, dev_path, MAX_SYSFS_PATH_SIZE);
-                                        if (dev_path_size < MAX_SYSFS_PATH_SIZE)
-                                            *(dev_path + dev_path_size) = '\0';
-                                        if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                            asprintf(&swindow_info[line_pos],
-                                                    "\t\t</B>LUN:<!B> %s (%s)",
-                                                    lun_dir_entry->d_name,
-                                                    (strrchr(dev_path, '/') + 1));
-                                            line_pos++;
-                                        }
-                                    }
-                                }
-                                closedir(lun_dir_stream);
                             }
                         }
-                        closedir(group_dir_stream);
-                        /* Print a blank line to separate targets */
-                        if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                            asprintf(&swindow_info[line_pos], " ");
-                            line_pos++;
+                        closedir(init_dir_stream);
+
+                        /* Loop over each LUN for the current group */
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/targets/%s/%s/ini_groups/%s/luns",
+                                SYSFS_SCST_TGT, tgt_drivers[i],
+                                tgt_dir_entry->d_name, group_dir_entry->d_name);
+                        if ((lun_dir_stream = opendir(
+                                dir_name)) == NULL) {
+                            if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                                asprintf(&swindow_info[line_pos],
+                                        "opendir(): %s", strerror(errno));
+                                line_pos++;
+                            }
+                            break;
                         }
+                        while ((lun_dir_entry = readdir(lun_dir_stream)) !=
+                                NULL) {
+                            /* The LUNs are directories; skip '.' and '..' */
+                            if ((lun_dir_entry->d_type == DT_DIR) &&
+                                    (strcmp(lun_dir_entry->d_name, ".") != 0) &&
+                                    (strcmp(lun_dir_entry->d_name, "..") != 0)) {
+                                /* We need to get the device name (link) */
+                                snprintf(link_path, MAX_SYSFS_PATH_SIZE,
+                                        "%s/targets/%s/%s/ini_groups"
+                                        "/%s/luns/%s/device", SYSFS_SCST_TGT,
+                                        tgt_drivers[i], tgt_dir_entry->d_name,
+                                        group_dir_entry->d_name,
+                                        lun_dir_entry->d_name);
+                                /* Read the link to get device name
+                                 * (doesn't append null byte) */
+                                dev_path_size = readlink(link_path, dev_path,
+                                        MAX_SYSFS_PATH_SIZE);
+                                if (dev_path_size < MAX_SYSFS_PATH_SIZE)
+                                    *(dev_path + dev_path_size) = '\0';
+                                if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                                    asprintf(&swindow_info[line_pos],
+                                            "\t\t</B>LUN:<!B> %s (%s)",
+                                            lun_dir_entry->d_name,
+                                            (strrchr(dev_path, '/') + 1));
+                                    line_pos++;
+                                }
+                            }
+                        }
+                        closedir(lun_dir_stream);
                     }
                 }
-                closedir(tgt_dir_stream);
+                closedir(group_dir_stream);
+                /* Print a blank line to separate targets */
+                if (line_pos < MAX_LUN_LAYOUT_LINES) {
+                    asprintf(&swindow_info[line_pos], " ");
+                    line_pos++;
+                }
             }
         }
-        closedir(driver_dir_stream);
+        closedir(tgt_dir_stream);
     }
+
 
     /* Add a message to the bottom explaining how to close the dialog */
     if (line_pos < MAX_LUN_LAYOUT_LINES) {
@@ -1393,7 +1452,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Done */
     for (i = 0; i < MAX_LUN_LAYOUT_LINES; i++ ) {
-        freeChar(swindow_info[i]);
+        FREE_NULL(swindow_info[i]);
     }
     return;
 }

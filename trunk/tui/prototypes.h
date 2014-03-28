@@ -112,11 +112,12 @@ int isSCSTLoaded();
 boolean isSCSTInitInGroup(char tgt_name[], char tgt_driver[],
         char group_name[], char init_name[]);
 int countSCSTInitUses(char tgt_name[], char tgt_driver[], char init_name[]);
-boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN], int *driver_cnt);
+boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
+        int *driver_cnt);
+int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]);
 
 #ifdef	__cplusplus
 }
 #endif
 
 #endif	/* _PROTOTYPES_H */
-

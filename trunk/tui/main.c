@@ -175,13 +175,13 @@ int main(int argc, char** argv) {
     menu = newCDKMenu(cdk_screen, menu_list, 6, submenu_size, menu_loc,
             TOP, A_NORMAL, COLOR_MENU_TEXT);
     if (!menu) {
-        errorDialog(cdk_screen, "Couldn't create menu widget!", NULL);
+        errorDialog(cdk_screen, MENU_ERR_MSG, NULL);
         goto quit;
     }
     setCDKMenuBackgroundColor(menu, "</5>");
 
     /* We need root privileges; for the short term I don't see any other way
-     around this; long term we can hopefully do something else */
+     * around this; long term we can hopefully do something else */
     saved_uid = getuid();
     if (setresuid(0, -1, saved_uid) == -1) {
         asprintf(&error_msg, "setresuid(): %s", strerror(errno));
