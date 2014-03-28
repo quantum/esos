@@ -53,7 +53,7 @@ void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
         destroyCDKDialog(error);
     }
     for (i = 0; i < ERROR_DIAG_MSG_SIZE; i++)
-        freeChar(message[i]);
+        FREE_NULL(message[i]);
     refreshCDKScreen(screen);
     return;
 }
@@ -72,7 +72,7 @@ void cancelButtonCB(CDKBUTTON *button) {
 
 /*
  * Confirmation dialog with a message and two buttons (OK/Cancel). Typically
- * used as a last check for possibly dangerous operations. Accepts mutliple
+ * used as a last check for possibly dangerous operations. Accepts multiple
  * lines; caller should pass NULL for lines that shouldn't be set.
  */
 boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
@@ -97,8 +97,9 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     asprintf(&message[5], " ");
 
     /* Display the confirmation dialog box */
-    confirm = newCDKDialog(screen, CENTER, CENTER, message, CONFIRM_DIAG_MSG_SIZE,
-            buttons, 2, COLOR_ERROR_SELECT, TRUE, TRUE, FALSE);
+    confirm = newCDKDialog(screen, CENTER, CENTER, message,
+            CONFIRM_DIAG_MSG_SIZE, buttons, 2, COLOR_ERROR_SELECT,
+            TRUE, TRUE, FALSE);
     if (confirm) {
         setCDKDialogBackgroundAttrib(confirm, COLOR_ERROR_TEXT);
         setCDKDialogBoxAttribute(confirm, COLOR_ERROR_BOX);
@@ -117,7 +118,7 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
         destroyCDKDialog(confirm);
     }
     for (i = 0; i < CONFIRM_DIAG_MSG_SIZE; i++)
-        freeChar(message[i]);
+        FREE_NULL(message[i]);
     refreshCDKScreen(screen);
     return ret_val;
 }
@@ -151,7 +152,7 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         if (!listSCSTTgtDrivers(drivers, &driver_cnt)) {
             asprintf(&error_msg, "%s", TGT_DRIVERS_ERR);
             errorDialog(cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
             goto cleanup;
         }
     }
@@ -165,7 +166,7 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         if ((dir_stream = opendir(dir_name)) == NULL) {
             asprintf(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
             goto cleanup;
         }
 
@@ -200,7 +201,7 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
             "<C></31/B>Choose a SCST Target\n", scst_tgt_info, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scst_tgt_list) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(scst_tgt_list, COLOR_DIALOG_BOX);
@@ -225,9 +226,9 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
     /* Done */
     cleanup:
     for (i = 0; i < MAX_SCST_TGTS; i++) {
-        freeChar(scst_tgt_name[i]);
-        freeChar(scst_tgt_driver[i]);
-        freeChar(scst_tgt_info[i]);
+        FREE_NULL(scst_tgt_name[i]);
+        FREE_NULL(scst_tgt_driver[i]);
+        FREE_NULL(scst_tgt_info[i]);
     }
     return;
 }
@@ -255,7 +256,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
     if ((dir_stream = opendir(dir_name)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         goto cleanup;
     }
 
@@ -289,7 +290,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
             scroll_title, scroll_grp_list, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scst_grp_list) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(scst_grp_list, COLOR_DIALOG_BOX);
@@ -309,10 +310,10 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
 
     /* Done */
     cleanup:
-    freeChar(scroll_title);
+    FREE_NULL(scroll_title);
     for (i = 0; i < MAX_SCST_GROUPS; i++) {
-        freeChar(scst_tgt_groups[i]);
-        freeChar(scroll_grp_list[i]);
+        FREE_NULL(scst_tgt_groups[i]);
+        FREE_NULL(scroll_grp_list[i]);
     }
     return;
 }
@@ -323,7 +324,8 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
  * driver / target / group name combination is passed in and we return
  * the LUN as an int; return -1 if there was an error or escape.
  */
-int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], char tgt_group[]) {
+int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
+        char tgt_group[]) {
     CDKSCROLL *lun_scroll = 0;
     int lun_choice = 0, i = 0, j = 0, ret_val = 0, dev_path_size = 0;
     int luns[MAX_SCST_LUNS] = {0};
@@ -336,12 +338,13 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
             dev_path[MAX_SYSFS_PATH_SIZE] = {0};
 
     /* Open the directory */
-    snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/%s/luns",
+    snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+            "%s/targets/%s/%s/ini_groups/%s/luns",
             SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group);
     if ((dir_stream = opendir(dir_name)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         ret_val = -1;
         goto cleanup;
     }
@@ -356,9 +359,12 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
                 /* We need to get the device name (link) */
                 snprintf(link_path, MAX_SYSFS_PATH_SIZE,
                         "%s/targets/%s/%s/ini_groups/%s/luns/%d/device",
-                        SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group, luns[j]);
-                /* Read the link to get device name (doesn't append null byte) */
-                dev_path_size = readlink(link_path, dev_path, MAX_SYSFS_PATH_SIZE);
+                        SYSFS_SCST_TGT, tgt_driver, tgt_name,
+                        tgt_group, luns[j]);
+                /* Read the link to get device name (doesn't
+                 * append null byte) */
+                dev_path_size = readlink(link_path, dev_path,
+                        MAX_SYSFS_PATH_SIZE);
                 if (dev_path_size < MAX_SYSFS_PATH_SIZE)
                         *(dev_path + dev_path_size) = '\0';
                 /* For our scroll widget */
@@ -387,7 +393,7 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
             scroll_title, scst_lun_list, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!lun_scroll) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         ret_val = -1;
         goto cleanup;
     }
@@ -409,9 +415,9 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[], 
 
     /* Done */
     cleanup:
-    freeChar(scroll_title);
+    FREE_NULL(scroll_title);
     for (i = 0; i < MAX_SCST_LUNS; i++) {
-        freeChar(scst_lun_list[i]);
+        FREE_NULL(scst_lun_list[i]);
     }
     return ret_val;
 }
@@ -437,14 +443,14 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
 
-    /* Went with the static char array method from this article:
-     * http://www.eskimo.com/~scs/cclass/int/sx5.html
-     * Since ret_buff is re-used between calls, we reset the first character */
+    /* Since ret_buff is re-used between calls, we reset the first character */
     ret_buff[0] = '\0';
 
     /* Get the ESOS boot device node */
-    // TODO: This needs to be tested -- does it return NULL even if nothing was found?
-    if ((boot_dev_node = blkid_get_devname(NULL, "LABEL", ESOS_BOOT_PART)) == NULL) {
+    // TODO: This needs to be tested -- does it return NULL even if
+    // nothing was found?
+    if ((boot_dev_node = blkid_get_devname(NULL, "LABEL",
+            ESOS_BOOT_PART)) == NULL) {
         errorDialog(cdk_screen, "Calling blkid_get_devname() failed.", NULL);
         goto cleanup;
     }
@@ -453,12 +459,13 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
     if ((dir_stream = opendir(SYSFS_SCSI_DISK)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         goto cleanup;
     }
 
     /* Loop over each entry in the directory (SCSI disks) */
-    while (((dir_entry = readdir(dir_stream)) != NULL) && (dev_cnt < MAX_SCSI_DISKS)) {
+    while (((dir_entry = readdir(dir_stream)) != NULL) &&
+            (dev_cnt < MAX_SCSI_DISKS)) {
         if (dir_entry->d_type == DT_LNK) {
             asprintf(&scsi_dsk_dev[dev_cnt], "%s", dir_entry->d_name);
             dev_cnt++;
@@ -472,7 +479,8 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
     i = 0;
     while (i < dev_cnt) {
         /* Get the SCSI block device node */
-        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/block", SYSFS_SCSI_DISK, scsi_dsk_dev[i]);
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/block",
+                SYSFS_SCSI_DISK, scsi_dsk_dev[i]);
         if ((dir_stream = opendir(dir_name)) == NULL) {
             asprintf(&scsi_dsk_node[i], "opendir(): %s", strerror(errno));
         } else {
@@ -493,9 +501,9 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
         /* Make sure this isn't the ESOS boot device (USB); if it is, clean-up 
          * anything allocated, shift the elements, and decrement device count */
         if ((strstr(boot_dev_node, scsi_dsk_node[i])) != NULL) {
-            freeChar(scsi_dsk_node[i]);
+            FREE_NULL(scsi_dsk_node[i]);
             scsi_dsk_node[i] = NULL;
-            freeChar(scsi_dsk_dev[i]);
+            FREE_NULL(scsi_dsk_dev[i]);
             scsi_dsk_dev[i] = NULL;
             // TODO: This needs to be checked for safeness.
             for (j = i; j < dev_cnt; j++)
@@ -530,7 +538,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
             list_title, scsi_dev_info, dev_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scsi_dsk_list) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(scsi_dsk_list, COLOR_DIALOG_BOX);
@@ -551,11 +559,11 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
     /* Done */
     cleanup:
     for (i = 0; i < MAX_SCSI_DISKS; i++) {
-        freeChar(scsi_dsk_dev[i]);
-        freeChar(scsi_dsk_node[i]);
-        freeChar(scsi_dsk_model[i]);
-        freeChar(scsi_dsk_vendor[i]);
-        freeChar(scsi_dev_info[i]);
+        FREE_NULL(scsi_dsk_dev[i]);
+        FREE_NULL(scsi_dsk_node[i]);
+        FREE_NULL(scsi_dsk_model[i]);
+        FREE_NULL(scsi_dsk_vendor[i]);
+        FREE_NULL(scsi_dev_info[i]);
     }
     if (ret_buff[0] != '\0')
         return ret_buff;
@@ -568,7 +576,8 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
  * Present the user with a list of SCST devices and let them choose one. We
  * then fill the char arrays with the device name and the handler.
  */
-void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]) {
+void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
+        char dev_handler[]) {
     CDKSCROLL *scst_dev_list = 0;
     int dev_choice = 0, i = 0, j = 0;
     DIR *dir_stream = NULL;
@@ -591,7 +600,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
         if ((dir_stream = opendir(dir_name)) == NULL) {
             asprintf(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
             goto cleanup;
         }
 
@@ -600,7 +609,8 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
             if (dir_entry->d_type == DT_LNK) {
                 asprintf(&scst_dev_name[j], "%s", dir_entry->d_name);
                 asprintf(&scst_dev_hndlr[j], "%s", handlers[i]);
-                asprintf(&scst_dev_info[j], "<C>%s (Handler: %s)", dir_entry->d_name, handlers[i]);
+                asprintf(&scst_dev_info[j], "<C>%s (Handler: %s)",
+                        dir_entry->d_name, handlers[i]);
                 j++;
             }
         }
@@ -620,7 +630,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
             "<C></31/B>Choose a SCST Device\n", scst_dev_info, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scst_dev_list) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(scst_dev_list, COLOR_DIALOG_BOX);
@@ -642,9 +652,9 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[], char dev_handler[]
     /* Done */
     cleanup:
     for (i = 0; i < MAX_SCST_DEVS; i++) {
-        freeChar(scst_dev_name[i]);
-        freeChar(scst_dev_hndlr[i]);
-        freeChar(scst_dev_info[i]);
+        FREE_NULL(scst_dev_name[i]);
+        FREE_NULL(scst_dev_hndlr[i]);
+        FREE_NULL(scst_dev_info[i]);
     }
     return;
 }
@@ -665,7 +675,8 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
     /* Get MegaRAID adapters */
     adp_count = getMRAdapterCount();
     if (adp_count == -1) {
-        errorDialog(cdk_screen, "The MegaCLI tool isn't working (or is not installed).", NULL);
+        errorDialog(cdk_screen,
+                "The MegaCLI tool isn't working (or is not installed).", NULL);
         return -1;
     } else if (adp_count == 0) {
         errorDialog(cdk_screen, "No adapters found!", NULL);
@@ -677,7 +688,7 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
                 asprintf(&error_msg,
                         "Couldn't get data from MegaRAID adapter # %d!", i);
                 errorDialog(cdk_screen, error_msg, NULL);
-                freeChar(error_msg);
+                FREE_NULL(error_msg);
                 return -1;
             } else {
                 asprintf(&adapters[i], "<C>MegaRAID Adapter # %d: %s", i,
@@ -706,7 +717,7 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
 
     /* Done */
     for (i = 0; i < MAX_ADAPTERS; i++) {
-        freeChar(adapters[i]);
+        FREE_NULL(adapters[i]);
     }
     return adp_choice;
 }
@@ -735,7 +746,7 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
     if ((dir_stream = opendir(dir_name)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         goto cleanup;
     }
 
@@ -767,7 +778,7 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
             scroll_title, scroll_init_list, i,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!lun_scroll) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(lun_scroll, COLOR_DIALOG_BOX);
@@ -787,10 +798,10 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
 
     /* Done */
     cleanup:
-    freeChar(scroll_title);
+    FREE_NULL(scroll_title);
     for (i = 0; i < MAX_SCST_INITS; i++) {
-        freeChar(init_list[i]);
-        freeChar(scroll_init_list[i]);
+        FREE_NULL(init_list[i]);
+        FREE_NULL(scroll_init_list[i]);
     }
     return;
 }
@@ -813,7 +824,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
     sync_msg = newCDKLabel(main_cdk_screen, CENTER, CENTER,
             message, 5, TRUE, FALSE);
     if (!sync_msg) {
-        errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
         return;
     }
     setCDKLabelBackgroundAttrib(sync_msg, COLOR_DIALOG_TEXT);
@@ -830,7 +841,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
             asprintf(&error_msg, "Running %s failed; exited with %d.",
                     SCSTADMIN_TOOL, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
             goto cleanup;
         }
     }
@@ -843,7 +854,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
         asprintf(&error_msg, "Running %s failed; exited with %d.",
                 SYNC_CONF_TOOL, exit_stat);
         errorDialog(main_cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         goto cleanup;
     }
     
@@ -862,7 +873,8 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
     CDKSCROLL *user_scroll = 0;
     struct group *group_info = NULL;
     char **grp_member = NULL;
-    char *esos_grp_members[MAX_USERS] = {NULL}, *scroll_list[MAX_USERS] = {NULL};
+    char *esos_grp_members[MAX_USERS] = {NULL},
+            *scroll_list[MAX_USERS] = {NULL};
     int i = 0, user_cnt = 0, user_choice = 0;
     
     /* Get the specified ESOS group */
@@ -885,7 +897,7 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
             "<C></31/B>Choose a User Account\n", scroll_list, user_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!user_scroll) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(user_scroll, COLOR_DIALOG_BOX);
@@ -907,8 +919,8 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
     /* Done */
     cleanup:
     for (i = 0; i < user_cnt; i++) {
-        freeChar(esos_grp_members[i]);
-        freeChar(scroll_list[i]);
+        FREE_NULL(esos_grp_members[i]);
+        FREE_NULL(scroll_list[i]);
     }
     return;
 }
@@ -941,8 +953,9 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     asprintf(&message[5], " ");
 
     /* Display the question dialog box */
-    question = newCDKDialog(screen, CENTER, CENTER, message, QUEST_DIAG_MSG_SIZE,
-            buttons, 2, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
+    question = newCDKDialog(screen, CENTER, CENTER, message,
+            QUEST_DIAG_MSG_SIZE, buttons, 2, COLOR_DIALOG_SELECT,
+            TRUE, TRUE, FALSE);
     if (question) {
         setCDKDialogBackgroundAttrib(question, COLOR_DIALOG_TEXT);
         setCDKDialogBoxAttribute(question, COLOR_DIALOG_BOX);
@@ -960,7 +973,7 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
         destroyCDKDialog(question);
     }
     for (i = 0; i < QUEST_DIAG_MSG_SIZE; i++)
-        freeChar(message[i]);
+        FREE_NULL(message[i]);
     refreshCDKScreen(screen);
     return ret_val;
 }
@@ -969,32 +982,38 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 /*
  * Present a list of file systems from /etc/fstab and have the user pick one.
  */
-void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_type[], boolean *mounted) {
+void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
+        char fs_type[], boolean *mounted) {
     CDKSCROLL *fs_scroll = 0;
-    char *fs_names[MAX_FILE_SYSTEMS] = {NULL}, *fs_paths[MAX_FILE_SYSTEMS] = {NULL},
-            *fs_types[MAX_FILE_SYSTEMS] = {NULL}, *scroll_list[MAX_USERS] = {NULL};
+    char *fs_names[MAX_FILE_SYSTEMS] = {NULL},
+            *fs_paths[MAX_FILE_SYSTEMS] = {NULL},
+            *fs_types[MAX_FILE_SYSTEMS] = {NULL},
+            *scroll_list[MAX_USERS] = {NULL};
     char *error_msg = NULL;
-    static char *no_touch = "/proc /sys /dev/pts /dev/shm /boot /mnt/root /mnt/conf /mnt/logs /tmp";
+    static char *no_touch = "/proc /sys /dev/pts /dev/shm "
+            "/boot /mnt/root /mnt/conf /mnt/logs /tmp";
     char mnt_line_buffer[MAX_MNT_LINE_BUFFER] = {0};
     int i = 0, fs_cnt = 0, user_choice = 0, mnt_line_size = 0, mnt_dir_size = 0;
     boolean fs_mounted[MAX_FILE_SYSTEMS] = {FALSE};
     FILE *fstab_file = NULL, *mtab_file = NULL;
     struct mntent *fstab_entry = NULL, *mtab_entry = NULL;
 
-    /* Make a list of file systems that are mounted (by mount path, not device) */
+    /* Make a list of file systems that are mounted (by mount
+     * path, not device) */
     if ((mtab_file = setmntent(MTAB, "r")) == NULL) {
         asprintf(&error_msg, "setmntent(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         return;
     }
     while ((mtab_entry = getmntent(mtab_file)) != NULL) {
         /* We add two extra: one for a space, and one for the null byte */
         mnt_dir_size = strlen(mtab_entry->mnt_dir) + 2;
         mnt_line_size = mnt_line_size + mnt_dir_size;
-        // TODO: This totes needs to be tested (strcat)
         if (mnt_line_size >= MAX_MNT_LINE_BUFFER) {
-            errorDialog(cdk_screen, "The maximum mount line buffer size has been reached!", NULL);
+            errorDialog(cdk_screen,
+                    "The maximum mount line buffer size has been reached!",
+                    NULL);
             endmntent(mtab_file);
             return;
         } else {
@@ -1008,14 +1027,15 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
     if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
         asprintf(&error_msg, "setmntent(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         return;
     }
     
     /* Loop over fstab entries */
     fs_cnt = 0;
     while ((fstab_entry = getmntent(fstab_file)) != NULL) {
-        /* We don't want to grab special entries from fstab that we shouldn't touch */
+        /* We don't want to grab special entries from fstab that
+         * we shouldn't touch */
         if (strstr(no_touch, fstab_entry->mnt_dir) == NULL) {
             asprintf(&fs_names[fs_cnt], "%s", fstab_entry->mnt_fsname);
             asprintf(&fs_paths[fs_cnt], "%s", fstab_entry->mnt_dir);
@@ -1024,7 +1044,9 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
                 fs_mounted[fs_cnt] = FALSE;
             else
                 fs_mounted[fs_cnt] = TRUE;
-            asprintf(&scroll_list[fs_cnt], "<C>%-25.25s %-20.20s %-5.5s (Mounted: %d)", fs_names[fs_cnt],
+            asprintf(&scroll_list[fs_cnt],
+                    "<C>%-25.25s %-20.20s %-5.5s (Mounted: %d)",
+                    fs_names[fs_cnt],
                     fs_paths[fs_cnt], fs_types[fs_cnt], fs_mounted[fs_cnt]);
             fs_cnt++;
         }
@@ -1044,7 +1066,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
             "<C></31/B>Choose a File System\n", scroll_list, fs_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!fs_scroll) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(fs_scroll, COLOR_DIALOG_BOX);
@@ -1069,10 +1091,10 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[], char fs_
     /* Done */
     cleanup:
     for (i = 0; i < fs_cnt; i++) {
-        freeChar(fs_names[i]);
-        freeChar(fs_paths[i]);
-        freeChar(fs_types[i]);
-        freeChar(scroll_list[i]);
+        FREE_NULL(fs_names[i]);
+        FREE_NULL(fs_paths[i]);
+        FREE_NULL(fs_types[i]);
+        FREE_NULL(scroll_list[i]);
     }
     return;
 }
@@ -1102,14 +1124,14 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     struct dirent *dir_entry = NULL;
     FILE *scsi_id_cmd = NULL;
 
-    /* Went with the static char array method from this article:
-     * http://www.eskimo.com/~scs/cclass/int/sx5.html
-     * Since ret_buff is re-used between calls, we reset the first character */
+    /* Since ret_buff is re-used between calls, we reset the first character */
     ret_buff[0] = '\0';
 
     /* Get the ESOS boot device node */
-    // TODO: This needs to be tested -- does it return NULL even if nothing was found?
-    if ((boot_dev_node = blkid_get_devname(NULL, "LABEL", ESOS_BOOT_PART)) == NULL) {
+    // TODO: This needs to be tested -- does it return NULL even if
+    // nothing was found?
+    if ((boot_dev_node = blkid_get_devname(NULL, "LABEL",
+            ESOS_BOOT_PART)) == NULL) {
         errorDialog(cdk_screen, "Calling blkid_get_devname() failed.", NULL);
         goto cleanup;
     }
@@ -1118,7 +1140,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     if ((dir_stream = opendir(SYSFS_BLOCK)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         goto cleanup;
     }
 
@@ -1127,7 +1149,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
         if (dir_entry->d_type == DT_LNK) {
             /* We don't want to show the ESOS boot block device (USB drive) */
             if (strstr(boot_dev_node, dir_entry->d_name) != NULL) {
-                freeChar(boot_dev_node);
+                FREE_NULL(boot_dev_node);
                 continue;
             /* For DRBD block devices (not sure if the /dev/drbdX format is
              forced when using drbdadm, so this may be a problem */
@@ -1137,7 +1159,8 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                 readAttribute(dir_name, tmp_buff);
                 asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
-                asprintf(&blk_dev_info[dev_cnt], "DRBD Device"); /* Nothing extra... yet */
+                /* Nothing extra for DRBD... yet */
+                asprintf(&blk_dev_info[dev_cnt], "DRBD Device");
                 dev_cnt++;
             /* For software RAID (md) devices; it appears the mdadm tool forces
              the /dev/mdX device node name format */
@@ -1183,14 +1206,15 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                 readAttribute(dir_name, tmp_buff);
                 asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
-                snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/raid_level",
+                snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                        "%s/%s/device/raid_level",
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                 readAttribute(dir_name, tmp_buff);
                 asprintf(&blk_dev_info[dev_cnt], "RAID Level: %s", tmp_buff);
                 dev_cnt++;
             }
             // TODO: Still more controller block devices (ida, rd) need to be
-            // added but we need hardware so we can confirm sysfs attributes
+            // added but we need hardware so we can confirm sysfs attributes.
         }
     }
 
@@ -1205,7 +1229,8 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
 
     /* Fill the list (pretty) for our CDK label with block devices */
     for (i = 0; i < dev_cnt; i++) {
-        asprintf(&blk_dev_scroll_lines[i], "<C>%-10.10s Size: %-12.12s %-30.30s",
+        asprintf(&blk_dev_scroll_lines[i],
+                "<C>%-10.10s Size: %-12.12s %-30.30s",
                 blk_dev_name[i], blk_dev_size[i], blk_dev_info[i]);
     }
 
@@ -1214,7 +1239,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
             list_title, blk_dev_scroll_lines, dev_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!block_dev_list) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(block_dev_list, COLOR_DIALOG_BOX);
@@ -1248,12 +1273,12 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 else
                     ret_val = -1;
             }
-            freeChar(cmd_str);
+            FREE_NULL(cmd_str);
             if (ret_val != 0) {
                 asprintf(&error_msg, "The %s command exited with %d.",
                         SCSI_ID_TOOL, ret_val);
                 errorDialog(cdk_screen, error_msg, NULL);
-                freeChar(error_msg);
+                FREE_NULL(error_msg);
                 goto cleanup;
             }
             snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "/dev/disk-by-id/%s",
@@ -1277,12 +1302,12 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
 
     /* Done */
     cleanup:
-    freeChar(block_dev);
+    FREE_NULL(block_dev);
     for (i = 0; i < MAX_BLOCK_DEVS; i++) {
-        freeChar(blk_dev_name[i]);
-        freeChar(blk_dev_info[i]);
-        freeChar(blk_dev_size[i]);
-        freeChar(blk_dev_scroll_lines[i]);
+        FREE_NULL(blk_dev_name[i]);
+        FREE_NULL(blk_dev_info[i]);
+        FREE_NULL(blk_dev_size[i]);
+        FREE_NULL(blk_dev_scroll_lines[i]);
     }
     if (ret_buff[0] != '\0')
         return ret_buff;
@@ -1310,21 +1335,20 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
 
-    /* Went with the static char array method from this article:
-     * http://www.eskimo.com/~scs/cclass/int/sx5.html
-     * Since ret_buff is re-used between calls, we reset the first character */
+    /* Since ret_buff is re-used between calls, we reset the first character */
     ret_buff[0] = '\0';
 
     /* Open the directory to get SCSI devices */
     if ((dir_stream = opendir(SYSFS_SCSI_DEVICE)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         goto cleanup;
     }
 
     /* Loop over each entry in the directory (SCSI devices) */
-    while (((dir_entry = readdir(dir_stream)) != NULL) && (dev_cnt < MAX_SCSI_DEVICES)) {
+    while (((dir_entry = readdir(dir_stream)) != NULL) &&
+            (dev_cnt < MAX_SCSI_DEVICES)) {
         if (dir_entry->d_type == DT_LNK) {
             /* We only want devices that match the given type */
             snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/type",
@@ -1369,12 +1393,13 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
     }
 
     /* Get SCSI device choice from user */
-    asprintf(&list_title, "<C></31/B>Choose a SCSI Device (Type %d)\n", scsi_dev_type);
+    asprintf(&list_title, "<C></31/B>Choose a SCSI Device (Type %d)\n",
+            scsi_dev_type);
     scsi_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 55,
             list_title, scsi_dev_info, dev_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scsi_dev_list) {
-        errorDialog(cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(scsi_dev_list, COLOR_DIALOG_BOX);
@@ -1394,13 +1419,13 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
 
     /* Done */
     cleanup:
-    freeChar(list_title);
+    FREE_NULL(list_title);
     for (i = 0; i < MAX_SCSI_DEVICES; i++) {
-        freeChar(scsi_device[i]);
-        freeChar(scsi_dev_rev[i]);
-        freeChar(scsi_dev_model[i]);
-        freeChar(scsi_dev_vendor[i]);
-        freeChar(scsi_dev_info[i]);
+        FREE_NULL(scsi_device[i]);
+        FREE_NULL(scsi_dev_rev[i]);
+        FREE_NULL(scsi_dev_model[i]);
+        FREE_NULL(scsi_dev_vendor[i]);
+        FREE_NULL(scsi_dev_info[i]);
     }
     if (ret_buff[0] != '\0')
         return ret_buff;

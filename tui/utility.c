@@ -13,8 +13,8 @@
 #include "system.h"
 
 /*
- * Strip whitespace and trailing newline from a string.
- * Originally from Linux kernel lib/string.c (strim()).
+ * Strip whitespace and trailing newline from a string. Originally
+ * from Linux kernel lib/string.c (strim()).
  */
 char *strStrip(char *string) {
     size_t size = 0;
@@ -200,7 +200,8 @@ int countSCSTInitUses(char tgt_name[], char tgt_driver[], char init_name[]) {
  * drivers detected in the sysfs structure. If something fails internally
  * in the function, return false, otherwise return true.
  */
-boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN], int *driver_cnt) {
+boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
+        int *driver_cnt) {
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
     int i = 0;
@@ -231,4 +232,41 @@ boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN], int *driver_cnt)
     /* Done */
     *driver_cnt = i;
     return true;
+}
+
+
+/*
+ * Count the number of LUNs for a session with the given target, driver, and
+ * initiator combination. Return -1 if an error occurs.
+ */
+int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]) {
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
+    int lun_count = 0;
+
+    /* Open the session's "luns" directory (to get a count) */
+    snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+            "%s/targets/%s/%s/sessions/%s/luns",
+            SYSFS_SCST_TGT, tgt_driver, tgt_name, init_name);
+    if ((dir_stream = opendir(dir_name)) == NULL) {
+        openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
+        syslog(LOG_ERR, "opendir(): %s", strerror(errno));
+        closelog();
+        return -1;
+    }
+
+    /* Loop over each entry in the directory */
+    while ((dir_entry = readdir(dir_stream)) != NULL) {
+        /* The LUNs are directories; skip '.' and '..' */
+        if ((dir_entry->d_type == DT_DIR) &&
+                    (strcmp(dir_entry->d_name, ".") != 0) &&
+                    (strcmp(dir_entry->d_name, "..") != 0)) {
+            lun_count++;
+        }
+    }
+
+    /* Done */
+    closedir(dir_stream);
+    return lun_count;
 }

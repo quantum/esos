@@ -40,7 +40,7 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
             "<C></31/B>SCST Target Information\n",
             MAX_TGT_INFO_LINES, TRUE, FALSE);
     if (!tgt_info) {
-        errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+        errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
     setCDKSwindowBackgroundAttrib(tgt_info, COLOR_DIALOG_TEXT);
@@ -74,7 +74,8 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
             if (dir_entry->d_type == DT_DIR) {
                 if (i > 1) {
                     if (line_pos < MAX_TGT_INFO_LINES) {
-                        asprintf(&swindow_info[line_pos], "\t%s", dir_entry->d_name);
+                        asprintf(&swindow_info[line_pos],
+                                "\t%s", dir_entry->d_name);
                         line_pos++;
                     }
                 }
@@ -108,7 +109,7 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Done */
     for (i = 0; i < MAX_TGT_INFO_LINES; i++ ) {
-        freeChar(swindow_info[i]);
+        FREE_NULL(swindow_info[i]);
     }
     return;
 }
@@ -123,9 +124,11 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
             attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
             nice_date[MISC_STRING_LEN] = {0}, hostname[MISC_STRING_LEN] = {0},
-            rand_str[MISC_STRING_LEN] = {0}, def_iqn[MAX_SCST_ISCSI_TGT_LEN] = {0};
+            rand_str[MISC_STRING_LEN] = {0},
+            def_iqn[MAX_SCST_ISCSI_TGT_LEN] = {0};
     static char hex_str[] = "0123456789abcdef";
-    char *entry_title = NULL, *target_name = NULL, *error_msg = NULL, *tmp_pstr = NULL;
+    char *entry_title = NULL, *target_name = NULL, *error_msg = NULL,
+            *tmp_pstr = NULL;
     int i = 0, temp_int = 0;
     time_t now = 0;
     struct tm *tm_now = NULL;
@@ -153,7 +156,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             SCST_ISCSI_TGT_LEN, 0, SCST_ISCSI_TGT_LEN, TRUE, FALSE);
     if (!tgt_name_entry) {
-        errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKEntryBoxAttribute(tgt_name_entry, COLOR_DIALOG_BOX);
@@ -172,8 +175,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
             if (!VALID_INIT_CHAR(temp_str[i])) {
-                errorDialog(main_cdk_screen,
-                        "The target name entry field contains invalid characters!",
+                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
                         VALID_INIT_CHAR_MSG);
                 goto cleanup;
             }
@@ -181,7 +183,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
         }
         /* User didn't provide a target name */
         if (i == 0) {
-            errorDialog(main_cdk_screen, "The target name field cannot be empty!", NULL);
+            errorDialog(main_cdk_screen, EMPTY_FIELD_ERR, NULL);
             goto cleanup;
         }
 
@@ -190,15 +192,16 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add_target %s", target_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't add SCST iSCSI target: %s", strerror(temp_int));
+            asprintf(&error_msg, "Couldn't add SCST iSCSI target: %s",
+                    strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
         }
     }
 
     /* Done */
     cleanup:
-    freeChar(entry_title);
+    FREE_NULL(entry_title);
     if (tgt_name_entry)
         destroyCDKEntry(tgt_name_entry);
     return;
@@ -223,16 +226,19 @@ void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Get a final confirmation from user before we delete */
     asprintf(&confirm_msg, "target %s?", scst_tgt);
-    confirm = confirmDialog(main_cdk_screen, "Are you sure you want to delete SCST iSCSI", confirm_msg);
-    freeChar(confirm_msg);
+    confirm = confirmDialog(main_cdk_screen,
+            "Are you sure you want to delete SCST iSCSI", confirm_msg);
+    FREE_NULL(confirm_msg);
     if (confirm) {
         /* Delete the specified iSCSI target */
-        snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/iscsi/mgmt", SYSFS_SCST_TGT);
+        snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                "%s/targets/iscsi/mgmt", SYSFS_SCST_TGT);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del_target %s", scst_tgt);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't delete SCST iSCSI target: %s", strerror(temp_int));
+            asprintf(&error_msg, "Couldn't delete SCST iSCSI target: %s",
+                    strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
         }
     }
 
@@ -259,7 +265,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
             "<C></31/B>Issuing LIP on Fibre Channel Targets\n",
             MAX_LIP_INFO_LINES, TRUE, FALSE);
     if (!lip_info) {
-        errorDialog(main_cdk_screen, "Couldn't create scrolling window widget!", NULL);
+        errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
     setCDKSwindowBackgroundAttrib(lip_info, COLOR_DIALOG_TEXT);
@@ -273,7 +279,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
     if ((dir_stream = opendir(SYSFS_FC_HOST)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
     } else {
         /* Loop over each entry in the directory */
         i = 0;
@@ -281,7 +287,8 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
             /* The FC host names are links */
             if (dir_entry->d_type == DT_LNK) {
                 if (i < MAX_LIP_INFO_LINES) {
-                    asprintf(&swindow_msg[i], "<C>LIP on FC host %s...", dir_entry->d_name);
+                    asprintf(&swindow_msg[i], "<C>LIP on FC host %s...",
+                            dir_entry->d_name);
                     addCDKSwindow(lip_info, swindow_msg[i], BOTTOM);
                     i++;
                 }
@@ -293,7 +300,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
                     asprintf(&error_msg, "Couldn't issue LIP on FC host %s: %s",
                             dir_entry->d_name, strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
         }
@@ -305,7 +312,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
     /* Done */
     destroyCDKSwindow(lip_info);
     for (i = 0; i < MAX_LIP_INFO_LINES; i++) {
-        freeChar(swindow_msg[i]);
+        FREE_NULL(swindow_msg[i]);
     }
     return;
 }
@@ -331,7 +338,8 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     char *tgt_info_msg[TGT_ON_OFF_INFO_LINES] = {NULL};
     boolean confirm = FALSE;
     int tgt_window_lines = 0, tgt_window_cols = 0, window_y = 0, window_x = 0,
-            temp_int = 0, i = 0, traverse_ret = 0, curr_state = 0, new_state = 0;
+            temp_int = 0, i = 0, traverse_ret = 0, curr_state = 0,
+            new_state = 0;
     
     /* Have the user choose a SCST target */
     getSCSTTgtChoice(main_cdk_screen, scst_tgt, tgt_driver);
@@ -351,12 +359,12 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     window_x = ((COLS / 2) - (tgt_window_cols / 2));
     tgt_window = newwin(tgt_window_lines, tgt_window_cols, window_y, window_x);
     if (tgt_window == NULL) {
-        errorDialog(main_cdk_screen, "Couldn't create new window!", NULL);
+        errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
         return;
     }
     tgt_screen = initCDKScreen(tgt_window);
     if (tgt_screen == NULL) {
-        errorDialog(main_cdk_screen, "Couldn't create new CDK screen!", NULL);
+        errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
         return;
     }
     boxWindow(tgt_window, COLOR_DIALOG_BOX);
@@ -375,7 +383,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     tgt_info = newCDKLabel(tgt_screen, (window_x + 1), (window_y + 1),
             tgt_info_msg, TGT_ON_OFF_INFO_LINES, FALSE, FALSE);
     if (!tgt_info) {
-        errorDialog(main_cdk_screen, "Couldn't create label widget!", NULL);
+        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKLabelBackgroundAttrib(tgt_info, COLOR_DIALOG_TEXT);
@@ -386,7 +394,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!enbl_dsbl_radio) {
-        errorDialog(main_cdk_screen, "Couldn't create radio widget!", NULL);
+        errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKRadioBackgroundAttrib(enbl_dsbl_radio, COLOR_DIALOG_TEXT);
@@ -396,14 +404,14 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     ok_button = newCDKButton(tgt_screen, (window_x + 16), (window_y + 12),
             "</B>   OK   ", ok_cb, FALSE, FALSE);
     if (!ok_button) {
-        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(tgt_screen, (window_x + 26), (window_y + 12),
             "</B> Cancel ", cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
-        errorDialog(main_cdk_screen, "Couldn't create button widget!", NULL);
+        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
@@ -426,21 +434,22 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
                 confirm = confirmDialog(main_cdk_screen,
                         "Are you sure you want to disable SCST target",
                         confirm_msg);
-                freeChar(confirm_msg);
+                FREE_NULL(confirm_msg);
                 if (!confirm)
                     goto cleanup;
             }
 
             /* Make sure iSCSI targets are a possibility (driver level?) */
             if (((strcmp(tgt_driver, "iscsi")) == 0) && (new_state == 1)) {
-                snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/iscsi/enabled",
-                        SYSFS_SCST_TGT);
+                snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                        "%s/targets/iscsi/enabled", SYSFS_SCST_TGT);
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d", new_state);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't enable iSCSI target support: %s",
+                    asprintf(&error_msg,
+                            "Couldn't enable iSCSI target support: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
-                    freeChar(error_msg);
+                    FREE_NULL(error_msg);
                 }
             }
 
@@ -449,9 +458,10 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
                     SYSFS_SCST_TGT, tgt_driver, scst_tgt);
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d", new_state);
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg, "Couldn't set SCST target state: %s", strerror(temp_int));
+                asprintf(&error_msg, "Couldn't set SCST target state: %s",
+                        strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
-                freeChar(error_msg);
+                FREE_NULL(error_msg);
             }
         }
     }
@@ -459,7 +469,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     /* All done */
     cleanup:
     for (i = 0; i < TGT_ON_OFF_INFO_LINES; i++)
-        freeChar(tgt_info_msg[i]);
+        FREE_NULL(tgt_info_msg[i]);
     if (tgt_screen != NULL) {
         destroyCDKScreenObjects(tgt_screen);
         destroyCDKScreen(tgt_screen);

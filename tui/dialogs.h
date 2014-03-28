@@ -106,16 +106,25 @@ extern "C" {
 #define MAX_BOND_OPTS_BUFF              512
 
 /* Character validation */
-#define VALID_NAME_CHAR(c)      ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.')) ? 1 : 0)
-#define VALID_NAME_CHAR_MSG     "Only these characters are valid: a-z A-Z 0-9 _ - ."
-#define VALID_IP_ADDR_CHAR(c)   ((isascii(c) && (isdigit(c) || c == '.')) ? 1 : 0)
-#define VALID_IP_ADDR_CHAR_MSG  "Only these characters are valid: 0-9 ."
-#define VALID_EMAIL_CHAR(c)     ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.' || c == '@')) ? 1 : 0)
-#define VALID_EMAIL_CHAR_MSG    "Only these characters are valid: a-z A-Z 0-9 _ - . @"
-#define VALID_ASCII_CHAR(c)     ((isascii(c)) ? 1 : 0)
-#define VALID_ASCII_CHAR_MSG    "Only ASCII characters are valid."
-#define VALID_INIT_CHAR(c)     ((isascii(c) && (isalnum(c) || c == '_' || c == '-' || c == '.' || c == ':' || c == '?' || c == '*')) ? 1 : 0)
-#define VALID_INIT_CHAR_MSG    "Only these characters are valid: a-z A-Z 0-9 _ - . : ? *"
+#define VALID_ASCII_CHAR(c) ((isascii(c)) ? 1 : 0)
+#define VALID_ASCII_CHAR_MSG "Only ASCII characters are valid."
+#define VALID_NAME_CHAR(c) ((isascii(c) && (isalnum(c) || c == '_' || \
+        c == '-' || c == '.')) ? 1 : 0)
+#define VALID_NAME_CHAR_MSG \
+        "Only these characters are valid: a-z A-Z 0-9 _ - ."
+#define VALID_IP_ADDR_CHAR(c) ((isascii(c) && (isdigit(c) || \
+        c == '.')) ? 1 : 0)
+#define VALID_IP_ADDR_CHAR_MSG \
+        "Only these characters are valid: 0-9 ."
+#define VALID_EMAIL_CHAR(c) ((isascii(c) && (isalnum(c) || c == '_' || \
+        c == '-' || c == '.' || c == '@')) ? 1 : 0)
+#define VALID_EMAIL_CHAR_MSG \
+        "Only these characters are valid: a-z A-Z 0-9 _ - . @"
+#define VALID_INIT_CHAR(c) ((isascii(c) && (isalnum(c) || c == '_' || \
+        c == '-' || c == '.' || c == ':' || c == '?' || c == '*')) ? 1 : 0)
+#define VALID_INIT_CHAR_MSG \
+        "Only these characters are valid: a-z A-Z 0-9 _ - . : ? *"
+#define INVALID_CHAR_MSG "An invalid character was detected in a entry field!"
 
 /* Linux NIC bonding mode */
 enum bonding_t {NO_BONDING, MASTER, SLAVE};
@@ -130,4 +139,3 @@ enum bonding_t {NO_BONDING, MASTER, SLAVE};
 #endif
 
 #endif	/* _DIALOGS_H */
-

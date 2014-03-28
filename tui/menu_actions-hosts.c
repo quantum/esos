@@ -42,7 +42,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             SCST_GRP_NAME_LEN, 0, SCST_GRP_NAME_LEN, TRUE, FALSE);
     if (!grp_name_entry) {
-        errorDialog(main_cdk_screen, "Couldn't create entry widget!", NULL);
+        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKEntryBoxAttribute(grp_name_entry, COLOR_DIALOG_BOX);
@@ -60,8 +60,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
             if (!VALID_NAME_CHAR(temp_str[i])) {
-                errorDialog(main_cdk_screen,
-                        "The group name entry field contains invalid characters!",
+                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
                         VALID_NAME_CHAR_MSG);
                 goto cleanup;
             }
@@ -69,24 +68,25 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
         }
         /* User didn't provide a group name */
         if (i == 0) {
-            errorDialog(main_cdk_screen, "The group name field cannot be empty!", NULL);
+            errorDialog(main_cdk_screen, EMPTY_FIELD_ERR, NULL);
             goto cleanup;
         }
 
         /* Add the new group */
-        snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/mgmt",
+        snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                "%s/targets/%s/%s/ini_groups/mgmt",
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "create %s", group_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't add SCST group: %s", strerror(temp_int));
+            asprintf(&error_msg, ADD_GROUP_ERR, strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
         }
     }
 
     /* Done */
     cleanup:
-    freeChar(entry_title);
+    FREE_NULL(entry_title);
     if (grp_name_entry)
         destroyCDKEntry(grp_name_entry);
     return;
@@ -117,18 +117,19 @@ void remGroupDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "Are you sure you want to delete SCST target group %s?",
-            group_name);
+    asprintf(&confirm_msg, ASK_DEL_GROUP, group_name);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
-    freeChar(confirm_msg);
+    FREE_NULL(confirm_msg);
     if (confirm) {
         /* Delete the specified SCST group */
-        snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/mgmt", SYSFS_SCST_TGT, tgt_driver, scst_tgt);
+        snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                "%s/targets/%s/%s/ini_groups/mgmt",
+                SYSFS_SCST_TGT, tgt_driver, scst_tgt);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", group_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't delete SCST group: %s", strerror(temp_int));
+            asprintf(&error_msg, DEL_GROUP_ERR, strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
         }
     }
 
@@ -181,7 +182,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
     if ((dir_stream = opendir(dir_name)) == NULL) {
         asprintf(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
         goto cleanup;
     }
 
@@ -222,7 +223,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
             scroll_title, scroll_init_list, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scst_init_list) {
-        errorDialog(main_cdk_screen, "Couldn't create scroll widget!", NULL);
+        errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKScrollBoxAttribute(scst_init_list, COLOR_DIALOG_BOX);
@@ -248,7 +249,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                     COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
                     30, 0, SCST_INITIATOR_LEN, TRUE, FALSE);
             if (!init_entry) {
-                errorDialog(main_cdk_screen, "Couldn't create entry widget!",
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG,
                         NULL);
                 goto cleanup;
             }
@@ -268,8 +269,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                     /* If the user didn't input an acceptable string, 
                      * then cancel out */
                     if (!VALID_INIT_CHAR(temp_str[i])) {
-                        errorDialog(main_cdk_screen,
-                                "The initiator entry field contains invalid characters!",
+                        errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
                                 VALID_INIT_CHAR_MSG);
                         goto cleanup;
                     }
@@ -277,8 +277,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 /* User didn't provide a initiator */
                 if (i == 0) {
-                    errorDialog(main_cdk_screen,
-                            "The initiator field cannot be empty!", NULL);
+                    errorDialog(main_cdk_screen, EMPTY_FIELD_ERR, NULL);
                     goto cleanup;
                 }
             }
@@ -293,19 +292,18 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
             ((entry_init_name == NULL) ?
             scst_sess_inits[init_choice] : entry_init_name));
     if ((temp_int = writeAttribute(mgmt_attr_path, mgmt_attr_value)) != 0) {
-        asprintf(&error_msg, "Couldn't add initiator to SCST group: %s",
-                strerror(temp_int));
+        asprintf(&error_msg, ADD_INIT_ERR, strerror(temp_int));
         errorDialog(main_cdk_screen, error_msg, NULL);
-        freeChar(error_msg);
+        FREE_NULL(error_msg);
     }
 
     /* Done */
     cleanup:
-    freeChar(entry_title);
-    freeChar(scroll_title);
+    FREE_NULL(entry_title);
+    FREE_NULL(scroll_title);
     for (i = 0; i < MAX_SCST_GROUPS; i++) {
-        freeChar(scst_sess_inits[i]);
-        freeChar(scroll_init_list[i]);
+        FREE_NULL(scst_sess_inits[i]);
+        FREE_NULL(scroll_init_list[i]);
     }
     if (init_entry)
         destroyCDKEntry(init_entry);
@@ -338,23 +336,26 @@ void remInitDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Now the user selects an initiator */
-    getSCSTInitChoice(main_cdk_screen, scst_tgt, tgt_driver, group_name, init_name);
+    getSCSTInitChoice(main_cdk_screen, scst_tgt, tgt_driver,
+            group_name, init_name);
     if (init_name[0] == '\0')
         return;
 
     /* Get a final confirmation from user before we delete */
     asprintf(&confirm_msg, "%s from group %s?", init_name, group_name);
-    confirm = confirmDialog(main_cdk_screen, "Are you sure you want to remove initiator", confirm_msg);
-    freeChar(confirm_msg);
+    confirm = confirmDialog(main_cdk_screen,
+            "Are you sure you want to remove initiator", confirm_msg);
+    FREE_NULL(confirm_msg);
     if (confirm) {
         /* Remove the initiator */
-        snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups/%s/initiators/mgmt",
+        snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                "%s/targets/%s/%s/ini_groups/%s/initiators/mgmt",
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt, group_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", init_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't remove initiator: %s", strerror(temp_int));
+            asprintf(&error_msg, DEL_INIT_ERR, strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
-            freeChar(error_msg);
+            FREE_NULL(error_msg);
         }
     }
 
