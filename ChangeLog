@@ -1,3 +1,10 @@
+2014-03-29 18:59  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/inittab,
+	  misc/grub.cfg: version bump for sg3_utils and kexec-tools;
+	  disabled use of CTRL-ALT-DEL; initial commit of support for
+	  serial console
+
 2014-03-28 20:04  msmith626@gmail.com
 
 	* misc/linux-3.12.7.config, tui/dialogs.h, tui/info_labels.c,
