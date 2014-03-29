@@ -12,9 +12,11 @@ l4:4:wait:/etc/rc.d/rc.4
 l5:5:wait:/etc/rc.d/rc.5
 l6:6:wait:/etc/rc.d/rc.6
 
-ca:12345:ctrlaltdel:/sbin/shutdown -t1 -r now
+ca:12345:ctrlaltdel:/bin/echo "CTRL-ALT-DEL is disabled!"
 
 su:S1:respawn:/sbin/sulogin
+
+s0:2345:respawn:/sbin/getty -L ttyS0 9600 vt100
 
 c1:2345:respawn:/sbin/getty 38400 tty1 linux
 c2:2345:respawn:/sbin/getty 38400 tty2 linux

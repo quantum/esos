@@ -13,7 +13,6 @@ c90739bd0178bb568aad3b2ba03bb73a  libibverbs-1.1.4.tar.gz
 f8370ac17c33aa8d6a897064794a7d68  srptools-0.0.4.tar.gz
 c4e36b106624aff78527c54cf08ecbfe  lsscsi-0.25.tar.gz
 8b8cd29385b97616a0f0d96d0951c5bf  groff-1.21.tar.gz
-1b362abd2e8669171a5ba50a9cc26183  kexec-tools-2.0.3.tar.gz
 903fcfa547df2f453476800e0838fe52  glibc-2.12.2.tar.bz2
 4fa656ee307db1cc59b05e492055badd  gcc-4.4.5_gmp_mpfr.tar.bz2
 929969d06ce034e862976bb7d1a36b25  cdk-5.0-20120323.tar.gz
@@ -54,7 +53,6 @@ bf107cf54e67bc6dec5bea1f3e6a65c3  pexpect-2.3.tar.gz
 7df2a529a074f613b509fb44feefe74e  setuptools-0.6c11.tar.gz
 495b8d4c3669ab6b1a3754f9242980bb  fio-2.0.13.tar.bz2
 3fb927c7c33022f1c327f14a81c0d4b0  bash-4.2.tar.gz
-55c32fb95a5b3907687b023f392fbd3c  sg3_utils-1.35.tar.gz
 8a9d3144e677f5d5f1a4e8f1a9f536fa  open-fcoe-3.7.tar.bz2
 b6ee0ce2b3ef844bad7cac2803a90634  libconfig-1.4.9.tar.gz
 1e05be84b3bf238c27a2751ad033bf7b  libnl-1.1.2.tar.gz
@@ -106,3 +104,5 @@ d44f84081a12cef79cd17f78044351fc  smartmontools-6.2.tar.gz
 2777894c6ede627cf065b9d1d8bea652  scst-trunk_r5338.tar.gz
 f68ce7b7f4be08449f3c8b114ed5accb  cryptsetup-1.6.4.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
+c39ea40a7598e49b6dc961ee7de38f57  kexec-tools-2.0.6.tar.gz
+9d557e8db4d1ff306a1f9415b7a57c22  sg3_utils-1.37.tar.gz

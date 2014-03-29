@@ -77,7 +77,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		e2fsprogs-1.41.14.tar.gz \
 		zlib-1.2.5.tar.bz2 \
 		lsscsi-0.25.tar.gz \
-		sg3_utils-1.35.tar.gz \
+		sg3_utils-1.37.tar.gz \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
@@ -85,7 +85,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r5338.tar.gz \
-		kexec-tools-2.0.3.tar.gz \
+		kexec-tools-2.0.6.tar.gz \
 		drbd-8.4.3.tar.gz \
 		LVM2-2.02.97.tar.gz \
 		xfsprogs-3.1.8.tar.gz \
