@@ -1149,7 +1149,6 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
         if (dir_entry->d_type == DT_LNK) {
             /* We don't want to show the ESOS boot block device (USB drive) */
             if (strstr(boot_dev_node, dir_entry->d_name) != NULL) {
-                FREE_NULL(boot_dev_node);
                 continue;
             /* For DRBD block devices (not sure if the /dev/drbdX format is
              forced when using drbdadm, so this may be a problem */
@@ -1302,6 +1301,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
 
     /* Done */
     cleanup:
+    FREE_NULL(boot_dev_node);
     FREE_NULL(block_dev);
     for (i = 0; i < MAX_BLOCK_DEVS; i++) {
         FREE_NULL(blk_dev_name[i]);

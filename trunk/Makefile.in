@@ -167,26 +167,28 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		smartmontools-6.2.tar.gz \
 		cryptsetup-1.6.4.tar.xz \
 		popt-1.16.tar.gz \
+		makedumpfile-1.5.5.tar.gz \
+		elfutils-0.158.tar.bz2 \
 		fio-2.0.13.tar.bz2)
 distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
 build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
-		sysvinit grub glibc perl Python qlogic_fw scstadmin openssh \
-		vixie-cron gcc setuptools openssl zlib ncurses e2fsprogs \
-		ssmtp libibumad libibverbs srptools lsscsi sg3_utils groff \
-		python-suds kexec-tools iniparser cdk LVM2 xfsprogs drbd \
-		mdadm parted opensm libqb pacemaker corosync nss glib libxml2 \
-		libxslt libtool bzip2 crmsh libaio glue readline \
-		resource_agents mhvtl lzo mhash lessfs tokyocabinet fuse db \
-		snappy fence_agents pexpect pycurl curl Net-Telnet fio bash \
-		open-fcoe open-lldp libconfig libnl libpciaccess \
-		linux_firmware dlm ipmitool sysklogd less irqbalance \
-		ethtool postgresql psycopg2 mysql MySQLdb SQLAlchemy \
-		infiniband-diags libibmad lockfile python-daemon nrpe \
-		bcache-tools EnhanceIO util-linux thin-provisioning-tools \
-		expat boost btier librdmacm sysstat pciutils tar net-snmp \
-		nut libusb libusb-compat freeipmi libgcrypt libgpg-error \
-		smartmontools cryptsetup popt
+		makedumpfile elfutils sysvinit grub glibc perl Python \
+		qlogic_fw scstadmin openssh vixie-cron gcc setuptools \
+		openssl zlib ncurses e2fsprogs ssmtp libibumad libibverbs \
+		srptools lsscsi sg3_utils groff python-suds kexec-tools \
+		iniparser cdk LVM2 xfsprogs drbd mdadm parted opensm libqb \
+		pacemaker corosync nss glib libxml2 libxslt libtool bzip2 \
+		crmsh libaio glue readline resource_agents mhvtl lzo mhash \
+		lessfs tokyocabinet fuse db snappy fence_agents pexpect \
+		pycurl curl Net-Telnet fio bash open-fcoe open-lldp \
+		libconfig libnl libpciaccess linux_firmware dlm ipmitool \
+		sysklogd less irqbalance ethtool postgresql psycopg2 mysql \
+		MySQLdb SQLAlchemy infiniband-diags libibmad lockfile \
+		python-daemon nrpe bcache-tools EnhanceIO util-linux \
+		thin-provisioning-tools expat boost btier librdmacm \
+		sysstat pciutils tar net-snmp nut libusb libusb-compat \
+		freeipmi libgcrypt libgpg-error smartmontools cryptsetup popt
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -585,7 +587,7 @@ scst: glibc esos_kernels
 	$(TOUCH) $(@)
 
 gdb: glibc ncurses
-	cd $(src_dir) && ./configure --prefix=/usr
+	cd $(src_dir) && ./configure --prefix=/usr --without-python
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
@@ -630,6 +632,29 @@ busybox: glibc
 	$(ECHO) -e "#! /bin/sh\n\n/bin/busybox awk \"\044\0100\"\n" > \
 	$(IMAGE_DIR)/usr/bin/gawk
 	$(CHMOD) +x $(IMAGE_DIR)/usr/bin/gawk
+	$(TOUCH) $(@)
+
+makedumpfile: glibc elfutils bzip2
+	$(MAKE) --directory=$(src_dir)
+	$(INSTALL) -m 0755 $(src_dir)/makedumpfile \
+	${WORK_DIR}/initramfs/usr/sbin/makedumpfile
+	$(TOUCH) $(@)
+
+elfutils: glibc
+	cd $(src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(src_dir)
+	$(MKDIR) $(IMAGE_DIR)/usr/include/elfutils
+	$(INSTALL) $(src_dir)/libdw/libdw.h \
+	$(IMAGE_DIR)/usr/include/elfutils/libdw.h
+	$(INSTALL) $(src_dir)/libdwfl/libdwfl.h \
+	$(IMAGE_DIR)/usr/include/elfutils/libdwfl.h
+	$(INSTALL) $(src_dir)/libdw/dwarf.h $(IMAGE_DIR)/usr/include/dwarf.h
+	$(INSTALL) $(src_dir)/libelf/libelf.h $(IMAGE_DIR)/usr/include/libelf.h
+	$(INSTALL) $(src_dir)/libelf/gelf.h $(IMAGE_DIR)/usr/include/gelf.h
+	$(INSTALL) $(src_dir)/libelf/libelf.a $(IMAGE_DIR)/usr/lib/libelf.a
+	$(INSTALL) $(src_dir)/libdw/libdw.a $(IMAGE_DIR)/usr/lib/libdw.a
+	$(INSTALL) $(src_dir)/libasm/libasm.a $(IMAGE_DIR)/usr/lib/libasm.a
+	$(INSTALL) $(src_dir)/libebl/libebl.a $(IMAGE_DIR)/usr/lib/libebl.a
 	$(TOUCH) $(@)
 
 sysvinit: glibc
@@ -1102,6 +1127,9 @@ libtool: glibc
 	$(TOUCH) $(@)
 
 bzip2: glibc
+	$(MAKE) --file=$(src_dir)/Makefile \
+	--directory=$(src_dir) CC="$(esos_cc)"
+	$(INSTALL) -v $(src_dir)/libbz2.a $(IMAGE_DIR)/usr/lib
 	$(MAKE) --file=$(src_dir)/Makefile-libbz2_so \
 	--directory=$(src_dir) CC="$(esos_cc)"
 	$(INSTALL) -v $(src_dir)/libbz2.so.1.0.6 $(IMAGE_DIR)/usr/lib

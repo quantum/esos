@@ -1186,7 +1186,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     int i = 0, traverse_ret = 0, window_y = 0, window_x = 0,
             mail_window_lines = 0, mail_window_cols = 0;
     static char *no_yes[] = {"No", "Yes"};
-    static char *auth_method_opts[] = {"Plain Text", "CRAM-MD5"};
+    static char *auth_method_opts[] = {"None", "Plain Text", "CRAM-MD5"};
     static char *mail_title_msg[] = {"</31/B>System mail (SMTP) settings..."};
     char tmp_email_addr[MAX_EMAIL_LEN] = {0}, tmp_smtp_host[MAX_SMTP_LEN] = {0},
             tmp_auth_user[MAX_SMTP_USER_LEN] = {0},
@@ -1213,7 +1213,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     conf_mailhub = iniparser_getstring(ini_dict, ":mailhub", "");
     conf_authuser = iniparser_getstring(ini_dict, ":authuser", "");
     conf_authpass = iniparser_getstring(ini_dict, ":authpass", "");
-    conf_authmethod = iniparser_getstring(ini_dict, ":authmethod", "");
+    conf_authmethod = iniparser_getstring(ini_dict, ":authmethod", "NOT_SET");
     conf_usetls = iniparser_getstring(ini_dict, ":usetls", "");
     conf_usestarttls = iniparser_getstring(ini_dict, ":usestarttls", "");
 
@@ -1330,7 +1330,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Auth. Method radio */
     auth_method = newCDKRadio(mail_screen, (window_x + 29), (window_y + 7),
-            NONE, 9, 10, "</B>Auth. Method", auth_method_opts, 2,
+            NONE, 9, 10, "</B>Auth. Method", auth_method_opts, 3,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!auth_method) {
@@ -1338,13 +1338,15 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     setCDKRadioBackgroundAttrib(auth_method, COLOR_DIALOG_TEXT);
-    if (strcasecmp(conf_authmethod, "cram-md5") == 0)
-        setCDKRadioCurrentItem(auth_method, 1);
-    else
+    if (strcasecmp(conf_authmethod, "NOT_SET") == 0)
         setCDKRadioCurrentItem(auth_method, 0);
+    else if (strcasecmp(conf_authmethod, "cram-md5") == 0)
+        setCDKRadioCurrentItem(auth_method, 2);
+    else
+        setCDKRadioCurrentItem(auth_method, 1);
 
     /* Auth. User field */
-    auth_user = newCDKEntry(mail_screen, (window_x + 1), (window_y + 11),
+    auth_user = newCDKEntry(mail_screen, (window_x + 1), (window_y + 12),
             NULL, "</B>Auth. User: ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             15, 0, MAX_SMTP_USER_LEN, FALSE, FALSE);
@@ -1356,7 +1358,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     setCDKEntryValue(auth_user, conf_authuser);
 
     /* Auth. Password field */
-    auth_pass = newCDKEntry(mail_screen, (window_x + 30), (window_y + 11),
+    auth_pass = newCDKEntry(mail_screen, (window_x + 30), (window_y + 12),
             NULL, "</B>Auth. Password: ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
             15, 0, MAX_SMTP_PASS_LEN, FALSE, FALSE);
@@ -1470,13 +1472,19 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
             goto cleanup;
         }
-        if (getCDKRadioSelectedItem(auth_method) == 1)
-            snprintf(new_authmethod, MAX_INI_VAL, "CRAM-MD5");
-        else
-            snprintf(new_authmethod, MAX_INI_VAL, " ");
-        if (iniparser_set(ini_dict, ":authmethod", new_authmethod) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            goto cleanup;
+        if (getCDKRadioSelectedItem(auth_method) == 0) {
+            iniparser_unset(ini_dict, ":authmethod");
+            iniparser_unset(ini_dict, ":authuser");
+            iniparser_unset(ini_dict, ":authpass");
+        } else {
+            if (getCDKRadioSelectedItem(auth_method) == 2)
+                snprintf(new_authmethod, MAX_INI_VAL, "CRAM-MD5");
+            else if (getCDKRadioSelectedItem(auth_method) == 1)
+                snprintf(new_authmethod, MAX_INI_VAL, " ");
+            if (iniparser_set(ini_dict, ":authmethod", new_authmethod) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                goto cleanup;
+            }
         }
         if (getCDKRadioSelectedItem(use_tls) == 1)
             snprintf(new_usetls, MAX_INI_VAL, "YES");
