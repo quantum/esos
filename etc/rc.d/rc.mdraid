@@ -12,7 +12,7 @@ fi
 
 start() {
     /bin/echo "Assembling software RAID devices..."
-    /sbin/mdadm --assemble --scan > /dev/null 2>&1
+    /sbin/mdadm --assemble --scan
 }
 
 stop() {

@@ -23,7 +23,7 @@ if [ -e /proc/vmcore ]; then
 	echo "It appears a crash dump kernel is running."
 	echo "Saving /proc/vmcore to ESOS log file system..."
 	mount $(findfs LABEL=esos_logs) /mnt/tmp || rescue_shell
-	gzip -c /proc/vmcore > /mnt/tmp/vmcore-`date +"%s"`.gz || rescue_shell
+	makedumpfile -c -d 3 /proc/vmcore /mnt/tmp/vmcore-`date +"%s"`.gz || rescue_shell
 	umount /mnt/tmp || rescue_shell
 	reboot -f || rescue_shell
 fi
