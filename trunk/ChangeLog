@@ -1,3 +1,11 @@
+2014-03-31 20:11  msmith626@gmail.com
+
+	* configure.ac, misc/initramfs_init, tui/menu_actions-system.c,
+	  tui/strings.c, tui/strings.h: use ELF output with makedumpfile
+	  tool (initramfs init); started moving more exotic strings into
+	  new strings.c source file; updated autoconf script to make /tmp
+	  in initramfs stub (required by makedumpfile)
+
 2014-03-31 13:50  msmith626@gmail.com
 
 	* Makefile.in: fixed build issue with bzip2
