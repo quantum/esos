@@ -1,3 +1,19 @@
+2014-03-31 04:55  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
+	  etc/rc.d/rc.mdraid, misc/grub.cfg, misc/initramfs_init,
+	  tui/menu_actions-system.c, tui/menu_actions.c: fixed broken
+	  kernel crash dump support (increased crashkernel to 128M, added
+	  makedumpfile to use instead of gzip with /proc/vmcore in
+	  initramfs script); don't hide output in rc.mdraid; fixed TUI bug
+	  when using block device select dialog; added a sleep to run-level
+	  2 to wait after loading qla2xxx (in the case of being used as an
+	  initiator, for targets to appear); updated mail settings dialog
+	  so there is now an option to disable user authentication for
+	  SMTP; disable use of python with gdb; added elfutils as a dep for
+	  makedumpfile; for bzip2 target, include static version of lib
+	  (dep for makedumpfile)
+
 2014-03-29 18:59  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/inittab,
