@@ -1,3 +1,7 @@
+2014-03-31 13:50  msmith626@gmail.com
+
+	* Makefile.in: fixed build issue with bzip2
+
 2014-03-31 04:55  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
