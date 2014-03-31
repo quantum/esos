@@ -106,7 +106,7 @@ if test -d "${image_dir}"; then
         ${mkdir} -p ${image_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
         ${ln} -sf lib ${image_dir}/lib64 || exit 1
         ${ln} -sf lib ${image_dir}/usr/lib64 || exit 1
-        ${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev} || exit 1
+        ${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
         ${mkdir} -p ${initramfs_dir}/mnt/{root,tmp} || exit 1
         ${mkdir} -p ${initramfs_dir}/usr/{bin,sbin} || exit 1
 else

@@ -68,8 +68,6 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             *conf_broadcast = NULL, *error_msg = NULL, *conf_if_mtu = NULL,
             *temp_pstr = NULL, *conf_slaves = NULL, *conf_brmembers = NULL,
             *strtok_result = NULL, *conf_bondopts = NULL;
-    static char *ip_opts[] = {"Disabled", "Static", "DHCP"},
-            *choice_char[] = {"[ ] ", "[*] "};
     char eth_duplex[MISC_STRING_LEN] = {0}, temp_str[MISC_STRING_LEN] = {0},
             temp_ini_str[MAX_INI_VAL] = {0},
             slaves_list_line_buffer[MAX_SLAVES_LIST_BUFF] = {0},
@@ -79,7 +77,6 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     boolean question = FALSE;
     short saved_ifr_flags = 0;
     enum bonding_t net_if_bonding[MAX_NET_IFACE] = {0};
-    static char *bonding_map[] = {"None", "Master", "Slave"};
     struct stat bridge_test = {0};
     boolean net_if_bridge[MAX_NET_IFACE] = {FALSE};
 
@@ -151,7 +148,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 if (saved_ifr_flags & IFF_MASTER) {
                     net_if_bonding[j] = MASTER;
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
-                            bonding_map[net_if_bonding[j]]);
+                            g_bonding_map[net_if_bonding[j]]);
                     asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
                             net_if_name[j], net_if_mac[j], temp_str);
                     /* We can continue to the next iteration if its a master */
@@ -195,7 +192,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 if (eth_speed == 0 || eth_speed == (__be16) (-1) ||
                         eth_speed == (__be32) (-1)) {
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
-                            bonding_map[net_if_bonding[j]]);
+                            g_bonding_map[net_if_bonding[j]]);
                     asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-26s",
                             net_if_name[j], net_if_mac[j],
                             temp_str, "No Link");
@@ -217,7 +214,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                     asprintf(&net_if_speed[j], "%u Mb/s", eth_speed);
                     asprintf(&net_if_duplex[j], "%s", eth_duplex);
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
-                            bonding_map[net_if_bonding[j]]);
+                            g_bonding_map[net_if_bonding[j]]);
                     asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-12s%-14s",
                             net_if_name[j], net_if_mac[j],
                             temp_str, net_if_speed[j],
@@ -580,7 +577,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                     net_if_speed[net_conf_choice],
                     net_if_duplex[net_conf_choice]);
         asprintf(&net_info_msg[4], "</B>Bonding:<!B>\t%s",
-                bonding_map[net_if_bonding[net_conf_choice]]);
+                g_bonding_map[net_if_bonding[net_conf_choice]]);
 
         /* Read network configuration file (INI file) */
         ini_dict = iniparser_load(NETWORK_CONF);
@@ -652,7 +649,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
         /* IP settings radio */
         ip_config = newCDKRadio(net_screen, (window_x + 1), (window_y + 7),
-                NONE, 5, 10, "</B>IP Settings:", ip_opts, 3,
+                NONE, 5, 10, "</B>IP Settings:", g_ip_opts, 3,
                 '#' | COLOR_DIALOG_SELECT, 1,
                 COLOR_DIALOG_SELECT, FALSE, FALSE);
         if (!ip_config) {
@@ -660,9 +657,9 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             goto cleanup;
         }
         setCDKRadioBackgroundAttrib(ip_config, COLOR_DIALOG_TEXT);
-        if (strcasecmp(conf_bootproto, ip_opts[1]) == 0)
+        if (strcasecmp(conf_bootproto, g_ip_opts[1]) == 0)
             setCDKRadioCurrentItem(ip_config, 1);
-        else if (strcasecmp(conf_bootproto, ip_opts[2]) == 0)
+        else if (strcasecmp(conf_bootproto, g_ip_opts[2]) == 0)
             setCDKRadioCurrentItem(ip_config, 2);
         else
             setCDKRadioCurrentItem(ip_config, 0);
@@ -734,7 +731,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             slave_select = newCDKSelection(net_screen, (window_x + 35),
                     (window_y + 12), RIGHT, 3, 20, "</B>Bonding Slaves:",
                     poten_slaves, poten_slave_cnt,
-                    choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!slave_select) {
                 errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
                 goto cleanup;
@@ -756,7 +753,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             br_member_select = newCDKSelection(net_screen, (window_x + 35),
                     (window_y + 12), RIGHT, 3, 20, "</B>Bridge Members:",
                     poten_br_members, poten_br_member_cnt,
-                    choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!br_member_select) {
                 errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
                 goto cleanup;
@@ -859,7 +856,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(temp_ini_str, MAX_INI_VAL, "%s:bootproto",
                         net_if_name[net_conf_choice]);
                 if (iniparser_set(ini_dict, temp_ini_str,
-                        ip_opts[getCDKRadioCurrentItem(ip_config)]) == -1) {
+                        g_ip_opts[getCDKRadioCurrentItem(ip_config)]) == -1) {
                     errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
                     goto cleanup;
                 }
@@ -1185,9 +1182,6 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     int i = 0, traverse_ret = 0, window_y = 0, window_x = 0,
             mail_window_lines = 0, mail_window_cols = 0;
-    static char *no_yes[] = {"No", "Yes"};
-    static char *auth_method_opts[] = {"None", "Plain Text", "CRAM-MD5"};
-    static char *mail_title_msg[] = {"</31/B>System mail (SMTP) settings..."};
     char tmp_email_addr[MAX_EMAIL_LEN] = {0}, tmp_smtp_host[MAX_SMTP_LEN] = {0},
             tmp_auth_user[MAX_SMTP_USER_LEN] = {0},
             tmp_auth_pass[MAX_SMTP_PASS_LEN] = {0},
@@ -1247,7 +1241,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Screen title label */
     mail_label = newCDKLabel(mail_screen, (window_x + 1), (window_y + 1),
-            mail_title_msg, 1, FALSE, FALSE);
+            g_mail_title_msg, 1, FALSE, FALSE);
     if (!mail_label) {
         errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
         goto cleanup;
@@ -1300,7 +1294,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* TLS radio */
     use_tls = newCDKRadio(mail_screen, (window_x + 1), (window_y + 7),
-            NONE, 5, 10, "</B>Use TLS", no_yes, 2,
+            NONE, 5, 10, "</B>Use TLS", g_no_yes_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!use_tls) {
@@ -1315,7 +1309,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* STARTTLS radio */
     use_starttls = newCDKRadio(mail_screen, (window_x + 15), (window_y + 7),
-            NONE, 5, 10, "</B>Use STARTTLS", no_yes, 2,
+            NONE, 5, 10, "</B>Use STARTTLS", g_no_yes_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!use_starttls) {
@@ -1330,7 +1324,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Auth. Method radio */
     auth_method = newCDKRadio(mail_screen, (window_x + 29), (window_y + 7),
-            NONE, 9, 10, "</B>Auth. Method", auth_method_opts, 3,
+            NONE, 9, 10, "</B>Auth. Method", g_auth_meth_opts, 3,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!auth_method) {
@@ -1444,7 +1438,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             if (!VALID_ASCII_CHAR(tmp_auth_pass[i])) {
                 errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
                         VALID_ASCII_CHAR_MSG);
-                traverse_ret = 0; /* Skip the prompt */
+                /* Skip the prompt */
+                traverse_ret = 0;
                 goto cleanup;
             }
             i++;
@@ -1648,7 +1643,6 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     int i = 0, traverse_ret = 0, window_y = 0, window_x = 0, ret_val = 0,
             exit_stat = 0, add_user_window_lines = 0, add_user_window_cols = 0;
-    static char *screen_title[] = {"</31/B>Adding a new ESOS user account..."};
     char add_user_cmd[MAX_SHELL_CMD_LEN] = {0}, username[MAX_UNAME_LEN] = {0},
             chg_pass_cmd[MAX_SHELL_CMD_LEN] = {0},
             password_1[MAX_PASSWD_LEN] = {0}, password_2[MAX_PASSWD_LEN] = {0};
@@ -1676,7 +1670,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Screen title label */
     add_user_label = newCDKLabel(add_user_screen, (window_x + 1),
-            (window_y + 1), screen_title, 1, FALSE, FALSE);
+            (window_y + 1), g_add_user_title_msg, 1, FALSE, FALSE);
     if (!add_user_label) {
         errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
         goto cleanup;
@@ -2245,7 +2239,6 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             curr_day = 0, curr_month = 0, curr_year = 0, curr_hour = 0,
             curr_minute = 0, curr_second = 0, date_window_lines = 0,
             date_window_cols = 0;
-    static char *date_title_msg[] = {"</31/B>Edit date and time settings..."};
     char *tz_files[MAX_TZ_FILES] = {NULL};
     char *error_msg = NULL, *remove_me = NULL, *strstr_result = NULL;
     char zoneinfo_path[MAX_ZONEINFO_PATH] = {0},
@@ -2281,7 +2274,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Date/time title label */
     date_title_label = newCDKLabel(date_screen, (window_x + 1), (window_y + 1),
-            date_title_msg, 1, FALSE, FALSE);
+            g_date_title_msg, 1, FALSE, FALSE);
     if (!date_title_label) {
         errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
         goto cleanup;
