@@ -1130,6 +1130,7 @@ bzip2: glibc
 	$(MAKE) --file=$(src_dir)/Makefile \
 	--directory=$(src_dir) CC="$(esos_cc)"
 	$(INSTALL) -v $(src_dir)/libbz2.a $(IMAGE_DIR)/usr/lib
+	$(MAKE) --directory=$(src_dir) clean
 	$(MAKE) --file=$(src_dir)/Makefile-libbz2_so \
 	--directory=$(src_dir) CC="$(esos_cc)"
 	$(INSTALL) -v $(src_dir)/libbz2.so.1.0.6 $(IMAGE_DIR)/usr/lib
