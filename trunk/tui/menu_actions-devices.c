@@ -34,7 +34,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Setup scrolling window widget */
     dev_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-            DEV_INFO_ROWS+2, DEV_INFO_COLS+2,
+            (DEV_INFO_ROWS + 2), (DEV_INFO_COLS + 2),
             "<C></31/B>SCST Device Information\n",
             MAX_DEV_INFO_LINES, TRUE, FALSE);
     if (!dev_info) {
@@ -198,12 +198,6 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             *removable = 0, *rotational = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     WINDOW *dev_window = 0;
-    static char *scst_dev_types[] = {"<C>dev_disk", "<C>dev_disk_perf",
-        "<C>vcdrom", "<C>vdisk_blockio", "<C>vdisk_fileio", "<C>vdisk_nullio",
-        "<C>dev_changer", "<C>dev_tape", "<C>dev_tape_perf"},
-            *bs_list[] = {"512", "1024", "2048", "4096", "8192"},
-            *no_yes[] = {"No (0)", "Yes (1)"},
-            *fio_types[] = {"<C>File System", "<C>Block Device"};
     char attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
             fileio_file[MAX_SYSFS_PATH_SIZE] = {0},
@@ -221,7 +215,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Prompt for new device type */
     dev_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 15, 30,
-            "<C></31/B>Choose a SCST Device Handler\n", scst_dev_types, 9,
+            SCST_DEV_LIST_TITLE, g_scst_dev_types, g_scst_dev_types_size(),
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!dev_list) {
         errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
@@ -387,7 +381,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen,
                     (window_x + 1), (window_y + 7),
-                    "</B>Block Size", NULL, bs_list, 5, 0, FALSE, FALSE);
+                    "</B>Block Size", NULL, g_scst_bs_list, 5, 0, FALSE, FALSE);
             if (!block_size) {
                 errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
                 goto cleanup;
@@ -397,7 +391,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Write through widget (radio) */
             write_through = newCDKRadio(dev_screen, (window_x + 1),
                     (window_y + 11), NONE, 3, 10, "</B>Write Through",
-                    no_yes, 2, '#' | COLOR_DIALOG_SELECT, 1,
+                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!write_through) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
@@ -408,7 +402,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* NV cache widget (radio) */
             nv_cache = newCDKRadio(dev_screen, (window_x + 18), (window_y + 7),
-                    NONE, 3, 10, "</B>NV Cache", no_yes, 2,
+                    NONE, 3, 10, "</B>NV Cache", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!nv_cache) {
@@ -420,7 +414,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Read only widget (radio) */
             read_only = newCDKRadio(dev_screen, (window_x + 18),
-                    (window_y + 11), NONE, 3, 10, "</B>Read Only", no_yes, 2,
+                    (window_y + 11), NONE, 3, 10, "</B>Read Only", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!read_only) {
@@ -432,7 +426,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Removable widget (radio) */
             removable = newCDKRadio(dev_screen, (window_x + 32), (window_y + 7),
-                    NONE, 3, 10, "</B>Removable", no_yes, 2,
+                    NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!removable) {
@@ -444,7 +438,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Rotational widget (radio) */
             rotational = newCDKRadio(dev_screen, (window_x + 32),
-                    (window_y + 11), NONE, 3, 10, "</B>Rotational", no_yes, 2,
+                    (window_y + 11), NONE, 3, 10, "</B>Rotational", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!rotational) {
@@ -456,14 +450,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Buttons */
             ok_button = newCDKButton(dev_screen, (window_x + 21),
-                    (window_y + 16), "</B>   OK   ", ok_cb, FALSE, FALSE);
+                    (window_y + 16), g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
             if (!ok_button) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
             cancel_button = newCDKButton(dev_screen, (window_x + 31),
-                    (window_y + 16), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+                    (window_y + 16), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
             if (!cancel_button) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
@@ -507,7 +501,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         "write_through=%d; nv_cache=%d; read_only=%d; "
                         "removable=%d; rotational=%d",
                         getCDKEntryValue(dev_name_field), block_dev,
-                        bs_list[getCDKItemlistCurrentItem(block_size)],
+                        g_scst_bs_list[getCDKItemlistCurrentItem(block_size)],
                         getCDKRadioSelectedItem(write_through),
                         getCDKRadioSelectedItem(nv_cache),
                         getCDKRadioSelectedItem(read_only),
@@ -526,7 +520,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         case 4:
             /* Choose block device or file on a file system */
             fio_type_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE,
-                    8, 26, "<C></31/B>Choose a Back-End Type\n", fio_types, 2,
+                    8, 26, "<C></31/B>Choose a Back-End Type\n", g_fio_types, 2,
                     FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
             if (!fio_type_list) {
                 errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
@@ -642,7 +636,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen, (window_x + 1),
-                    (window_y + 7), "</B>Block Size", NULL, bs_list, 5, 0,
+                    (window_y + 7), "</B>Block Size", NULL, g_scst_bs_list, 5, 0,
                     FALSE, FALSE);
             if (!block_size) {
                 errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
@@ -653,7 +647,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             /* Write through widget (radio) */
             write_through = newCDKRadio(dev_screen, (window_x + 1),
                     (window_y + 11), NONE, 3, 10, "</B>Write Through",
-                    no_yes, 2, '#' | COLOR_DIALOG_SELECT, 1,
+                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!write_through) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
@@ -664,7 +658,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* NV cache widget (radio) */
             nv_cache = newCDKRadio(dev_screen, (window_x + 18), (window_y + 7),
-                    NONE, 3, 10, "</B>NV Cache", no_yes, 2,
+                    NONE, 3, 10, "</B>NV Cache", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!nv_cache) {
@@ -676,7 +670,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Read only widget (radio) */
             read_only = newCDKRadio(dev_screen, (window_x + 18),
-                    (window_y + 11), NONE, 3, 10, "</B>Read Only", no_yes, 2,
+                    (window_y + 11), NONE, 3, 10, "</B>Read Only", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!read_only) {
@@ -688,7 +682,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Removable widget (radio) */
             removable = newCDKRadio(dev_screen, (window_x + 32), (window_y + 7),
-                    NONE, 3, 10, "</B>Removable", no_yes, 2,
+                    NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!removable) {
@@ -700,7 +694,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Rotational widget (radio) */
             rotational = newCDKRadio(dev_screen, (window_x + 32),
-                    (window_y + 11), NONE, 3, 10, "</B>Rotational", no_yes, 2,
+                    (window_y + 11), NONE, 3, 10, "</B>Rotational", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!rotational) {
@@ -712,14 +706,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Buttons */
             ok_button = newCDKButton(dev_screen, (window_x + 21),
-                    (window_y + 16), "</B>   OK   ", ok_cb, FALSE, FALSE);
+                    (window_y + 16), g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
             if (!ok_button) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
             cancel_button = newCDKButton(dev_screen, (window_x + 31),
-                    (window_y + 16), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+                    (window_y + 16), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
             if (!cancel_button) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
@@ -763,7 +757,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         "write_through=%d; nv_cache=%d; read_only=%d; "
                         "removable=%d; rotational=%d",
                         getCDKEntryValue(dev_name_field), fileio_file,
-                        bs_list[getCDKItemlistCurrentItem(block_size)],
+                        g_scst_bs_list[getCDKItemlistCurrentItem(block_size)],
                         getCDKRadioSelectedItem(write_through),
                         getCDKRadioSelectedItem(nv_cache),
                         getCDKRadioSelectedItem(read_only),
@@ -825,7 +819,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen, (window_x + 1),
-                    (window_y + 5), "</B>Block Size", NULL, bs_list, 5, 0,
+                    (window_y + 5), "</B>Block Size", NULL, g_scst_bs_list, 5, 0,
                     FALSE, FALSE);
             if (!block_size) {
                 errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
@@ -835,7 +829,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Read only widget (radio) */
             read_only = newCDKRadio(dev_screen, (window_x + 1), (window_y + 9),
-                    NONE, 3, 10, "</B>Read Only", no_yes, 2,
+                    NONE, 3, 10, "</B>Read Only", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!read_only) {
@@ -847,7 +841,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Removable widget (radio) */
             removable = newCDKRadio(dev_screen, (window_x + 18), (window_y + 5),
-                    NONE, 3, 10, "</B>Removable", no_yes, 2,
+                    NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!removable) {
@@ -859,7 +853,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             
             /* Rotational widget (radio) */
             rotational = newCDKRadio(dev_screen, (window_x + 18),
-                    (window_y + 9), NONE, 3, 10, "</B>Rotational", no_yes, 2,
+                    (window_y + 9), NONE, 3, 10, "</B>Rotational", g_no_yes_opts, 2,
                     '#' | COLOR_DIALOG_SELECT, 1,
                     COLOR_DIALOG_SELECT, FALSE, FALSE);
             if (!rotational) {
@@ -871,14 +865,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Buttons */
             ok_button = newCDKButton(dev_screen, (window_x + 16),
-                    (window_y + 16), "</B>   OK   ", ok_cb, FALSE, FALSE);
+                    (window_y + 16), g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
             if (!ok_button) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
             }
             setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
             cancel_button = newCDKButton(dev_screen, (window_x + 26),
-                    (window_y + 16), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+                    (window_y + 16), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
             if (!cancel_button) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 goto cleanup;
@@ -921,7 +915,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         "add_device %s blocksize=%s; read_only=%d; "
                         "removable=%d; rotational=%d",
                         getCDKEntryValue(dev_name_field),
-                        bs_list[getCDKItemlistCurrentItem(block_size)],
+                        g_scst_bs_list[getCDKItemlistCurrentItem(block_size)],
                         getCDKRadioSelectedItem(read_only),
                         getCDKRadioSelectedItem(removable),
                         getCDKRadioSelectedItem(rotational));
@@ -1076,7 +1070,6 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
             group_name[MAX_SYSFS_ATTR_SIZE] = {0},
             attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0};
-    static char *no_yes[] = {"No (0)", "Yes (1)"};
     char *error_msg = NULL;
     char *map_info_msg[MAP_DEV_INFO_LINES] = {NULL};
     int map_window_lines = 0, map_window_cols = 0, window_y = 0, window_x = 0,
@@ -1145,7 +1138,7 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Read only widget (radio) */
     read_only = newCDKRadio(map_screen, (window_x + 1), (window_y + 12),
-            NONE, 3, 10, "</B>Read Only", no_yes, 2,
+            NONE, 3, 10, "</B>Read Only", g_no_yes_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!read_only) {
@@ -1157,14 +1150,14 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(map_screen, (window_x + 16), (window_y + 16),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(map_screen, (window_x + 26), (window_y + 16),
-            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
@@ -1285,7 +1278,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Setup scrolling window widget */
     lun_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-            LUN_LAYOUT_ROWS + 2, LUN_LAYOUT_COLS + 2,
+            (LUN_LAYOUT_ROWS + 2), (LUN_LAYOUT_COLS + 2),
             "<C></31/B>SCST LUN Layout\n",
             MAX_LUN_LAYOUT_LINES, TRUE, FALSE);
     if (!lun_info) {

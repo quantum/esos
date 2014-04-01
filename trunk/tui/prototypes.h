@@ -116,6 +116,11 @@ boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
         int *driver_cnt);
 int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]);
 
+/* strings.c */
+size_t g_scst_dev_types_size();
+size_t g_scst_handlers_size();
+size_t g_sync_label_msg_size();
+
 #ifdef	__cplusplus
 }
 #endif
