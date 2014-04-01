@@ -1,3 +1,13 @@
+2014-04-01 19:55  msmith626@gmail.com
+
+	* scripts/startup.sh, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-interface.c,
+	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
+	  tui/menu_actions.c, tui/prototypes.h, tui/strings.c,
+	  tui/strings.h, tui/system.h: updated startup script for new dump
+	  file (vmcore) name format; more TUI code cleanup (formatting,
+	  combining strings, etc.)
+
 2014-03-31 20:11  msmith626@gmail.com
 
 	* configure.ac, misc/initramfs_init, tui/menu_actions-system.c,
