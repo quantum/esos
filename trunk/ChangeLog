@@ -1,3 +1,8 @@
+2014-04-01 20:05  msmith626@gmail.com
+
+	* misc/linux-3.12.7.config: added additional crpto kernel options
+	  to support dm-crypt
+
 2014-04-01 19:55  msmith626@gmail.com
 
 	* scripts/startup.sh, tui/menu_actions-back_storage.c,
