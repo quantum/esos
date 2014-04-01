@@ -25,7 +25,6 @@
  */
 void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     CDKDIALOG *error = 0;
-    static char *buttons[] = {"</B>   OK   "};
     char *message[ERROR_DIAG_MSG_SIZE] = {NULL};
     int i = 0;
 
@@ -45,7 +44,7 @@ void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Display the error dialog box */
     error = newCDKDialog(screen, CENTER, CENTER, message, ERROR_DIAG_MSG_SIZE,
-            buttons, 1, COLOR_ERROR_SELECT, TRUE, TRUE, FALSE);
+            g_ok_msg, 1, COLOR_ERROR_SELECT, TRUE, TRUE, FALSE);
     if (error) {
         setCDKDialogBackgroundAttrib(error, COLOR_ERROR_TEXT);
         setCDKDialogBoxAttribute(error, COLOR_ERROR_BOX);
@@ -77,7 +76,6 @@ void cancelButtonCB(CDKBUTTON *button) {
  */
 boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     CDKDIALOG *confirm = 0;
-    static char *buttons[] = {"</B>   OK   ", "</B> Cancel "};
     char *message[CONFIRM_DIAG_MSG_SIZE] = {NULL};
     int selection = 0, i = 0;
     boolean ret_val = FALSE;
@@ -98,7 +96,7 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Display the confirmation dialog box */
     confirm = newCDKDialog(screen, CENTER, CENTER, message,
-            CONFIRM_DIAG_MSG_SIZE, buttons, 2, COLOR_ERROR_SELECT,
+            CONFIRM_DIAG_MSG_SIZE, g_ok_cancel_msg, 2, COLOR_ERROR_SELECT,
             TRUE, TRUE, FALSE);
     if (confirm) {
         setCDKDialogBackgroundAttrib(confirm, COLOR_ERROR_TEXT);
@@ -435,7 +433,6 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
             *scsi_dsk_model[MAX_SCSI_DISKS] = {NULL},
             *scsi_dsk_vendor[MAX_SCSI_DISKS] = {NULL},
             *scsi_dev_info[MAX_SCSI_DISKS] = {NULL};
-    static char *list_title = "<C></31/B>Choose a SCSI Disk\n";
     char *error_msg = NULL, *boot_dev_node = NULL;
     static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
@@ -535,7 +532,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
 
     /* Get SCSI disk choice from user */
     scsi_dsk_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 55,
-            list_title, scsi_dev_info, dev_cnt,
+            SCSI_DISK_LIST_TITLE, scsi_dev_info, dev_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!scsi_dsk_list) {
         errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
@@ -582,9 +579,6 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
     int dev_choice = 0, i = 0, j = 0;
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
-    static char *handlers[] = {"dev_disk", "dev_disk_perf", "vcdrom",
-        "vdisk_blockio", "vdisk_fileio", "vdisk_nullio", "dev_changer",
-        "dev_tape", "dev_tape_perf"};
     char *scst_dev_name[MAX_SCST_DEVS] = {NULL},
         *scst_dev_hndlr[MAX_SCST_DEVS] = {NULL},
         *scst_dev_info[MAX_SCST_DEVS] = {NULL};
@@ -592,11 +586,10 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
 
     /* Loop over each SCST handler type and grab any open device names */
-    j = 0;
-    for (i = 0; i < 9; i++) {
+    for (i = 0; i < g_scst_handlers_size(); i++) {
         /* Open the directory */
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s",
-                SYSFS_SCST_TGT, handlers[i]);
+                SYSFS_SCST_TGT, g_scst_handlers[i]);
         if ((dir_stream = opendir(dir_name)) == NULL) {
             asprintf(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
@@ -608,9 +601,9 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
         while ((dir_entry = readdir(dir_stream)) != NULL) {
             if (dir_entry->d_type == DT_LNK) {
                 asprintf(&scst_dev_name[j], "%s", dir_entry->d_name);
-                asprintf(&scst_dev_hndlr[j], "%s", handlers[i]);
+                asprintf(&scst_dev_hndlr[j], "%s", g_scst_handlers[i]);
                 asprintf(&scst_dev_info[j], "<C>%s (Handler: %s)",
-                        dir_entry->d_name, handlers[i]);
+                        dir_entry->d_name, g_scst_handlers[i]);
                 j++;
             }
         }
@@ -669,7 +662,6 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
     CDKSCROLL *adapter_list = 0;
     int adp_count = 0, adp_choice = 0, i = 0;
     char *adapters[MAX_ADAPTERS] = {NULL};
-    static char *list_title = "<C></31/B>Choose an Adapter\n";
     char *error_msg = NULL;
 
     /* Get MegaRAID adapters */
@@ -699,7 +691,7 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
 
     /* Get adapter choice from user */
     adapter_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 8, 50,
-            list_title, adapters, adp_count,
+            ADP_LIST_TITLE, adapters, adp_count,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     setCDKScrollBoxAttribute(adapter_list, COLOR_DIALOG_BOX);
     setCDKScrollBackgroundAttrib(adapter_list, COLOR_DIALOG_TEXT);
@@ -815,14 +807,12 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *sync_msg = 0;
     char scstadmin_cmd[MAX_SHELL_CMD_LEN] = {0},
             sync_conf_cmd[MAX_SHELL_CMD_LEN] = {0};
-    static char *message[] = {"", "",
-                "</B>   Synchronizing ESOS configuration...   ", "", ""};
     char *error_msg = NULL;
     int ret_val = 0, exit_stat = 0;
 
     /* Display a nice short label message while we sync */
     sync_msg = newCDKLabel(main_cdk_screen, CENTER, CENTER,
-            message, 5, TRUE, FALSE);
+            g_sync_label_msg, g_sync_label_msg_size(), TRUE, FALSE);
     if (!sync_msg) {
         errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
         return;
@@ -933,7 +923,6 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
  */
 boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     CDKDIALOG *question = 0;
-    static char *buttons[] = {"</B>   Yes   ", "</B>   No   "};
     char *message[QUEST_DIAG_MSG_SIZE] = {NULL};
     int selection = 0, i = 0;
     boolean ret_val = FALSE;
@@ -954,7 +943,7 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Display the question dialog box */
     question = newCDKDialog(screen, CENTER, CENTER, message,
-            QUEST_DIAG_MSG_SIZE, buttons, 2, COLOR_DIALOG_SELECT,
+            QUEST_DIAG_MSG_SIZE, g_yes_no_msg, 2, COLOR_DIALOG_SELECT,
             TRUE, TRUE, FALSE);
     if (question) {
         setCDKDialogBackgroundAttrib(question, COLOR_DIALOG_TEXT);
@@ -990,8 +979,6 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
             *fs_types[MAX_FILE_SYSTEMS] = {NULL},
             *scroll_list[MAX_USERS] = {NULL};
     char *error_msg = NULL;
-    static char *no_touch = "/proc /sys /dev/pts /dev/shm "
-            "/boot /mnt/root /mnt/conf /mnt/logs /tmp";
     char mnt_line_buffer[MAX_MNT_LINE_BUFFER] = {0};
     int i = 0, fs_cnt = 0, user_choice = 0, mnt_line_size = 0, mnt_dir_size = 0;
     boolean fs_mounted[MAX_FILE_SYSTEMS] = {FALSE};
@@ -1036,7 +1023,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
     while ((fstab_entry = getmntent(fstab_file)) != NULL) {
         /* We don't want to grab special entries from fstab that
          * we shouldn't touch */
-        if (strstr(no_touch, fstab_entry->mnt_dir) == NULL) {
+        if (strstr(SYS_FILE_SYSTEMS, fstab_entry->mnt_dir) == NULL) {
             asprintf(&fs_names[fs_cnt], "%s", fstab_entry->mnt_fsname);
             asprintf(&fs_paths[fs_cnt], "%s", fstab_entry->mnt_dir);
             asprintf(&fs_types[fs_cnt], "%s", fstab_entry->mnt_type);
@@ -1111,7 +1098,6 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
             *blk_dev_info[MAX_BLOCK_DEVS] = {NULL},
             *blk_dev_size[MAX_BLOCK_DEVS] = {NULL},
             *blk_dev_scroll_lines[MAX_BLOCK_DEVS] = {NULL};
-    static char *list_title = "<C></31/B>Choose a Block Device\n";
     char *error_msg = NULL, *boot_dev_node = NULL, *dev_id_ptr = NULL,
             *cmd_str = NULL, *block_dev = NULL;
     static char ret_buff[MAX_SYSFS_PATH_SIZE] = {0};
@@ -1235,7 +1221,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
 
     /* Get block device choice from user */
     block_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 65,
-            list_title, blk_dev_scroll_lines, dev_cnt,
+            BLOCK_DEV_LIST_TITLE, blk_dev_scroll_lines, dev_cnt,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!block_dev_list) {
         errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);

@@ -261,7 +261,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Setup scrolling window widget */
     lip_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-            LIP_INFO_ROWS+2, LIP_INFO_COLS+2,
+            (LIP_INFO_ROWS + 2), (LIP_INFO_COLS + 2),
             "<C></31/B>Issuing LIP on Fibre Channel Targets\n",
             MAX_LIP_INFO_LINES, TRUE, FALSE);
     if (!lip_info) {
@@ -333,7 +333,6 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
             attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
             dir_name[MAX_SYSFS_PATH_SIZE] = {0};
-    static char *dsbl_enbl[] = {"Disabled (0)", "Enabled (1)"};
     char *error_msg = NULL, *confirm_msg = NULL;
     char *tgt_info_msg[TGT_ON_OFF_INFO_LINES] = {NULL};
     boolean confirm = FALSE;
@@ -390,7 +389,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Enable/disable widget (radio) */
     enbl_dsbl_radio = newCDKRadio(tgt_screen, (window_x + 1), (window_y + 7),
-            NONE, 3, 10, "</B>Target", dsbl_enbl, 2,
+            NONE, 3, 10, "</B>Target", g_dsbl_enbl_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!enbl_dsbl_radio) {
@@ -402,14 +401,14 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(tgt_screen, (window_x + 16), (window_y + 12),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(tgt_screen, (window_x + 26), (window_y + 12),
-            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;

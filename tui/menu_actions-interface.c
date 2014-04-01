@@ -20,7 +20,6 @@
  */
 void helpDialog(CDKSCREEN *main_cdk_screen) {
     CDKDIALOG *help_dialog = 0;
-    static char *buttons[] = {"</B>   OK   "};
     char *message[HELP_MSG_SIZE] = {NULL};
     int i = 0;
 
@@ -55,7 +54,7 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Display the TUI help message dialog box */
     help_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
-            HELP_MSG_SIZE, buttons, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
+            HELP_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
     if (!help_dialog) {
         errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
         goto cleanup;
@@ -85,8 +84,6 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
             file_name[MISC_STRING_LEN] = {0};
     char *error_msg = NULL;
     char *message[SUPPORT_PKG_MSG_SIZE] = {NULL};
-    static char *tmp_base = "/tmp";
-    static char *buttons[] = {"</B>   OK   "};
     int ret_val = 0, exit_stat = 0, i = 0;
     time_t now = 0;
     struct tm *tm_now = NULL;
@@ -96,7 +93,7 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     tm_now = localtime(&now);
     strftime(nice_date, sizeof(nice_date), "%s", tm_now);
     snprintf(file_name, MISC_STRING_LEN, "esos_support_pkg-%s", nice_date);
-    snprintf(bundle_file, MISC_STRING_LEN, "%s/%s.tgz", tmp_base, file_name);
+    snprintf(bundle_file, MISC_STRING_LEN, "%s/%s.tgz", TEMP_DIR, file_name);
 
     /* Archive the configuration files and logs */
     snprintf(tar_cmd, MAX_SHELL_CMD_LEN, "%s cpfz %s --transform "
@@ -126,7 +123,7 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Display the dialog box */
     bundle_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
-            SUPPORT_PKG_MSG_SIZE, buttons, 1, COLOR_DIALOG_SELECT,
+            SUPPORT_PKG_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT,
             TRUE, TRUE, FALSE);
     if (!bundle_dialog) {
         errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
@@ -152,7 +149,6 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
  */
 void aboutDialog(CDKSCREEN *main_cdk_screen) {
     CDKDIALOG *about_dialog = 0;
-    static char *buttons[] = {"</B>   OK   "};
     char *message[ABOUT_MSG_SIZE] = {NULL};
     char esos_ver[MAX_SYSFS_ATTR_SIZE] = {0}, hostname[MISC_STRING_LEN] = {0};
     int i = 0;
@@ -177,7 +173,7 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Display the dialog box */
     about_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
-            ABOUT_MSG_SIZE, buttons, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
+            ABOUT_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
     if (!about_dialog) {
         errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
         goto cleanup;

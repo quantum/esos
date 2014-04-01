@@ -389,14 +389,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Buttons */
         ok_button = newCDKButton(net_screen, (window_x + 26), (window_y + 14),
-                "</B>   OK   ", ok_cb, FALSE, FALSE);
+                g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
         if (!ok_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             goto cleanup;
         }
         setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
         cancel_button = newCDKButton(net_screen, (window_x + 36),
-                (window_y + 14), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+                (window_y + 14), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             goto cleanup;
@@ -773,14 +773,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Buttons */
         ok_button = newCDKButton(net_screen, (window_x + 26), (window_y + 16),
-                "</B>   OK   ", ok_cb, FALSE, FALSE);
+                g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
         if (!ok_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             goto cleanup;
         }
         setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
         cancel_button = newCDKButton(net_screen, (window_x + 36),
-                (window_y + 16), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+                (window_y + 16), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             goto cleanup;
@@ -1365,14 +1365,14 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(mail_screen, (window_x + 26), (window_y + 15),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(mail_screen, (window_x + 36), (window_y + 15),
-            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
@@ -1714,14 +1714,14 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(add_user_screen, (window_x + 17), (window_y + 10),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(add_user_screen, (window_x + 27),
-            (window_y + 10), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            (window_y + 10), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
@@ -1773,8 +1773,8 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Add the new user account */
         snprintf(add_user_cmd, MAX_SHELL_CMD_LEN,
-                "%s -h /tmp -g 'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
-                ADDUSER_BIN, SHELL_BIN, ESOS_GROUP, username);
+                "%s -h %s -g 'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
+                ADDUSER_BIN, TEMP_DIR, SHELL_BIN, ESOS_GROUP, username);
         ret_val = system(add_user_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
             asprintf(&error_msg, "Running %s failed; exited with %d.",
@@ -1961,14 +1961,14 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(chg_pass_screen, (window_x + 14), (window_y + 8),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(chg_pass_screen, (window_x + 24),
-            (window_y + 8), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            (window_y + 8), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
@@ -2456,14 +2456,14 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(date_screen, (window_x + 24), (window_y + 18),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(date_screen, (window_x + 34), (window_y + 18),
-            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;

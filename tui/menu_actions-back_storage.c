@@ -39,7 +39,6 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     int adp_count = 0, adp_choice = 0, i = 0, window_y = 0, window_x = 0,
             traverse_ret = 0, temp_int = 0, adp_window_lines = 0,
             adp_window_cols = 0;
-    static char *dsbl_enbl[] = {"Disabled", "Enabled"};
     char temp_str[MAX_MR_ATTR_SIZE] = {0};
     char *error_msg = NULL;
     char *adp_info_msg[10] = {NULL};
@@ -138,7 +137,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Radio lists */
     cluster_radio = newCDKRadio(adapter_screen, (window_x + 1), (window_y + 15),
-            NONE, 3, 10, "</B>Cluster", dsbl_enbl, 2,
+            NONE, 3, 10, "</B>Cluster", g_dsbl_enbl_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!cluster_radio) {
@@ -147,8 +146,8 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
     setCDKRadioBackgroundAttrib(cluster_radio, COLOR_DIALOG_TEXT);
     setCDKRadioCurrentItem(cluster_radio, (int) mr_adp_props->cluster);
-    ncq_radio = newCDKRadio(adapter_screen, (window_x + 16), (window_y + 15),
-            NONE, 3, 10, "</B>NCQ", dsbl_enbl, 2,
+    ncq_radio = newCDKRadio(adapter_screen, (window_x + 20), (window_y + 15),
+            NONE, 3, 10, "</B>NCQ", g_dsbl_enbl_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!ncq_radio) {
@@ -160,14 +159,14 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(adapter_screen, (window_x + 20), (window_y + 19),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(adapter_screen, (window_x + 30),
-            (window_y + 19), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            (window_y + 19), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
@@ -402,13 +401,6 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
             selection_size = 0, chosen_disk_cnt = 0, traverse_ret = 0,
             temp_int = 0, window_y = 0, window_x = 0, new_ld_window_lines = 0,
             new_ld_window_cols = 0, pd_info_size = 0, pd_info_line_size = 0;
-    static char *choice_char[] = {"[ ] ", "[*] "};
-    static char *cache_opts[] = {"Cached", "Direct"};
-    static char *write_opts[] = {"WT", "WB"};
-    static char *read_opts[] = {"NORA", "RA", "ADRA"};
-    static char *bbu_opts[] = {"CachedBadBBU", "NoCachedBadBBU"};
-    static char *raid_opts[] = {"0", "1", "5", "6"};
-    static char *strip_opts[] = {"8", "16", "32", "64", "128", "256", "512", "1024"};
     char new_ld_raid_lvl[MAX_MR_ATTR_SIZE] = {0},
             new_ld_strip_size[MAX_MR_ATTR_SIZE] = {0},
             pd_info_line_buffer[MAX_PD_INFO_LINE_BUFF] = {0};
@@ -486,7 +478,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
             adp_choice);
     disk_select = newCDKSelection(main_cdk_screen, CENTER, CENTER, NONE,
             18, 74, dsk_select_title, selection_list, selection_size,
-            choice_char, 2, COLOR_DIALOG_SELECT, TRUE, FALSE);
+            g_choice_char, 2, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!disk_select) {
         errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
         goto cleanup;
@@ -582,7 +574,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* RAID level radio list */
     raid_lvl = newCDKRadio(new_ld_screen, (window_x + 1), (window_y + 5),
-            NONE, 5, 10, "</B>RAID Level", raid_opts, 4,
+            NONE, 5, 10, "</B>RAID Level", g_raid_opts, 4,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!raid_lvl) {
@@ -594,7 +586,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Strip size radio list */
     strip_size = newCDKRadio(new_ld_screen, (window_x + 15), (window_y + 5),
-            NONE, 9, 10, "</B>Strip Size", strip_opts, 8,
+            NONE, 9, 10, "</B>Strip Size", g_strip_opts, 8,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!strip_size) {
@@ -606,7 +598,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Write cache radio list */
     write_cache = newCDKRadio(new_ld_screen, (window_x + 30), (window_y + 5),
-            NONE, 3, 11, "</B>Write Cache", write_opts, 2,
+            NONE, 3, 11, "</B>Write Cache", g_write_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!write_cache) {
@@ -618,7 +610,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Read cache radio list */
     read_cache = newCDKRadio(new_ld_screen, (window_x + 30), (window_y + 9),
-            NONE, 4, 10, "</B>Read Cache", read_opts, 3,
+            NONE, 4, 10, "</B>Read Cache", g_read_opts, 3,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!read_cache) {
@@ -630,7 +622,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Cache policy radio list */
     cache_policy = newCDKRadio(new_ld_screen, (window_x + 46), (window_y + 5),
-            NONE, 3, 12, "</B>Cache Policy", cache_opts, 2,
+            NONE, 3, 12, "</B>Cache Policy", g_cache_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!cache_policy) {
@@ -642,7 +634,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* BBU cache policy radio list */
     bbu_cache = newCDKRadio(new_ld_screen, (window_x + 46), (window_y + 9),
-            NONE, 3, 16, "</B>BBU Cache Policy", bbu_opts, 2,
+            NONE, 3, 16, "</B>BBU Cache Policy", g_bbu_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!bbu_cache) {
@@ -654,14 +646,14 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(new_ld_screen, (window_x + 26), (window_y + 16),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(new_ld_screen, (window_x + 36),
-            (window_y + 16), "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            (window_y + 16), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
@@ -681,24 +673,24 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
         new_ld_props = (MRLDPROPS *) calloc(1, sizeof(MRLDPROPS));
         new_ld_props->adapter_id = adp_choice;
         temp_int = getCDKRadioSelectedItem(cache_policy);
-        strncpy(new_ld_props->cache_policy, cache_opts[temp_int],
+        strncpy(new_ld_props->cache_policy, g_cache_opts[temp_int],
                 MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(write_cache);
-        strncpy(new_ld_props->write_policy, write_opts[temp_int],
+        strncpy(new_ld_props->write_policy, g_write_opts[temp_int],
                 MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(read_cache);
-        strncpy(new_ld_props->read_policy, read_opts[temp_int],
+        strncpy(new_ld_props->read_policy, g_read_opts[temp_int],
                 MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(bbu_cache);
-        strncpy(new_ld_props->bbu_cache_policy, bbu_opts[temp_int],
+        strncpy(new_ld_props->bbu_cache_policy, g_bbu_opts[temp_int],
                 MAX_MR_ATTR_SIZE);
 
         /* RAID level and stripe size */
         // TODO: Should we check for a valid RAID level + disk combination?
         temp_int = getCDKRadioSelectedItem(raid_lvl);
-        strncpy(new_ld_raid_lvl, raid_opts[temp_int], MAX_MR_ATTR_SIZE);
+        strncpy(new_ld_raid_lvl, g_raid_opts[temp_int], MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(strip_size);
-        strncpy(new_ld_strip_size, strip_opts[temp_int], MAX_MR_ATTR_SIZE);
+        strncpy(new_ld_strip_size, g_strip_opts[temp_int], MAX_MR_ATTR_SIZE);
 
         /* Create the new logical drive */
         temp_int = addMRLogicalDrive(new_ld_props, chosen_disk_cnt,
@@ -749,7 +741,6 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
     MRLDRIVE *mr_ldrives[MAX_MR_LDS] = {NULL};
     CDKSCROLL *ld_list = 0;
-    static char *ld_list_title = "<C></31/B>Choose a Logical Drive\n";
     char *logical_drives[MAX_MR_LDS] = {NULL};
     char *error_msg = NULL, *confirm_msg = NULL;
     int mr_ld_ids[MAX_MR_LDS] = {0};
@@ -807,7 +798,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Get logical drive choice from user */
     ld_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 12, 50,
-            ld_list_title, logical_drives, ld_count,
+            LD_LIST_TITLE, logical_drives, ld_count,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!ld_list) {
         errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
@@ -879,11 +870,6 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             pd_info_line_size = 0;
     int ld_encl_ids[MAX_MR_DISKS] = {0}, ld_slots[MAX_MR_DISKS] = {0},
             mr_ld_ids[MAX_MR_LDS] = {0};
-    static char *ld_list_title = "<C></31/B>Choose a Logical Drive\n";
-    static char *cache_opts[] = {"Cached", "Direct"};
-    static char *write_opts[] = {"WT", "WB"};
-    static char *read_opts[] = {"NORA", "RA", "ADRA"};
-    static char *bbu_opts[] = {"CachedBadBBU", "NoCachedBadBBU"};
     char ld_name_buff[MAX_MR_ATTR_SIZE] = {0},
             pd_info_line_buffer[MAX_PD_INFO_LINE_BUFF] = {0};
     char *temp_pstr = NULL, *error_msg = NULL;
@@ -940,7 +926,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Get logical drive choice from user */
     ld_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 12, 50,
-            ld_list_title, logical_drives, ld_count,
+            LD_LIST_TITLE, logical_drives, ld_count,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
     if (!ld_list) {
         errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
@@ -1049,7 +1035,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Radio lists */
     cache_policy = newCDKRadio(ld_screen, (window_x + 1), (window_y + 13),
-            NONE, 3, 10, "</B>Cache Policy", cache_opts, 2,
+            NONE, 3, 10, "</B>Cache Policy", g_cache_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!cache_policy) {
@@ -1057,13 +1043,13 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     setCDKRadioBackgroundAttrib(cache_policy, COLOR_DIALOG_TEXT);
-    if (strcmp(mr_ld_props->cache_policy, cache_opts[0]) == 0)
+    if (strcmp(mr_ld_props->cache_policy, g_cache_opts[0]) == 0)
         setCDKRadioCurrentItem(cache_policy, 0);
-    else if (strcmp(mr_ld_props->cache_policy, cache_opts[1]) == 0)
+    else if (strcmp(mr_ld_props->cache_policy, g_cache_opts[1]) == 0)
         setCDKRadioCurrentItem(cache_policy, 1);
 
     write_cache = newCDKRadio(ld_screen, (window_x + 16), (window_y + 13),
-            NONE, 3, 10, "</B>Write Cache", write_opts, 2,
+            NONE, 3, 10, "</B>Write Cache", g_write_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!write_cache) {
@@ -1071,13 +1057,13 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     setCDKRadioBackgroundAttrib(write_cache, COLOR_DIALOG_TEXT);
-    if (strcmp(mr_ld_props->write_policy, write_opts[0]) == 0)
+    if (strcmp(mr_ld_props->write_policy, g_write_opts[0]) == 0)
         setCDKRadioCurrentItem(write_cache, 0);
-    else if (strcmp(mr_ld_props->write_policy, write_opts[1]) == 0)
+    else if (strcmp(mr_ld_props->write_policy, g_write_opts[1]) == 0)
         setCDKRadioCurrentItem(write_cache, 1);
 
     read_cache = newCDKRadio(ld_screen, (window_x + 30), (window_y + 13),
-            NONE, 4, 10, "</B>Read Cache", read_opts, 3,
+            NONE, 4, 10, "</B>Read Cache", g_read_opts, 3,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!read_cache) {
@@ -1085,15 +1071,15 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     setCDKRadioBackgroundAttrib(read_cache, COLOR_DIALOG_TEXT);
-    if (strcmp(mr_ld_props->read_policy, read_opts[0]) == 0)
+    if (strcmp(mr_ld_props->read_policy, g_read_opts[0]) == 0)
         setCDKRadioCurrentItem(read_cache, 0);
-    else if (strcmp(mr_ld_props->read_policy, read_opts[1]) == 0)
+    else if (strcmp(mr_ld_props->read_policy, g_read_opts[1]) == 0)
         setCDKRadioCurrentItem(read_cache, 1);
-    else if (strcmp(mr_ld_props->read_policy, read_opts[2]) == 0)
+    else if (strcmp(mr_ld_props->read_policy, g_read_opts[2]) == 0)
         setCDKRadioCurrentItem(read_cache, 2);
 
     bbu_cache = newCDKRadio(ld_screen, (window_x + 45), (window_y + 13),
-            NONE, 3, 12, "</B>BBU Cache Policy", bbu_opts, 2,
+            NONE, 3, 12, "</B>BBU Cache Policy", g_bbu_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!bbu_cache) {
@@ -1101,21 +1087,21 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
         goto cleanup;
     }
     setCDKRadioBackgroundAttrib(bbu_cache, COLOR_DIALOG_TEXT);
-    if (strcmp(mr_ld_props->bbu_cache_policy, bbu_opts[0]) == 0)
+    if (strcmp(mr_ld_props->bbu_cache_policy, g_bbu_opts[0]) == 0)
         setCDKRadioCurrentItem(bbu_cache, 0);
-    else if (strcmp(mr_ld_props->bbu_cache_policy, bbu_opts[1]) == 0)
+    else if (strcmp(mr_ld_props->bbu_cache_policy, g_bbu_opts[1]) == 0)
         setCDKRadioCurrentItem(bbu_cache, 1);
 
     /* Buttons */
     ok_button = newCDKButton(ld_screen, (window_x + 26), (window_y + 18),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(ld_screen, (window_x + 36), (window_y + 18),
-            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
@@ -1148,16 +1134,16 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Set radio inputs */
         temp_int = getCDKRadioSelectedItem(cache_policy);
-        strncpy(mr_ld_props->cache_policy, cache_opts[temp_int],
+        strncpy(mr_ld_props->cache_policy, g_cache_opts[temp_int],
                 MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(write_cache);
-        strncpy(mr_ld_props->write_policy, write_opts[temp_int],
+        strncpy(mr_ld_props->write_policy, g_write_opts[temp_int],
                 MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(read_cache);
-        strncpy(mr_ld_props->read_policy, read_opts[temp_int],
+        strncpy(mr_ld_props->read_policy, g_read_opts[temp_int],
                 MAX_MR_ATTR_SIZE);
         temp_int = getCDKRadioSelectedItem(bbu_cache);
-        strncpy(mr_ld_props->bbu_cache_policy, bbu_opts[temp_int],
+        strncpy(mr_ld_props->bbu_cache_policy, g_bbu_opts[temp_int],
                 MAX_MR_ATTR_SIZE);
 
         /* Set logical drive properties */
@@ -1436,10 +1422,6 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             *dev_node = NULL, *device_size = NULL, *tmp_str_ptr = NULL;
     char *fs_dialog_msg[MAX_FS_DIALOG_INFO_LINES] = {NULL},
             *swindow_info[MAX_MAKE_FS_INFO_LINES] = {NULL};
-    static char *transport[] = {"unknown", "scsi", "ide", "dac960", "cpqarray",
-            "file", "ataraid", "i2o", "ubd", "dasd", "viodasd", "sx8", "dm"},
-            *fs_type_opts[] = {"xfs", "ext2", "ext3", "ext4"},
-            *no_yes[] = {"No (0)", "Yes (1)"};
     FILE *fstab_file = NULL, *new_fstab_file = NULL;
     struct mntent *fstab_entry = NULL,
             addtl_fstab_entry; /* Not a pointer */
@@ -1557,7 +1539,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&fs_dialog_msg[1], " ");
     asprintf(&fs_dialog_msg[2],
             "</B>Model:<!B> %-20.20s </B>Transport:<!B>  %s",
-            device->model, transport[device->type]);
+            device->model, g_transports[device->type]);
     asprintf(&fs_dialog_msg[3],
             "</B>Size:<!B>  %-20.20s </B>Disk label:<!B> %s",
             device_size, (disk_type) ? disk_type->name : "none");
@@ -1617,7 +1599,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
     /* FS type radio list */
     fs_type = newCDKRadio(fs_screen, (window_x + 22), (window_y + 13),
-            NONE, 5, 10, "</B>File System Type", fs_type_opts, 4,
+            NONE, 5, 10, "</B>File System Type", g_fs_type_opts, 4,
             '#' | COLOR_DIALOG_SELECT, 0,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!fs_type) {
@@ -1628,7 +1610,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Partition yes/no widget (radio) */
     add_part = newCDKRadio(fs_screen, (window_x + 42), (window_y + 13),
-            NONE, 3, 10, "</B>Partition Device", no_yes, 2,
+            NONE, 3, 10, "</B>Partition Device", g_no_yes_opts, 2,
             '#' | COLOR_DIALOG_SELECT, 1,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!add_part) {
@@ -1640,14 +1622,14 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(fs_screen, (window_x + 26), (window_y + 19),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(fs_screen, (window_x + 36), (window_y + 19),
-            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
@@ -1682,8 +1664,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* We should probably also use the findfs tool to see if any devices 
-         * actually use the given file system label, but for now we only consider
-         * the fstab file as the source of truth */
+         * actually use the given file system label, but for now we only
+         * consider the fstab file as the source of truth */
         if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
             asprintf(&error_msg, "setmntent(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
@@ -1751,7 +1733,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                             "Calling ped_disk_new_fresh() failed.", NULL);
                     goto cleanup;
                 }
-                file_system_type = ped_file_system_type_get(fs_type_opts[temp_int]);
+                file_system_type = ped_file_system_type_get(g_fs_type_opts[temp_int]);
                 if ((partition = ped_partition_new(disk, PED_PARTITION_NORMAL,
                         file_system_type, 0, (device->length - 1))) == NULL) {
                     errorDialog(main_cdk_screen,
@@ -1786,14 +1768,14 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             /* Create the file system */
             if (i < MAX_MAKE_FS_INFO_LINES) {
                 asprintf(&swindow_info[i], "<C>Creating new %s file system...",
-                        fs_type_opts[temp_int]);
+                        g_fs_type_opts[temp_int]);
                 addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
                 i++;
             }
             snprintf(mkfs_cmd, MAX_SHELL_CMD_LEN,
                     "mkfs.%s -L %s -%s %s > /dev/null 2>&1",
-                    fs_type_opts[temp_int], fs_label_buff,
-                    ((strcmp(fs_type_opts[temp_int], "xfs") == 0) ? "f" : "F"),
+                    g_fs_type_opts[temp_int], fs_label_buff,
+                    ((strcmp(g_fs_type_opts[temp_int], "xfs") == 0) ? "f" : "F"),
                     new_blk_dev_node);
             ret_val = system(mkfs_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
@@ -1834,7 +1816,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             asprintf(&addtl_fstab_entry.mnt_fsname, "LABEL=%s", fs_label_buff);
             asprintf(&addtl_fstab_entry.mnt_dir, "%s/%s",
                     VDISK_MNT_BASE, fs_label_buff);
-            asprintf(&addtl_fstab_entry.mnt_type, "%s", fs_type_opts[temp_int]);
+            asprintf(&addtl_fstab_entry.mnt_type, "%s",
+                    g_fs_type_opts[temp_int]);
             asprintf(&addtl_fstab_entry.mnt_opts, "defaults");
             addtl_fstab_entry.mnt_freq = 1;
             addtl_fstab_entry.mnt_passno = 1;
@@ -2135,14 +2118,14 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Buttons */
     ok_button = newCDKButton(vdisk_screen, (window_x + 26), (window_y + 10),
-            "</B>   OK   ", ok_cb, FALSE, FALSE);
+            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
     if (!ok_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;
     }
     setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
     cancel_button = newCDKButton(vdisk_screen, (window_x + 36), (window_y + 10),
-            "</B> Cancel ", cancel_cb, FALSE, FALSE);
+            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         goto cleanup;

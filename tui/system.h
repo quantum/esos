@@ -19,14 +19,17 @@ extern "C" {
 #define CDK_MENU_MAX_SIZE       32
 
 /* Misc. ESOS system-wide settings */
-#define ESOS_SUPERUSER  "root"
-#define ESOS_GROUP      "root"
-#define MAX_USERS       32
-#define MAX_UNAME_LEN   20
-#define MAX_PASSWD_LEN  64
-#define ESOS_BOOT_PART  "esos_boot"
-#define DEFAULT_ETH_MTU "1500"
-#define DEFAULT_IB_MTU  "65520"
+#define ESOS_SUPERUSER          "root"
+#define ESOS_GROUP              "root"
+#define MAX_USERS               32
+#define MAX_UNAME_LEN           20
+#define MAX_PASSWD_LEN          64
+#define ESOS_BOOT_PART          "esos_boot"
+#define DEFAULT_ETH_MTU         "1500"
+#define DEFAULT_IB_MTU          "65520"
+#define TEMP_DIR                "/tmp"
+#define SYS_FILE_SYSTEMS        "/proc /sys /dev/pts /dev/shm /boot " \
+        "/mnt/root /mnt/conf /mnt/logs /tmp"
 
 /* System menu layout */
 #define SYSTEM_MENU             0
