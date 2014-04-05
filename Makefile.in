@@ -1039,6 +1039,7 @@ pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	$(MAKE) --directory=$(src_dir)/crmd DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/fencing DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/lrmd DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(src_dir)/attrd DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/tools DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/xml DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(src_dir)/cts DESTDIR=$(IMAGE_DIR) install
