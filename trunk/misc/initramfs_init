@@ -13,7 +13,6 @@ rescue_shell() {
 sleep 10
 
 # A few requirements
-echo "Initializing tmpfs file system..."
 mount -t proc none /proc
 mount -t sysfs none /sys
 mdev -s
@@ -39,6 +38,7 @@ mount -t tmpfs -o size=1024m tmpfs /mnt/root || rescue_shell
 mount -o ro $(findfs LABEL=esos_root) /mnt/tmp || rescue_shell
 
 # Setup the root file system
+echo "Initializing tmpfs file system..."
 cd /mnt/tmp
 spinner="/-\|"
 spin_pos=0

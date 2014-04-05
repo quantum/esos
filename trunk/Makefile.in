@@ -93,7 +93,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		parted-2.3.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2 \
 		libqb-0.14.4.tar.xz \
-		pacemaker-1.1.8.tar.gz \
+		pacemaker-1.1.11.tar.gz \
 		corosync-2.3.3.tar.gz \
 		nss-3.14.1.tar.gz \
 		glib-2.16.6.tar.bz2 \
