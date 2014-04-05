@@ -1,3 +1,8 @@
+2014-04-05 01:42  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, misc/initramfs_init:
+	  up'd version of pacemaker to 1.1.11
+
 2014-04-01 20:05  msmith626@gmail.com
 
 	* misc/linux-3.12.7.config: added additional crpto kernel options
