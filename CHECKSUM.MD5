@@ -1,7 +1,6 @@
 05f70470aea2ef7efbb0845b2b116720  e2fsprogs-1.41.14.tar.gz
 cce05daf61a64501ef6cd8da1f727ec6  ncurses-5.7.tar.gz
 86f5e1c23b4c4845f23b9b7b493fb53d  openssh-5.8p1.tar.gz
-7040b89c4c58c7a1016c0dfa6e821c86  openssl-1.0.0e.tar.gz
 c499a9c04d08b1424fc808104850a0cf  perl-5.12.4.tar.bz2
 933d250a93c46050137fec561b562f1a  qlogic_fw-20120101.tar.gz
 65b4e0df4934a6cd08c506cabcbe584f  ssmtp-2.64.tar.bz2
@@ -108,3 +107,4 @@ c39ea40a7598e49b6dc961ee7de38f57  kexec-tools-2.0.6.tar.gz
 70ff343bbe6657b69beb23458e3e0b98  makedumpfile-1.5.5.tar.gz
 050a4909e452d01ab4747fd69d4036e0  elfutils-0.158.tar.bz2
 22a90e3956bb790cd8acff6b7999f562  pacemaker-1.1.11.tar.gz
+de62b43dfcd858e66a74bee1c834e959  openssl-1.0.1g.tar.gz
