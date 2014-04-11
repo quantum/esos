@@ -1,3 +1,8 @@
+2014-04-11 00:55  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/fstab: up'd
+	  openssl to 1.0.1g; changed size of /dev/shm tmpfs to 128m
+
 2014-04-05 14:59  msmith626@gmail.com
 
 	* Makefile.in, etc/fstab: fixed /dev/shm permissions in fstab;
