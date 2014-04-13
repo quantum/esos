@@ -1,3 +1,8 @@
+2014-04-13 02:19  msmith626@gmail.com
+
+	* scripts/health_chk.sh: updated health check script to not mark
+	  "hot spare" MR PDs as failed (thanks Danilo)
+
 2014-04-11 00:55  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/fstab: up'd
