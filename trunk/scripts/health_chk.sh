@@ -53,7 +53,8 @@ if [ -x "${MEGACLI}" ]; then
                 pd_count=$(expr ${pd_count} + 1)
                 drv_state=`echo "${i}" | cut -d: -f2 | sed 's/^ *//' | tr -d '\n'`
                 if [ "${drv_state}" != "Unconfigured(good), Spun Up" ] &&
-                    [ "${drv_state}" != "Online, Spun Up" ]; then
+                    [ "${drv_state}" != "Online, Spun Up" ] &&
+                    [ "${drv_state}" != "Hotspare, Spun Up" ]; then
                     echo "** Warning! It appears a MegaRAID physical drive has" \
                         "failed on adapter ${adapter}!" 1>&2
                     echo "** Physical drive state: ${drv_state}" 1>&2
