@@ -26,30 +26,65 @@ if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
     exit 1
 fi
 
+load_kern_mods() {
+    /bin/echo "Loading SCST kernel modules..."
+    for i in ${SCST_MODS}; do
+        /sbin/modprobe ${i} || return 1
+    done
+}
+
+unload_kern_mods() {
+    /bin/echo "Unloading SCST kernel modules..."
+    for i in $(/bin/echo ${SCST_MODS} | /usr/bin/tr ' ' '\n' | \
+        /usr/bin/tac | /usr/bin/tr '\n' ' '); do
+        /sbin/rmmod -w ${i} || return 1
+    done
+}
+
+start_user_progs() {
+    /bin/echo "Starting SCST userland daemons..."
+    ${ISCSI_SCSTD} || return 1
+    /bin/touch ${ISCSI_SCSTD_LOCK}
+    ${LLDPAD} -d || return 1
+    /bin/touch ${LLDPAD_LOCK}
+    ${FCOEMON} -s || return 1
+    /bin/touch ${FCOEMON_LOCK}
+}
+
+stop_user_progs() {
+    /bin/echo "Stopping SCST userland daemons..."
+    /bin/kill -TERM $(/bin/pidof ${FCOEMON}) || return 1
+    wait_for_stop ${FCOEMON} && /bin/rm -f ${FCOEMON_LOCK}
+    /bin/kill -TERM $(/bin/pidof ${LLDPAD}) || return 1
+    wait_for_stop ${LLDPAD} && /bin/rm -f ${LLDPAD_LOCK}
+    /bin/kill -TERM $(/bin/pidof ${ISCSI_SCSTD}) || return 1
+    wait_for_stop ${ISCSI_SCSTD} && /bin/rm -f ${ISCSI_SCSTD_LOCK}
+}
+
+apply_config() {
+    if [ -f ${SCST_CFG} ]; then
+        /bin/echo "Applying SCST configuration..."
+        /usr/sbin/scstadmin -config ${SCST_CFG} || return 1
+    fi
+}
+
+write_config() {
+    /bin/echo "Saving SCST configuration..."
+    ${SCSTADMIN} -force -nonkey -write_config ${SCST_CFG} || return 1
+}
+
 start() {
     # If our pre-SCST file exists, run it
     if [ -f /etc/pre-scst_xtra_conf ]; then
         /bin/echo "Pre-SCST user config. file found; running..."
         /bin/sh /etc/pre-scst_xtra_conf
     fi
-    /bin/echo "Loading SCST modules and starting daemons..."
     # Load the SCST core modules and target drivers
-    for i in ${SCST_MODS}; do
-        /sbin/modprobe ${i} || exit 1
-    done
-    # Start the iSCSI SCST daemon
-    ${ISCSI_SCSTD} || exit 1
-    /bin/touch ${ISCSI_SCSTD_LOCK}
-    # Start the daemons required for FCoE
-    ${LLDPAD} -d || exit 1
-    /bin/touch ${LLDPAD_LOCK}
-    ${FCOEMON} -s || exit 1
-    /bin/touch ${FCOEMON_LOCK}
-    # Configure SCST
-    if [ -f ${SCST_CFG} ]; then
-        /bin/echo "Applying SCST configuration..."
-        /usr/sbin/scstadmin -config ${SCST_CFG}
-    fi
+    load_kern_mods || exit 1
+    # Start the iSCSI SCST daemon and daemons required for FCST
+    start_user_progs || exit 1
+    # Configure SCST (if it fails, stop SCST)
+    apply_config || (stop_user_progs; unload_kern_mods; exit 1)
     # If our post-SCST file exists, run it
     if [ -f /etc/post-scst_xtra_conf ]; then
         /bin/echo "Post-SCST user config. file found; running..."
@@ -59,21 +94,11 @@ start() {
 
 stop() {
     # Save the SCST configuration, just in case
-    /bin/echo "Saving SCST configuration..."
-    ${SCSTADMIN} -force -nonkey -write_config ${SCST_CFG}
-    /bin/echo "Stopping SCST daemons and unloading modules..."
-    # Stop all of the userland daemons first
-    /bin/kill -TERM $(/bin/pidof ${FCOEMON}) || exit 1
-    wait_for_stop ${FCOEMON} && /bin/rm -f ${FCOEMON_LOCK}
-    /bin/kill -TERM $(/bin/pidof ${LLDPAD}) || exit 1
-    wait_for_stop ${LLDPAD} && /bin/rm -f ${LLDPAD_LOCK}
-    /bin/kill -TERM $(/bin/pidof ${ISCSI_SCSTD}) || exit 1
-    wait_for_stop ${ISCSI_SCSTD} && /bin/rm -f ${ISCSI_SCSTD_LOCK}
+    write_config || exit 1
+    # Stop all of the userland daemons
+    stop_user_progs || exit 1
     # Unload all of the modules in reverse order
-    for i in $(/bin/echo ${SCST_MODS} | /usr/bin/tr ' ' '\n' | \
-        /usr/bin/tac | /usr/bin/tr '\n' ' '); do
-        /sbin/rmmod -w ${i}
-    done
+    unload_kern_mods || exit 1
 }
 
 # Perform specified action
