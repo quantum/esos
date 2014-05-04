@@ -1,3 +1,10 @@
+2014-05-04 18:35  msmith626@gmail.com
+
+	* etc/rc.d/rc.scst: rework of rc.scst... if an error occurs while
+	  configuring SCST (eg, missing device) the rc script will stop
+	  daemons and unload modules to prevent clobbering /etc/scst.conf
+	  with an empty config
+
 2014-04-13 02:19  msmith626@gmail.com
 
 	* scripts/health_chk.sh: updated health check script to not mark
