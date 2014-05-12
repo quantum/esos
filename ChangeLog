@@ -1,3 +1,9 @@
+2014-05-12 21:16  msmith626@gmail.com
+
+	* scripts/health_chk.sh, tui/menu_actions.c: updated health check
+	  script to handle CacheCade virtual drives (for MR); fixed string
+	  compare issue in getBlockDevChoice()
+
 2014-05-04 18:35  msmith626@gmail.com
 
 	* etc/rc.d/rc.scst: rework of rc.scst... if an error occurs while
