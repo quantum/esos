@@ -32,7 +32,7 @@ if [ -x "${MEGACLI}" ]; then
         if [ ${ld_count} -gt 0 ]; then
             echo "Adapter ${adapter} has ${ld_count} logical drive(s)."
             ld_list=`${MEGACLI} -LDInfo -Lall -a${adapter} -NoLog | \
-                grep "Virtual Drive:" | cut -d" " -f3`
+                grep "Virtual Drive:" | sed 's/CacheCade //g' | cut -d" " -f3`
             for logical_drv in ${ld_list}; do
                 ld_state=`${MEGACLI} -LDInfo -L${logical_drv} -a${adapter} -NoLog | \
                     grep "State" | cut -d: -f2 | tr -d ' ' | tr -d '\n'`
