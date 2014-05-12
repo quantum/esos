@@ -1105,7 +1105,8 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0},
             attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
-            device_id[MAX_SYSFS_ATTR_SIZE] = {0};
+            device_id[MAX_SYSFS_ATTR_SIZE] = {0},
+            dev_node_test[MISC_STRING_LEN] = {0};
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
     FILE *scsi_id_cmd = NULL;
@@ -1121,6 +1122,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
         errorDialog(cdk_screen, "Calling blkid_get_devname() failed.", NULL);
         goto cleanup;
     }
+    *(boot_dev_node + strlen(boot_dev_node) - 1) = '\0';
 
     /* Open the directory to get block devices */
     if ((dir_stream = opendir(SYSFS_BLOCK)) == NULL) {
@@ -1133,12 +1135,14 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     /* Loop over each entry in the directory (block devices) */
     while ((dir_entry = readdir(dir_stream)) != NULL) {
         if (dir_entry->d_type == DT_LNK) {
+            snprintf(dev_node_test, MISC_STRING_LEN,
+                    "/dev/%s", dir_entry->d_name);
             /* We don't want to show the ESOS boot block device (USB drive) */
-            if (strstr(boot_dev_node, dir_entry->d_name) != NULL) {
+            if (strcmp(boot_dev_node, dev_node_test) == 0) {
                 continue;
             /* For DRBD block devices (not sure if the /dev/drbdX format is
              forced when using drbdadm, so this may be a problem */
-            } else if ((strstr(dir_entry->d_name, "drbd")) != NULL) {
+            } else if ((strstr(dev_node_test, "/dev/drbd")) != NULL) {
                 asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);
@@ -1149,7 +1153,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 dev_cnt++;
             /* For software RAID (md) devices; it appears the mdadm tool forces
              the /dev/mdX device node name format */
-            } else if ((strstr(dir_entry->d_name, "md")) != NULL) {
+            } else if ((strstr(dev_node_test, "/dev/md")) != NULL) {
                 asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);
@@ -1161,7 +1165,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 asprintf(&blk_dev_info[dev_cnt], "Level: %s", tmp_buff);
                 dev_cnt++;
             /* For normal SCSI block devices */
-            } else if ((strstr(dir_entry->d_name, "sd")) != NULL) {
+            } else if ((strstr(dev_node_test, "/dev/sd")) != NULL) {
                 asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);
@@ -1173,7 +1177,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 asprintf(&blk_dev_info[dev_cnt], "Model: %s", tmp_buff);
                 dev_cnt++;
             /* For device mapper (eg, LVM2) block devices */
-            } else if ((strstr(dir_entry->d_name, "dm-")) != NULL) {
+            } else if ((strstr(dev_node_test, "/dev/dm-")) != NULL) {
                 asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);
@@ -1185,7 +1189,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 asprintf(&blk_dev_info[dev_cnt], "Name: %s", tmp_buff);
                 dev_cnt++;
             /* For Compaq SMART array controllers */
-            } else if ((strstr(dir_entry->d_name, "cciss")) != NULL) {
+            } else if ((strstr(dev_node_test, "/dev/cciss")) != NULL) {
                 asprintf(&blk_dev_name[dev_cnt], "%s", dir_entry->d_name);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                         SYSFS_BLOCK, blk_dev_name[dev_cnt]);
