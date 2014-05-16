@@ -97,6 +97,17 @@ Setting a NTP server is the easiest way to keep your ESOS system time up to date
 
 <br>
 
+=== Serial Console Access ===
+Enterprise Storage OS supports console access via a serial port interface; here are the settings to configure on your terminal emulator:
+  * Baud: 9600
+  * Data bits: 8
+  * Parity bit: None
+  * Stop bit: 1
+
+Two serial ports are supported by default (ttyS0, ttyS1) in ESOS. For GRUB and kernel messages, use "COM1" (ttyS0) and for logging into a running ESOS system, getty is spawned on both ttyS0 and ttyS1.
+
+<br>
+
 === What's Next ===
 From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
 
