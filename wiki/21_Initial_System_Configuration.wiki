@@ -104,7 +104,7 @@ Enterprise Storage OS supports console access via a serial port interface; here 
   * Parity bit: None
   * Stop bit: 1
 
-Two serial ports are supported by default (ttyS0, ttyS1) in ESOS. For GRUB and kernel messages, use "COM1" (ttyS0) and for logging into a running ESOS system, getty is spawned on both ttyS0 and ttyS1.
+Two serial ports are supported by default (ttyS0, ttyS1) in ESOS. For GRUB and kernel messages, use "COM1" (ttyS0) and for logging into a running ESOS system, getty is spawned on both ttyS0 and ttyS1. The TUI is not available when connecting via serial, only the shell is usable.
 
 <br>
 
