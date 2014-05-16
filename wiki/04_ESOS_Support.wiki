@@ -21,6 +21,10 @@ The "Debug" kernel/mode should be used when you are having problems or issues th
 
 The advantage is you can easily reboot and switch to debugging mode if you are having problems without re-configuring anything. All of the target/device/storage/system/etc. configuration is exactly the same as the production mode.
 
+The init/rc boot messages are also logged to a text file (via bootlogd): /var/log/boot
+
+Check this file if you get a message indicating SCST is not running. Chances are there is some missing SCST device and SCST is automatically unloaded to prevent clobbering the SCST configuration file (/etc/scst.conf).
+
 <br>
 
 === Kernel Panics ===
