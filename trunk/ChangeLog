@@ -1,3 +1,19 @@
+2014-05-16 18:46  msmith626@gmail.com
+
+	* etc/inittab, etc/mdev.conf, etc/profile, etc/rc.d/rc.sysinit,
+	  tui/dialogs.h, tui/main.c, tui/menu_actions-back_storage.c,
+	  tui/menu_actions-devices.c, tui/menu_actions.c, tui/prototypes.h,
+	  tui/system.h, tui/utility.c: updated LUN Layout dialog name;
+	  fixed regex for /dev/sd* dev nodes in mdev.conf (resolves issue #
+	  75); updated Back-End Storage menu choice names (MegaRAID);
+	  updated getBlockDevChoice() func to not display devices that are
+	  "open" in list; added support for logging init/rc messages (via
+	  bootlogd); updated inittab to spawn getty on ttyS1; increased
+	  virtual disk file write size to 256K (add vdisk file dialog);
+	  added a new Virtual Disk File List dialog that displays virtual
+	  disk files (and sizes); modified /etc/profile so the TUI is not
+	  launched when connected via serial (only shell)
+
 2014-05-12 21:16  msmith626@gmail.com
 
 	* scripts/health_chk.sh, tui/menu_actions.c: updated health check
