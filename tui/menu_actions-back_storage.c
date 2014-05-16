@@ -2386,3 +2386,105 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     }
     return;
 }
+
+
+/*
+ * Run the Virtual Disk File List dialog
+ */
+void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
+    CDKSWINDOW *vdisk_files = 0;
+    char *swindow_info[MAX_VDLIST_INFO_LINES] = {NULL};
+    char *error_msg = NULL, *pretty_size = NULL;
+    int i = 0, line_pos = 0;
+    char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
+            fs_type[MAX_FS_ATTR_LEN] = {0},
+            vd_list_title[VDLIST_INFO_COLS] = {0},
+            file_path[MAX_SYSFS_PATH_SIZE] = {0};
+    boolean mounted = FALSE;
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+    struct stat file_stat = {0};
+
+    /* Have the user select a file system */
+    getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type, &mounted);
+    if (fs_name[0] == '\0')
+        return;
+
+    /* Open the directory */
+    if ((dir_stream = opendir(fs_path)) == NULL) {
+        asprintf(&error_msg, "opendir(): %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        FREE_NULL(error_msg);
+        return;
+    }
+
+    /* Setup scrolling window widget */
+    snprintf(vd_list_title, VDLIST_INFO_COLS,
+            "<C></31/B>Virtual Disk File List (%.25s)\n", fs_path);
+    vdisk_files = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+            (VDLIST_INFO_ROWS + 2), (VDLIST_INFO_COLS + 2),
+            vd_list_title, MAX_VDLIST_INFO_LINES, TRUE, FALSE);
+    if (!vdisk_files) {
+        errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
+        return;
+    }
+    setCDKSwindowBackgroundAttrib(vdisk_files, COLOR_DIALOG_TEXT);
+    setCDKSwindowBoxAttribute(vdisk_files, COLOR_DIALOG_BOX);
+
+    /* Loop over each entry in the directory */
+    if (line_pos < MAX_VDLIST_INFO_LINES) {
+        asprintf(&swindow_info[line_pos], "<C></B>%-20.20s %15.15s",
+                "File Name", "File Size");
+        line_pos++;
+    }
+    while ((dir_entry = readdir(dir_stream)) != NULL) {
+        /* We only want the files */
+        if (dir_entry->d_type != DT_DIR) {
+            /* Add the contents to the scrolling window widget */
+            if (line_pos < MAX_VDLIST_INFO_LINES) {
+                snprintf(file_path, MAX_SYSFS_PATH_SIZE, "%s/%s",
+                        fs_path, dir_entry->d_name);
+                if (stat(file_path, &file_stat) == -1) {
+                    asprintf(&error_msg, "stat(): %s", strerror(errno));
+                    asprintf(&swindow_info[line_pos], "<C>%-20.20s %15.15s",
+                            dir_entry->d_name, error_msg);
+                    FREE_NULL(error_msg);
+                } else {
+                    pretty_size = prettyFormatBytes(file_stat.st_size);
+                    asprintf(&swindow_info[line_pos], "<C>%-20.20s %15.15s",
+                            dir_entry->d_name, pretty_size);
+                    FREE_NULL(pretty_size);
+                }
+                line_pos++;
+            }
+        }
+    }
+
+    /* Close the directory stream */
+    closedir(dir_stream);
+
+    /* Add a message to the bottom explaining how to close the dialog */
+    if (line_pos < MAX_VDLIST_INFO_LINES) {
+        asprintf(&swindow_info[line_pos], " ");
+        line_pos++;
+    }
+    if (line_pos < MAX_VDLIST_INFO_LINES) {
+        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        line_pos++;
+    }
+
+    /* Set the scrolling window content */
+    setCDKSwindowContents(vdisk_files, swindow_info, line_pos);
+
+    /* The 'g' makes the swindow widget scroll to the top, then activate */
+    injectCDKSwindow(vdisk_files, 'g');
+    activateCDKSwindow(vdisk_files, 0);
+
+    /* We fell through -- the user exited the widget, but we don't care how */
+    destroyCDKSwindow(vdisk_files);
+
+    /* Done */
+    for (i = 0; i < MAX_VDLIST_INFO_LINES; i++)
+        FREE_NULL(swindow_info[i]);
+    return;
+}

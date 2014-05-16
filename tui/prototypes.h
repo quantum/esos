@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#include <inttypes.h>
+
 #include "system.h"
 #include "megaraid.h"
 
@@ -98,6 +100,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen);
 void removeFSDialog(CDKSCREEN *main_cdk_screen);
 void addVDiskFileDialog(CDKSCREEN *main_cdk_screen);
 void delVDiskFileDialog(CDKSCREEN *main_cdk_screen);
+void vdiskFileListDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_actions-interface.c */
 void helpDialog(CDKSCREEN *main_cdk_screen);
@@ -115,6 +118,7 @@ int countSCSTInitUses(char tgt_name[], char tgt_driver[], char init_name[]);
 boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
         int *driver_cnt);
 int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]);
+char *prettyFormatBytes(uint64_t size);
 
 /* strings.c */
 size_t g_scst_dev_types_size();
