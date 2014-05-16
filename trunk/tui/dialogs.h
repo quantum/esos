@@ -59,6 +59,9 @@ extern "C" {
 #define CRM_INFO_ROWS                   12
 #define CRM_INFO_COLS                   68
 #define MAX_CRM_INFO_LINES              512
+#define VDLIST_INFO_ROWS                10
+#define VDLIST_INFO_COLS                70
+#define MAX_VDLIST_INFO_LINES           512
 
 /* Other window/screen/label/etc. sizing limits */
 #define MAX_FS_DIALOG_INFO_LINES        11

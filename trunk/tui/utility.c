@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <syslog.h>
+#include <inttypes.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -269,4 +270,30 @@ int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]) {
     /* Done */
     closedir(dir_stream);
     return lun_count;
+}
+
+/*
+ * This function takes a number of bytes and formats/converts the value for
+ * a "human-readable" representation of the number (eg, 2048 returns "2 KiB").
+ * Originally taken from here: http://stackoverflow.com/questions/3898840
+ */
+char *prettyFormatBytes(uint64_t size) {
+    static const char *sizes[] = {"EiB", "PiB", "TiB",
+    "GiB", "MiB", "KiB", "B"};
+    uint64_t multiplier = (1024ULL * 1024ULL * 1024ULL *
+    1024ULL * 1024ULL * 1024ULL);
+    int i = 0;
+    char *result = (char *) malloc(sizeof (char) * 20);
+
+    for (i = 0; i < (sizeof(sizes)/sizeof(*(sizes))); i++, multiplier /= 1024) {
+        if (size < multiplier)
+            continue;
+        if ((size % multiplier) == 0)
+            sprintf(result, "%" PRIu64 " %s", size / multiplier, sizes[i]);
+        else
+            sprintf(result, "%.1f %s", (float) size / multiplier, sizes[i]);
+        return result;
+    }
+    strcpy(result, "0");
+    return result;
 }

@@ -12,6 +12,7 @@
 #include <cdk/cdkscreen.h>
 #include <mntent.h>
 #include <blkid/blkid.h>
+#include <fcntl.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -1093,7 +1094,8 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
  */
 char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     CDKSCROLL *block_dev_list = 0;
-    int blk_dev_choice = 0, i = 0, dev_cnt = 0, exit_stat = 0, ret_val = 0;
+    int blk_dev_choice = 0, i = 0, dev_cnt = 0, exit_stat = 0, ret_val = 0,
+            blk_dev_fd = 0;
     char *blk_dev_name[MAX_BLOCK_DEVS] = {NULL},
             *blk_dev_info[MAX_BLOCK_DEVS] = {NULL},
             *blk_dev_size[MAX_BLOCK_DEVS] = {NULL},
@@ -1137,6 +1139,18 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
         if (dir_entry->d_type == DT_LNK) {
             snprintf(dev_node_test, MISC_STRING_LEN,
                     "/dev/%s", dir_entry->d_name);
+            /* Test to see if the block device is already open */
+            if ((blk_dev_fd = open(dev_node_test, O_EXCL)) == -1) {
+                continue;
+            } else {
+                if (close(blk_dev_fd) == -1) {
+                    asprintf(&error_msg, "close(): %s", strerror(errno));
+                    errorDialog(cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                    goto cleanup;
+                }
+            }
+            
             /* We don't want to show the ESOS boot block device (USB drive) */
             if (strcmp(boot_dev_node, dev_node_test) == 0) {
                 continue;

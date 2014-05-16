@@ -15,6 +15,8 @@
 /bin/echo /sbin/mdev > /proc/sys/kernel/hotplug
 /sbin/mdev -s
 
+/sbin/bootlogd -c
+
 /bin/echo "Performing initial configuration sync..."
 /usr/local/sbin/usb_sync.sh
 

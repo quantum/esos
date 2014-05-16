@@ -85,15 +85,15 @@ int main(int argc, char** argv) {
 
     menu_list[BACK_STORAGE_MENU][0] = "</29/B/U>B<!29><!U>ack-End Storage  <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_PROP] = \
-            "</B>Adapter Properties      <!B>";
+            "</B>MR Adapter Properties   <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_INFO] = \
-            "</B>Adapter Information     <!B>";
+            "</B>MR Adapter Information  <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VOL] = \
-            "</B>Add Volume              <!B>";
+            "</B>Add MegaRAID Volume     <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VOL] = \
-            "</B>Delete Volume           <!B>";
+            "</B>Delete MegaRAID Volume  <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VOL_PROP] = \
-            "</B>Volume Properties       <!B>";
+            "</B>MR Volume Properties    <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DRBD_STAT] = \
             "</B>DRBD Status             <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_SOFT_RAID_STAT] = \
@@ -108,6 +108,8 @@ int main(int argc, char** argv) {
             "</B>Add Virtual Disk File   <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VDISK_FILE] = \
             "</B>Delete Virtual Disk File<!B>";
+    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VDISK_FILE_LIST] = \
+            "</B>Virtual Disk File List  <!B>";
 
     menu_list[HOSTS_MENU][0] = "</29/B/U>H<!29><!U>osts  <!B>";
     menu_list[HOSTS_MENU][HOSTS_ADD_GROUP] = \
@@ -121,7 +123,7 @@ int main(int argc, char** argv) {
 
     menu_list[DEVICES_MENU][0] = "</29/B/U>D<!29><!U>evices  <!B>";
     menu_list[DEVICES_MENU][DEVICES_LUN_LAYOUT] = \
-            "</B>LUN Layout        <!B>";
+            "</B>LUN/Group Layout  <!B>";
     menu_list[DEVICES_MENU][DEVICES_DEV_INFO] = \
             "</B>Device Information<!B>";
     menu_list[DEVICES_MENU][DEVICES_ADD_DEV] = \
@@ -160,7 +162,7 @@ int main(int argc, char** argv) {
     /* Set menu sizes and locations */
     submenu_size[SYSTEM_MENU]       = 12;
     menu_loc[SYSTEM_MENU]           = LEFT;
-    submenu_size[BACK_STORAGE_MENU] = 13;
+    submenu_size[BACK_STORAGE_MENU] = 14;
     menu_loc[BACK_STORAGE_MENU]     = LEFT;
     submenu_size[HOSTS_MENU]        = 5;
     menu_loc[HOSTS_MENU]            = LEFT;
@@ -465,6 +467,11 @@ int main(int argc, char** argv) {
                     submenu_choice == BACK_STORAGE_DEL_VDISK_FILE - 1) {
                 /* Delete Virtual Disk File dialog */
                 delVDiskFileDialog(cdk_screen);
+
+            } else if (menu_choice == BACK_STORAGE_MENU &&
+                    submenu_choice == BACK_STORAGE_VDISK_FILE_LIST - 1) {
+                /* Virtual Disk File List dialog */
+                vdiskFileListDialog(cdk_screen);
 
             } else if (menu_choice == HOSTS_MENU &&
                     submenu_choice == HOSTS_ADD_GROUP - 1) {

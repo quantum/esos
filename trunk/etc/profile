@@ -8,12 +8,19 @@ ulimit -n 10240
 ulimit -c unlimited
 source /etc/bashrc
 
-# Run the TUI binary and if it doesn't exit cleanly, fall through to the shell
-/usr/local/bin/esos_tui
-tui_exit=${?}
-if [ ${tui_exit} -eq 0 ]; then
-    exit 0
+if [[ $(tty) =~ /dev/ttyS[0-9] ]]; then
+    # Don't run the TUI if we're connected via serial
+    echo "Connected via serial ($(tty))..."
+    :
 else
-    clear
-    echo "Something broke; the TUI exited with ${tui_exit}."
+    # Run the TUI binary and if it doesn't exit
+    # cleanly, fall through to the shell
+    /usr/local/bin/esos_tui
+    tui_exit=${?}
+    if [ ${tui_exit} -eq 0 ]; then
+        exit 0
+    else
+        clear
+        echo "Something broke; the TUI exited with ${tui_exit}."
+    fi
 fi

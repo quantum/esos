@@ -1255,7 +1255,7 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 /*
- * Run the LUN Layout dialog
+ * Run the LUN/Group Layout dialog
  */
 void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lun_info = 0;
@@ -1279,7 +1279,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     /* Setup scrolling window widget */
     lun_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (LUN_LAYOUT_ROWS + 2), (LUN_LAYOUT_COLS + 2),
-            "<C></31/B>SCST LUN Layout\n",
+            "<C></31/B>SCST LUN/Group Layout\n",
             MAX_LUN_LAYOUT_LINES, TRUE, FALSE);
     if (!lun_info) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);

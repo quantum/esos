@@ -59,6 +59,7 @@ extern "C" {
 #define BACK_STORAGE_REMOVE_FS          10
 #define BACK_STORAGE_ADD_VDISK_FILE     11
 #define BACK_STORAGE_DEL_VDISK_FILE     12
+#define BACK_STORAGE_VDISK_FILE_LIST    13
 
 /* Hosts menu layout */
 #define HOSTS_MENU      2
@@ -95,7 +96,7 @@ extern "C" {
 /* Misc. limits */
 #define GIBIBYTE_SIZE           1073741824LL
 #define MEBIBYTE_SIZE           1048576LL
-#define VDISK_WRITE_SIZE        32768
+#define VDISK_WRITE_SIZE        262144
 #define MAX_SHELL_CMD_LEN       256
 #define MISC_STRING_LEN         128
 
