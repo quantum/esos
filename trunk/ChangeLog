@@ -1,3 +1,8 @@
+2014-05-19 16:03  msmith626@gmail.com
+
+	* Makefile.in, tui/main.c: updated "no SCST" message; fixed build
+	  issue (ssl dep) with bcache-tools
+
 2014-05-16 18:46  msmith626@gmail.com
 
 	* etc/inittab, etc/mdev.conf, etc/profile, etc/rc.d/rc.sysinit,
