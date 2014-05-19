@@ -1566,7 +1566,7 @@ nrpe: glibc openssl
 	NAGIOS_INSTALL_OPTS="" NRPE_INSTALL_OPTS="" install
 	$(TOUCH) $(@)
 
-bcache-tools: glibc util-linux
+bcache-tools: glibc util-linux openssl
 	$(MAKE) --directory=$(src_dir) CC="$(esos_cc)" \
 	LDLIBS="-lssl -lcrypto -ldl -lblkid -luuid" \
 	CFLAGS="-I$(IMAGE_DIR)/usr/include/blkid \

@@ -198,8 +198,9 @@ int main(int argc, char** argv) {
 
     /* Check and see if SCST is loaded */
     if (! isSCSTLoaded()) {
-        errorDialog(cdk_screen, "It appears SCST is not loaded; a number",
-                "of the TUI functions will not work.");
+        errorDialog(cdk_screen,
+                "It appears SCST is not loaded; a number of the TUI",
+                "functions will not work. Check the '/var/log/boot' file.");
     }
 
     /* Loop, refreshing the labels and waiting for input */
