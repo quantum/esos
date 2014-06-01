@@ -1,3 +1,7 @@
+2014-06-01 19:40  msmith626@gmail.com
+
+	* Makefile.in: fixed build issue w/ scst (patch prob)
+
 2014-06-01 19:24  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/inittab,
