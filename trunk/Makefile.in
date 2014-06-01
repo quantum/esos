@@ -81,10 +81,10 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
-		linux-3.12.7.tar.xz \
+		linux-3.12.20.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-trunk_r5338.tar.gz \
+		scst-trunk_r5558.tar.gz \
 		kexec-tools-2.0.6.tar.gz \
 		drbd-8.4.3.tar.gz \
 		LVM2-2.02.97.tar.gz \
