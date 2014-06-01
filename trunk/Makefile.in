@@ -458,7 +458,7 @@ esos_kernels: kernel_headers
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b \
 	  -B $(linux_src)/put_page_callback.patch/ -p1 < \
-	  $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.12.patch; \
+	  $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.12.11.patch; \
 	fi
 	$(RM) $(linux_src)/drivers/scsi/qla2xxx
 	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
