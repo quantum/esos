@@ -1,3 +1,10 @@
+2014-06-01 19:24  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/inittab,
+	  misc/linux-3.12.20.config: commented out serial console lines in
+	  inittab to avoid log clutter if no serial ports exist; up'd linux
+	  kernel to 3.12.20 and scst to r5558
+
 2014-05-19 16:03  msmith626@gmail.com
 
 	* Makefile.in, tui/main.c: updated "no SCST" message; fixed build
