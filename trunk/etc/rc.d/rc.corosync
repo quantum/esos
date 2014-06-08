@@ -5,9 +5,7 @@
 source /etc/rc.d/common
 
 COROSYNC="/usr/sbin/corosync"
-COROSYNC_NOTIFYD="/usr/sbin/corosync-notifyd"
 COROSYNC_LOCK="/var/lock/corosync"
-COROSYNC_NOTIFYD_LOCK="/var/lock/corosync-notifyd"
 
 # Check arguments
 if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
@@ -20,15 +18,9 @@ start() {
     ${COROSYNC} || exit 1
     /bin/touch ${COROSYNC_LOCK}
     /bin/sleep 1
-    /bin/echo "Starting corosync-notifyd..."
-    ${COROSYNC_NOTIFYD} -l || exit 1
-    /bin/touch ${COROSYNC_NOTIFYD_LOCK}
 }
 
 stop() {
-    /bin/echo "Stopping corosync-notifyd..."
-    /bin/kill -TERM $(/bin/pidof ${COROSYNC_NOTIFYD}) || exit 1
-    wait_for_stop ${COROSYNC_NOTIFYD} && /bin/rm -f ${COROSYNC_NOTIFYD_LOCK}
     /bin/echo "Stopping corosync..."
     /bin/kill -TERM $(/bin/pidof ${COROSYNC}) || exit 1
     wait_for_stop ${COROSYNC} && /bin/rm -f ${COROSYNC_LOCK}
