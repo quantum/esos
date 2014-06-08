@@ -1,3 +1,11 @@
+2014-06-08 01:18  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/rc.corosync, install.sh,
+	  misc/initramfs_init: updated Areca CLI tool version; increased
+	  root tmpfs size to 1.5 GB; removed (painfully) dbus build option
+	  from pacemaker; removed support for corosync-notifyd from
+	  rc.corosync
+
 2014-06-01 19:40  msmith626@gmail.com
 
 	* Makefile.in: fixed build issue w/ scst (patch prob)
