@@ -30,8 +30,8 @@ TOOL_URL_hpacucli="http://h20000.www2.hp.com/bizsupport/TechSupport/SoftwareDesc
 TOOL_INSTALL_CMD_hpacucli="rpm2cpio hpacucli-*.x86_64.rpm | cpio -idmv && cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli && chmod 755 ${MNT_DIR}/opt/sbin/hpacucli"
 
 TOOL_DESC_linuxcli="Areca RAID Controllers"
-TOOL_FILE_linuxcli="linuxcli_V1.10.0_120815.zip"
-TOOL_URL_linuxcli="http://www.areca.us/support/s_linux/cli/linuxcli_V1.10.0_120815.zip"
+TOOL_FILE_linuxcli="linuxcli_V1.13.0_131028.zip"
+TOOL_URL_linuxcli="http://www.areca.us/support/s_linux/cli/linuxcli_V1.13.0_131028.zip"
 TOOL_INSTALL_CMD_linuxcli="unzip -o linuxcli_*.zip && cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/ && chmod 755 ${MNT_DIR}/opt/sbin/cli64"
 
 TOOL_DESC_3DM2_CLI="3ware SATA/SAS RAID Controllers"

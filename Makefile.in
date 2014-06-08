@@ -1005,6 +1005,8 @@ libqb: glibc
 pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	corosync libxslt glue Python
 	$(QUIET) if [ ! -f "$(src_dir)/configure" ]; then \
+	  $(SED) -i 's/HAVE_dbus\=1/HAVE_dbus\=0/' $(src_dir)/configure.ac; \
+	  $(SED) -i 's/^DBUS_LIBS.*/DBUS_LIBS\=\"\$$CFLAGS\"/' $(src_dir)/configure.ac; \
 	  cd $(src_dir) && ./autogen.sh; \
 	fi
 	cd $(src_dir) && \
