@@ -1,3 +1,8 @@
+2014-06-16 03:55  msmith626@gmail.com
+
+	* Makefile.in: build fix for the util-linux package (resolves issue
+	  # 34)
+
 2014-06-08 01:18  msmith626@gmail.com
 
 	* Makefile.in, etc/rc.d/rc.corosync, install.sh,
