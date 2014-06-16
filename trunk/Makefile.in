@@ -1589,6 +1589,9 @@ EnhanceIO: glibc
 	$(TOUCH) $(@)
 
 util-linux: glibc ncurses zlib
+	$(SED) -i 's/cfdisk_LDADD += @NCURSES_LIBS@/\
+	cfdisk_LDADD += -ltinfo @NCURSES_LIBS@/' $(src_dir)/fdisks/Makemodule.am
+	cd $(src_dir) && ./autogen.sh
 	cd $(src_dir) && ./configure --prefix=/usr --disable-most-builds \
 	--disable-bash-completion --with-ncurses --disable-silent-rules \
 	--without-udev
