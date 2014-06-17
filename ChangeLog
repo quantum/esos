@@ -1,3 +1,10 @@
+2014-06-17 03:34  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/modprobe.conf:
+	  enabled initiator mode for ocs_fc_scst module; rename
+	  libusb-compat package to libusb_compat (ambiguous); fixed several
+	  build issues for Fedora platform
+
 2014-06-16 03:55  msmith626@gmail.com
 
 	* Makefile.in: build fix for the util-linux package (resolves issue
