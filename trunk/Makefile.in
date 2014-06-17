@@ -160,7 +160,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		net-snmp-5.7.2.1.tar.gz \
 		nut-2.7.1.tar.gz \
 		libusb-1.0.9.tar.bz2 \
-		libusb-compat-0.1.4.tar.bz2 \
+		libusb_compat-0.1.4.tar.bz2 \
 		freeipmi-1.4.1.tar.gz \
 		libgcrypt-1.6.1.tar.bz2 \
 		libgpg-error-1.12.tar.bz2 \
@@ -187,7 +187,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		MySQLdb SQLAlchemy infiniband-diags libibmad lockfile \
 		python-daemon nrpe bcache-tools EnhanceIO util-linux \
 		thin-provisioning-tools expat boost btier librdmacm \
-		sysstat pciutils tar net-snmp nut libusb libusb-compat \
+		sysstat pciutils tar net-snmp nut libusb libusb_compat \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup popt
 
 # Check if we should enable additional build options
@@ -1519,6 +1519,8 @@ mysql: glibc ncurses
 MySQLdb: glibc Python mysql
 	$(SED) -i "s/^#mysql_config.*/mysql_config=\
 	$(subst /,\/,$(IMAGE_DIR)/usr/bin/mysql_config)/" $(src_dir)/site.cfg
+	$(SED) -i "s/sys.executable/'$(subst /,\/,$(WORK_DIR))\/python'/g" \
+	$(src_dir)/distribute_setup.py
 	cd $(src_dir) && CC="$(esos_cc)" \
 	LD_LIBRARY_PATH="/lib:/usr/lib:/lib64:/usr/lib64:/lib/x86_64-linux-gnu:\
 	/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib" \
@@ -1690,8 +1692,8 @@ pciutils: glibc zlib
 
 tar: glibc
 	cd $(src_dir) && am__tar='tar chf - "$$tardir"' am__untar='tar xf -' \
-	am_cv_prog_tar_ustar='fake_ustar_cmd' ./configure --prefix=/usr \
-	--without-selinux
+	am_cv_prog_tar_ustar='fake_ustar_cmd' FORCE_UNSAFE_CONFIGURE=1 \
+	./configure --prefix=/usr --without-selinux
 	$(MAKE) --directory=$(src_dir)
 	$(MAKE) --directory=$(src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
@@ -1711,7 +1713,7 @@ net-snmp: glibc gcc
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
-nut: glibc net-snmp libusb-compat freeipmi
+nut: glibc net-snmp libusb_compat freeipmi
 	cd $(src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--without-dev --with-serial --with-usb --with-snmp --without-cgi \
 	--with-user=nutmon --with-group=nut --without-avahi \
@@ -1736,7 +1738,7 @@ libusb: glibc
 	$(call clean_la_files)
 	$(TOUCH) $(@)
 
-libusb-compat: glibc libusb
+libusb_compat: glibc libusb
 	cd $(src_dir) && \
 	LIBUSB_1_0_CFLAGS="-I$(IMAGE_DIR)/usr/include/libusb-1.0" \
 	LIBUSB_1_0_LIBS="-lusb-1.0" ./configure --prefix=/usr

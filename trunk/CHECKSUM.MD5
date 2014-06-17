@@ -90,7 +90,6 @@ fdc92c4665bb169022ffe730b3c08313  pciutils-3.2.1.tar.gz
 9d4bc655d103b871248281db179eb0f5  tar-1.27.tar.gz
 e64cf832063ecd6645683fc2ac2bd564  nut-2.7.1.tar.gz
 7f5a02375ad960d4e33a6dae7d63cfcb  libusb-1.0.9.tar.bz2
-2ca521fffadd0c28fdf174e6ec73865b  libusb-compat-0.1.4.tar.bz2
 d27d2c0f460aae9a876e4baa49ce760d  net-snmp-5.7.2.1.tar.gz
 09b726f3c7bcb09fa0ca2f060b7d1cc6  freeipmi-1.4.1.tar.gz
 a5a5060dc2f80bcac700ab0236ea47dc  libgcrypt-1.6.1.tar.bz2
@@ -108,3 +107,4 @@ c39ea40a7598e49b6dc961ee7de38f57  kexec-tools-2.0.6.tar.gz
 de62b43dfcd858e66a74bee1c834e959  openssl-1.0.1g.tar.gz
 333979c7322b1bcb86893744b1c5e7ba  scst-trunk_r5558.tar.gz
 09d699cda2394a0bab5f4c52ce666749  linux-3.12.20.tar.xz
+5fe03554c40a8b9114d579a8d9ada8ef  libusb_compat-0.1.4.tar.bz2
