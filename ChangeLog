@@ -1,3 +1,11 @@
+2014-07-03 20:55  msmith626@gmail.com
+
+	* Makefile.in, install.sh, install.vbs, install_common: initial
+	  commit of new Windows installer script (install.vbs); updated
+	  install.sh to use new shared common file for proprietary CLI tool
+	  information; Makefile variable name update; started modifications
+	  to pkg_dist target
+
 2014-06-17 03:34  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/modprobe.conf:
