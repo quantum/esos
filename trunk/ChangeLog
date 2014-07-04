@@ -1,3 +1,11 @@
+2014-07-04 18:56  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
+	  install.vbs: added win_binaries package for Windows install
+	  script; modified pkg_dist target to now use zip instead of
+	  tar/xz; updated autoconf script to check for zip tool; path
+	  tweaks for install.vbs
+
 2014-07-03 20:55  msmith626@gmail.com
 
 	* Makefile.in, install.sh, install.vbs, install_common: initial
