@@ -50,6 +50,7 @@ LOSETUP		:= @losetup@
 KPARTX		:= @kpartx@
 XARGS		:= @xargs@
 OPENSSL		:= @openssl@
+ZIP		:= @zip@
 
 esos_ver	:= 0.1-r$(shell svnversion $(SRC_DIR))
 prod_suffix	:= -esos.prod
@@ -169,7 +170,8 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		popt-1.16.tar.gz \
 		makedumpfile-1.5.5.tar.gz \
 		elfutils-0.158.tar.bz2 \
-		fio-2.0.13.tar.bz2)
+		fio-2.0.13.tar.bz2 \
+		win_binaries-20140704.tar.xz)
 distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
 build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
@@ -358,19 +360,26 @@ image: $(build_targets)
 
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
+pkg_dist: pkg_prefix = esos-$(esos_ver)
 pkg_dist: img_file = $(wildcard $(BUILD_DIR)/esos-*.img)
 pkg_dist: $(img_file)
 	cd $(dir $(img_file)) && $(MD5SUM) -b $(notdir $(img_file)) > \
 	$(BUILD_DIR)/dist_md5sum.txt
 	cd $(dir $(img_file)) && $(SHA256SUM) -b $(notdir $(img_file)) > \
 	$(BUILD_DIR)/dist_sha256sum.txt
-	$(TAR) --transform='s,^,esos-$(esos_ver)/,' \
-	--transform='s,$(BUILD_DIR),,' --transform='s,$(SRC_DIR),,' \
-	--show-transformed-names \
-	-c -v -J -f $(BUILD_DIR)/esos-$(esos_ver).tar.xz $(img_file) \
-	$(SRC_DIR)/install.sh $(SRC_DIR)/INSTALL $(SRC_DIR)/README \
-	$(SRC_DIR)/COPYING dist_*.txt $(SRC_DIR)/ChangeLog \
-	$(SRC_DIR)/install_common
+	$(LN) $(BUILD_DIR) $(pkg_prefix)
+	$(ZIP) -9 $(pkg_prefix).zip $(pkg_prefix)/$(notdir $(img_file)) \
+	$(pkg_prefix)/dist_*.txt
+	$(RM) $(pkg_prefix)
+	$(LN) $(SRC_DIR) $(pkg_prefix)
+	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/install_common \
+	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
+	$(pkg_prefix)/INSTALL $(pkg_prefix)/README \
+	$(pkg_prefix)/COPYING $(pkg_prefix)/ChangeLog
+	$(RM) $(pkg_prefix)
+	$(LN) $(wildcard $(PKG_SRC_DIR)/win_binaries-*) $(pkg_prefix)
+	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/*
+	$(RM) $(pkg_prefix)
 
 
 # clean - Remove temporary files, any image/package files, and target files.
@@ -379,7 +388,7 @@ clean: $(clean_targets)
 	$(RM) $(INITRAMFS_DIR)
 	$(RM) $(IMAGE_DIR)
 	$(RM) $(BUILD_DIR)/dist_*.txt
-	$(RM) $(BUILD_DIR)/esos-*.tar.xz
+	$(RM) $(BUILD_DIR)/esos-*.zip
 	$(RM) $(BUILD_DIR)/esos-*.img
 
 $(clean_targets):: target = $(subst clean-,,$(@))

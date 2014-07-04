@@ -24,7 +24,7 @@ set wmi_service = getobject("winmgmts:\\.\root\cimv2")
 ' Settings
 dim install_common, base_path, md5sum_prog, sha256sum_prog, dd_prog, ext2fsd_path, ext2fsd_setup, mount_prog, bootice_prog, sevenzip_prog
 install_common = "install_common"
-base_path = wsh_shell.currentdirectory & "\win_bin"
+base_path = wsh_shell.currentdirectory
 md5sum_prog = base_path & "\checksum_utils\md5sum.exe"
 sha256sum_prog = base_path & "\checksum_utils\sha256sum.exe"
 dd_prog = base_path & "\dd-0.6beta3\dd.exe"
