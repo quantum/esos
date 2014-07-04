@@ -1,24 +1,25 @@
 #summary How to install ESOS to a USB flash drive.
 
 === Install Prerequisites ===
-We currently only support installing/creating a ESOS USB drive by using a Linux system. The possibility exists to someday create a Windows/Mac/etc. installer, but for right now, its Linux only.
+You may now use a Linux, Windows, or Mac OS X machine to create a bootable ESOS USB flash drive.
 
 Here is a list of the install requirements:
-  * Machine with a recent release of a modern Linux distribution (32-bit or 64-bit), with common system tools (dd, cpio, rpm2cpio, etc.) installed.
+  * If using a Linux machine, it should be a recent release of a modern Linux distribution (32-bit or 64-bit), with common system tools (dd, cpio, rpm2cpio, etc.) installed.
+  * If you're using a Windows host, the required binary programs (dd, ext2fsd, etc.) are all included in the ESOS install package.
   * A USB flash drive that is at least 4 GB large.
   * The ESOS image/install package available from the downloads page, or a ESOS disk image that you built from source.
 
 <br>
 
-=== Installing ESOS ===
-If using a pre-built image package, you will need to extract it (version 0.1-r412 in our example):
+=== Installing ESOS (Linux) ===
+If using a pre-built image package, you will need to extract it (version 0.1-r656 in our example):
 {{{
-tar xvfJ esos-0.1-r412.tar.xz
+unzip esos-0.1-r656.zip
 }}}
 
 If using a ESOS image you built from source, you should now be in that directory, otherwise change to the package directory you just extracted:
 {{{
-cd esos-0.1-r412
+cd esos-0.1-r656
 }}}
 
 At this point, you should now plug in the USB flash drive you'd like to install ESOS to; you may need to unmount any file systems on your flash drive if you use a desktop-like Linux distribution (eg, Ubuntu).
@@ -43,6 +44,16 @@ The `install.sh` script will verify the integrity of the ESOS disk image file, c
 After the image is completely written to your USB flash drive, then installation script will then ask you if you'd like to install any proprietary RAID controller CLI tools (optional). Some of these tools (eg, MegaCLI) are required for certain TUI functions in ESOS. The script will print the required files and download locations with instructions on where to place the files and complete the installation.
 
 If you have any installation issues, please use the esos-users Google Group.
+
+<br>
+
+=== Installing ESOS (Windows) ===
+TODO
+
+<br>
+
+=== Installing ESOS (Mac OS X) ===
+TODO
 
 <br>
 
