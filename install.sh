@@ -121,29 +121,22 @@ else
     for i in ${install_list}; do
         if [ "${i}" = "MegaCLI" ]; then
             unzip -o *_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm | \
-            cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/ && \
-            chmod 755 ${MNT_DIR}/opt/sbin/MegaCli64
+            cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "StorCLI" ]; then
             unzip -o *_StorCLI.zip && rpm2cpio Linux/storcli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/storcli/storcli64 ${MNT_DIR}/opt/sbin/ && \
-            chmod 755 ${MNT_DIR}/opt/sbin/storcli64 && \
-            cp opt/MegaRAID/storcli/libstorelibir* ${MNT_DIR}/opt/lib/ && \
-            chmod 755 ${MNT_DIR}/opt/lib/libstorelibir*
+            cp opt/MegaRAID/storcli/libstorelibir* ${MNT_DIR}/opt/lib/
         elif [ "${i}" = "arcconf" ]; then
-            unzip -o arcconf_*.zip && cp linux_x64/arcconf ${MNT_DIR}/opt/sbin/ \
-            && chmod 755 ${MNT_DIR}/opt/sbin/arcconf
+            unzip -o arcconf_*.zip && cp linux_x64/arcconf ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "hpacucli" ]; then
             rpm2cpio hpacucli-*.x86_64.rpm | cpio -idmv && \
-            cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli && \
-            chmod 755 ${MNT_DIR}/opt/sbin/hpacucli
+            cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli
         elif [ "${i}" = "linuxcli" ]; then
             unzip -o linuxcli_*.zip && \
-            cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/ && \
-            chmod 755 ${MNT_DIR}/opt/sbin/cli64
+            cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "3DM2_CLI" ]; then
             unzip -o 3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && \
-            cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/ && \
-            chmod 755 ${MNT_DIR}/opt/sbin/tw_cli.x86_64
+            cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/
         fi
     done
     cd -

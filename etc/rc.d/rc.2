@@ -48,6 +48,11 @@ fi
 /bin/echo "Starting irqbalance..."
 /usr/sbin/irqbalance
 
+/bin/echo "Fixing /opt/sbin permissions..."
+for i in $(/bin/ls /opt/sbin); do
+    /bin/chmod +x /opt/sbin/${i}
+done
+
 # Start the LATE user settable services
 for i in ${LATE_SERVICES}; do
     if check_enabled "${i}"; then

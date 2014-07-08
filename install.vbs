@@ -3,11 +3,11 @@
 option explicit
 
 ' Make sure the scripting host is cscript.exe
-dim sh_engine, wsh_shell
+dim sh_engine, shell_app
 sh_engine = lcase(mid(wscript.fullname, instrrev(wscript.fullname, "\") + 1))
 if not sh_engine = "cscript.exe" then
-    set wsh_shell = createobject("wscript.shell")
-    wsh_shell.run "cscript.exe """ & wscript.scriptfullname & """"
+    set shell_app = createobject("shell.application")
+    shell_app.shellexecute "cscript.exe", chr(34) & wscript.scriptfullname & chr(34) & " uac", "", "runas", 1
     wscript.quit
 end if
 
@@ -16,13 +16,14 @@ wscript.echo ""
 
 ' Setup
 on error resume next
-dim file_sys, wmi_service
+dim wsh_shell, file_sys, wmi_service
 set wsh_shell = createobject("wscript.shell")
 set file_sys = createobject("scripting.filesystemobject")
 set wmi_service = getobject("winmgmts:\\.\root\cimv2")
+wsh_shell.currentdirectory = file_sys.getparentfoldername(wscript.scriptfullname)
 
 ' Settings
-dim install_common, base_path, md5sum_prog, sha256sum_prog, dd_prog, ext2fsd_path, ext2fsd_setup, mount_prog, bootice_prog, sevenzip_prog
+dim install_common, base_path, md5sum_prog, sha256sum_prog, dd_prog, ext2fsd_path, ext2fsd_setup, mount_prog, ext2mgr_prog, bootice_prog, sevenzip_prog
 install_common = "install_common"
 base_path = wsh_shell.currentdirectory
 md5sum_prog = base_path & "\checksum_utils\md5sum.exe"
@@ -31,6 +32,7 @@ dd_prog = base_path & "\dd-0.6beta3\dd.exe"
 ext2fsd_path = base_path & "\ext2fsd-0.52"
 ext2fsd_setup = ext2fsd_path & "\setup.bat"
 mount_prog = ext2fsd_path & "\mount.exe"
+ext2mgr_prog = ext2fsd_path & "\ext2mgr.exe"
 bootice_prog = base_path & "\bootice_x86_v1.3.2.1\bootice_x86.exe"
 sevenzip_prog = base_path & "\7zip-9.20\7z.exe"
 
@@ -113,7 +115,7 @@ if not file_sys.fileexists(ext2fsd_inf) then
         ' Load ext2fsd
         orig_cwd = wsh_shell.currentdirectory
         wsh_shell.currentdirectory = ext2fsd_path
-        ext2_load_cmd = orig_cwd & "\" & ext2fsd_setup & " install"
+        ext2_load_cmd = ext2fsd_setup & " install"
         exec_cmd wsh_shell, ext2_load_cmd
         wsh_shell.currentdirectory = orig_cwd
     else
@@ -180,7 +182,7 @@ for each tool in split_tools
 next
 
 ' Install the proprietary CLI tools to the ESOS USB drive (if any)
-dim letter, disk_num, vol_path_parts, part, access_part_cmd, mount_cmd, unmount_cmd, split_installs, pkg, dest_path
+dim letter, disk_num, vol_path_parts, part, access_part_cmd, mount_cmd, unmount_cmd, split_installs, pkg, sbin_dest_path, lib_dest_path
 wscript.echo
 if install_list = "" then
     wscript.echo "### Nothing to do."
@@ -208,6 +210,8 @@ else
     exec_cmd wsh_shell, access_part_cmd
     ' Start the ext2fsd service 
     wsh_shell.run "net start ext2fsd", 1, false
+    wsh_shell.run ext2mgr_prog & " -quiet", 1, false
+    wscript.sleep 5000
     ' Mount root the file system
     mount_cmd = mount_prog & " " & disk_num & " 1 " & letter
     exec_cmd wsh_shell, mount_cmd
@@ -217,30 +221,32 @@ else
     split_installs = split(install_list, " ")
     for each pkg in split_installs
         ' Install for each tool
-        dest_path = letter & "\opt\sbin\"
+        sbin_dest_path = letter & "\opt\sbin\"
+        lib_dest_path = letter & "\opt\lib\"
         if pkg = "MegaCLI" then
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y *_MegaCLI.zip"
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y Linux\MegaCli-*.rpm"
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y MegaCli-*.cpio"
-            file_sys.copyfile "opt\MegaRAID\MegaCli\MegaCli64", dest_path
+            file_sys.copyfile "opt\MegaRAID\MegaCli\MegaCli64", sbin_dest_path
         elseif pkg = "StorCLI" then
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y *_StorCLI.zip"
-            exec_cmd wsh_shell, sevenzip_prog & " x -bd -y storcli_all_os\Linux\storcli-*.rpm"
+            exec_cmd wsh_shell, sevenzip_prog & " x -bd -y Linux\storcli-*.rpm"
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y storcli-*.cpio"
-            file_sys.copyfile "opt\MegaRAID\storcli\storcli64", dest_path
+            file_sys.copyfile "opt\MegaRAID\storcli\storcli64", sbin_dest_path
+            file_sys.copyfile "opt\MegaRAID\storcli\libstorelibir*", lib_dest_path
         elseif pkg = "arcconf" then
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y arcconf_*.zip"
-            file_sys.copyfile "linux_x64\arcconf", dest_path
+            file_sys.copyfile "linux_x64\arcconf", sbin_dest_path
         elseif pkg = "hpacucli" then
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y hpacucli-*.x86_64.rpm"
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y hpacucli-*.cpio"
-            file_sys.copyfile "opt\compaq\hpacucli\bld\.hpacucli", dest_path & "hpacucli"
+            file_sys.copyfile "opt\compaq\hpacucli\bld\.hpacucli", sbin_dest_path & "hpacucli"
         elseif pkg = "linuxcli" then
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y linuxcli_*.zip"
             dim sub_folder
             for each sub_folder in temp_folder.subfolders
                 if instr(sub_folder.name, "linuxcli_") > 0 then
-                    file_sys.copyfile sub_folder.name & "\x86_64\cli64", dest_path
+                    file_sys.copyfile sub_folder.name & "\x86_64\cli64", sbin_dest_path
                     exit for
                 end if
             next
@@ -249,7 +255,7 @@ else
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y 3DM2_CLI-*.zip"
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y tdmCliLnx.tgz"
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y tdmCliLnx.tar"
-            file_sys.copyfile "tw_cli.x86_64", dest_path
+            file_sys.copyfile "tw_cli.x86_64", sbin_dest_path
         end if
     next
     wsh_shell.currentdirectory = orig_cwd
