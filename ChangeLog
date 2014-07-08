@@ -1,3 +1,13 @@
+2014-07-08 21:16  msmith626@gmail.com
+
+	* etc/rc.d/rc.2, etc/rc.d/rc.sysinit, install.sh, install.vbs:
+	  several fixes/tweaks to the new Windows installer script;
+	  run-level 2 init script will now fix /opt/sbin permissions by
+	  making binaries executable in that directory; added check for
+	  free space on boot device and if free space exists, expand the
+	  esos_logs file system to consume all of it; removed chmod +x
+	  lines from install.sh since we now take care of that in ESOS init
+
 2014-07-04 18:56  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
