@@ -38,7 +38,7 @@ mount -t tmpfs -o size=1536m tmpfs /mnt/root || rescue_shell
 mount -o ro $(findfs LABEL=esos_root) /mnt/tmp || rescue_shell
 
 # Setup the root file system
-echo "Initializing tmpfs file system..."
+echo "Initializing root file system..."
 cd /mnt/tmp
 spinner="/-\|"
 spin_pos=0
