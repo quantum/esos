@@ -1,3 +1,10 @@
+2014-07-13 23:14  msmith626@gmail.com
+
+	* Makefile.in, configure.ac, etc/rc.d/rc.scst, misc/initramfs_init,
+	  misc/linux-3.12.20.config, misc/ocf/scst: added support for the
+	  Chelsio Uwire driver package (namely chfcoe); moved checksum file
+	  creation to the 'image' target (resolves issue # 82)
+
 2014-07-08 21:16  msmith626@gmail.com
 
 	* etc/rc.d/rc.2, etc/rc.d/rc.sysinit, install.sh, install.vbs:
