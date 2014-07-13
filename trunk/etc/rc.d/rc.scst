@@ -19,6 +19,9 @@ FCOEMON_LOCK="/var/lock/fcoemon"
 if [ -f "/lib/modules/$(/bin/uname -r)/extra/ocs_fc_scst.ko" ]; then
     SCST_MODS="${SCST_MODS} ocs_fc_scst"
 fi
+if [ -f "/lib/modules/$(/bin/uname -r)/extra/chfcoe.ko" ]; then
+    SCST_MODS="${SCST_MODS} chfcoe"
+fi
 
 # Check arguments
 if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then

@@ -60,6 +60,8 @@ enable_gdb	:= @enable_gdb@
 enable_valgrind	:= @enable_valgrind@
 with_ocs_sdk	:= @with_ocs_sdk@
 ocs_sdk_dir	:= @ocs_sdk_dir@
+with_uwire	:= @with_uwire@
+uwire_dir	:= @uwire_dir@
 build_opts	:= @build_opts@
 
 distfiles	= $(addprefix $(DISTFILES_DIR)/, \
@@ -204,6 +206,9 @@ endif
 ifeq ($(with_ocs_sdk),yes)
 	build_targets += ocs_sdk
 endif
+ifeq ($(with_uwire),yes)
+	build_targets += uwire
+endif
 
 clean_targets		:= $(addprefix clean-,$(build_targets))
 tgt_src_dir		= $(wildcard $(PKG_SRC_DIR)/$(@)-*)
@@ -212,6 +217,7 @@ scst_src		= $(wildcard $(PKG_SRC_DIR)/scst-*)
 tarball_src_dirs	= $(addprefix $(PKG_SRC_DIR)/,$(subst .tar.xz,,\
 			$(subst .tar.bz2,,$(subst .tar.gz,,\
 			$(notdir $(distfiles))))))
+img_file		:= $(BUILD_DIR)/esos-$(esos_ver).img
 
 # The ld scripts (eg, libc.so) are modified in-place and then
 # fixed after installing
@@ -251,7 +257,6 @@ all:
 
 # image - Create the ESOS disk image file.
 .PHONY: image
-image: img_file = $(BUILD_DIR)/esos-$(esos_ver).img
 image: loop_dev = $$($(CAT) $(WORK_DIR)/loop_dev)
 image: $(build_targets)
 	$(QUIET) if [ `whoami` != "root" ]; then \
@@ -354,6 +359,10 @@ image: $(build_targets)
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
 	$(LOSETUP) -d $(loop_dev)
+	cd $(dir $(img_file)) && $(MD5SUM) -b $(notdir $(img_file)) > \
+	$(BUILD_DIR)/dist_md5sum.txt
+	cd $(dir $(img_file)) && $(SHA256SUM) -b $(notdir $(img_file)) > \
+	$(BUILD_DIR)/dist_sha256sum.txt
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### All done; your ESOS disk image file is ready!"
 
@@ -361,12 +370,7 @@ image: $(build_targets)
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = esos-$(esos_ver)
-pkg_dist: img_file = $(wildcard $(BUILD_DIR)/esos-*.img)
 pkg_dist: $(img_file)
-	cd $(dir $(img_file)) && $(MD5SUM) -b $(notdir $(img_file)) > \
-	$(BUILD_DIR)/dist_md5sum.txt
-	cd $(dir $(img_file)) && $(SHA256SUM) -b $(notdir $(img_file)) > \
-	$(BUILD_DIR)/dist_sha256sum.txt
 	$(LN) $(BUILD_DIR) $(pkg_prefix)
 	$(ZIP) -9 $(pkg_prefix).zip $(pkg_prefix)/$(notdir $(img_file)) \
 	$(pkg_prefix)/dist_*.txt
@@ -487,6 +491,14 @@ esos_kernels: kernel_headers
 	    $(MAKE) --directory=$(linux_src) \
 	    M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst clean; \
 	  fi; \
+	  if [ "$(with_uwire)" = "yes" ]; then \
+	    $(MAKE) --directory=$(uwire_dir)/src/network clean; \
+	    $(MAKE) --directory=$(uwire_dir)/src/chfcoe/src \
+	    CXGB4_SRC_PATH="$(uwire_dir)/src/network/cxgb4" \
+	    CSIOSTOR_SRC_PATH="$(uwire_dir)/src/network/csiostor/include" \
+	    FIRMWARE_PATH="$(uwire_dir)/src/network/firmware" \
+	    KDIR=$(linux_src) clean; \
+	  fi; \
 	  if [ "$$i" = "$(prod_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
 	    $(SRC_DIR)/misc/$(notdir $(linux_src)).config > \
@@ -561,6 +573,44 @@ esos_kernels: kernel_headers
 	    $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/ocs_fc_scst.ko \
 	    $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/ocs_fc_scst.ko; \
 	  fi; \
+	  if [ "$(with_uwire)" = "yes" ]; then \
+	    $(ECHO) "### Building the Chelsio Uwire SCST module"; \
+	    if [ ! -d $(uwire_dir)/cxgb4_pofcoe.patch ]; \
+	    then \
+	      $(PATCH) -F 3 -d $(uwire_dir)/src/network/cxgb4 -b \
+	      -B $(uwire_dir)/cxgb4_pofcoe.patch/ -p1 < \
+	      $(uwire_dir)/src/chfcoe/patch/cxgb4_pofcoe.patch; \
+	    fi; \
+	    $(MAKE) --directory=$(uwire_dir)/src/network \
+	    KERNELRELEASE=$(kernel_ver)$$i DEBUG=1 KDIR=$(linux_src) \
+	    disable_bonding=1 po_fcoe=1 toe; \
+	    $(SED) -i 's/ln -sf $$(fixup_fwdir)\//ln -sf /g' \
+	    $(uwire_dir)/src/network/firmware/Makefile; \
+	    $(SED) -i 's/updates\/drivers/kernel\/drivers/' \
+	    $(uwire_dir)/src/network/csiostor/Makefile; \
+	    $(SED) -i 's/updates\/drivers/kernel\/drivers/' \
+	    $(uwire_dir)/src/network/cxgb4/Makefile; \
+	    $(SED) -i 's/updates\/drivers/kernel\/drivers/' \
+	    $(uwire_dir)/src/network/cxgb4vf/Makefile; \
+	    $(SED) -i 's/updates\/drivers/kernel\/drivers/' \
+	    $(uwire_dir)/src/network/iw_cxgb4/Makefile; \
+	    $(SED) -i 's/updates\/drivers/kernel\/drivers/' \
+	    $(uwire_dir)/src/network/t4_tom/Makefile; \
+	    $(SED) -i 's/updates\/drivers/kernel\/drivers/' \
+	    $(uwire_dir)/src/network/toecore/Makefile; \
+	    $(MAKE) --directory=$(uwire_dir)/src/network \
+	    KERNELRELEASE=$(kernel_ver)$$i DEBUG=1 KDIR=$(linux_src) \
+	    PREFIX=$(IMAGE_DIR) fixup_fwdir=$(IMAGE_DIR)/lib/firmware/cxgb4 \
+	    disable_bonding=1 po_fcoe=1 install; \
+	    $(MAKE) --directory=$(uwire_dir)/src/chfcoe/src \
+	    KERNELRELEASE=$(kernel_ver)$$i \
+	    CXGB4_SRC_PATH="$(uwire_dir)/src/network/cxgb4" \
+	    CSIOSTOR_SRC_PATH="$(uwire_dir)/src/network/csiostor/include" \
+	    FIRMWARE_PATH="$(uwire_dir)/src/network/firmware" \
+	    KDIR="$(linux_src)" SCST_INC="$(IMAGE_DIR)/usr/include/scst" target=1; \
+	    $(MAKE) --directory=$(linux_src) M="$(uwire_dir)/src/chfcoe/src" \
+	    INSTALL_MOD_PATH="$(IMAGE_DIR)" KVER=$(kernel_ver)$$i modules_install; \
+	  fi; \
 	done
 	$(TOUCH) $(@)
 
@@ -620,6 +670,18 @@ ocs_sdk: glibc
 	$(SED) -e "s/--delimiter=','/-d,/g;s/--field=/-f/g;s/sudo //g" \
 	$(ocs_sdk_dir)/tools/bin/ocsmknod > $(IMAGE_DIR)/usr/sbin/ocsmknod
 	$(CHMOD) 0755 $(IMAGE_DIR)/usr/sbin/ocsmknod
+	$(TOUCH) $(@)
+
+uwire: glibc
+	$(INSTALL) -m 0755 $(uwire_dir)/src/chfcoe/tools/chfcoe_perftune.sh \
+	$(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(uwire_dir)/src/chfcoe/tools/chinfotool64 \
+	$(IMAGE_DIR)/usr/sbin/
+	$(MAKE) --directory=$(uwire_dir)/tools/cxgbtool
+	$(INSTALL) -m 0755 $(uwire_dir)/tools/cxgbtool/cxgbtool \
+	$(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0444 $(uwire_dir)/tools/cxgbtool/cxgbtool.8 \
+	$(IMAGE_DIR)/usr/share/man/man8/
 	$(TOUCH) $(@)
 
 busybox: glibc

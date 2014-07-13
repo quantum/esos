@@ -105,6 +105,7 @@ if test -d "${image_dir}"; then
         ${mkdir} -p ${image_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
         ${mkdir} -p ${image_dir}/var/run/crm || exit 1
         ${mkdir} -p ${image_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
+        ${mkdir} -p ${image_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
         ${ln} -sf lib ${image_dir}/lib64 || exit 1
         ${ln} -sf lib ${image_dir}/usr/lib64 || exit 1
         ${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
@@ -153,6 +154,29 @@ AS_IF([test "x$with_ocs_sdk" = "xyes"], [build_opts="${build_opts} ocs_sdk"])
 AC_SUBST(ocs_sdk_dir, ${ocs_sdk_dir})
 AC_SUBST(with_ocs_sdk, ${with_ocs_sdk})
 AC_MSG_NOTICE([ocs_sdk: ${with_ocs_sdk}])
+
+dnl Optional package uwire (user provides package file)
+AC_ARG_WITH(uwire,
+	AS_HELP_STRING([--with-uwire=PATH],
+	[build and include uwire; PATH is the uwire package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[uwire_file="${withval}"; with_uwire="yes"],
+	[with_uwire="no"]), with_uwire="no")
+if test  "x${with_uwire}" = "xyes"; then
+	if test -f "${uwire_file}"; then
+		AC_MSG_NOTICE([extracting the uwire package file...])
+		uwire_dir="${work_dir}/uwire"
+		${mkdir} -p ${uwire_dir} || exit 1
+		${tar} xfz ${uwire_file} --strip-components=1 -C ${uwire_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the uwire file: ${uwire_file}])
+	fi
+fi
+AS_IF([test "x$with_uwire" = "xyes"], [build_opts="${build_opts} uwire"])
+AC_SUBST(uwire_dir, ${uwire_dir})
+AC_SUBST(with_uwire, ${with_uwire})
+AC_MSG_NOTICE([uwire: ${with_uwire}])
+
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],
 	[real_src_dir="${srcdir}"])

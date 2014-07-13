@@ -24,6 +24,9 @@ SCST_SYSFS="/sys/kernel/scst_tgt"
 if [ -f "/lib/modules/$(uname -r)/extra/ocs_fc_scst.ko" ]; then
 	MODULES="${MODULES} ocs_fc_scst"
 fi
+if [ -f "/lib/modules/$(uname -r)/extra/chfcoe.ko" ]; then
+	MODULES="${MODULES} chfcoe"
+fi
 
 scst_start() {
 	# Exit immediately if configuration is not valid
