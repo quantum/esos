@@ -5,8 +5,8 @@ TOOL_FILE_MegaCLI="8.07.06_MegaCLI.zip"
 TOOL_URL_MegaCLI="http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/8.07.06_MegaCLI.zip"
 
 TOOL_DESC_StorCLI="LSI Logic Syncro/MegaRAID Controllers (StorCLI)"
-TOOL_FILE_StorCLI="1_05_07_CS1_1_StorCLI.zip"
-TOOL_URL_StorCLI="http://www.lsi.com/downloads/Public/Syncro%20Shared%20Storage/downloads/1_05_07_CS1_1_StorCLI.zip"
+TOOL_FILE_StorCLI="1.09.13_StorCLI.zip"
+TOOL_URL_StorCLI="http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/1.09.13_StorCLI.zip"
 
 TOOL_DESC_arcconf="Adaptec AACRAID Controllers"
 TOOL_FILE_arcconf="arcconf_v1_00_20206.zip"

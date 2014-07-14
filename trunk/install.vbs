@@ -230,7 +230,7 @@ else
             file_sys.copyfile "opt\MegaRAID\MegaCli\MegaCli64", sbin_dest_path
         elseif pkg = "StorCLI" then
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y *_StorCLI.zip"
-            exec_cmd wsh_shell, sevenzip_prog & " x -bd -y Linux\storcli-*.rpm"
+            exec_cmd wsh_shell, sevenzip_prog & " x -bd -y storcli_all_os\Linux\storcli-*.rpm"
             exec_cmd wsh_shell, sevenzip_prog & " x -bd -y storcli-*.cpio"
             file_sys.copyfile "opt\MegaRAID\storcli\storcli64", sbin_dest_path
             file_sys.copyfile "opt\MegaRAID\storcli\libstorelibir*", lib_dest_path

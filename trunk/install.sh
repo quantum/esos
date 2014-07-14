@@ -123,7 +123,7 @@ else
             unzip -o *_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "StorCLI" ]; then
-            unzip -o *_StorCLI.zip && rpm2cpio Linux/storcli-*.rpm | \
+            unzip -o *_StorCLI.zip && rpm2cpio storcli_all_os/Linux/storcli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/storcli/storcli64 ${MNT_DIR}/opt/sbin/ && \
             cp opt/MegaRAID/storcli/libstorelibir* ${MNT_DIR}/opt/lib/
         elif [ "${i}" = "arcconf" ]; then
