@@ -1,3 +1,10 @@
+2014-07-14 20:45  msmith626@gmail.com
+
+	* install.sh, install.vbs, install_common, misc/ocf/scst: updated
+	  StorCLI to newest version and modified installer scripts to
+	  handle it (path change); added support for user-provided
+	  (parameter) master/slave ALUA target group states in the SCST RA
+
 2014-07-13 23:14  msmith626@gmail.com
 
 	* Makefile.in, configure.ac, etc/rc.d/rc.scst, misc/initramfs_init,
