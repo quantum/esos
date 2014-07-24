@@ -2251,6 +2251,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             *sub_dir2_entry = NULL;
     struct tm *curr_date_info = NULL;
     time_t curr_clock = 0;
+    boolean time_changed = FALSE;
 
     /* New CDK screen for date and time settings */
     date_window_lines = 20;
@@ -2536,25 +2537,39 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         new_hour = getCDKUScaleValue(hour);
         new_minute = getCDKUScaleValue(minute);
         new_second = getCDKUScaleValue(second);
-        if (new_day != curr_day)
+        if (new_day != curr_day) {
             curr_date_info->tm_mday = new_day;
-        if (new_month != curr_month)
+            time_changed = TRUE;
+        }
+        if (new_month != curr_month) {
             curr_date_info->tm_mon = new_month - 1;
-        if (new_year != curr_year)
+            time_changed = TRUE;
+        }
+        if (new_year != curr_year) {
             curr_date_info->tm_year = new_year - 1900;
-        if (new_hour != curr_hour)
+            time_changed = TRUE;
+        }
+        if (new_hour != curr_hour) {
             curr_date_info->tm_hour = new_hour;
-        if (new_minute != curr_minute)
+            time_changed = TRUE;
+        }
+        if (new_minute != curr_minute) {
             curr_date_info->tm_min = new_minute;
-        if (new_second != curr_second)
+            time_changed = TRUE;
+        }
+        if (new_second != curr_second) {
             curr_date_info->tm_sec = new_second;
-        /* Set date & time */
-        const struct timeval time_val = {mktime(curr_date_info), 0};
-        if (settimeofday(&time_val, 0) == -1) {
-            asprintf(&error_msg, "settimeofday(): %s", strerror(errno));
-            errorDialog(main_cdk_screen, error_msg, NULL);
-            FREE_NULL(error_msg);
-            goto cleanup;
+            time_changed = TRUE;
+        }
+        /* Set date & time (if it changed) */
+        if (time_changed) {
+            const struct timeval time_val = {mktime(curr_date_info), 0};
+            if (settimeofday(&time_val, 0) == -1) {
+                asprintf(&error_msg, "settimeofday(): %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+                goto cleanup;
+            }
         }
     }
 
