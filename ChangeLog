@@ -1,3 +1,16 @@
+2014-07-24 04:37  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
+	  misc/busybox-1.20.2.config, misc/grub.cfg,
+	  misc/linux-3.12.20-debug.patch, tui/menu_actions-system.c:
+	  modified the Date & Time dialog so that we only actually change
+	  the date/time if the user changed it (eg, they set the TZ, but
+	  not the date); add the mtx and mt-st packages for use with
+	  tapes/VTL; Uwire (chfcoe) build issue resolved; global bashrc
+	  updated to force interactive cp command; disabled the mt program
+	  in busybox; enhanced debugging support and features (kgdb, kdb)
+	  for the .esos-debug kernel
+
 2014-07-14 20:45  msmith626@gmail.com
 
 	* install.sh, install.vbs, install_common, misc/ocf/scst: updated
