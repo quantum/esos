@@ -18,11 +18,11 @@ Choose a nice hefty password, assuming this machine will be on your IP network, 
 === Date & Time ===
 Setting the date and time in ESOS is important; currently, the configuration synchronization script relies solely on time stamps to determine which files are "new" on the system. It will also help with log entry correlation when/if tracking down issues. Open the date & time dialog: System -> Date & Time Settings
 
-*_If you do not set the date/time initially, and you do this after you've been using an ESOS instance (after the first sync), double-check the time stamps of files in the 'esos_conf' file system. If a file on the USB drive has a time stamp in the future from what your system time is, it will always "win" during a synchronization._*
-
 The default timezone for ESOS is Factory. Choose your local timezone, or set it UTC. You can then set the current date and time (24-hour format) if needed.
 
 Setting a NTP server is the easiest way to keep your ESOS system time up to date. The date/time will be set via NTP on ESOS host boot-up and periodically via cron.
+
+*`*``*` Warning: If you do not set the date/time initially, and you do this after you've been using an ESOS instance (after the first sync), double-check the time stamps of files in the 'esos_conf' file system. If a file on the USB drive has a time stamp in the future from what your system time is, it will always "win" during a synchronization. `*``*`*
 
 <br>
 === TUI Basics ===
