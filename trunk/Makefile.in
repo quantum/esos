@@ -173,6 +173,8 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		makedumpfile-1.5.5.tar.gz \
 		elfutils-0.158.tar.bz2 \
 		fio-2.0.13.tar.bz2 \
+		mtx-1.3.12.tar.gz \
+		mt-st-1.1.tar.gz \
 		win_binaries-20140704.tar.xz)
 distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
@@ -192,7 +194,8 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		python-daemon nrpe bcache-tools EnhanceIO util-linux \
 		thin-provisioning-tools expat boost btier librdmacm \
 		sysstat pciutils tar net-snmp nut libusb libusb_compat \
-		freeipmi libgcrypt libgpg-error smartmontools cryptsetup popt
+		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
+		popt mtx mt-st
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -509,6 +512,8 @@ esos_kernels: kernel_headers
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
 	    $(SRC_DIR)/misc/$(notdir $(linux_src)).config > \
 	    $(linux_src)/.config; \
+	    $(PATCH) -r - -N -d $(linux_src) -p1 < \
+	    $(SRC_DIR)/misc/$(notdir $(linux_src))-debug.patch; \
 	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2debug; \
 	  fi; \
 	  $(ECHO) "### Building the Linux kernel..."; \
@@ -601,7 +606,7 @@ esos_kernels: kernel_headers
 	    $(MAKE) --directory=$(uwire_dir)/src/network \
 	    KERNELRELEASE=$(kernel_ver)$$i DEBUG=1 KDIR=$(linux_src) \
 	    PREFIX=$(IMAGE_DIR) fixup_fwdir=$(IMAGE_DIR)/lib/firmware/cxgb4 \
-	    disable_bonding=1 po_fcoe=1 install; \
+	    disable_bonding=1 po_fcoe=1 utsrelease=$(kernel_ver)$$i install; \
 	    $(MAKE) --directory=$(uwire_dir)/src/chfcoe/src \
 	    KERNELRELEASE=$(kernel_ver)$$i \
 	    CXGB4_SRC_PATH="$(uwire_dir)/src/network/cxgb4" \
@@ -1896,5 +1901,17 @@ popt: glibc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files)
+	$(TOUCH) $(@)
+
+mtx: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) prefix=$(IMAGE_DIR)/usr install
+	$(TOUCH) $(@)
+
+mt-st: glibc
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(tgt_src_dir) SBINDIR=$(IMAGE_DIR)/usr/sbin \
+	BINDIR=$(IMAGE_DIR)/usr/bin MANDIR=$(IMAGE_DIR)/usr/share/man  install
 	$(TOUCH) $(@)
 
