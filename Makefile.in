@@ -90,7 +90,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		scst-trunk_r5558.tar.gz \
 		kexec-tools-2.0.6.tar.gz \
 		drbd-8.4.3.tar.gz \
-		LVM2-2.02.97.tar.gz \
+		LVM2-2.02.108.tar.gz \
 		xfsprogs-3.1.8.tar.gz \
 		mdadm-3.2.6.tar.gz \
 		parted-2.3.tar.gz \
@@ -1017,7 +1017,8 @@ LVM2: glibc corosync dlm thin-provisioning-tools
 	./configure --with-lvm1=none --disable-selinux --prefix=/usr \
 	--with-clvmd=corosync --with-cluster=internal --enable-ocf \
 	--enable-cmirrord --disable-readline --with-thin=internal \
-	--with-thin-check=$(IMAGE_DIR)/usr/sbin/thin_check
+	--with-thin-check=$(IMAGE_DIR)/usr/sbin/thin_check \
+	--with-cache=internal
 	$(MAKE) --directory=$(tgt_src_dir) CLDFLAGS+="$(LDFLAGS)"
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
