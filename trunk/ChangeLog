@@ -1,3 +1,8 @@
+2014-08-04 04:06  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: updated LVM2 to
+	  version 2.02.108 (includes lvmcache support)
+
 2014-07-24 04:37  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
