@@ -2563,6 +2563,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         }
         /* Set date & time (if it changed) */
         if (time_changed) {
+            curr_date_info->tm_isdst = -1;
             const struct timeval time_val = {mktime(curr_date_info), 0};
             if (settimeofday(&time_val, 0) == -1) {
                 asprintf(&error_msg, "settimeofday(): %s", strerror(errno));
