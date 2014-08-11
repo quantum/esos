@@ -84,7 +84,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
 		qlogic_fw-20120101.tar.gz \
-		linux-3.12.20.tar.xz \
+		linux-3.14.16.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r5558.tar.gz \
@@ -149,7 +149,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		lockfile-0.9.1.tar.gz \
 		python-daemon-1.5.5.tar.gz \
 		bcache-tools-master_20130930.tar.gz \
-		EnhanceIO-master_20130930.tar.gz \
+		EnhanceIO-master_20140810.tar.gz \
 		util-linux-2.23.2.tar.bz2 \
 		nrpe-2.15.tar.gz \
 		thin-provisioning-tools-0.2.8.tar.gz \
@@ -469,13 +469,13 @@ esos_kernels: kernel_headers
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b \
 	  -B $(linux_src)/scst_exec_req_fifo.patch/ -p1 < \
-	  $(scst_src)/scst/kernel/scst_exec_req_fifo-3.12.patch; \
+	  $(scst_src)/scst/kernel/scst_exec_req_fifo-3.14.patch; \
 	fi
 	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b \
 	  -B $(linux_src)/put_page_callback.patch/ -p1 < \
-	  $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.12.11.patch; \
+	  $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.14.patch; \
 	fi
 	$(RM) $(linux_src)/drivers/scsi/qla2xxx
 	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
@@ -561,16 +561,14 @@ esos_kernels: kernel_headers
 	  $(INSTALL) -m 0644 $(eio_src)/Driver/enhanceio/*.ko \
 	  $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio/; \
 	  $(ECHO) "### Building the BTIER module"; \
-	  $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
-	  M=$(btier_src)/kernel/btier modules; \
-	  $(INSTALL) -D -m 0644 $(btier_src)/kernel/btier/btier.ko \
-	  $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/block/btier.ko; \
+	  $(ECHO) $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	  $(ECHO) M=$(btier_src)/kernel/btier modules; \
+	  $(ECHO) $(INSTALL) -D -m 0644 $(btier_src)/kernel/btier/btier.ko \
+	  $(ECHO) $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/block/btier.ko; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(ECHO) "### Building the Emulex OCS SCST module"; \
 	    $(CP) $(IMAGE_DIR)/usr/include/scst/Module.symvers \
 	    $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/; \
-	    $(SED) -i 's/#if 0/#if 1/' \
-	    $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/ocs_lnx.c; \
 	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
 	    M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst \
 	    SCST_PREFERRED=$(scst_src)/scst/include modules; \
@@ -669,12 +667,10 @@ ocs_sdk: glibc
 	CC="$(esos_cc)"
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/user/elxsdkutil/elxsdkutil \
 	$(IMAGE_DIR)/usr/sbin/
-	$(SED) -e 's/sudo //g' $(ocs_sdk_dir)/tools/bin/ocs_perf_config > \
-	$(IMAGE_DIR)/usr/sbin/ocs_perf_config
-	$(CHMOD) 0755 $(IMAGE_DIR)/usr/sbin/ocs_perf_config
-	$(SED) -e "s/--delimiter=','/-d,/g;s/--field=/-f/g;s/sudo //g" \
-	$(ocs_sdk_dir)/tools/bin/ocsmknod > $(IMAGE_DIR)/usr/sbin/ocsmknod
-	$(CHMOD) 0755 $(IMAGE_DIR)/usr/sbin/ocsmknod
+	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/bin/ocs_config.py \
+	$(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/bin/ocs_cpu_info.py \
+	$(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
 uwire: glibc
@@ -1424,7 +1420,8 @@ fio: glibc libaio
 	$(TOUCH) $(@)
 
 bash: glibc ncurses
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --exec-prefix=/ --with-curses
+	cd $(tgt_src_dir) && bash_cv_termcap_lib="libtinfo" \
+	./configure --prefix=/usr --exec-prefix=/ --with-curses
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)

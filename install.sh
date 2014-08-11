@@ -4,7 +4,7 @@
 
 TEMP_DIR=`mktemp -u -d /tmp/esos_install.XXXXX` || exit 1
 MNT_DIR="${TEMP_DIR}/mnt"
-REQD_TOOLS="tar rpm2cpio cpio dd md5sum sha256sum grep blockdev unzip"
+REQD_TOOLS="tar rpm2cpio cpio dd md5sum sha256sum grep blockdev unzip findfs"
 MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
 
@@ -116,7 +116,16 @@ if [ -z "${install_list}" ]; then
 else
     echo "### Installing proprietary CLI tools..."
     mkdir -p ${MNT_DIR} || exit 1
-    mount LABEL=esos_root ${MNT_DIR} || exit 1
+    esos_root=$(findfs LABEL=esos_root)
+    if [ ${?} -ne 0 ]; then
+        exit 1
+    fi
+    # Just in case this system has an auto-mounter
+    if grep ${esos_root} /proc/mounts > /dev/null 2>&1; then
+        umount ${esos_root} || exit 1
+    fi
+    # Mount it and inject all (if any) of the tools
+    mount ${esos_root} ${MNT_DIR} || exit 1
     cd ${TEMP_DIR}
     for i in ${install_list}; do
         if [ "${i}" = "MegaCLI" ]; then
