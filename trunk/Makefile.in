@@ -175,6 +175,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		fio-2.0.13.tar.bz2 \
 		mtx-1.3.12.tar.gz \
 		mt-st-1.1.tar.gz \
+		nagios-plugins-2.0.3.tar.gz \
 		win_binaries-20140704.tar.xz)
 distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
@@ -195,7 +196,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		thin-provisioning-tools expat boost btier librdmacm \
 		sysstat pciutils tar net-snmp nut libusb libusb_compat \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
-		popt mtx mt-st
+		popt mtx mt-st nagios-plugins
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -1114,7 +1115,8 @@ pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	$(MAKE) --directory=$(tgt_src_dir)/cib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/crmd DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/fencing DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/lrmd DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/lrmd DESTDIR=$(IMAGE_DIR) \
+	init_SCRIPTS="" install
 	$(MAKE) --directory=$(tgt_src_dir)/attrd DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/xml DESTDIR=$(IMAGE_DIR) install
@@ -1911,5 +1913,14 @@ mt-st: glibc
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(tgt_src_dir) SBINDIR=$(IMAGE_DIR)/usr/sbin \
 	BINDIR=$(IMAGE_DIR)/usr/bin MANDIR=$(IMAGE_DIR)/usr/share/man  install
+	$(TOUCH) $(@)
+
+nagios-plugins: glibc
+	$(SED) -i -e '/gets is a security/d' $(tgt_src_dir)/gl/stdio.in.h
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-gnutls \
+	--without-pgsql --without-mysql --without-dbi --without-radius \
+	--without-ldap --with-ipv6 --with-perl=/usr/bin/perl
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
