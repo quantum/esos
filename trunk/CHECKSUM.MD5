@@ -82,7 +82,6 @@ df544913242f925a2bc6fc255d7e7067  boost-1_55_0.tar.xz
 4ac2db0bee3632c8089a39131047b75b  linux_firmware-20131226.tar.xz
 0053fd9a7368f04e72287923eb58ea36  librdmacm-1.0.15.tar.gz
 e68e97bff74fc56c86493dc7def5f1bc  corosync-2.3.3.tar.gz
-8cd4837a1610f48dee3018e751723620  btier-1.2.1.tar.gz
 039dcd235dfcfb3d4acc0a05730f9512  sysstat-10.2.1.tar.gz
 fdc92c4665bb169022ffe730b3c08313  pciutils-3.2.1.tar.gz
 9d4bc655d103b871248281db179eb0f5  tar-1.27.tar.gz
@@ -112,3 +111,8 @@ c2e90f9d6b47c4b4f7a3e85e01bbaa0a  LVM2-2.02.108.tar.gz
 469c879236ed694f60b81122e91ca02e  linux-3.14.16.tar.xz
 c6d30facf18ff825e2721d0aa9c3add8  EnhanceIO-master_20140810.tar.gz
 6755765bab88b506181268ef7982595e  nagios-plugins-2.0.3.tar.gz
+9cfb30874eb5467a6e60b7a8a31d6b07  btier-tip_c3e46b.tar.gz
+80e243e1a1379230403345821bcc72f8  ceph-0.80.5.tar.gz
+7f8ac985c45086b5fbcd12cecd23cf07  keyutils-1.5.9.tar.bz2
+28171438127a2d268893f040fd84ae2a  libedit-20140620-3.1.tar.gz
+e91fd7cbced8b84e21f357a866ad226a  leveldb-1.15.0.tar.gz
