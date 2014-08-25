@@ -1,3 +1,12 @@
+2014-08-25 21:15  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/linux-3.14.16.config: re-enabled BTIER (and updated
+	  version); initial support for ceph; added dependency packages
+	  (keyutils, libedit, and leveldb) for ceph; enabled
+	  CONFIG_CEPH_LIB in kernel config; enabled several libraries in
+	  boost package
+
 2014-08-20 13:15  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added the
