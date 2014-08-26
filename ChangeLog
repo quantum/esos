@@ -1,3 +1,11 @@
+2014-08-26 20:59  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/EnhanceIO-master_20140810.patch, misc/drbd-8.4.4.patch,
+	  misc/linux-3.14.16.config: updated EnhanceIO patch file; fixed
+	  build issue with ceph (Python dep); enabled CONFIG_BLK_DEV_RBD in
+	  kernel config; updated DRBD (user-land) to version 8.4.4
+
 2014-08-25 21:15  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
