@@ -89,7 +89,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r5558.tar.gz \
 		kexec-tools-2.0.6.tar.gz \
-		drbd-8.4.3.tar.gz \
+		drbd-8.4.4.tar.gz \
 		LVM2-2.02.108.tar.gz \
 		xfsprogs-3.1.8.tar.gz \
 		mdadm-3.2.6.tar.gz \
@@ -1037,7 +1037,7 @@ xfsprogs: glibc util-linux
 	$(TOUCH) $(@)
 
 drbd: glibc
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < $(SRC_DIR)/misc/drbd-8.4.3.patch
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < $(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-km \
 	--without-udev --without-xen --with-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic \
@@ -1930,7 +1930,7 @@ nagios-plugins: glibc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-ceph: glibc util-linux keyutils libedit snappy leveldb boost
+ceph: glibc util-linux keyutils libedit snappy leveldb boost Python
 	cd $(tgt_src_dir) && NSS_CFLAGS="-I$(IMAGE_DIR)/usr/include/nss" \
 	NSS_LIBS="-lnss3 -lssl3 -lnssutil3 -lnspr4 -lsmime3" \
 	LIBEDIT_CFLAGS="-I$(IMAGE_DIR)/usr/include/editline" \
