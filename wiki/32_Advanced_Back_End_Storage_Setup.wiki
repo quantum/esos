@@ -348,9 +348,11 @@ Several different block level (layer) caching solutions exist in ESOS. These sof
   * bcache [http://bcache.evilpiepirate.org/]
   * dm-cache [http://visa.cs.fiu.edu/tiki/dm-cache]
   * EnhanceIO [https://github.com/stec-inc/EnhanceIO]
+  * lvmcache [https://sourceware.org/lvm2/]
 
 We'll attempt to give a brief setup example for each of these; please consult the project web sites above for additional information.
 
+==== bcache ====
 For bcache, you'll first need to identify a caching device (like an SSD drive, or array of SSDs) and a backing device (a slow hard drive, or RAID array of spinning disks). The steps go something like this:
   # Create and register the caching device.
   # Create and register the backing device.
@@ -369,6 +371,7 @@ echo "6d4ab278-0844-4a50-8e74-87aeda4fd353" > /sys/block/sdd/bcache/attach
 
 You should now have a /dev/bcacheX device node that you can use.
 
+==== dm-cache ====
 Now we'll take a look at setting up dm-cache. Two different block devices (or segments) are needed for dm-cache: (1) for the cache metadata, and (1) for the cache regions. For this example setup, we created both on one single SSD-backed volume using LVM. See [http://blog.kylemanna.com/linux/2013/06/30/ssd-caching-using-dmcache-tutorial/ this] article for a more in-depth example; for the example shown below, metadata size was not taken into account.
 {{{
 pvcreate /dev/sda
@@ -396,6 +399,7 @@ dmsetup suspend cached_dev
 dmsetup remove cached_dev
 }}}
 
+==== EnhanceIO ====
 The setup procedure for EnhanceIO cache devices is pretty clear-cut; the source or backing device (the device you want to "enhance") can already contain data and even have a mounted file system while adding/deleting a cache. The `eio_cli` tool that comes with ESOS is a special version that supports non-udev setups (like mdev in ESOS). EnhanceIO is disabled in ESOS by default; edit the /etc/rc.conf file and set `rc.eio_enable` to "YES". Next, you'll need to setup your cache device using the `eio_cli` tool (be sure to always use the "-u" option to disable support for udev):
 {{{
 eio_cli create -u -d /dev/disk-by-id/SERIAL-B8CEA82A -s /dev/disk-by-id/SERIAL-A65CBA25 -m wb -c my_cache
@@ -403,9 +407,17 @@ eio_cli create -u -d /dev/disk-by-id/SERIAL-B8CEA82A -s /dev/disk-by-id/SERIAL-A
 
 Your backing/source device ("/dev/disk-by-id/SERIAL-B8CEA82A" in this example) is now enhanced! The configuration file that eio_cli and rc.eio use is located here: /etc/eio.conf
 
+==== lvmcache ====
+TODO
+
 <br>
 
 === Automatic Tiered Block Devices (BTIER) ===
+TODO
+
+<br>
+
+=== Ceph RBD Mapping ===
 TODO
 
 <br>
