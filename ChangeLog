@@ -1,3 +1,12 @@
+2014-08-29 18:33  msmith626@gmail.com
+
+	* Makefile.in, etc/ceph, etc/ceph/rbdmap, etc/rc.conf,
+	  etc/rc.d/common, etc/rc.d/rc.rbdmap, misc/linux-3.14.16.config:
+	  added new rc.rbdmap init script for mapping Ceph RBD images;
+	  enabled CONFIG_DM_RAID in kernel config (to support LVM RAID);
+	  set 'enable-command-args' configure script option for nrpe
+	  package; added default rbdmap example /etc file
+
 2014-08-26 20:59  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
