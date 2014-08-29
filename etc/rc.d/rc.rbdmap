@@ -1,0 +1,56 @@
+#! /bin/sh
+
+# $Id$
+
+RBD="/usr/bin/rbd"
+RBDMAP_FILE="/etc/ceph/rbdmap"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    # Make sure the map file exists
+    if [ ! -f "${RBDMAP_FILE}" ]; then
+        /bin/echo "RBD Mapping: The ${RBDMAP_FILE} file is missing!"
+        exit 1
+    fi
+
+    # Read the file and creating mapping(s)
+    /bin/echo "Mapping all Ceph RBD images..."
+    while read dev params; do
+        case "${dev}" in
+            ""|\#*)
+                continue
+                ;;
+            */*)
+                ;;
+            *)
+                dev=rbd/${dev}
+                ;;
+        esac
+        orig_ifs=${IFS}
+        IFS=','
+        for param in ${params}; do
+            cmd_params="${cmd_params} --$(/bin/echo $param | /usr/bin/tr '=' ' ')"
+        done
+        IFS=${orig_ifs}
+        if [ ! -b /dev/rbd/${dev} ]; then
+            ${RBD} map ${dev} ${cmd_params} --no-settle
+        fi
+    done < ${RBDMAP_FILE}
+}
+
+stop() {
+    /bin/echo "Unmapping all Ceph RBD images..."
+    if /bin/ls /dev/rbd[0-9]* > /dev/null 2>&1; then
+        for dev in /dev/rbd[0-9]*; do
+            ${RBD} unmap ${dev}
+        done
+    fi
+}
+
+# Perform specified action
+${1}

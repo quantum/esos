@@ -1644,7 +1644,7 @@ python-daemon: glibc Python lockfile setuptools
 nrpe: glibc openssl
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--enable-ssl --with-ssl-inc=$(IMAGE_DIR)/usr/include/openssl \
-	--with-ssl-lib=$(IMAGE_DIR)/usr/lib
+	--with-ssl-lib=$(IMAGE_DIR)/usr/lib --enable-command-args
 	$(OPENSSL) dhparam -noout -C 512 > $(tgt_src_dir)/include/dh.h
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
@@ -1944,6 +1944,7 @@ ceph: glibc util-linux keyutils libedit snappy leveldb boost Python
 	INSTALL_PROGRAM="$(tgt_src_dir)/install-sh -c -s" \
 	INSTALL_STRIP_FLAG="-s" "INSTALL_PROGRAM_ENV=STRIPPROG='strip'" \
 	bin_PROGRAMS="rbd" install-binPROGRAMS
+	$(call clean_la_files)
 	$(TOUCH) $(@)
 
 keyutils: glibc
