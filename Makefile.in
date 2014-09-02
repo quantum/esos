@@ -180,6 +180,8 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		keyutils-1.5.9.tar.bz2 \
 		libedit-20140620-3.1.tar.gz \
 		leveldb-1.15.0.tar.gz \
+		libmcrypt-2.5.8.tar.bz2 \
+		nsca-2.7.2.tar.gz \
 		win_binaries-20140704.tar.xz)
 distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
@@ -200,7 +202,8 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		thin-provisioning-tools expat boost btier librdmacm \
 		sysstat pciutils tar net-snmp nut libusb libusb_compat \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
-		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb
+		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
+		libmcrypt nsca
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -1967,5 +1970,23 @@ leveldb: glibc snappy
 	$(LN) libleveldb.so.1.15 $(IMAGE_DIR)/usr/lib/libleveldb.so.1
 	$(LN) libleveldb.so.1.15 $(IMAGE_DIR)/usr/lib/libleveldb.so
 	$(CP) -R $(tgt_src_dir)/include/leveldb $(IMAGE_DIR)/usr/include/
+	$(TOUCH) $(@)
+
+libmcrypt: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files)
+	$(TOUCH) $(@)
+
+nsca: glibc libmcrypt
+	cd $(tgt_src_dir) && \
+	LD_LIBRARY_PATH=$(IMAGE_DIR)/usr/lib: \
+	LIBMCRYPT_CONFIG=$(IMAGE_DIR)/usr/bin/libmcrypt-config \
+	./configure --prefix=/usr \
+	--with-mcrypt-lib=$(IMAGE_DIR)/usr/lib \
+	--with-mcrypt-inc=$(IMAGE_DIR)/usr/include
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(INSTALL) -m 0755 $(tgt_src_dir)/src/send_nsca $(IMAGE_DIR)/usr/sbin/
 	$(TOUCH) $(@)
 
