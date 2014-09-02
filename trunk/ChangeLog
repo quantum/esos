@@ -1,3 +1,9 @@
+2014-09-02 21:16  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/ceph/ceph.conf,
+	  etc/send_nsca.cfg: added default etc/ceph/ceph.conf file; added
+	  the nsca package (and libmcrypt as a dependency)
+
 2014-08-29 18:33  msmith626@gmail.com
 
 	* Makefile.in, etc/ceph, etc/ceph/rbdmap, etc/rc.conf,
