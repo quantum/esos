@@ -418,7 +418,38 @@ TODO
 <br>
 
 === Ceph RBD Mapping ===
-TODO
+In ESOS, you can use a Ceph RBD image as a back-end block device (mapped to). You can then treat this as a normal block device and use it with vdisk_blockio, or put a file system on it and use vdisk_fileio.
+
+Edit the /etc/ceph/ceph.conf file and add your monitors (nodes) to the configuration file; this allows your Ceph cluster to be discovered. Here is an example:
+{{{
+[mon.0]
+         host = node1
+         mon addr = 192.168.1.101:6789
+[mon.1]
+         host = node2
+         mon addr = 192.168.1.102:6789
+[mon.2]
+         host = node3
+         mon addr = 192.168.1.103:6789
+}}}
+
+You will also need a client key ring file (/etc/ceph/ceph.client.keyring):
+{{{
+[client.admin]
+        key = AQC2WFlTYPvVHhAAuk1jxZ4u86EkMdeUyn6LYA==
+}}}
+
+Finally configure the /etc/ceph/rbdmap file (pool / image mappings):
+{{{
+rbd/disk01     id=client,keyring=/etc/ceph/ceph.client.keyring
+}}}
+
+Edit the /etc/rc.conf file and set "rc.rbdmap_enable" to "YES" and then start it:
+{{{
+/etc/rc.d/rc.rbdmap start
+}}}
+
+If you get any error messages, check the kernel logs (`dmesg`). See this article if you have any "feature set mismatch" errors: http://cephnotes.ksperis.com/blog/2014/01/21/feature-set-mismatch-error-on-ceph-kernel-client/
 
 <br>
 
