@@ -1,3 +1,15 @@
+2014-09-06 02:17  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/linux-3.14.16.config, misc/ocf/scst, scripts/conf_sync.sh,
+	  tui/menu_actions-back_storage.c, tui/strings.c: resolved issue in
+	  esos::scst RA where the pre-scst-xtra conf file would not be
+	  executed; updated TUI code to handle btrfs file system; resolved
+	  issue # 87 (usb_sync.sh was not called if SCST wasn't loaded);
+	  added btrfs-progs and deps (attr, acl); enabled btrfs file system
+	  support in kernel config; updated Makefile to handle fine grain
+	  cleaning of .la files (fixes rare build issue)
+
 2014-09-02 21:16  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/ceph/ceph.conf,
