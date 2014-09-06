@@ -40,7 +40,7 @@ scst_start() {
     fi
 
     # If our pre-SCST file exists, run it
-    if [ -f $PRE_SCST_CONF]; then
+    if [ -f $PRE_SCST_CONF ]; then
         ocf_log info "Pre-SCST user config. file found; running..."
         ocf_run -warn sh $PRE_SCST_CONF
     fi
@@ -140,6 +140,7 @@ scst_stop() {
             ocf_log warn "The $i daemon is not running!"
             continue
         fi
+        ocf_log debug "Sending the TERM signal to $i..."
         ocf_run killall -TERM $i || exit $OCF_ERR_GENERIC
         while pidof $i > /dev/null 2>&1; do
             ocf_log debug "The $i daemon is still running, waiting..."

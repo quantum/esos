@@ -118,3 +118,6 @@ e91fd7cbced8b84e21f357a866ad226a  leveldb-1.15.0.tar.gz
 b51815343c1a9151e2936b3b97520388  drbd-8.4.4.tar.gz
 c4f491dd411a09e9de3b8702ea6f73eb  libmcrypt-2.5.8.tar.bz2
 33a98e7975f633a9489d7a8938ed6131  nsca-2.7.2.tar.gz
+26035e2ff30513dfeeb2538cacf954b2  btrfs-progs-v3.16.tar.xz
+84f58dec00b60f2dc8fd1c9709291cc7  attr-2.4.47.tar.gz
+a61415312426e9c2212bd7dc7929abda  acl-2.2.52.tar.gz

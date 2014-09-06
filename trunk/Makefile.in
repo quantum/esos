@@ -182,6 +182,9 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		leveldb-1.15.0.tar.gz \
 		libmcrypt-2.5.8.tar.bz2 \
 		nsca-2.7.2.tar.gz \
+		btrfs-progs-v3.16.tar.xz \
+		attr-2.4.47.tar.gz \
+		acl-2.2.52.tar.gz \
 		win_binaries-20140704.tar.xz)
 distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
 
@@ -203,7 +206,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		sysstat pciutils tar net-snmp nut libusb libusb_compat \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
-		libmcrypt nsca
+		libmcrypt nsca btrfs-progs attr acl
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -255,7 +258,7 @@ esos_cxx	= $(cxx_base) $(CPPFLAGS) \
 export CXX	= $(esos_cxx)
 
 define clean_la_files
-	$(FIND) $(IMAGE_DIR)/usr/lib -type f -iname *.la -exec $(RM) {} \;
+	$(FIND) $(IMAGE_DIR)/usr/lib -type f -iname $1*.la -exec $(RM) {} \;
 endef
 
 
@@ -661,7 +664,8 @@ gdb: glibc ncurses
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-python
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libopcodes)
+	$(call clean_la_files,libbfd)
 	$(TOUCH) $(@)
 
 valgrind: glibc
@@ -876,6 +880,8 @@ gcc: glibc
 	CFLAGS_FOR_TARGET="-B$(IMAGE_DIR)/usr/lib -g -O2 $(LDFLAGS) $(CPPFLAGS)"
 	$(MAKE) --directory=$(WORK_DIR)/gcc-build DESTDIR=$(IMAGE_DIR) \
 	install-target-libstdc++-v3
+	$(call clean_la_files,libsupc)
+	$(call clean_la_files,libstdc)
 	$(TOUCH) $(@)
 
 setuptools: Python
@@ -932,14 +938,14 @@ libibumad: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libibumad)
 	$(TOUCH) $(@)
 
 libibverbs: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libibverbs)
 	$(TOUCH) $(@)
 
 srptools: glibc libibumad libibverbs
@@ -959,7 +965,7 @@ sg3_utils: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libsgutils2)
 	$(TOUCH) $(@)
 
 groff: glibc gcc
@@ -1006,6 +1012,7 @@ cdk: glibc ncurses
 	--mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir) LIBS="-lncurses"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libcdk)
 	$(TOUCH) $(@)
 
 LVM2: glibc corosync dlm thin-provisioning-tools
@@ -1062,7 +1069,7 @@ parted: glibc util-linux LVM2
 	--without-readline
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libparted)
 	$(TOUCH) $(@)
 
 opensm: glibc gcc libibumad libibverbs
@@ -1074,14 +1081,16 @@ opensm: glibc gcc libibumad libibverbs
 	$(MAKE) --directory=$(tgt_src_dir)/complib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/libvendor DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/include DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libopensm)
+	$(call clean_la_files,libosmvendor)
+	$(call clean_la_files,libosmcomp)
 	$(TOUCH) $(@)
 
 libqb: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libqb)
 	$(TOUCH) $(@)
 
 pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
@@ -1130,7 +1139,12 @@ pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	$(MAKE) --directory=$(tgt_src_dir)/cts DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/doc DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/extra DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libpe)
+	$(call clean_la_files,libcrm)
+	$(call clean_la_files,liblrmd)
+	$(call clean_la_files,libcib)
+	$(call clean_la_files,libtransitioner)
+	$(call clean_la_files,libstonithd)
 	$(TOUCH) $(@)
 
 corosync: glibc libqb nss librdmacm libibverbs
@@ -1157,7 +1171,14 @@ corosync: glibc libqb nss librdmacm libibverbs
 	$(MAKE) --directory=$(tgt_src_dir)/qdevices DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/conf DESTDIR=$(IMAGE_DIR) \
 	install-corosysxmlxsltDATA
-	$(call clean_la_files)
+	$(call clean_la_files,libtotem_pg)
+	$(call clean_la_files,libcfg)
+	$(call clean_la_files,libsam)
+	$(call clean_la_files,libvotequorum)
+	$(call clean_la_files,libquorum)
+	$(call clean_la_files,libcpg)
+	$(call clean_la_files,libcmap)
+	$(call clean_la_files,libcorosync_common)
 	$(TOUCH) $(@)
 
 nss: glibc zlib
@@ -1187,12 +1208,14 @@ glib: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libg)
 	$(TOUCH) $(@)
 
 libxml2: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-python
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libxml2)
 	$(TOUCH) $(@)
 
 libxslt: glibc libxml2
@@ -1203,13 +1226,15 @@ libxslt: glibc libxml2
 	--without-crypto
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libxslt)
+	$(call clean_la_files,libexslt)
 	$(TOUCH) $(@)
 
 libtool: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libltdl)
 	$(TOUCH) $(@)
 
 bzip2: glibc
@@ -1263,7 +1288,14 @@ glue: glibc libaio libxml2 bzip2 curl util-linux
 	$(MAKE) --directory=$(tgt_src_dir)/logd DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/hb_report DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/config DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libplumb)
+	$(call clean_la_files,libstonith)
+	$(call clean_la_files,libpils)
+	$(call clean_la_files,liblrm)
+	$(FIND) $(IMAGE_DIR)/usr/lib/stonith/plugins/stonith2 \
+	-type f -iname *.la -exec $(RM) {} \;
+	$(FIND) $(IMAGE_DIR)/usr/lib/heartbeat/plugins \
+	-type f -iname *.la -exec $(RM) {} \;
 	$(TOUCH) $(@)
 
 readline: glibc
@@ -1316,13 +1348,14 @@ lzo: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,liblzo2)
 	$(TOUCH) $(@)
 
 mhash: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libmhash)
 	$(TOUCH) $(@)
 
 lessfs: glibc mhash openssl lzo fuse db tokyocabinet snappy
@@ -1352,6 +1385,8 @@ fuse: glibc
 	$(MAKE) --directory=$(tgt_src_dir)/util DESTDIR=$(IMAGE_DIR) \
 	install-binPROGRAMS
 	$(INSTALL) $(tgt_src_dir)/util/mount.fuse $(IMAGE_DIR)/sbin/mount.fuse
+	$(call clean_la_files,libfuse)
+	$(call clean_la_files,libulockmgr)
 	$(TOUCH) $(@)
 
 db: glibc
@@ -1366,13 +1401,14 @@ db: glibc
 	DESTDIR=$(IMAGE_DIR) install_lib
 	$(MAKE) --directory=$(tgt_src_dir)/build_unix \
 	DESTDIR=$(IMAGE_DIR) install_utilities
+	$(call clean_la_files,libdb)
 	$(TOUCH) $(@)
 
 snappy: glibc gcc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libsnappy)
 	$(TOUCH) $(@)
 
 fence_agents: glibc nss Python pexpect pycurl python-suds Net-Telnet
@@ -1410,6 +1446,7 @@ curl: glibc
 	--disable-static --without-libssh2 --without-libidn
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libcurl)
 	$(TOUCH) $(@)
 
 Net-Telnet: perl_lib = $(wildcard $(IMAGE_DIR)/usr/lib/perl5/5.*)
@@ -1477,7 +1514,8 @@ open-fcoe: glibc open-lldp libpciaccess
 	install-man
 	$(INSTALL) $(tgt_src_dir)/fcoe-utils/contrib/*.sh $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) $(tgt_src_dir)/fcoe-utils/debug/*.sh $(IMAGE_DIR)/usr/sbin/
-	$(call clean_la_files)
+	$(call clean_la_files,libHBAAPI)
+	$(call clean_la_files,libhbalinux)
 	$(TOUCH) $(@)
 
 open-lldp: glibc libconfig libnl
@@ -1503,13 +1541,14 @@ open-lldp: glibc libconfig libnl
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-man 
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	install-pkgconfigDATA
+	$(call clean_la_files,liblldp_clif)
 	$(TOUCH) $(@)
 
 libconfig: glibc gcc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libconfig)
 	$(TOUCH) $(@)
 
 libnl: glibc
@@ -1522,7 +1561,7 @@ libpciaccess: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libpciaccess)
 	$(TOUCH) $(@)
 
 linux_firmware:
@@ -1598,6 +1637,7 @@ mysql: glibc ncurses
 	--without-bench --enable-thread-safe-client
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libmysqlclient)
 	$(TOUCH) $(@)
 
 MySQLdb: glibc Python mysql
@@ -1624,14 +1664,14 @@ infiniband-diags: glibc libibumad libibverbs libibmad opensm
 	./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libibnetdisc)
 	$(TOUCH) $(@)
 
 libibmad: glibc libibumad libibverbs
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libibmad)
 	$(TOUCH) $(@)
 
 lockfile: glibc Python
@@ -1686,7 +1726,10 @@ util-linux: glibc ncurses zlib
 	DESTDIR=$(IMAGE_DIR)
 	$(MAKE) --directory=$(tgt_src_dir) install-data-recursive \
 	DESTDIR=$(IMAGE_DIR)
-	$(call clean_la_files)
+	$(call clean_la_files,libcommon)
+	$(call clean_la_files,libuuid)
+	$(call clean_la_files,libmount)
+	$(call clean_la_files,libblkid)
 	$(TOUCH) $(@)
 
 thin-provisioning-tools: glibc gcc expat boost
@@ -1706,7 +1749,7 @@ expat: glibc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) prefix=$(IMAGE_DIR)/usr \
 	man1dir=$(IMAGE_DIR)/usr/share/man/man1 install
-	$(call clean_la_files)
+	$(call clean_la_files,libexpat)
 	$(TOUCH) $(@)
 
 boost: glibc
@@ -1748,7 +1791,7 @@ librdmacm: glibc libibverbs
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,librdmacm)
 	$(TOUCH) $(@)
 
 sysstat: glibc
@@ -1776,8 +1819,9 @@ pciutils: glibc zlib
 	$(MAKE) --directory=$(tgt_src_dir) PREFIX=/usr DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-tar: glibc
-	cd $(tgt_src_dir) && am__tar='tar chf - "$$tardir"' am__untar='tar xf -' \
+tar: glibc acl
+	cd $(tgt_src_dir) && \
+	am__tar='tar chf - "$$tardir"' am__untar='tar xf -' \
 	am_cv_prog_tar_ustar='fake_ustar_cmd' FORCE_UNSAFE_CONFIGURE=1 \
 	./configure --prefix=/usr --without-selinux
 	$(MAKE) --directory=$(tgt_src_dir)
@@ -1796,7 +1840,7 @@ net-snmp: glibc gcc
 	--disable-scripts --enable-ipv6
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libnetsnmp)
 	$(TOUCH) $(@)
 
 nut: glibc net-snmp libusb_compat freeipmi
@@ -1814,14 +1858,15 @@ nut: glibc net-snmp libusb_compat freeipmi
 	$(MAKE) --directory=$(tgt_src_dir)/drivers DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/lib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/server DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libnut)
+	$(call clean_la_files,libupsclient)
 	$(TOUCH) $(@)
 
 libusb: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libusb-1.0)
 	$(TOUCH) $(@)
 
 libusb_compat: glibc libusb
@@ -1830,7 +1875,7 @@ libusb_compat: glibc libusb
 	LIBUSB_1_0_LIBS="-lusb-1.0" ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libusb)
 	$(TOUCH) $(@)
 
 freeipmi: glibc libgcrypt
@@ -1868,7 +1913,8 @@ freeipmi: glibc libgcrypt
 	$(MAKE) --directory=$(tgt_src_dir)/ipmiseld DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/rmcpping DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/contrib DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libfreeipmi)
+	$(call clean_la_files,libipmi)
 	$(TOUCH) $(@)
 
 libgcrypt: glibc libgpg-error
@@ -1877,14 +1923,14 @@ libgcrypt: glibc libgpg-error
 	./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libgcrypt)
 	$(TOUCH) $(@)
 
 libgpg-error: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libgpg-error)
 	$(TOUCH) $(@)
 
 smartmontools: glibc gcc
@@ -1902,14 +1948,15 @@ cryptsetup: glibc libgcrypt LVM2 util-linux popt
 	--with-libgcrypt-prefix=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libtcrypt)
+	$(call clean_la_files,libcryptsetup)
 	$(TOUCH) $(@)
 
 popt: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libpopt)
 	$(TOUCH) $(@)
 
 mtx: glibc
@@ -1947,7 +1994,9 @@ ceph: glibc util-linux keyutils libedit snappy leveldb boost Python
 	INSTALL_PROGRAM="$(tgt_src_dir)/install-sh -c -s" \
 	INSTALL_STRIP_FLAG="-s" "INSTALL_PROGRAM_ENV=STRIPPROG='strip'" \
 	bin_PROGRAMS="rbd" install-binPROGRAMS
-	$(call clean_la_files)
+	$(call clean_la_files,librados)
+	$(call clean_la_files,librbd)
+	$(call clean_la_files,libcephfs)
 	$(TOUCH) $(@)
 
 keyutils: glibc
@@ -1960,7 +2009,7 @@ libedit: glibc ncurses
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libedit)
 	$(TOUCH) $(@)
 
 leveldb: glibc snappy
@@ -1976,7 +2025,7 @@ libmcrypt: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(call clean_la_files)
+	$(call clean_la_files,libmcrypt)
 	$(TOUCH) $(@)
 
 nsca: glibc libmcrypt
@@ -1988,5 +2037,31 @@ nsca: glibc libmcrypt
 	--with-mcrypt-inc=$(IMAGE_DIR)/usr/include
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/send_nsca $(IMAGE_DIR)/usr/sbin/
+	$(TOUCH) $(@)
+
+btrfs-progs: glibc util-linux attr zlib acl e2fsprogs
+	$(SED) -i 's/ build-Documentation//' $(tgt_src_dir)/Makefile
+	$(SED) -i 's/ install-Documentation//' $(tgt_src_dir)/Makefile
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	prefix="/usr" install
+	$(TOUCH) $(@)
+
+attr: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	install install-lib install-dev
+	$(call clean_la_files,libattr)
+	$(TOUCH) $(@)
+
+acl: glibc attr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	install install-lib
+	$(MAKE) --directory=$(tgt_src_dir)/include \
+	PKG_INC_DIR=$(IMAGE_DIR)/usr/include install-dev
+	$(call clean_la_files,libacl)
 	$(TOUCH) $(@)
 
