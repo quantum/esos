@@ -17,7 +17,7 @@ char *g_no_yes_opts[] = {"No", "Yes"},
         *g_raid_opts[] = {"0", "1", "5", "6"},
         *g_strip_opts[] = {"8", "16", "32", "64", "128", "256", "512", "1024"},
         *g_dsbl_enbl_opts[] = {"Disabled (0)", "Enabled (1)"},
-        *g_fs_type_opts[] = {"xfs", "ext2", "ext3", "ext4"};
+        *g_fs_type_opts[] = {"xfs", "ext2", "ext3", "ext4", "btrfs"};
 
 /* Label title strings */
 char *g_mail_title_msg[] = {"</31/B>System mail (SMTP) settings..."},

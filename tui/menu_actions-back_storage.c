@@ -1599,7 +1599,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
     /* FS type radio list */
     fs_type = newCDKRadio(fs_screen, (window_x + 22), (window_y + 13),
-            NONE, 5, 10, "</B>File System Type", g_fs_type_opts, 4,
+            NONE, 5, 10, "</B>File System Type", g_fs_type_opts, 5,
             '#' | COLOR_DIALOG_SELECT, 0,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!fs_type) {
@@ -1775,7 +1775,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(mkfs_cmd, MAX_SHELL_CMD_LEN,
                     "mkfs.%s -L %s -%s %s > /dev/null 2>&1",
                     g_fs_type_opts[temp_int], fs_label_buff,
-                    ((strcmp(g_fs_type_opts[temp_int], "xfs") == 0) ? "f" : "F"),
+                    (((strcmp(g_fs_type_opts[temp_int], "btrfs") == 0) ||
+                    (strcmp(g_fs_type_opts[temp_int], "xfs") == 0)) ? "f" : "F"),
                     new_blk_dev_node);
             ret_val = system(mkfs_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
@@ -2231,7 +2232,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             /* Use fallocate() for modern file systems, and
              * write() for others */
             if ((strcmp(fs_type, "xfs") == 0) ||
-                    (strcmp(fs_type, "ext4") == 0)) {
+                    (strcmp(fs_type, "ext4") == 0) ||
+                    (strcmp(fs_type, "btrfs") == 0)) {
                 if (fallocate(new_vdisk_fd, 0, position,
                         write_length) == -1) {
                     asprintf(&error_msg, "fallocate(): %s", strerror(errno));
