@@ -408,7 +408,49 @@ eio_cli create -u -d /dev/disk-by-id/SERIAL-B8CEA82A -s /dev/disk-by-id/SERIAL-A
 Your backing/source device ("/dev/disk-by-id/SERIAL-B8CEA82A" in this example) is now enhanced! The configuration file that eio_cli and rc.eio use is located here: /etc/eio.conf
 
 ==== lvmcache ====
-TODO
+You can also use the LVM interface to device-mapper cache (dm-cache). Using it via this method is much simpler compared to setting up dm-cache. First you'll need to make sure LVM is enabled for boot (set "rc.lvm2_enable" to "YES" in /etc/rc.conf).
+
+For this lvmcache setup example, we'll be using (1) SSD SCSI disk (our cache), and (1) 7.2K NL SAS SCSI disk (our backing disk).
+
+Make these SCSI disks into LVM PVs and add both devices to the same volume group (VG):
+{{{
+pvcreate -v /dev/sdb /dev/sdc
+vgcreate -v VolumeGroup1 /dev/sdb /dev/sdc
+}}}
+
+You then need to create (3) logical volumes and allocate to each specific physical disk.
+
+Create a logical volume to use as cache and assign it to the SSD disk (/dev/sdb):
+{{{
+lvcreate -L 950GB -n lv1_cache VolumeGroup1 /dev/sdb
+}}}
+
+Create a logical volume to use as the cache metadata and assign it to the SSD (/dev/sdb -- this needs to be about a 1000:1 split):
+{{{
+lvcreate -L 1GB -n lv1_cache_meta VolumeGroup1 /dev/sdb
+}}}
+
+Create a logical volume to use as the data disk and assign it to the SAS 7.2K NL disk (/dev/sdc):
+{{{
+lvcreate -L 2TB -n lv1_data VolumeGroup1 /dev/sdc
+}}}
+
+Now we need to convert the (2) cache volumes into a "cache pool" (this will add lv1_cache to a cache pool using lv1_cache_meta as the metadata):
+{{{
+lvconvert --type cache-pool --poolmetadata VolumeGroup1/lv1_cache_meta VolumeGroup1/lv1_cache
+}}}
+
+Finally, attach the cache pool to the data volume -- your volume will now be cached:
+{{{
+lvconvert --type cache --cachepool VolumeGroup1/lv1_cache VolumeGroup1/lv1_data
+}}}
+
+How to "un-cache" a logical volume... all you need to do is remove the cache pool logical volume (LVM will then copy the unwritten data to the data drive then remove the cache and metadata volumes):
+{{{
+lvremove VolumeGroup1/lv1_cache
+}}}
+
+To add the cache back in, you will need to recreate the cache pool from scratch and assign it back to the logical volume.
 
 <br>
 
