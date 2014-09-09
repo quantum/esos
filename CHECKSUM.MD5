@@ -95,7 +95,6 @@ a5a5060dc2f80bcac700ab0236ea47dc  libgcrypt-1.6.1.tar.bz2
 d44f84081a12cef79cd17f78044351fc  smartmontools-6.2.tar.gz
 f68ce7b7f4be08449f3c8b114ed5accb  cryptsetup-1.6.4.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
-c39ea40a7598e49b6dc961ee7de38f57  kexec-tools-2.0.6.tar.gz
 9d557e8db4d1ff306a1f9415b7a57c22  sg3_utils-1.37.tar.gz
 70ff343bbe6657b69beb23458e3e0b98  makedumpfile-1.5.5.tar.gz
 050a4909e452d01ab4747fd69d4036e0  elfutils-0.158.tar.bz2
@@ -121,3 +120,4 @@ c4f491dd411a09e9de3b8702ea6f73eb  libmcrypt-2.5.8.tar.bz2
 26035e2ff30513dfeeb2538cacf954b2  btrfs-progs-v3.16.tar.xz
 84f58dec00b60f2dc8fd1c9709291cc7  attr-2.4.47.tar.gz
 a61415312426e9c2212bd7dc7929abda  acl-2.2.52.tar.gz
+2309ba43981cb6d39d07ac3a9aac30ab  kexec-tools-2.0.7.tar.gz

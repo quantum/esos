@@ -1599,7 +1599,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
     /* FS type radio list */
     fs_type = newCDKRadio(fs_screen, (window_x + 22), (window_y + 13),
-            NONE, 5, 10, "</B>File System Type", g_fs_type_opts, 5,
+            NONE, 5, 10, "</B>File System Type", g_fs_type_opts, 4,
             '#' | COLOR_DIALOG_SELECT, 0,
             COLOR_DIALOG_SELECT, FALSE, FALSE);
     if (!fs_type) {
