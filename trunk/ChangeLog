@@ -1,3 +1,10 @@
+2014-09-09 01:57  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  tui/menu_actions-back_storage.c, tui/strings.c: removed ext2 from
+	  list of file system choices and moved btrfs up the list; updated
+	  kexec-tools to version 2.0.7
+
 2014-09-06 02:17  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
