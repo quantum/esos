@@ -483,7 +483,7 @@ You will also need a client key ring file (/etc/ceph/ceph.client.keyring):
 
 Finally configure the /etc/ceph/rbdmap file (pool / image mappings):
 {{{
-rbd/disk01     id=client,keyring=/etc/ceph/ceph.client.keyring
+rbd/disk01     id=client.admin,keyring=/etc/ceph/ceph.client.keyring
 }}}
 
 Edit the /etc/rc.conf file and set "rc.rbdmap_enable" to "YES" and then start it:
