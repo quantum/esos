@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <syslog.h>
 #include <inttypes.h>
+#include <netdb.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -296,4 +297,64 @@ char *prettyFormatBytes(uint64_t size) {
     }
     strcpy(result, "0");
     return result;
+}
+
+
+/*
+ * Test and see if the Internet is reachable; we do this by attempting
+ * to resolve a DNS entry. The GLIBC getaddrinfo_a() function is used
+ * so we can timeout if the query takes too long. We simply assume the
+ * Internet access works if we're able to successfully resolve the entry.
+ */
+boolean checkInetAccess() {
+    struct gaicb **requests = NULL;
+    struct timespec timeout = {0};
+    int ret_val = 0, loop_cnt = 0;
+    
+    /* Setup our request */
+    requests = realloc(requests, (1 * sizeof requests[0]));
+    requests[0] = calloc(1, sizeof *requests[0]);
+    requests[0]->ar_name = INET_TEST_HOST;
+    
+    /* Queue the request */
+    ret_val = getaddrinfo_a(GAI_NOWAIT, &requests[0], 1, NULL);
+    if (ret_val != 0) {
+        openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
+        syslog(LOG_ERR, "getaddrinfo_a(): %s", gai_strerror(ret_val));
+        closelog();
+        return FALSE;
+    }
+    
+    /* Wait for the request to complete, or hit the timeout */
+    timeout.tv_nsec = 250000000;
+    loop_cnt = 1;
+    while (1) {
+        /* Don't wait too long */
+        if (loop_cnt >= 10) {
+            openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
+            syslog(LOG_ERR, "Timeout value reached, returning...");
+            closelog();
+            return FALSE;
+        }
+        ++loop_cnt;
+        /* Check the request */
+        ret_val = gai_error(requests[0]);
+        if (ret_val == EAI_INPROGRESS) {
+            ;
+        } else if (ret_val == 0) {
+            return TRUE;
+        } else {
+            openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
+            syslog(LOG_ERR, "gai_error(): %s", gai_strerror(ret_val));
+            closelog();
+            return FALSE;
+        }
+        /* Sleep for a bit */
+        if (nanosleep(&timeout, NULL) != 0) {
+            openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
+            syslog(LOG_ERR, "nanosleep(): %s", strerror(errno));
+            closelog();
+            return FALSE;
+        }
+    }
 }
