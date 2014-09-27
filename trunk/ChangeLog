@@ -1,3 +1,32 @@
+2014-09-27 03:37  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
+	  etc/profile, etc/sysctl.conf, misc/linux-3.14.16.config,
+	  misc/ocf/scst, tui/Makefile, tui/main.c,
+	  tui/menu_actions-back_storage.c, tui/menu_actions-interface.c,
+	  tui/prototypes.h, tui/strings.c, tui/strings.h, tui/system.h,
+	  tui/utility.c: re-work of ESOS version string: we now use SVN
+	  branch + revision + build options as the version; updated bash to
+	  4.3 patch 025; updated makedumpfile to 1.5.7; we now include (in
+	  dist package only) the full vmlinux kernel binaries (prod/debug)
+	  so we can fully debug kernel crash dumps offline; updated
+	  esos_tui target so we detect tui/ file changes correctly and
+	  define branch/version strings; fix build dep issue with ipmitool;
+	  minimized mysql target install (no test scripts); build dep fix
+	  for libmcrypt; added key/val pairs to sysctl.conf to panic on
+	  NMI; updated /etc/profile so we only try to set window title with
+	  xterm TERM types; major cleanup of ocf/scst RA... solidified use
+	  of 1 max master node so we can reliably set ALUA state; updated
+	  tui Makefile linker options; enabled additional watchdog support
+	  in kernel config; updated autoconf script to detect xz util; new
+	  TUI utility checkInetAccess() function for a simple "Internet"
+	  connectivity test; updated create-FS-dialog to make use of
+	  libparted's auto/optimize partition alignment feature; remove use
+	  of /etc/esos-release file in TUI code (new branch/version
+	  defines); added support for anonymously reporting ESOS usage
+	  statistics (prompt to participate); support for new
+	  /etc/esos.conf for system/TUI settings (eventually)
+
 2014-09-09 01:57  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
