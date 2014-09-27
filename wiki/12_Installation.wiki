@@ -9,6 +9,8 @@ Here is a list of the install requirements:
   * A USB flash drive that is at least 4 GB large.
   * The ESOS image/install package available from the downloads page, or a ESOS disk image that you built from source.
 
+_Hint: If you're using 'wget' to retrieve the installer package, add the '--content-disposition' flag so the file is named properly._
+
 <br>
 
 === Installing ESOS (Linux) ===
