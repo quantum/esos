@@ -58,6 +58,7 @@ MY_PATH_PROG([kpartx])
 MY_PATH_PROG([xargs])
 MY_PATH_PROG([openssl])
 MY_PATH_PROG([zip])
+MY_PATH_PROG([xz])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then

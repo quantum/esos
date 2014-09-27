@@ -20,4 +20,6 @@ clean:
 	$(CC) -m64 -Wall -c -g $(CPPFLAGS) $(CFLAGS) -D_GNU_SOURCE -o $@ $<
 
 esos_tui: $(OBJ_FILES)
-	$(CC) -m64 -Wall $(LDFLAGS) $(OBJ_FILES) -lncurses -ltinfo -lcdk -liniparser -lparted -lblkid -o $@
+	$(CC) -m64 -Wall $(LDFLAGS) $(OBJ_FILES) -lncurses -ltinfo -lcdk \
+	-liniparser -lparted -lblkid -luuid -lcurl -lanl -o $@
+

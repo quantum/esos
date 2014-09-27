@@ -19,6 +19,7 @@ void termSize(WINDOW *screen);
 void screenResize(CDKSCREEN *cdk, WINDOW *main_screen, WINDOW *sub_screen,
         int *latest_term_y, int *latest_term_x);
 void statusBar(WINDOW *window);
+void reportUsage(CDKSCREEN *main_cdk_screen);
 
 /* info_labels.c */
 boolean updateInfoLabels(CDKSCREEN *cdk_screen,
@@ -119,11 +120,13 @@ boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
         int *driver_cnt);
 int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]);
 char *prettyFormatBytes(uint64_t size);
+boolean checkInetAccess();
 
 /* strings.c */
 size_t g_scst_dev_types_size();
 size_t g_scst_handlers_size();
 size_t g_sync_label_msg_size();
+size_t g_usage_label_msg_size();
 
 #ifdef	__cplusplus
 }

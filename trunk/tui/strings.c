@@ -33,7 +33,9 @@ char *g_choice_char[] = {"[ ] ", "[*] "},
         *g_scst_bs_list[] = {"512", "1024", "2048", "4096", "8192"},
         *g_fio_types[] = {"<C>File System", "<C>Block Device"},
         *g_sync_label_msg[] = {"", "",
-        "</B>   Synchronizing ESOS configuration...   ", "", ""};
+        "</B>   Synchronizing ESOS configuration...   ", "", ""},
+        *g_usage_label_msg[] = {"", "",
+        "</B>   Transmitting ESOS usage count...   ", "", ""};
 
 /* Button strings */
 char *g_ok_cancel_msg[] = {"</B>   OK   ", "</B> Cancel "},
@@ -56,4 +58,8 @@ size_t g_scst_handlers_size() {
 }
 size_t g_sync_label_msg_size() {
     return (sizeof g_sync_label_msg) / (sizeof g_sync_label_msg[0]);
+}
+
+size_t g_usage_label_msg_size() {
+    return (sizeof g_usage_label_msg) / (sizeof g_usage_label_msg[0]);
 }

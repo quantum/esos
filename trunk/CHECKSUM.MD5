@@ -49,7 +49,6 @@ bf107cf54e67bc6dec5bea1f3e6a65c3  pexpect-2.3.tar.gz
 05523dfd3fc0de3f19dde4aca5dd17e9  python-suds-0.4.tar.gz
 7df2a529a074f613b509fb44feefe74e  setuptools-0.6c11.tar.gz
 495b8d4c3669ab6b1a3754f9242980bb  fio-2.0.13.tar.bz2
-3fb927c7c33022f1c327f14a81c0d4b0  bash-4.2.tar.gz
 8a9d3144e677f5d5f1a4e8f1a9f536fa  open-fcoe-3.7.tar.bz2
 b6ee0ce2b3ef844bad7cac2803a90634  libconfig-1.4.9.tar.gz
 1e05be84b3bf238c27a2751ad033bf7b  libnl-1.1.2.tar.gz
@@ -96,7 +95,6 @@ d44f84081a12cef79cd17f78044351fc  smartmontools-6.2.tar.gz
 f68ce7b7f4be08449f3c8b114ed5accb  cryptsetup-1.6.4.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
 9d557e8db4d1ff306a1f9415b7a57c22  sg3_utils-1.37.tar.gz
-70ff343bbe6657b69beb23458e3e0b98  makedumpfile-1.5.5.tar.gz
 050a4909e452d01ab4747fd69d4036e0  elfutils-0.158.tar.bz2
 22a90e3956bb790cd8acff6b7999f562  pacemaker-1.1.11.tar.gz
 de62b43dfcd858e66a74bee1c834e959  openssl-1.0.1g.tar.gz
@@ -121,3 +119,5 @@ c4f491dd411a09e9de3b8702ea6f73eb  libmcrypt-2.5.8.tar.bz2
 84f58dec00b60f2dc8fd1c9709291cc7  attr-2.4.47.tar.gz
 a61415312426e9c2212bd7dc7929abda  acl-2.2.52.tar.gz
 2309ba43981cb6d39d07ac3a9aac30ab  kexec-tools-2.0.7.tar.gz
+31668a6dfb8823dd0b7ac09d06fb902e  makedumpfile-1.5.7.tar.gz
+baa2deaf70fc9ffa4589a363416db5a7  bash-4.3_025.tar.xz

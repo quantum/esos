@@ -16,6 +16,7 @@
 #include <sys/param.h>
 #include <limits.h>
 #include <blkid/blkid.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -1433,7 +1434,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
     PedDisk *disk = NULL;
     PedPartition *partition = NULL;
     PedFileSystemType *file_system_type = NULL;
-    PedConstraint *constraint = NULL;
+    PedConstraint *start_constraint = NULL, *end_constraint = NULL,
+             *final_constraint = NULL;
     boolean confirm = FALSE, question = FALSE;
 
     /* Get block device choice from user */
@@ -1722,6 +1724,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                     addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
                     i++;
                 }
+                
+                /* Get the device and disk / file system type */
                 if ((device = ped_device_get(real_blk_dev_node)) == NULL) {
                     errorDialog(main_cdk_screen,
                             "Calling ped_device_get() failed.", NULL);
@@ -1733,19 +1737,37 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                             "Calling ped_disk_new_fresh() failed.", NULL);
                     goto cleanup;
                 }
-                file_system_type = ped_file_system_type_get(g_fs_type_opts[temp_int]);
+                file_system_type = 
+                        ped_file_system_type_get(g_fs_type_opts[temp_int]);
                 if ((partition = ped_partition_new(disk, PED_PARTITION_NORMAL,
                         file_system_type, 0, (device->length - 1))) == NULL) {
                     errorDialog(main_cdk_screen,
                             "Calling ped_partition_new() failed.", NULL);
                     goto cleanup;
                 }
-                constraint = ped_constraint_new_from_max(&partition->geom);
-                if (ped_disk_add_partition(disk, partition, constraint) == 0) {
+                
+                /* Get the new partition size constraints (start/end) */
+                // TODO: These need to be checked for errors.
+                start_constraint = 
+                        ped_device_get_optimal_aligned_constraint(device);
+                assert(start_constraint != NULL);
+                end_constraint = ped_constraint_new_from_max(&partition->geom);
+                assert(end_constraint != NULL);
+                final_constraint = ped_constraint_intersect(start_constraint,
+                        end_constraint);
+                assert(final_constraint != NULL);
+                ped_constraint_destroy(start_constraint);
+                ped_constraint_destroy(end_constraint);
+                
+                /* Add the disk partition */
+                if (ped_disk_add_partition(disk, partition,
+                        final_constraint) == 0) {
                     errorDialog(main_cdk_screen,
                             "Calling ped_disk_add_partition() failed.", NULL);
                     goto cleanup;
                 }
+                
+                /* Commit the new partition */
                 if (ped_disk_commit_to_dev(disk) == 0) {
                     errorDialog(main_cdk_screen,
                             "Calling ped_disk_commit_to_dev() failed.", NULL);
@@ -1756,9 +1778,13 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                             "Calling ped_disk_commit_to_os() failed.", NULL);
                     goto cleanup;
                 }
+                
+                /* Set the full path to the block device partition */
                 snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s",
                         ped_partition_get_path(partition));
+                ped_constraint_destroy(final_constraint);
                 ped_disk_destroy(disk);
+
             } else {
                 /* Don't partition */
                 snprintf(new_blk_dev_node, MAX_FS_ATTR_LEN, "%s",
@@ -1909,8 +1935,9 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
     /* If the selected file system is mounted, ask to try un-mounting it */
     if (mounted) {
         question = questionDialog(main_cdk_screen, "It appears that file "
-                "system is mounted; would you like to try un-mounting it now?",
-                "(The file system must be un-mounted before proceeding.)");
+                "system is mounted; would you like to try un-mounting",
+                "it now? The file system must be "
+                "un-mounted before proceeding.");
         if (question) {
             /* Run umount */
             snprintf(umount_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1",

@@ -30,6 +30,8 @@ extern "C" {
 #define TEMP_DIR                "/tmp"
 #define SYS_FILE_SYSTEMS        "/proc /sys /dev/pts /dev/shm /boot " \
         "/mnt/root /mnt/conf /mnt/logs /tmp"
+#define USAGE_POST_URL          "http://usage.esos-project.com/post_info.php"
+#define INET_TEST_HOST          "usage.esos-project.com"
 
 /* System menu layout */
 #define SYSTEM_MENU             0
@@ -99,6 +101,7 @@ extern "C" {
 #define VDISK_WRITE_SIZE        262144
 #define MAX_SHELL_CMD_LEN       256
 #define MISC_STRING_LEN         128
+#define UUID_STR_SIZE           64
 
 /* Main screen information labels */
 #define MAX_INFO_LABEL_ROWS     512
@@ -108,7 +111,7 @@ extern "C" {
 #define SESSIONS_LABEL_TITLE    "Active Sessions"
 
 /* System tools and utilities (binaries and scripts) */
-#define CLEAR_BIN       "clear"
+#define CLEAR_BIN       "/usr/bin/clear"
 #define SHELL_BIN       "/bin/bash"
 #define MOUNT_BIN       "/bin/mount"
 #define UMOUNT_BIN      "/bin/umount"
@@ -149,9 +152,9 @@ extern "C" {
 #define FSTAB           "/etc/fstab"
 #define FSTAB_TMP       "/etc/fstab.new"
 #define MTAB            "/proc/mounts"
-#define ESOS_VER_FILE   "/etc/esos-release"
 #define QLA_FW_LICENSE  "/lib/firmware/QLOGIC_FW_LICENSE"
 #define GLOBAL_BASHRC   "/etc/bashrc"
+#define ESOS_CONF       "/etc/esos.conf"
 
 /* Misc. path settings */
 #define VDISK_MNT_BASE  "/mnt/vdisks"

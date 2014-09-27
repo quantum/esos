@@ -51,10 +51,7 @@ KPARTX		:= @kpartx@
 XARGS		:= @xargs@
 OPENSSL		:= @openssl@
 ZIP		:= @zip@
-
-esos_ver	:= 0.1-r$(shell svnversion $(SRC_DIR))
-prod_suffix	:= -esos.prod
-debug_suffix	:= -esos.debug
+XZ		:= @xz@
 
 enable_gdb	:= @enable_gdb@
 enable_valgrind	:= @enable_valgrind@
@@ -63,6 +60,15 @@ ocs_sdk_dir	:= @ocs_sdk_dir@
 with_uwire	:= @with_uwire@
 uwire_dir	:= @uwire_dir@
 build_opts	:= @build_opts@
+
+svn_branch	:= trunk
+svn_rev		:= $(shell if rev="$$(svnversion $(SRC_DIR) 2>&1)"; \
+		then echo "$$rev"; else echo "UNKNOWN"; fi)
+opt_suffix	:= $(if $(build_opts),_$(shell for i in $(build_opts); \
+		do $(ECHO) -n "$${i:0:1}"; done),)
+esos_ver	:= $(svn_branch)_r$(svn_rev)$(opt_suffix)
+prod_suffix	:= -esos.prod
+debug_suffix	:= -esos.debug
 
 distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		busybox-1.20.2.tar.bz2 \
@@ -126,7 +132,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		python-suds-0.4.tar.gz \
 		setuptools-0.6c11.tar.gz \
 		pexpect-2.3.tar.gz \
-		bash-4.2.tar.gz \
+		bash-4.3_025.tar.xz \
 		open-fcoe-3.7.tar.bz2 \
 		open-lldp-0.9.45.tar.gz \
 		libconfig-1.4.9.tar.gz \
@@ -170,7 +176,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		smartmontools-6.2.tar.gz \
 		cryptsetup-1.6.4.tar.xz \
 		popt-1.16.tar.gz \
-		makedumpfile-1.5.5.tar.gz \
+		makedumpfile-1.5.7.tar.gz \
 		elfutils-0.158.tar.bz2 \
 		fio-2.0.13.tar.bz2 \
 		mtx-1.3.12.tar.gz \
@@ -398,6 +404,9 @@ pkg_dist: $(img_file)
 	$(LN) $(wildcard $(PKG_SRC_DIR)/win_binaries-*) $(pkg_prefix)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/*
 	$(RM) $(pkg_prefix)
+	$(LN) $(WORK_DIR) $(pkg_prefix)
+	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/vmlinux*.xz
+	$(RM) $(pkg_prefix)
 
 
 # clean - Remove temporary files, any image/package files, and target files.
@@ -531,6 +540,7 @@ esos_kernels: kernel_headers
 	  $(MAKE) --directory=$(linux_src); \
 	  $(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage \
 	  $(IMAGE_DIR)/boot/bzImage$$i; \
+	  $(XZ) -z -c $(linux_src)/vmlinux > $(WORK_DIR)/vmlinux$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) \
 	  INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install; \
 	  $(ECHO) "### Building the SCST core and target drivers"; \
@@ -636,9 +646,11 @@ kernel_headers:
 	$(SRC_DIR)/misc/kernel_headers.patch
 	$(TOUCH) $(@)
 
-esos_tui: glibc ncurses cdk iniparser parted
+esos_tui: $(wildcard $(SRC_DIR)/tui/*.c) $(wildcard $(SRC_DIR)/tui/*.h)
+esos_tui: glibc ncurses cdk iniparser parted util-linux curl
 	$(MAKE) --directory=$(SRC_DIR)/tui CC="$(esos_cc)" \
-	CFLAGS="-DBUILD_OPTS=\"\\\"$(if $(build_opts),$(build_opts),N/A)\\\"\""
+	CFLAGS="-DBUILD_OPTS=\"\\\"$(if $(build_opts),$(build_opts),N/A)\\\"\" \
+	-DESOS_VERSION=\"\\\"$(esos_ver)\\\"\" -DSVN_BRANCH=\"\\\"$(svn_branch)\\\"\""
 	$(INSTALL) -m 755 $(SRC_DIR)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
 	$(TOUCH) $(@)
 
@@ -1466,9 +1478,9 @@ fio: glibc libaio
 	$(TOUCH) $(@)
 
 bash: glibc ncurses
-	cd $(tgt_src_dir) && bash_cv_termcap_lib="libtinfo" \
-	./configure --prefix=/usr --exec-prefix=/ --with-curses
-	$(MAKE) --directory=$(tgt_src_dir)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr \
+	--exec-prefix=/ --with-curses
+	$(MAKE) --directory=$(tgt_src_dir) TERMCAP_LIB="-ltinfo"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -1579,7 +1591,7 @@ dlm: glibc corosync
 	$(RM) $(IMAGE_DIR)/lib/udev
 	$(TOUCH) $(@)
 
-ipmitool: glibc openssl
+ipmitool: glibc openssl ncurses readline
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-intf-lan \
 	--enable-intf-lanplus
 	$(MAKE) --directory=$(tgt_src_dir)
@@ -1636,7 +1648,14 @@ mysql: glibc ncurses
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-server \
 	--without-bench --enable-thread-safe-client
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/libmysql \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/libmysql_r \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/scripts \
+	DESTDIR=$(IMAGE_DIR) install-binSCRIPTS
+	$(MAKE) --directory=$(tgt_src_dir)/include DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/extra DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libmysqlclient)
 	$(TOUCH) $(@)
 
@@ -2021,7 +2040,7 @@ leveldb: glibc snappy
 	$(CP) -R $(tgt_src_dir)/include/leveldb $(IMAGE_DIR)/usr/include/
 	$(TOUCH) $(@)
 
-libmcrypt: glibc
+libmcrypt: glibc gcc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
