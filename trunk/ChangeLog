@@ -1,3 +1,12 @@
+2014-09-30 00:57  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
+	  misc/linux-3.14.16.config, misc/linux-3.14.19-debug.patch,
+	  misc/linux-3.14.19.config: updated SCST to trunk/r5816 along with
+	  new QLogic qla2x00tgt FC (supports 10 Gb FCoE / 16 Gb FC
+	  CNAs/HBAs); updated QLogic FW package to latest; up'd kernel to
+	  3.14.19
+
 2014-09-27 03:37  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
