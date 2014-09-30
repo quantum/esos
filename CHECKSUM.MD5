@@ -2,7 +2,6 @@
 cce05daf61a64501ef6cd8da1f727ec6  ncurses-5.7.tar.gz
 86f5e1c23b4c4845f23b9b7b493fb53d  openssh-5.8p1.tar.gz
 c499a9c04d08b1424fc808104850a0cf  perl-5.12.4.tar.bz2
-933d250a93c46050137fec561b562f1a  qlogic_fw-20120101.tar.gz
 65b4e0df4934a6cd08c506cabcbe584f  ssmtp-2.64.tar.bz2
 6eda8a97b86e0a6f59dabbf25202aa6f  sysvinit-2.88dsf.tar.bz2
 09dc04f9879684d27c64c910174a9536  vixie-cron-4.1.tar.bz2
@@ -98,13 +97,11 @@ f68ce7b7f4be08449f3c8b114ed5accb  cryptsetup-1.6.4.tar.xz
 050a4909e452d01ab4747fd69d4036e0  elfutils-0.158.tar.bz2
 22a90e3956bb790cd8acff6b7999f562  pacemaker-1.1.11.tar.gz
 de62b43dfcd858e66a74bee1c834e959  openssl-1.0.1g.tar.gz
-333979c7322b1bcb86893744b1c5e7ba  scst-trunk_r5558.tar.gz
 5fe03554c40a8b9114d579a8d9ada8ef  libusb_compat-0.1.4.tar.bz2
 4f981c3fdbbb7184b2718afaa21f974b  win_binaries-20140704.tar.xz
 ce8f0e44671fb0c7d9ec30bb0bfa8b5c  mtx-1.3.12.tar.gz
 fdd5f5ec673c9f630a102ceff7612774  mt-st-1.1.tar.gz
 c2e90f9d6b47c4b4f7a3e85e01bbaa0a  LVM2-2.02.108.tar.gz
-469c879236ed694f60b81122e91ca02e  linux-3.14.16.tar.xz
 c6d30facf18ff825e2721d0aa9c3add8  EnhanceIO-master_20140810.tar.gz
 6755765bab88b506181268ef7982595e  nagios-plugins-2.0.3.tar.gz
 9cfb30874eb5467a6e60b7a8a31d6b07  btier-tip_c3e46b.tar.gz
@@ -121,3 +118,6 @@ a61415312426e9c2212bd7dc7929abda  acl-2.2.52.tar.gz
 2309ba43981cb6d39d07ac3a9aac30ab  kexec-tools-2.0.7.tar.gz
 31668a6dfb8823dd0b7ac09d06fb902e  makedumpfile-1.5.7.tar.gz
 baa2deaf70fc9ffa4589a363416db5a7  bash-4.3_025.tar.xz
+7572070bd4bb20e5081dbf838ddc0781  scst-trunk_r5816.tar.gz
+12e8c6131a27c05422edcd2ae3e79dfb  qlogic_fw-20140928.tar.gz
+f8d708a47dedc2f4210dded1bb8ee6c9  linux-3.14.19.tar.xz

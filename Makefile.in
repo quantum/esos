@@ -89,11 +89,11 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		sg3_utils-1.37.tar.gz \
 		groff-1.21.tar.gz \
 		ncurses-5.7.tar.gz \
-		qlogic_fw-20120101.tar.gz \
-		linux-3.14.16.tar.xz \
+		qlogic_fw-20140928.tar.gz \
+		linux-3.14.19.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-trunk_r5558.tar.gz \
+		scst-trunk_r5816.tar.gz \
 		kexec-tools-2.0.7.tar.gz \
 		drbd-8.4.4.tar.gz \
 		LVM2-2.02.108.tar.gz \
@@ -497,8 +497,6 @@ esos_kernels: kernel_headers
 	  -B $(linux_src)/put_page_callback.patch/ -p1 < \
 	  $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.14.patch; \
 	fi
-	$(RM) $(linux_src)/drivers/scsi/qla2xxx
-	$(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
 	  $(MAKE) --directory=$(linux_src) clean; \
@@ -550,9 +548,12 @@ esos_kernels: kernel_headers
 	  KVER=$(kernel_ver)$$i DESTDIR=$(IMAGE_DIR) \
 	  INSTALL_DIR_H=$(IMAGE_DIR)/usr/include/scst scst_install; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i qla; \
+	  KVER=$(kernel_ver)$$i BUILD_2X_MODULE=y CONFIG_SCSI_QLA_FC=y \
+	  CONFIG_SCSI_QLA2XXX_TARGET=y qla; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) qla_install; \
+	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) \
+	  BUILD_2X_MODULE=y CONFIG_SCSI_QLA_FC=y \
+	  CONFIG_SCSI_QLA2XXX_TARGET=y qla_install; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
 	  include/iscsi_scst_itf_ver.h; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
@@ -572,6 +573,7 @@ esos_kernels: kernel_headers
 	  $(ECHO) "### Building the mhVTL module"; \
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i; \
+	  $(MKDIR) $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi; \
 	  $(INSTALL) -m 0644 $(mhvtl_src)/kernel/mhvtl.ko \
 	  $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/; \
 	  $(ECHO) "### Building the EnhanceIO driver"; \

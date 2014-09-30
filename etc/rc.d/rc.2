@@ -42,7 +42,7 @@ if [ -x /etc/rc.d/rc.kdump ]; then
 fi
 
 /bin/echo "Loading the QLogic Fibre Channel HBA module..."
-/sbin/modprobe qla2xxx
+/sbin/modprobe qla2xxx_scst
 /bin/sleep 5
 
 /bin/echo "Starting irqbalance..."
