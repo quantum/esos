@@ -49,12 +49,13 @@ int main(int argc, char** argv) {
     inet_works = checkInetAccess();
 
     /* Initialize screen and check size */
-    start:
+start:
     main_window = initscr();
     curs_set(0);
     noecho();
     getmaxyx(main_window, screen_y, screen_x);
-    if (screen_y < MIN_SCR_Y || screen_x < MIN_SCR_X) termSize(main_window);
+    if (screen_y < MIN_SCR_Y || screen_x < MIN_SCR_X)
+        termSize(main_window);
 
     /* Setup CDK */
     sub_window = newwin((LINES - 2), (COLS - 2), 1, 1);
@@ -68,7 +69,7 @@ int main(int argc, char** argv) {
     /* Create the menu lists */
     menu_list[SYSTEM_MENU][0] = "</29/B/U>S<!29><!U>ystem  <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_SYNC_CONF] = \
-            "</B>Sync. Configuration <!B>";
+            "</B>Sync Configuration  <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_NETWORK] = \
             "</B>Network Settings    <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_RESTART_NET] = \
@@ -130,29 +131,51 @@ int main(int argc, char** argv) {
 
     menu_list[DEVICES_MENU][0] = "</29/B/U>D<!29><!U>evices  <!B>";
     menu_list[DEVICES_MENU][DEVICES_LUN_LAYOUT] = \
-            "</B>LUN/Group Layout  <!B>";
+            "</B>LUN/Group Layout     <!B>";
     menu_list[DEVICES_MENU][DEVICES_DEV_INFO] = \
-            "</B>Device Information<!B>";
+            "</B>Device Information   <!B>";
     menu_list[DEVICES_MENU][DEVICES_ADD_DEV] = \
-            "</B>Add Device        <!B>";
-    menu_list[DEVICES_MENU][DEVICES_DEL_DEV] = \
-            "</B>Delete Device     <!B>";
+            "</B>Add Device           <!B>";
+    menu_list[DEVICES_MENU][DEVICES_REM_DEV] = \
+            "</B>Remove Device        <!B>";
     menu_list[DEVICES_MENU][DEVICES_MAP_TO] = \
-            "</B>Map to Group      <!B>";
+            "</B>Map to Host Group    <!B>";
     menu_list[DEVICES_MENU][DEVICES_UNMAP_FROM] = \
-            "</B>Unmap from Group  <!B>";
+            "</B>Unmap from Host Group<!B>";
 
     menu_list[TARGETS_MENU][0] = "</29/B/U>T<!29><!U>argets  <!B>";
     menu_list[TARGETS_MENU][TARGETS_TGT_INFO] = \
-            "</B>Target Information   <!B>";
+            "</B>Target Information    <!B>";
     menu_list[TARGETS_MENU][TARGETS_ADD_ISCSI] = \
-            "</B>Add iSCSI Target     <!B>";
+            "</B>Add iSCSI Target      <!B>";
     menu_list[TARGETS_MENU][TARGETS_REM_ISCSI] = \
-            "</B>Remove iSCSI Target  <!B>";
+            "</B>Remove iSCSI Target   <!B>";
     menu_list[TARGETS_MENU][TARGETS_LIP] = \
-            "</B>Issue LIP            <!B>";
+            "</B>Issue LIP             <!B>";
     menu_list[TARGETS_MENU][TARGETS_TOGGLE] = \
-            "</B>Enable/Disable Target<!B>";
+            "</B>Enable/Disable Target <!B>";
+    menu_list[TARGETS_MENU][TARGETS_SET_REL_TGT_ID] = \
+            "</B>Set Relative Target ID<!B>";
+
+    menu_list[ALUA_MENU][0] = "</29/B/U>A<!29><!U>LUA  <!B>";
+    menu_list[ALUA_MENU][ALUA_DEV_GRP_LAYOUT] = \
+            "</B>Dev/Tgt Group Layout<!B>";
+    menu_list[ALUA_MENU][ALUA_ADD_DEV_GRP] = \
+            "</B>Add Device Group    <!B>";
+    menu_list[ALUA_MENU][ALUA_REM_DEV_GRP] = \
+            "</B>Remove Device Group <!B>";
+    menu_list[ALUA_MENU][ALUA_ADD_TGT_GRP] = \
+            "</B>Add Target Group    <!B>";
+    menu_list[ALUA_MENU][ALUA_REM_TGT_GRP] = \
+            "</B>Remove Target Group <!B>";
+    menu_list[ALUA_MENU][ALUA_ADD_DEV_TO_GRP] = \
+            "</B>Add Device to Group <!B>";
+    menu_list[ALUA_MENU][ALUA_REM_DEV_FROM_GRP] = \
+            "</B>Remove Dev from Grp <!B>";
+    menu_list[ALUA_MENU][ALUA_ADD_TGT_TO_GRP] = \
+            "</B>Add Target to Group <!B>";
+    menu_list[ALUA_MENU][ALUA_REM_TGT_FROM_GRP] = \
+            "</B>Remove Tgt from Grp <!B>";
 
     menu_list[INTERFACE_MENU][0] = "</29/B/U>I<!29><!U>nterface<!B>";
     menu_list[INTERFACE_MENU][INTERFACE_QUIT] = \
@@ -175,13 +198,15 @@ int main(int argc, char** argv) {
     menu_loc[HOSTS_MENU]            = LEFT;
     submenu_size[DEVICES_MENU]      = 7;
     menu_loc[DEVICES_MENU]          = LEFT;
-    submenu_size[TARGETS_MENU]      = 6;
+    submenu_size[TARGETS_MENU]      = 7;
     menu_loc[TARGETS_MENU]          = LEFT;
+    submenu_size[ALUA_MENU]         = 10;
+    menu_loc[ALUA_MENU]             = LEFT;
     submenu_size[INTERFACE_MENU]    = 6;
     menu_loc[INTERFACE_MENU]        = RIGHT;
 
     /* Create the menu */
-    menu = newCDKMenu(cdk_screen, menu_list, 6, submenu_size, menu_loc,
+    menu = newCDKMenu(cdk_screen, menu_list, 7, submenu_size, menu_loc,
             TOP, A_NORMAL, COLOR_MENU_TEXT);
     if (!menu) {
         errorDialog(cdk_screen, MENU_ERR_MSG, NULL);
@@ -230,37 +255,43 @@ int main(int argc, char** argv) {
         key_pressed = wgetch(sub_window);
 
         /* Check and see what we got */
-        if (key_pressed == 115 || key_pressed == 83) {
+        if (key_pressed == 's' || key_pressed == 'S') {
             /* Start with the System menu */
             cbreak();
             setCDKMenu(menu, SYSTEM_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
-        } else if (key_pressed == 98 || key_pressed == 66) {
+        } else if (key_pressed == 'b' || key_pressed == 'B') {
             /* Start with the Back-End Storage menu */
             cbreak();
             setCDKMenu(menu, BACK_STORAGE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
-        } else if (key_pressed == 104 || key_pressed == 72) {
+        } else if (key_pressed == 'a' || key_pressed == 'A') {
+            /* Start with the ALUA menu */
+            cbreak();
+            setCDKMenu(menu, ALUA_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu, 0);
+
+        } else if (key_pressed == 'h' || key_pressed == 'H') {
             /* Start with the Hosts menu */
             cbreak();
             setCDKMenu(menu, HOSTS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
-        } else if (key_pressed == 100 || key_pressed == 68) {
+        } else if (key_pressed == 'd' || key_pressed == 'D') {
             /* Start with the Devices menu */
             cbreak();
             setCDKMenu(menu, DEVICES_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
-        } else if (key_pressed == 116 || key_pressed == 84) {
+        } else if (key_pressed == 't' || key_pressed == 'T') {
             /* Start with the Targets menu */
             cbreak();
             setCDKMenu(menu, TARGETS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu, 0);
 
-        } else if (key_pressed == 105 || key_pressed == 73) {
+        } else if (key_pressed == 'i' || key_pressed == 'I') {
             /* Start with the Interface menu */
             cbreak();
             setCDKMenu(menu, INTERFACE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
@@ -485,6 +516,51 @@ int main(int argc, char** argv) {
                 /* Virtual Disk File List dialog */
                 vdiskFileListDialog(cdk_screen);
 
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_DEV_GRP_LAYOUT - 1) {
+                /* Device/Target Group Layout dialog */
+                devTgtGrpLayoutDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_ADD_DEV_GRP - 1) {
+                /* Add Device Group dialog */
+                addDevGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_REM_DEV_GRP - 1) {
+                /* Remove Device Group dialog */
+                remDevGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_ADD_TGT_GRP - 1) {
+                /* Add Target Group dialog */
+                addTgtGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_REM_TGT_GRP - 1) {
+                /* Remove Target Group dialog */
+                remTgtGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_ADD_DEV_TO_GRP - 1) {
+                /* Add Device to Group dialog */
+                addDevToGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_REM_DEV_FROM_GRP - 1) {
+                /* Remove Device from Group dialog */
+                remDevFromGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_ADD_TGT_TO_GRP - 1) {
+                /* Add Target to Group dialog */
+                addTgtToGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_REM_TGT_FROM_GRP - 1) {
+                /* Remove Target from Group dialog */
+                remTgtFromGrpDialog(cdk_screen);
+
             } else if (menu_choice == HOSTS_MENU &&
                     submenu_choice == HOSTS_ADD_GROUP - 1) {
                 /* Add Group dialog */
@@ -521,9 +597,9 @@ int main(int argc, char** argv) {
                 addDeviceDialog(cdk_screen);
 
             } else if (menu_choice == DEVICES_MENU &&
-                    submenu_choice == DEVICES_DEL_DEV - 1) {
+                    submenu_choice == DEVICES_REM_DEV - 1) {
                 /* Delete Device dialog */
-                delDeviceDialog(cdk_screen);
+                remDeviceDialog(cdk_screen);
 
             } else if (menu_choice == DEVICES_MENU &&
                     submenu_choice == DEVICES_MAP_TO - 1) {
@@ -559,6 +635,11 @@ int main(int argc, char** argv) {
                     submenu_choice == TARGETS_TOGGLE - 1) {
                 /* Enable/Disable Target dialog */
                 enblDsblTgtDialog(cdk_screen);
+            
+            } else if (menu_choice == TARGETS_MENU &&
+                    submenu_choice == TARGETS_SET_REL_TGT_ID - 1) {
+                /* Set Relative Target ID dialog */
+                setRelTgtIDDialog(cdk_screen);
             }
 
             /* At this point we've finished the dialog, so we make

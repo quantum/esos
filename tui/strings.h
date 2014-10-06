@@ -42,17 +42,41 @@ extern "C" {
         "list of drivers."
 
 /* Canned dialog messages */
-#define CONTINUE_MSG    "<C></B><Press ENTER to continue...>"
-#define NO_SCST_MSG     "<C></B><SCST is not loaded!>"
-#define EMPTY_FIELD_ERR "The entry field cannot be empty!"
-#define ASK_DEL_GROUP   "Are you sure you want to delete SCST target group %s?"
-#define DEL_GROUP_ERR   "Couldn't delete SCST group: %s"
-#define ADD_GROUP_ERR   "Couldn't add SCST group: %s"
-#define DEL_INIT_ERR    "Couldn't remove initiator: %s"
-#define ADD_INIT_ERR    "Couldn't add initiator to SCST group: %s"
-#define NOT_MOUNTED_1   "It appears that file system is not mounted; would " \
-        "you like to try mounting it now?"
-#define NOT_MOUNTED_2   "(The file system must be mounted before proceeding.)"
+#define CONTINUE_MSG        "<C></B><Press ENTER to continue...>"
+#define NO_SCST_MSG         "<C></B><SCST is not loaded!>"
+#define EMPTY_FIELD_ERR     "The entry field cannot be empty!"
+#define ASK_DEL_SEC_GROUP   "Are you sure you want to delete SCST security " \
+        "group '%s'?"
+#define DEL_SEC_GROUP_ERR   "Couldn't delete SCST security group: %s"
+#define ADD_SEC_GROUP_ERR   "Couldn't add SCST security group: %s"
+#define DEL_INIT_ERR        "Couldn't remove initiator: %s"
+#define ADD_INIT_ERR        "Couldn't add initiator to SCST group: %s"
+#define NOT_MOUNTED_1       "It appears that file system is not mounted; " \
+        "would you like to try mounting it now?"
+#define NOT_MOUNTED_2       "(The file system must be mounted before " \
+        "proceeding.)"
+#define DEL_DEV_GROUP_ERR   "Couldn't delete SCST (ALUA) device group: %s"
+#define ADD_DEV_GROUP_ERR   "Couldn't add SCST (ALUA) device group: %s"
+#define ASK_DEL_DEV_GROUP   "Are you sure you want to delete SCST device " \
+        "group '%s?'"
+#define DEL_TGT_GROUP_ERR   "Couldn't delete SCST (ALUA) target group: %s"
+#define ADD_TGT_GROUP_ERR   "Couldn't add SCST (ALUA) target group: %s"
+#define ASK_DEL_TGT_GROUP   "Are you sure you want to delete SCST target " \
+        "group '%s?'"
+#define SET_TGT_GRP_ID_ERR  "Couldn't set SCST (ALUA) target group ID: %s"
+#define DEL_DEV_FRM_GRP_ERR "Couldn't delete SCST (ALUA) device " \
+        "from device group: %s"
+#define ADD_DEV_TO_GRP_ERR  "Couldn't add SCST (ALUA) device to " \
+        "device group: %s"
+#define ASK_DEL_DEV_FRM_GRP "Are you sure you want to remove SCST " \
+        "device '%s' from group '%s?'"
+#define SET_REL_TGT_ID_ERR  "Couldn't set SCST (ALUA) relative target ID: %s"
+#define DEL_TGT_FRM_GRP_ERR "Couldn't delete SCST (ALUA) target " \
+        "from target group: %s"
+#define ADD_TGT_TO_GRP_ERR  "Couldn't add SCST (ALUA) target to " \
+        "target group: %s"
+#define ASK_DEL_TGT_FRM_GRP "Are you sure you want to remove SCST " \
+        "target '%s' from group '%s?'"
 
 /* INI parser messages */
 #define SET_FILE_VAL_ERR        "Couldn't set configuration file value!"

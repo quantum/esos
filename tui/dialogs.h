@@ -62,6 +62,9 @@ extern "C" {
 #define VDLIST_INFO_ROWS                10
 #define VDLIST_INFO_COLS                70
 #define MAX_VDLIST_INFO_LINES           512
+#define ALUA_LAYOUT_ROWS                12
+#define ALUA_LAYOUT_COLS                72
+#define MAX_ALUA_LAYOUT_LINES           128
 
 /* Other window/screen/label/etc. sizing limits */
 #define MAX_FS_DIALOG_INFO_LINES        11
@@ -75,6 +78,8 @@ extern "C" {
 #define MAP_DEV_INFO_LINES              8
 #define CHG_PASSWD_INFO_LINES           1
 #define TGT_ON_OFF_INFO_LINES           5
+#define TGT_GRP_INFO_LINES              3
+#define ADD_TGT_INFO_LINES              4
 #define MAX_NET_INFO_LINES              10
 #define NET_SHORT_INFO_LINES            1
 #define HELP_MSG_SIZE                   17
