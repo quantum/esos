@@ -1,3 +1,14 @@
+2014-10-06 16:06  msmith626@gmail.com
+
+	* tui/dialogs.h, tui/main.c, tui/menu_actions-alua.c,
+	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
+	  tui/menu_actions-targets.c, tui/menu_actions.c, tui/prototypes.h,
+	  tui/strings.h, tui/system.h: new TUI "ALUA" menu for manipulating
+	  everything (mostly) w/ SCST ALUA (device groups, target groups,
+	  etc.); new setRelTgtIDDialog() function in the "Targets" menu for
+	  changing the relative target ID (of a target); started more TUI
+	  code clean-up (more to come)
+
 2014-09-30 00:57  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
