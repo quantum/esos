@@ -54,6 +54,13 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
         char fs_type[], boolean *mounted);
 char *getBlockDevChoice(CDKSCREEN *cdk_screen);
 char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type);
+void getSCSTDevGrpChoice(CDKSCREEN *cdk_screen, char dev_group[]);
+void getSCSTTgtGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
+        char alua_tgt_group[]);
+void getSCSTDevGrpDevChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
+        char alua_dev_grp_dev[]);
+void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
+        char alua_tgt_group[], char alua_tgt_grp_tgt[]);
 
 /* menu_actions-system.c */
 void networkDialog(CDKSCREEN *main_cdk_screen);
@@ -66,27 +73,6 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen);
 void scstInfoDialog(CDKSCREEN *main_cdk_screen);
 void crmStatusDialog(CDKSCREEN *main_cdk_screen);
 void dateTimeDialog(CDKSCREEN *main_cdk_screen);
-
-/* menu_actions-targets.c */
-void tgtInfoDialog(CDKSCREEN *main_cdk_screen);
-void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen);
-void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen);
-void issueLIPDialog(CDKSCREEN *main_cdk_screen);
-void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen);
-
-/* menu_actions-hosts.c */
-void addGroupDialog(CDKSCREEN *main_cdk_screen);
-void remGroupDialog(CDKSCREEN *main_cdk_screen);
-void addInitDialog(CDKSCREEN *main_cdk_screen);
-void remInitDialog(CDKSCREEN *main_cdk_screen);
-
-/* menu_actions-devices.c */
-void addDeviceDialog(CDKSCREEN *main_cdk_screen);
-void delDeviceDialog(CDKSCREEN *main_cdk_screen);
-void devInfoDialog(CDKSCREEN *main_cdk_screen);
-void mapDeviceDialog(CDKSCREEN *main_cdk_screen);
-void unmapDeviceDialog(CDKSCREEN *main_cdk_screen);
-void lunLayoutDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_actions-back_storage.c */
 void adpPropsDialog(CDKSCREEN *main_cdk_screen);
@@ -102,6 +88,39 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen);
 void addVDiskFileDialog(CDKSCREEN *main_cdk_screen);
 void delVDiskFileDialog(CDKSCREEN *main_cdk_screen);
 void vdiskFileListDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_actions-alua.c */
+void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen);
+void addDevGrpDialog(CDKSCREEN *main_cdk_screen);
+void remDevGrpDialog(CDKSCREEN *main_cdk_screen);
+void addTgtGrpDialog(CDKSCREEN *main_cdk_screen);
+void remTgtGrpDialog(CDKSCREEN *main_cdk_screen);
+void addDevToGrpDialog(CDKSCREEN *main_cdk_screen);
+void remDevFromGrpDialog(CDKSCREEN *main_cdk_screen);
+void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen);
+void remTgtFromGrpDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_actions-hosts.c */
+void addGroupDialog(CDKSCREEN *main_cdk_screen);
+void remGroupDialog(CDKSCREEN *main_cdk_screen);
+void addInitDialog(CDKSCREEN *main_cdk_screen);
+void remInitDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_actions-devices.c */
+void addDeviceDialog(CDKSCREEN *main_cdk_screen);
+void remDeviceDialog(CDKSCREEN *main_cdk_screen);
+void devInfoDialog(CDKSCREEN *main_cdk_screen);
+void mapDeviceDialog(CDKSCREEN *main_cdk_screen);
+void unmapDeviceDialog(CDKSCREEN *main_cdk_screen);
+void lunLayoutDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_actions-targets.c */
+void tgtInfoDialog(CDKSCREEN *main_cdk_screen);
+void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen);
+void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen);
+void issueLIPDialog(CDKSCREEN *main_cdk_screen);
+void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen);
+void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_actions-interface.c */
 void helpDialog(CDKSCREEN *main_cdk_screen);

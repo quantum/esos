@@ -1014,7 +1014,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 /*
  * Run the Delete Device dialog
  */
-void delDeviceDialog(CDKSCREEN *main_cdk_screen) {
+void remDeviceDialog(CDKSCREEN *main_cdk_screen) {
     char scst_dev[MAX_SYSFS_ATTR_SIZE] = {0},
             scst_hndlr[MAX_SYSFS_ATTR_SIZE] = {0},
             attr_path[MAX_SYSFS_PATH_SIZE] = {0},

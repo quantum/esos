@@ -600,6 +600,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
 
         /* Loop over each entry in the directory */
         while ((dir_entry = readdir(dir_stream)) != NULL) {
+            // TODO: We need to put in a check so we're not > MAX_SCST_DEVS
             if (dir_entry->d_type == DT_LNK) {
                 asprintf(&scst_dev_name[j], "%s", dir_entry->d_name);
                 asprintf(&scst_dev_hndlr[j], "%s", g_scst_handlers[i]);
@@ -619,7 +620,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
         goto cleanup;
     }
 
-    /* Get SCSI disk choice from user */
+    /* Get SCST device choice from user */
     scst_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 55,
             "<C></31/B>Choose a SCST Device\n", scst_dev_info, j,
             FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
@@ -1435,4 +1436,334 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
         return ret_buff;
     else
         return NULL;
+}
+
+
+/*
+ * Present the user with a list of SCST ALUA device groups and let them
+ * choose one. We then fill the char array with the chosen device group name.
+ */
+void getSCSTDevGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[]) {
+    CDKSCROLL *scst_dev_grp_list = 0;
+    int dev_grp_choice = 0, i = 0;
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+    char *scst_dev_grp[MAX_SCST_DEV_GRPS] = {NULL},
+            *scst_dev_grp_info[MAX_SCST_DEV_GRPS] = {NULL};
+    char *error_msg = NULL;
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
+
+    while (1) {
+        /* Open the directory */
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/device_groups",
+                SYSFS_SCST_TGT);
+        if ((dir_stream = opendir(dir_name)) == NULL) {
+            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            errorDialog(cdk_screen, error_msg, NULL);
+            FREE_NULL(error_msg);
+            break;
+        }
+
+        /* Loop over each entry in the directory */
+        while ((dir_entry = readdir(dir_stream)) != NULL) {
+            if ((dir_entry->d_type == DT_DIR) &&
+                    (strcmp(dir_entry->d_name, ".") != 0) &&
+                    (strcmp(dir_entry->d_name, "..") != 0)) {
+                if (i < MAX_SCST_DEV_GRPS) {
+                    asprintf(&scst_dev_grp[i], "%s", dir_entry->d_name);
+                    asprintf(&scst_dev_grp_info[i], "<C>%.30s",
+                            dir_entry->d_name);
+                    i++;
+                }
+            }
+        }
+
+        /* Close the directory stream */
+        closedir(dir_stream);
+
+        /* Make sure we actually have something to present */
+        if (i == 0) {
+            errorDialog(cdk_screen, "No device groups found!", NULL);
+            break;
+        }
+
+        /* Get SCST device group choice from user */
+        scst_dev_grp_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE,
+                11, 32, "<C></31/B>Choose a SCST Device Group\n",
+                scst_dev_grp_info, i, FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+        if (!scst_dev_grp_list) {
+            errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKScrollBoxAttribute(scst_dev_grp_list, COLOR_DIALOG_BOX);
+        setCDKScrollBackgroundAttrib(scst_dev_grp_list, COLOR_DIALOG_TEXT);
+        dev_grp_choice = activateCDKScroll(scst_dev_grp_list, 0);
+
+        /* Check exit from widget and copy data if normal */
+        // TODO: Fix the others so they are like this.
+        if (scst_dev_grp_list->exitType == vNORMAL)
+            strncpy(alua_dev_group, scst_dev_grp[dev_grp_choice],
+                    MAX_SYSFS_ATTR_SIZE);
+        break;
+    }
+
+    /* Done */
+    destroyCDKScroll(scst_dev_grp_list);
+    refreshCDKScreen(cdk_screen);
+    for (i = 0; i < MAX_SCST_DEV_GRPS; i++) {
+        FREE_NULL(scst_dev_grp[i]);
+        FREE_NULL(scst_dev_grp_info[i]);
+    }
+    return;
+}
+
+/*
+ * Present the user with a list of SCST ALUA target groups and let them
+ * choose one. The device group name is passed in and we then fill the
+ * char array with the selected target group name.
+ */
+void getSCSTTgtGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
+        char alua_tgt_group[]) {
+    CDKSCROLL *scst_tgt_grp_list = 0;
+    int tgt_grp_choice = 0, i = 0;
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+    char *scst_tgt_groups[MAX_SCST_TGT_GRPS] = {NULL},
+            *scroll_tgt_grp_list[MAX_SCST_TGT_GRPS] = {NULL};
+    char *error_msg = NULL, *scroll_title = NULL;
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
+
+    while (1) {
+        /* Open the directory */
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                "%s/device_groups/%s/target_groups",
+                SYSFS_SCST_TGT, alua_dev_group);
+        if ((dir_stream = opendir(dir_name)) == NULL) {
+            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            errorDialog(cdk_screen, error_msg, NULL);
+            FREE_NULL(error_msg);
+            break;
+        }
+
+        /* Loop over each entry in the directory */
+        while ((dir_entry = readdir(dir_stream)) != NULL) {
+            /* The group names are directories; skip '.' and '..' */
+            if ((dir_entry->d_type == DT_DIR) &&
+                    (strcmp(dir_entry->d_name, ".") != 0) &&
+                    (strcmp(dir_entry->d_name, "..") != 0)) {
+                if (i < MAX_SCST_TGT_GRPS) {
+                    asprintf(&scst_tgt_groups[i], "%s", dir_entry->d_name);
+                    asprintf(&scroll_tgt_grp_list[i], "<C>%.30s",
+                            scst_tgt_groups[i]);
+                    i++;
+                }
+            }
+        }
+
+        /* Close the directory stream */
+        closedir(dir_stream);
+
+        /* Make sure we actually have something to present */
+        if (i == 0) {
+            errorDialog(cdk_screen, "No target groups found!", NULL);
+            break;
+        }
+
+        /* Get SCST target group choice from user */
+        asprintf(&scroll_title, "<C></31/B>Choose a Target Group (%s)\n",
+                alua_dev_group);
+        scst_tgt_grp_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE,
+                11, 44, scroll_title, scroll_tgt_grp_list, i,
+                FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+        if (!scst_tgt_grp_list) {
+            errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKScrollBoxAttribute(scst_tgt_grp_list, COLOR_DIALOG_BOX);
+        setCDKScrollBackgroundAttrib(scst_tgt_grp_list, COLOR_DIALOG_TEXT);
+        tgt_grp_choice = activateCDKScroll(scst_tgt_grp_list, 0);
+
+        /* Check exit from widget and copy data if normal */
+        if (scst_tgt_grp_list->exitType == vNORMAL)
+            strncpy(alua_tgt_group, scst_tgt_groups[tgt_grp_choice],
+                MAX_SYSFS_ATTR_SIZE);
+        break;
+    }
+
+    /* Done */
+    destroyCDKScroll(scst_tgt_grp_list);
+    refreshCDKScreen(cdk_screen);
+    FREE_NULL(scroll_title);
+    for (i = 0; i < MAX_SCST_TGT_GRPS; i++) {
+        FREE_NULL(scst_tgt_groups[i]);
+        FREE_NULL(scroll_tgt_grp_list[i]);
+    }
+    return;
+}
+
+
+/*
+ * Present the user with a list of SCST ALUA device group devices and let them
+ * choose one. The device group name is passed in and we then fill the
+ * char array with the selected device name.
+ */
+void getSCSTDevGrpDevChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
+        char alua_dev_grp_dev[]) {
+    CDKSCROLL *scst_dev_grp_dev_list = 0;
+    int dev_choice = 0, i = 0;
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+    char *scst_device_names[MAX_SCST_DEV_GRP_DEVS] = {NULL},
+            *scroll_dev_list[MAX_SCST_DEV_GRP_DEVS] = {NULL};
+    char *error_msg = NULL, *scroll_title = NULL;
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
+
+    while (1) {
+        /* Open the directory */
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                "%s/device_groups/%s/devices",
+                SYSFS_SCST_TGT, alua_dev_group);
+        if ((dir_stream = opendir(dir_name)) == NULL) {
+            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            errorDialog(cdk_screen, error_msg, NULL);
+            FREE_NULL(error_msg);
+            break;
+        }
+
+        /* Loop over each entry in the directory */
+        while ((dir_entry = readdir(dir_stream)) != NULL) {
+            if (dir_entry->d_type == DT_LNK) {
+                if (i < MAX_SCST_DEV_GRP_DEVS) {
+                    asprintf(&scst_device_names[i], "%s", dir_entry->d_name);
+                    asprintf(&scroll_dev_list[i], "<C>%.30s",
+                            scst_device_names[i]);
+                    i++;
+                }
+            }
+        }
+
+        /* Close the directory stream */
+        closedir(dir_stream);
+
+        /* Make sure we actually have something to present */
+        if (i == 0) {
+            errorDialog(cdk_screen, "No devices found!", NULL);
+            break;
+        }
+
+        /* Get SCST device group device choice from user */
+        asprintf(&scroll_title, "<C></31/B>Choose a Device (%s)\n",
+                alua_dev_group);
+        scst_dev_grp_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE,
+                11, 44, scroll_title, scroll_dev_list, i,
+                FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+        if (!scst_dev_grp_dev_list) {
+            errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKScrollBoxAttribute(scst_dev_grp_dev_list, COLOR_DIALOG_BOX);
+        setCDKScrollBackgroundAttrib(scst_dev_grp_dev_list, COLOR_DIALOG_TEXT);
+        dev_choice = activateCDKScroll(scst_dev_grp_dev_list, 0);
+
+        /* Check exit from widget and copy data if normal */
+        if (scst_dev_grp_dev_list->exitType == vNORMAL)
+            strncpy(alua_dev_grp_dev, scst_device_names[dev_choice],
+                MAX_SYSFS_ATTR_SIZE);
+        break;
+    }
+
+    /* Done */
+    destroyCDKScroll(scst_dev_grp_dev_list);
+    refreshCDKScreen(cdk_screen);
+    FREE_NULL(scroll_title);
+    for (i = 0; i < MAX_SCST_DEV_GRP_DEVS; i++) {
+        FREE_NULL(scst_device_names[i]);
+        FREE_NULL(scroll_dev_list[i]);
+    }
+    return;
+}
+
+
+/*
+ * Present the user with a list of SCST ALUA device group devices and let them
+ * choose one. The device group name is passed in and we then fill the
+ * char array with the selected device name.
+ */
+void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
+        char alua_tgt_group[], char alua_tgt_grp_tgt[]) {
+    CDKSCROLL *scst_tgt_grp_tgt_list = 0;
+    int tgt_choice = 0, i = 0;
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+    char *scst_target_names[MAX_SCST_TGT_GRP_TGTS] = {NULL},
+            *scroll_tgt_list[MAX_SCST_TGT_GRP_TGTS] = {NULL};
+    char *error_msg = NULL, *scroll_title = NULL;
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
+
+    while (1) {
+        /* Open the directory */
+        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                "%s/device_groups/%s/target_groups/%s",
+                SYSFS_SCST_TGT, alua_dev_group, alua_tgt_group);
+        if ((dir_stream = opendir(dir_name)) == NULL) {
+            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            errorDialog(cdk_screen, error_msg, NULL);
+            FREE_NULL(error_msg);
+            break;
+        }
+
+        /* Loop over each entry in the directory */
+        while ((dir_entry = readdir(dir_stream)) != NULL) {
+            if (((dir_entry->d_type == DT_DIR) &&
+                    (strcmp(dir_entry->d_name, ".") != 0) &&
+                    (strcmp(dir_entry->d_name, "..") != 0)) ||
+                    (dir_entry->d_type == DT_LNK)) {
+                if (i < MAX_SCST_TGT_GRP_TGTS) {
+                    asprintf(&scst_target_names[i], "%s", dir_entry->d_name);
+                    asprintf(&scroll_tgt_list[i], "<C>%.30s",
+                            scst_target_names[i]);
+                    i++;
+                }
+            }
+        }
+
+        /* Close the directory stream */
+        closedir(dir_stream);
+
+        /* Make sure we actually have something to present */
+        if (i == 0) {
+            errorDialog(cdk_screen, "No targets found!", NULL);
+            break;
+        }
+
+        /* Get SCST device group device choice from user */
+        asprintf(&scroll_title, "<C></31/B>Choose a Target (%s -> %s)\n",
+                alua_dev_group, alua_tgt_group);
+        scst_tgt_grp_tgt_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE,
+                11, 44, scroll_title, scroll_tgt_list, i,
+                FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+        if (!scst_tgt_grp_tgt_list) {
+            errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKScrollBoxAttribute(scst_tgt_grp_tgt_list, COLOR_DIALOG_BOX);
+        setCDKScrollBackgroundAttrib(scst_tgt_grp_tgt_list, COLOR_DIALOG_TEXT);
+        tgt_choice = activateCDKScroll(scst_tgt_grp_tgt_list, 0);
+
+        /* Check exit from widget and copy data if normal */
+        if (scst_tgt_grp_tgt_list->exitType == vNORMAL)
+            strncpy(alua_tgt_grp_tgt, scst_target_names[tgt_choice],
+                MAX_SYSFS_ATTR_SIZE);
+        break;
+    }
+
+    /* Done */
+    destroyCDKScroll(scst_tgt_grp_tgt_list);
+    refreshCDKScreen(cdk_screen);
+    FREE_NULL(scroll_title);
+    for (i = 0; i < MAX_SCST_TGT_GRP_TGTS; i++) {
+        FREE_NULL(scst_target_names[i]);
+        FREE_NULL(scroll_tgt_list[i]);
+    }
+    return;
 }

@@ -476,3 +476,81 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     }
     return;
 }
+
+
+/*
+ * Run the Set Relative Target ID dialog
+ */
+void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
+    CDKSCALE *rel_tgt_id_scale = 0;
+    char attr_path[MAX_SYSFS_PATH_SIZE] = {0},
+            attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
+            scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},
+            tgt_driver[MAX_SYSFS_ATTR_SIZE] = {0};
+    char *error_msg = NULL, *scale_title = NULL;
+    int temp_int = 0, curr_rel_tgt_id = 0, new_rel_tgt_id = 0;
+
+    /* Have the user choose a SCST target */
+    getSCSTTgtChoice(main_cdk_screen, scst_tgt, tgt_driver);
+    if (scst_tgt[0] == '\0' || tgt_driver[0] == '\0')
+        return;
+    
+    /* Get the current relative target ID */
+    snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/rel_tgt_id",
+            SYSFS_SCST_TGT, tgt_driver, scst_tgt);
+    readAttribute(attr_path, attr_value);
+    curr_rel_tgt_id = atoi(attr_value);
+    /* Since readAttribute() doesn't provide a failure indication, 
+     * we'll use this as a lame validation check */
+    if (curr_rel_tgt_id < MIN_SCST_REL_TGT_ID || 
+            curr_rel_tgt_id > MAX_SCST_REL_TGT_ID) {
+        errorDialog(main_cdk_screen,
+                "Unable to read the relative target ID attribute!", NULL);
+        return;
+    }
+
+    while (1) {
+        /* Get the relative target ID (scale widget) */
+        asprintf(&scale_title, "<C></31/B>Set Relative Target ID (%s)\n",
+                scst_tgt);
+        rel_tgt_id_scale = newCDKScale(main_cdk_screen, CENTER, CENTER,
+                scale_title, "</B>Relative Target ID: ",
+                COLOR_DIALOG_SELECT, 7, curr_rel_tgt_id,
+                MIN_SCST_REL_TGT_ID, MAX_SCST_REL_TGT_ID, 1, 100, TRUE, FALSE);
+        if (!rel_tgt_id_scale) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKScaleBoxAttribute(rel_tgt_id_scale, COLOR_DIALOG_BOX);
+        setCDKScaleBackgroundAttrib(rel_tgt_id_scale, COLOR_DIALOG_TEXT);
+
+        /* Draw the scale widget */
+        curs_set(1);
+        new_rel_tgt_id = activateCDKScale(rel_tgt_id_scale, 0);
+
+        /* Check exit from widget */
+        if (rel_tgt_id_scale->exitType == vNORMAL) {
+            /* Make sure there is something to change */
+            if (curr_rel_tgt_id == new_rel_tgt_id)
+                break;
+
+            /* Set the relative target ID */
+            snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
+                    "%s/targets/%s/%s/rel_tgt_id",
+                    SYSFS_SCST_TGT, tgt_driver, scst_tgt);
+            snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
+                    "%d", new_rel_tgt_id);
+            if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
+                asprintf(&error_msg, SET_REL_TGT_ID_ERR, strerror(temp_int));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+            }
+        }
+        break;
+    }
+
+    /* Done */
+    FREE_NULL(scale_title);
+    destroyCDKScale(rel_tgt_id_scale);
+    return;
+}

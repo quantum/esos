@@ -75,7 +75,7 @@ extern "C" {
 #define DEVICES_LUN_LAYOUT      1
 #define DEVICES_DEV_INFO        2
 #define DEVICES_ADD_DEV         3
-#define DEVICES_DEL_DEV         4
+#define DEVICES_REM_DEV         4
 #define DEVICES_MAP_TO          5
 #define DEVICES_UNMAP_FROM      6
 
@@ -86,9 +86,22 @@ extern "C" {
 #define TARGETS_REM_ISCSI       3
 #define TARGETS_LIP             4
 #define TARGETS_TOGGLE          5
+#define TARGETS_SET_REL_TGT_ID  6
+
+/* ALUA menu layout */
+#define ALUA_MENU               5
+#define ALUA_DEV_GRP_LAYOUT     1
+#define ALUA_ADD_DEV_GRP        2
+#define ALUA_REM_DEV_GRP        3
+#define ALUA_ADD_TGT_GRP        4
+#define ALUA_REM_TGT_GRP        5
+#define ALUA_ADD_DEV_TO_GRP     6
+#define ALUA_REM_DEV_FROM_GRP   7
+#define ALUA_ADD_TGT_TO_GRP     8
+#define ALUA_REM_TGT_FROM_GRP   9
 
 /* Interface menu layout */
-#define INTERFACE_MENU          5
+#define INTERFACE_MENU          6
 #define INTERFACE_QUIT          1
 #define INTERFACE_SHELL         2
 #define INTERFACE_HELP          3
@@ -162,25 +175,39 @@ extern "C" {
 #define ZONEINFO        "/usr/share/zoneinfo/posix"
 
 /* Size/limits settings */
-#define MAX_SCST_TGTS           256
-#define MAX_SCST_GROUPS         128
-#define MAX_SCST_LUNS           256
-#define MAX_SCSI_DISKS          128
-#define MAX_SCST_DEVS           128
-#define MAX_SCST_INITS          128
-#define MAX_SCST_DRIVERS        16
-#define MAX_SCST_SESSNS         512
-#define MAX_FC_ADAPTERS         64
-#define MAX_IB_ADAPTERS         64
-#define SCST_ISCSI_TGT_LEN      32
-#define MAX_SCST_ISCSI_TGT_LEN  SCST_ISCSI_TGT_LEN + 1
-#define SCST_DEV_NAME_LEN       16
-#define MAX_SCST_DEV_NAME_LEN   SCST_DEV_NAME_LEN + 1
-#define SCST_GRP_NAME_LEN       16
-#define MAX_SCST_GRP_NAME_LEN   SCST_GRP_NAME_LEN + 1
-#define SCST_INITIATOR_LEN      64
-#define MAX_SCST_INITIATOR_LEN  SCST_INITIATOR_LEN + 1
-#define MAX_SCSI_DEVICES        256
+#define MAX_SCST_TGTS               256
+#define MAX_SCST_GROUPS             128
+#define MAX_SCST_LUNS               256
+#define MAX_SCSI_DISKS              128
+#define MAX_SCST_DEVS               128
+#define MAX_SCST_INITS              128
+#define MAX_SCST_DRIVERS            16
+#define MAX_SCST_SESSNS             512
+#define MAX_SCST_DEV_GRPS           64
+#define MAX_SCST_TGT_GRPS           64
+#define MAX_SCST_DEV_GRP_DEVS       64
+#define MAX_SCST_TGT_GRP_TGTS       64
+#define MAX_FC_ADAPTERS             64
+#define MAX_IB_ADAPTERS             64
+#define SCST_ISCSI_TGT_LEN          32
+#define MAX_SCST_ISCSI_TGT_LEN      SCST_ISCSI_TGT_LEN + 1
+#define SCST_DEV_NAME_LEN           16
+#define MAX_SCST_DEV_NAME_LEN       SCST_DEV_NAME_LEN + 1
+#define SCST_SEC_GRP_NAME_LEN       16
+#define MAX_SCST_SEC_GRP_NAME_LEN   SCST_SEC_GRP_NAME_LEN + 1
+#define SCST_INITIATOR_LEN          64
+#define MAX_SCST_INITIATOR_LEN      SCST_INITIATOR_LEN + 1
+#define SCST_DEV_GRP_NAME_LEN       16
+#define MAX_SCST_DEV_GRP_NAME_LEN   SCST_DEV_GRP_NAME_LEN + 1
+#define SCST_TGT_GRP_NAME_LEN       16
+#define MAX_SCST_TGT_GRP_NAME_LEN   SCST_TGT_GRP_NAME_LEN + 1
+#define SCST_TGT_NAME_LEN           64
+#define MAX_SCST_TGT_NAME_LEN       SCST_TGT_NAME_LEN + 1
+#define MAX_SCSI_DEVICES            256
+#define MIN_SCST_REL_TGT_ID         0
+#define MAX_SCST_REL_TGT_ID         65535
+#define MIN_SCST_TGT_GRP_ID         0
+#define MAX_SCST_TGT_GRP_ID         65535
 
 /* Logger settings */
 #define LOG_PREFIX      "esos_tui"

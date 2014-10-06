@@ -23,7 +23,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *grp_name_entry = 0;
     char scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},
         tgt_driver[MAX_SYSFS_ATTR_SIZE] = {0},
-        temp_str[MAX_SCST_GRP_NAME_LEN] = {0},
+        temp_str[MAX_SCST_SEC_GRP_NAME_LEN] = {0},
         attr_path[MAX_SYSFS_PATH_SIZE] = {0},
         attr_value[MAX_SYSFS_ATTR_SIZE] = {0};
     char *entry_title = NULL, *group_name = NULL, *error_msg = NULL;
@@ -40,7 +40,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
     grp_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
             entry_title, "</B>New Group Name (no spaces): ",
             COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-            SCST_GRP_NAME_LEN, 0, SCST_GRP_NAME_LEN, TRUE, FALSE);
+            SCST_SEC_GRP_NAME_LEN, 0, SCST_SEC_GRP_NAME_LEN, TRUE, FALSE);
     if (!grp_name_entry) {
         errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
         goto cleanup;
@@ -55,7 +55,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
     /* Check exit from widget */
     if (grp_name_entry->exitType == vNORMAL) {
         /* Check group name for bad characters */
-        strncpy(temp_str, group_name, MAX_SCST_GRP_NAME_LEN);
+        strncpy(temp_str, group_name, MAX_SCST_SEC_GRP_NAME_LEN);
         i = 0;
         while (temp_str[i] != '\0') {
             /* If the user didn't input an acceptable name, then cancel out */
@@ -78,7 +78,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "create %s", group_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, ADD_GROUP_ERR, strerror(temp_int));
+            asprintf(&error_msg, ADD_SEC_GROUP_ERR, strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
         }
@@ -117,7 +117,7 @@ void remGroupDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, ASK_DEL_GROUP, group_name);
+    asprintf(&confirm_msg, ASK_DEL_SEC_GROUP, group_name);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
     FREE_NULL(confirm_msg);
     if (confirm) {
@@ -127,7 +127,7 @@ void remGroupDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", group_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, DEL_GROUP_ERR, strerror(temp_int));
+            asprintf(&error_msg, DEL_SEC_GROUP_ERR, strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
         }
