@@ -115,6 +115,7 @@ extern "C" {
 #define MAX_SHELL_CMD_LEN       256
 #define MISC_STRING_LEN         128
 #define UUID_STR_SIZE           64
+#define MAX_TUI_STR_LEN         256
 
 /* Main screen information labels */
 #define MAX_INFO_LABEL_ROWS     512
@@ -183,6 +184,7 @@ extern "C" {
 #define MAX_SCST_INITS              128
 #define MAX_SCST_DRIVERS            16
 #define MAX_SCST_SESSNS             512
+#define MAX_SCST_SESS_INITS         128
 #define MAX_SCST_DEV_GRPS           64
 #define MAX_SCST_TGT_GRPS           64
 #define MAX_SCST_DEV_GRP_DEVS       64
@@ -208,14 +210,18 @@ extern "C" {
 #define MAX_SCST_REL_TGT_ID         65535
 #define MIN_SCST_TGT_GRP_ID         0
 #define MAX_SCST_TGT_GRP_ID         65535
+#define MIN_SCST_LUN_VAL            0
+#define MAX_SCST_LUN_VAL            255
 
 /* Logger settings */
-#define LOG_PREFIX      "esos_tui"
-#define LOG_OPTIONS     LOG_PID
-#define LOG_FACILITY    LOG_LOCAL2
+#define TUI_LOG_PREFIX      "esos_tui"
+#define TUI_LOG_OPTIONS     LOG_PID
+#define TUI_LOG_FACILITY    LOG_LOCAL2
+#define TUI_LOG_PRIORITY    LOG_ERR
 
 /* Other useful macros */
 #define FREE_NULL(p) if ((p) != 0) { free (p); p = 0; }
+#define DEBUG_LOG(...) syslog(TUI_LOG_PRIORITY, __VA_ARGS__)
 
 #ifdef	__cplusplus
 }

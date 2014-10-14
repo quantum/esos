@@ -55,7 +55,7 @@ char *getMegaCLIVersion() {
 int getMRAdapterCount() {
     FILE *megacli = NULL;
     char *command = NULL, *mc_version = NULL;
-    int status = 0, count = 0;
+    int count = 0;
     char line[MAX_MC_LINE] = {0};
 
     /* A cheezy check to see if MegaCLI is "working" -- see comments below */
@@ -69,15 +69,14 @@ int getMRAdapterCount() {
     megacli = popen(command, "r");
 
     /* Loop over command output */
-    while (fgets(line, sizeof(line), megacli) != NULL) {
-        if (strstr(line, "Controller Count:")) {
+    while (fgets(line, sizeof (line), megacli) != NULL) {
+        if (strstr(line, "Controller Count:"))
             sscanf(line, "%*s %*s %d", &count);
-        }
     }
 
-    status = pclose(megacli);
     /* For this one we ignore the exit code -- when using the 'adpCount' option
      * with MegaCLI, it also returns the adapter count as the exit code */
+    pclose(megacli);
 
     /* Done */
     FREE_NULL(command);
@@ -578,7 +577,7 @@ int getMREnclCount(int adapter_id) {
 int getMRLDCount(int adapter_id) {
     FILE *megacli = NULL;
     char *command = NULL, *strtok_result = NULL, *mc_version = NULL;
-    int status = 0, count = 0;
+    int count = 0;
     char line[MAX_MC_LINE] = {0};
 
     /* A cheezy check to see if MegaCLI is "working" -- see comments below */
@@ -601,9 +600,9 @@ int getMRLDCount(int adapter_id) {
         }
     }
 
-    status = pclose(megacli);
     /* For this one we ignore the exit code -- when using the 'LDGetNum' option
      * with MegaCLI, it also returns the LD count as the exit code */
+    pclose(megacli);
 
     /* Done */
     FREE_NULL(command);

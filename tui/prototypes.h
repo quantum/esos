@@ -13,6 +13,7 @@ extern "C" {
 
 #include "system.h"
 #include "megaraid.h"
+#include "dialogs.h"
 
 /* main.c */
 void termSize(WINDOW *screen);
@@ -61,6 +62,12 @@ void getSCSTDevGrpDevChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
         char alua_dev_grp_dev[]);
 void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
         char alua_tgt_group[], char alua_tgt_grp_tgt[]);
+boolean checkInputStr(CDKSCREEN *cdk_screen, valid_input_t char_test_type,
+        char *input_str);
+void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
+        char iface_name[], char iface_mac[], char iface_speed[],
+        char iface_duplex[], bonding_t *iface_bonding, boolean *iface_bridge,
+        char **slaves, int *slave_cnt, char **br_members, int *br_member_cnt);
 
 /* menu_actions-system.c */
 void networkDialog(CDKSCREEN *main_cdk_screen);

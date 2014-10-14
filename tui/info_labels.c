@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <cdk.h>
-#include <syslog.h>
 #include <sys/param.h>
 
 #include "prototypes.h"
@@ -34,7 +33,7 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
             sess_lbl_rows = 0, tgt_lbl_height = 0, sess_lbl_height = 0,
             tgt_y_start = 0, sess_y_start = 0,
             smallest_val = 0, largest_val = 0;
-    boolean success = true;
+    boolean success = TRUE;
  
     /* Fill the label messages and get sizes */
     tgt_want_rows = readTargetData(tgt_info_msg);
@@ -108,34 +107,39 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
     }
 
     /* Create the information/status labels (if they don't exist) */
-    if (*tgt_info == NULL) {
-        *tgt_info = newCDKLabel(cdk_screen, 1, tgt_y_start,
-                tgt_info_msg, tgt_lbl_rows, TRUE, FALSE);
-        if (!*tgt_info) {
-            errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
-            success = false;
-            goto done;
+    while (1) {
+        if (*tgt_info == NULL) {
+            *tgt_info = newCDKLabel(cdk_screen, 1, tgt_y_start,
+                    tgt_info_msg, tgt_lbl_rows, TRUE, FALSE);
+            if (!*tgt_info) {
+                errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+                success = FALSE;
+                break;
+            }
+            setCDKLabelBoxAttribute(*tgt_info, COLOR_MAIN_BOX);
+            setCDKLabelBackgroundAttrib(*tgt_info, COLOR_MAIN_TEXT);
         }
-        setCDKLabelBoxAttribute(*tgt_info, COLOR_MAIN_BOX);
-        setCDKLabelBackgroundAttrib(*tgt_info, COLOR_MAIN_TEXT);
-    }
-    if (*sess_info == NULL) {
-        *sess_info = newCDKLabel(cdk_screen, 1, sess_y_start,
-                sess_info_msg, sess_lbl_rows, TRUE, FALSE);
-        if (!*sess_info) {
-            errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
-            success = false;
-            goto done;
+        if (*sess_info == NULL) {
+            *sess_info = newCDKLabel(cdk_screen, 1, sess_y_start,
+                    sess_info_msg, sess_lbl_rows, TRUE, FALSE);
+            if (!*sess_info) {
+                errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+                success = FALSE;
+                break;
+            }
+            setCDKLabelBoxAttribute(*sess_info, COLOR_MAIN_BOX);
+            setCDKLabelBackgroundAttrib(*sess_info, COLOR_MAIN_TEXT);
         }
-        setCDKLabelBoxAttribute(*sess_info, COLOR_MAIN_BOX);
-        setCDKLabelBackgroundAttrib(*sess_info, COLOR_MAIN_TEXT);
+        break;
     }
     
     /* Refresh information label messages */
-    setCDKLabelMessage(*tgt_info, tgt_info_msg, tgt_lbl_rows);
-    setCDKLabelMessage(*sess_info, sess_info_msg, sess_lbl_rows);
+    if (success) {
+        setCDKLabelMessage(*tgt_info, tgt_info_msg, tgt_lbl_rows);
+        setCDKLabelMessage(*sess_info, sess_info_msg, sess_lbl_rows);
+    }
 
-done:
+    /* Done */
     return success;
 }
 
@@ -484,14 +488,15 @@ int readSessionData(char *label_msg[]) {
                             if (row_cnt < MAX_INFO_LABEL_ROWS) {
                                 snprintf(line_buffer, SESSIONS_LABEL_COLS,
                                         "strtoull(): %s", strerror(errno));
-                                asprintf(&label_msg[row_cnt], "%s", line_buffer);
+                                asprintf(&label_msg[row_cnt], "%s",
+                                        line_buffer);
                                 row_cnt++;
                             }
                             return row_cnt;
                         }
                         /* Get the write IO (in KB) attribute */
-                        snprintf(attr_path, MAX_SYSFS_PATH_SIZE,
-                                "%s/targets/%s/%s/sessions/%s/write_io_count_kb",
+                        snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/"
+                                "%s/%s/sessions/%s/write_io_count_kb",
                                 SYSFS_SCST_TGT, tgt_drivers[i],
                                 tgt_dir_entry->d_name,
                                 sess_dir_entry->d_name);
@@ -504,7 +509,8 @@ int readSessionData(char *label_msg[]) {
                             if (row_cnt < MAX_INFO_LABEL_ROWS) {
                                 snprintf(line_buffer, SESSIONS_LABEL_COLS,
                                         "strtoull(): %s", strerror(errno));
-                                asprintf(&label_msg[row_cnt], "%s", line_buffer);
+                                asprintf(&label_msg[row_cnt], "%s",
+                                        line_buffer);
                                 row_cnt++;
                             }
                             return row_cnt;

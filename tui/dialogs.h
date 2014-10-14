@@ -71,6 +71,7 @@ extern "C" {
 #define ADD_DEV_INFO_LINES              3
 #define LD_PROPS_INFO_LINES             9
 #define NEW_LD_INFO_LINES               3
+#define ADP_PROP_INFO_LINES             10
 #define ADD_VDISK_INFO_LINES            4
 #define CONFIRM_DIAG_MSG_SIZE           6
 #define ERROR_DIAG_MSG_SIZE             6
@@ -114,15 +115,18 @@ extern "C" {
 #define MAX_BOND_OPTS_BUFF              512
 
 /* Character validation */
+typedef enum {
+    ASCII_CHARS, NAME_CHARS, IPADDR_CHARS, EMAIL_CHARS, INIT_CHARS
+} valid_input_t;
 #define VALID_ASCII_CHAR(c) ((isascii(c)) ? 1 : 0)
 #define VALID_ASCII_CHAR_MSG "Only ASCII characters are valid."
 #define VALID_NAME_CHAR(c) ((isascii(c) && (isalnum(c) || c == '_' || \
         c == '-' || c == '.')) ? 1 : 0)
 #define VALID_NAME_CHAR_MSG \
         "Only these characters are valid: a-z A-Z 0-9 _ - ."
-#define VALID_IP_ADDR_CHAR(c) ((isascii(c) && (isdigit(c) || \
+#define VALID_IPADDR_CHAR(c) ((isascii(c) && (isdigit(c) || \
         c == '.')) ? 1 : 0)
-#define VALID_IP_ADDR_CHAR_MSG \
+#define VALID_IPADDR_CHAR_MSG \
         "Only these characters are valid: 0-9 ."
 #define VALID_EMAIL_CHAR(c) ((isascii(c) && (isalnum(c) || c == '_' || \
         c == '-' || c == '.' || c == '@')) ? 1 : 0)
@@ -132,10 +136,11 @@ extern "C" {
         c == '-' || c == '.' || c == ':' || c == '?' || c == '*')) ? 1 : 0)
 #define VALID_INIT_CHAR_MSG \
         "Only these characters are valid: a-z A-Z 0-9 _ - . : ? *"
-#define INVALID_CHAR_MSG "An invalid character was detected in a entry field!"
 
 /* Linux NIC bonding mode */
-enum bonding_t {NO_BONDING, MASTER, SLAVE};
+typedef enum {
+    NO_BONDING, MASTER, SLAVE
+} bonding_t;
 
 /* This would normally be set via the ESOS build */
 #ifndef BUILD_OPTS

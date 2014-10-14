@@ -101,25 +101,23 @@ boolean isSCSTLoaded() {
 
 /*
  * Check if the given initiator name is already in use in the group name
- * specified. Return true if it does exist, and false if it does not. If any
- * errors occur in this function, we return false.
+ * specified. Return TRUE if it does exist, and FALSE if it does not. If any
+ * errors occur in this function, we return FALSE.
  */
 boolean isSCSTInitInGroup(char tgt_name[], char tgt_driver[],
         char group_name[], char init_name[]) {
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0};
-    boolean found_init = false;
+    boolean found_init = FALSE;
 
     /* Open the group initiator directory */
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
             "%s/targets/%s/%s/ini_groups/%s/initiators",
             SYSFS_SCST_TGT, tgt_driver, tgt_name, group_name);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-        syslog(LOG_ERR, "opendir(): %s", strerror(errno));
-        closelog();
-        return false;
+        DEBUG_LOG("opendir(): %s", strerror(errno));
+        return FALSE;
     }
 
     /* Loop over each entry in the directory */
@@ -127,7 +125,7 @@ boolean isSCSTInitInGroup(char tgt_name[], char tgt_driver[],
         /* The initiators are files */
         if ((dir_entry->d_type == DT_REG) &&
                 (strcmp(dir_entry->d_name, init_name) == 0)) {
-            found_init = true;
+            found_init = TRUE;
             break;
         }
     }
@@ -147,47 +145,43 @@ int countSCSTInitUses(char tgt_name[], char tgt_driver[], char init_name[]) {
     struct dirent *grp_dir_entry = NULL, *init_dir_entry = NULL;
     char groups_dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             inits_dir_name[MAX_SYSFS_PATH_SIZE] = {0};
-    int i = 0, use_count = 0;
+    int use_count = 0;
 
     /* Open the target group's directory (to get a list) */
     snprintf(groups_dir_name, MAX_SYSFS_PATH_SIZE,
             "%s/targets/%s/%s/ini_groups",
             SYSFS_SCST_TGT, tgt_driver, tgt_name);
     if ((grp_dir_stream = opendir(groups_dir_name)) == NULL) {
-        openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-        syslog(LOG_ERR, "opendir(): %s", strerror(errno));
-        closelog();
+        DEBUG_LOG("opendir(): %s", strerror(errno));
         return -1;
     }
 
     /* Loop over each entry in the directory */
     while ((grp_dir_entry = readdir(grp_dir_stream)) != NULL) {
         /* The groups are directories; skip '.' and '..' */
-        if (grp_dir_entry->d_type == DT_DIR) {
-            if (i > 1) {
-                /* Now for each group, read through their initiators */
-                snprintf(inits_dir_name, MAX_SYSFS_PATH_SIZE,
-                        "%s/targets/%s/%s/ini_groups/%s/initiators",
-                        SYSFS_SCST_TGT, tgt_driver, tgt_name,
-                        grp_dir_entry->d_name);
-                if ((init_dir_stream = opendir(inits_dir_name)) == NULL) {
-                    openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-                    syslog(LOG_ERR, "opendir(): %s", strerror(errno));
-                    closelog();
-                    closedir(grp_dir_stream);
-                    return -1;
-                }
-                /* Loop over each entry in the directory */
-                while ((init_dir_entry = readdir(init_dir_stream)) != NULL) {
-                    /* The initiators are files */
-                    if ((init_dir_entry->d_type == DT_REG) &&
-                            (strcmp(init_dir_entry->d_name, init_name) == 0)) {
-                        use_count++;
-                    }
-                }
-                closedir(init_dir_stream);
+        if ((grp_dir_entry->d_type == DT_DIR) &&
+                (strcmp(grp_dir_entry->d_name, ".") != 0) &&
+                (strcmp(grp_dir_entry->d_name, "..") != 0)) {
+            /* Now for each group, read through their initiators */
+            snprintf(inits_dir_name, MAX_SYSFS_PATH_SIZE,
+                    "%s/targets/%s/%s/ini_groups/%s/initiators",
+                    SYSFS_SCST_TGT, tgt_driver, tgt_name,
+                    grp_dir_entry->d_name);
+            if ((init_dir_stream = opendir(inits_dir_name)) == NULL) {
+                DEBUG_LOG("opendir(): %s", strerror(errno));
+                closedir(grp_dir_stream);
+                return -1;
             }
-            i++;
+            /* Loop over each entry in the directory */
+            while ((init_dir_entry = readdir(init_dir_stream)) != NULL) {
+                /* The initiators are files */
+                if ((init_dir_entry->d_type == DT_REG) &&
+                        (strcmp(init_dir_entry->d_name, init_name) == 0)) {
+                    use_count++;
+                }
+            }
+            closedir(init_dir_stream);
+
         }
     }
 
@@ -200,7 +194,7 @@ int countSCSTInitUses(char tgt_name[], char tgt_driver[], char init_name[]) {
 /*
  * Fill the SCST target drivers list and set driver count for all target
  * drivers detected in the sysfs structure. If something fails internally
- * in the function, return false, otherwise return true.
+ * in the function, return FALSE, otherwise return TRUE.
  */
 boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
         int *driver_cnt) {
@@ -212,7 +206,7 @@ boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
     /* Open the directory for target drivers */
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets", SYSFS_SCST_TGT);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        return false;
+        return FALSE;
     }
 
     /* Loop over each directory and add it to the list */
@@ -233,7 +227,7 @@ boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
 
     /* Done */
     *driver_cnt = i;
-    return true;
+    return TRUE;
 }
 
 
@@ -252,9 +246,7 @@ int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]) {
             "%s/targets/%s/%s/sessions/%s/luns",
             SYSFS_SCST_TGT, tgt_driver, tgt_name, init_name);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-        syslog(LOG_ERR, "opendir(): %s", strerror(errno));
-        closelog();
+        DEBUG_LOG("opendir(): %s", strerror(errno));
         return -1;
     }
 
@@ -273,6 +265,7 @@ int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]) {
     return lun_count;
 }
 
+
 /*
  * This function takes a number of bytes and formats/converts the value for
  * a "human-readable" representation of the number (eg, 2048 returns "2 KiB").
@@ -286,7 +279,8 @@ char *prettyFormatBytes(uint64_t size) {
     int i = 0;
     char *result = (char *) malloc(sizeof (char) * 20);
 
-    for (i = 0; i < (sizeof(sizes)/sizeof(*(sizes))); i++, multiplier /= 1024) {
+    for (i = 0; i < (sizeof (sizes) / sizeof (*(sizes)));
+            i++, multiplier /= 1024) {
         if (size < multiplier)
             continue;
         if ((size % multiplier) == 0)
@@ -319,9 +313,7 @@ boolean checkInetAccess() {
     /* Queue the request */
     ret_val = getaddrinfo_a(GAI_NOWAIT, &requests[0], 1, NULL);
     if (ret_val != 0) {
-        openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-        syslog(LOG_ERR, "getaddrinfo_a(): %s", gai_strerror(ret_val));
-        closelog();
+        DEBUG_LOG("getaddrinfo_a(): %s", gai_strerror(ret_val));
         return FALSE;
     }
     
@@ -331,9 +323,7 @@ boolean checkInetAccess() {
     while (1) {
         /* Don't wait too long */
         if (loop_cnt >= 10) {
-            openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-            syslog(LOG_ERR, "Timeout value reached, returning...");
-            closelog();
+            DEBUG_LOG("Timeout value reached, returning...");
             return FALSE;
         }
         ++loop_cnt;
@@ -344,16 +334,12 @@ boolean checkInetAccess() {
         } else if (ret_val == 0) {
             return TRUE;
         } else {
-            openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-            syslog(LOG_ERR, "gai_error(): %s", gai_strerror(ret_val));
-            closelog();
+            DEBUG_LOG("gai_error(): %s", gai_strerror(ret_val));
             return FALSE;
         }
         /* Sleep for a bit */
         if (nanosleep(&timeout, NULL) != 0) {
-            openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-            syslog(LOG_ERR, "nanosleep(): %s", strerror(errno));
-            closelog();
+            DEBUG_LOG("nanosleep(): %s", strerror(errno));
             return FALSE;
         }
     }

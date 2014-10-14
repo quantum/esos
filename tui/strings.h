@@ -37,46 +37,28 @@ extern "C" {
 #define MENTRY_ERR_MSG          "Couldn't create multiple line entry widget!"
 #define CALENDAR_ERR_MSG        "Couldn't create calendar widget!"
 
-/* SCST utility function error messages */
-#define TGT_DRIVERS_ERR "An error occurred while retrieving the " \
+/* Common SCST related error messages */
+#define TGT_DRIVERS_ERR     "An error occurred while retrieving the " \
         "list of drivers."
+#define SET_REL_TGT_ID_ERR  "Couldn't set SCST relative target ID: %s"
 
 /* Canned dialog messages */
 #define CONTINUE_MSG        "<C></B><Press ENTER to continue...>"
 #define NO_SCST_MSG         "<C></B><SCST is not loaded!>"
-#define EMPTY_FIELD_ERR     "The entry field cannot be empty!"
-#define ASK_DEL_SEC_GROUP   "Are you sure you want to delete SCST security " \
-        "group '%s'?"
-#define DEL_SEC_GROUP_ERR   "Couldn't delete SCST security group: %s"
-#define ADD_SEC_GROUP_ERR   "Couldn't add SCST security group: %s"
-#define DEL_INIT_ERR        "Couldn't remove initiator: %s"
-#define ADD_INIT_ERR        "Couldn't add initiator to SCST group: %s"
+
+/* Input string validation messages */
+#define EMPTY_FIELD_ERR     "The input/entry field cannot be empty!"
+#define INVALID_CHAR_ERR    "A invalid character was detected in " \
+        "an input/entry field!"
+#define NULL_STR_PTR_ERR    "The input string pointer is NULL!"
+#define MAX_STR_SIZE_ERR    "The maximum string size was hit while " \
+        "validating the input string!"
+
+/* File system mount/unmount strings */
 #define NOT_MOUNTED_1       "It appears that file system is not mounted; " \
         "would you like to try mounting it now?"
 #define NOT_MOUNTED_2       "(The file system must be mounted before " \
         "proceeding.)"
-#define DEL_DEV_GROUP_ERR   "Couldn't delete SCST (ALUA) device group: %s"
-#define ADD_DEV_GROUP_ERR   "Couldn't add SCST (ALUA) device group: %s"
-#define ASK_DEL_DEV_GROUP   "Are you sure you want to delete SCST device " \
-        "group '%s?'"
-#define DEL_TGT_GROUP_ERR   "Couldn't delete SCST (ALUA) target group: %s"
-#define ADD_TGT_GROUP_ERR   "Couldn't add SCST (ALUA) target group: %s"
-#define ASK_DEL_TGT_GROUP   "Are you sure you want to delete SCST target " \
-        "group '%s?'"
-#define SET_TGT_GRP_ID_ERR  "Couldn't set SCST (ALUA) target group ID: %s"
-#define DEL_DEV_FRM_GRP_ERR "Couldn't delete SCST (ALUA) device " \
-        "from device group: %s"
-#define ADD_DEV_TO_GRP_ERR  "Couldn't add SCST (ALUA) device to " \
-        "device group: %s"
-#define ASK_DEL_DEV_FRM_GRP "Are you sure you want to remove SCST " \
-        "device '%s' from group '%s?'"
-#define SET_REL_TGT_ID_ERR  "Couldn't set SCST (ALUA) relative target ID: %s"
-#define DEL_TGT_FRM_GRP_ERR "Couldn't delete SCST (ALUA) target " \
-        "from target group: %s"
-#define ADD_TGT_TO_GRP_ERR  "Couldn't add SCST (ALUA) target to " \
-        "target group: %s"
-#define ASK_DEL_TGT_FRM_GRP "Are you sure you want to remove SCST " \
-        "target '%s' from group '%s?'"
 
 /* INI parser messages */
 #define SET_FILE_VAL_ERR        "Couldn't set configuration file value!"
@@ -95,6 +77,10 @@ extern "C" {
 #define ESOS_CONF_WRITE_ERR     "Couldn't open ESOS config. file " \
         "for writing: %s"
 
+/* Misc. common strings/messages */
+#define DEFAULT_CASE_HIT    "The 'default' case was reached."
+#define CMD_FAILED_ERR      "Running %s failed; exited with %d."
+
 /* Dialog radio widget options */
 extern char *g_no_yes_opts[], *g_auth_meth_opts[], *g_ip_opts[],
         *g_cache_opts[], *g_write_opts[], *g_read_opts[], *g_bbu_opts[],
@@ -112,14 +98,7 @@ extern char *g_choice_char[], *g_bonding_map[], *g_scst_dev_types[],
 extern char *g_ok_msg[], *g_ok_cancel_msg[], *g_yes_no_msg[];
 
 /* Other string stuff */
-extern char *g_transports[], *g_scst_handlers[];
-
-/* Dialog title strings */
-#define LD_LIST_TITLE           "<C></31/B>Choose a Logical Drive\n"
-#define ADP_LIST_TITLE          "<C></31/B>Choose an Adapter\n"
-#define BLOCK_DEV_LIST_TITLE    "<C></31/B>Choose a Block Device\n"
-#define SCSI_DISK_LIST_TITLE    "<C></31/B>Choose a SCSI Disk\n"
-#define SCST_DEV_LIST_TITLE     "<C></31/B>Choose a SCST Device Handler\n"
+extern char *g_transports[], *g_scst_handlers[];    
 
 #ifdef	__cplusplus
 }
