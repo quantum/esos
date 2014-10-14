@@ -45,6 +45,10 @@ int main(int argc, char** argv) {
      * page, this call always succeeds) */
     umask(0022);
 
+    /* Setup logging for debug messages */
+    openlog(TUI_LOG_PREFIX, TUI_LOG_OPTIONS, TUI_LOG_FACILITY);
+    DEBUG_LOG("TUI start-up...");
+    
     /* Check if there is Internet access */
     inet_works = checkInetAccess();
 
@@ -69,55 +73,56 @@ start:
     /* Create the menu lists */
     menu_list[SYSTEM_MENU][0] = "</29/B/U>S<!29><!U>ystem  <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_SYNC_CONF] = \
-            "</B>Sync Configuration  <!B>";
+            "</B>Sync Configuration<!B>";
     menu_list[SYSTEM_MENU][SYSTEM_NETWORK] = \
-            "</B>Network Settings    <!B>";
+            "</B>Network Settings  <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_RESTART_NET] = \
-            "</B>Restart Networking  <!B>";
+            "</B>Restart Networking<!B>";
     menu_list[SYSTEM_MENU][SYSTEM_MAIL] = \
-            "</B>Mail Setup          <!B>";
+            "</B>Mail Setup        <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_TEST_EMAIL] = \
-            "</B>Send Test Email     <!B>";
+            "</B>Send Test Email   <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_ADD_USER] = \
-            "</B>Add User            <!B>";
+            "</B>Add User          <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_DEL_USER] = \
-            "</B>Delete User         <!B>";
+            "</B>Delete User       <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_CHG_PASSWD] = \
-            "</B>Change Password     <!B>";
+            "</B>Change Password   <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_SCST_INFO] = \
-            "</B>SCST Information    <!B>";
+            "</B>SCST Information  <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_CRM_STATUS] = \
-            "</B>CRM Status          <!B>";
+            "</B>CRM Status        <!B>";
     menu_list[SYSTEM_MENU][SYSTEM_DATE_TIME] = \
-            "</B>Date & Time Settings<!B>";
+            "</B>Date/Time Settings<!B>";
 
-    menu_list[BACK_STORAGE_MENU][0] = "</29/B/U>B<!29><!U>ack-End Storage  <!B>";
+    menu_list[BACK_STORAGE_MENU][0] = "</29/B/U>B<!29><!U>ack-End "
+            "Storage  <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_PROP] = \
-            "</B>MR Adapter Properties   <!B>";
+            "</B>MegaRAID Adptr Props<!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_INFO] = \
-            "</B>MR Adapter Information  <!B>";
+            "</B>MegaRAID Adptr Info <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VOL] = \
-            "</B>Add MegaRAID Volume     <!B>";
+            "</B>Add MegaRAID Volume <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VOL] = \
-            "</B>Delete MegaRAID Volume  <!B>";
+            "</B>Delete MegaRAID Vol <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VOL_PROP] = \
-            "</B>MR Volume Properties    <!B>";
+            "</B>MegaRAID Vol Props  <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DRBD_STAT] = \
-            "</B>DRBD Status             <!B>";
+            "</B>DRBD Status         <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_SOFT_RAID_STAT] = \
-            "</B>Software RAID Status    <!B>";
+            "</B>Software RAID Stats <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_LVM2_INFO] = \
-            "</B>LVM2 LV Information     <!B>";
+            "</B>LVM2 LV Information <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_CREATE_FS] = \
-            "</B>Create File System      <!B>";
+            "</B>Create File System  <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_REMOVE_FS] = \
-            "</B>Remove File System      <!B>";
+            "</B>Remove File System  <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VDISK_FILE] = \
-            "</B>Add Virtual Disk File   <!B>";
+            "</B>Add Virt Disk File  <!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VDISK_FILE] = \
-            "</B>Delete Virtual Disk File<!B>";
+            "</B>Delete Virt Dsk File<!B>";
     menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VDISK_FILE_LIST] = \
-            "</B>Virtual Disk File List  <!B>";
+            "</B>Virt Disk File List <!B>";
 
     menu_list[HOSTS_MENU][0] = "</29/B/U>H<!29><!U>osts  <!B>";
     menu_list[HOSTS_MENU][HOSTS_ADD_GROUP] = \
@@ -131,31 +136,31 @@ start:
 
     menu_list[DEVICES_MENU][0] = "</29/B/U>D<!29><!U>evices  <!B>";
     menu_list[DEVICES_MENU][DEVICES_LUN_LAYOUT] = \
-            "</B>LUN/Group Layout     <!B>";
+            "</B>LUN/Group Layout   <!B>";
     menu_list[DEVICES_MENU][DEVICES_DEV_INFO] = \
-            "</B>Device Information   <!B>";
+            "</B>Device Information <!B>";
     menu_list[DEVICES_MENU][DEVICES_ADD_DEV] = \
-            "</B>Add Device           <!B>";
+            "</B>Add Device         <!B>";
     menu_list[DEVICES_MENU][DEVICES_REM_DEV] = \
-            "</B>Remove Device        <!B>";
+            "</B>Remove Device      <!B>";
     menu_list[DEVICES_MENU][DEVICES_MAP_TO] = \
-            "</B>Map to Host Group    <!B>";
+            "</B>Map to Host Group  <!B>";
     menu_list[DEVICES_MENU][DEVICES_UNMAP_FROM] = \
-            "</B>Unmap from Host Group<!B>";
+            "</B>Unmap from Host Grp<!B>";
 
     menu_list[TARGETS_MENU][0] = "</29/B/U>T<!29><!U>argets  <!B>";
     menu_list[TARGETS_MENU][TARGETS_TGT_INFO] = \
-            "</B>Target Information    <!B>";
+            "</B>Target Information <!B>";
     menu_list[TARGETS_MENU][TARGETS_ADD_ISCSI] = \
-            "</B>Add iSCSI Target      <!B>";
+            "</B>Add iSCSI Target   <!B>";
     menu_list[TARGETS_MENU][TARGETS_REM_ISCSI] = \
-            "</B>Remove iSCSI Target   <!B>";
+            "</B>Remove iSCSI Target<!B>";
     menu_list[TARGETS_MENU][TARGETS_LIP] = \
-            "</B>Issue LIP             <!B>";
+            "</B>Issue LIP          <!B>";
     menu_list[TARGETS_MENU][TARGETS_TOGGLE] = \
-            "</B>Enable/Disable Target <!B>";
+            "</B>Enable/Disable Tgt <!B>";
     menu_list[TARGETS_MENU][TARGETS_SET_REL_TGT_ID] = \
-            "</B>Set Relative Target ID<!B>";
+            "</B>Set Rel Target ID  <!B>";
 
     menu_list[ALUA_MENU][0] = "</29/B/U>A<!29><!U>LUA  <!B>";
     menu_list[ALUA_MENU][ALUA_DEV_GRP_LAYOUT] = \
@@ -179,15 +184,15 @@ start:
 
     menu_list[INTERFACE_MENU][0] = "</29/B/U>I<!29><!U>nterface<!B>";
     menu_list[INTERFACE_MENU][INTERFACE_QUIT] = \
-            "</B>Quit          <!B>";
+            "</B>Quit         <!B>";
     menu_list[INTERFACE_MENU][INTERFACE_SHELL] = \
-            "</B>Exit to Shell <!B>";
+            "</B>Exit to Shell<!B>";
     menu_list[INTERFACE_MENU][INTERFACE_HELP] = \
-            "</B>Help          <!B>";
+            "</B>Help         <!B>";
     menu_list[INTERFACE_MENU][INTERFACE_SUPPORT_PKG] = \
-            "</B>Support Bundle<!B>";
+            "</B>Support Bndle<!B>";
     menu_list[INTERFACE_MENU][INTERFACE_ABOUT] = \
-            "</B>About         <!B>";
+            "</B>About        <!B>";
 
     /* Set menu sizes and locations */
     submenu_size[SYSTEM_MENU]       = 12;
@@ -338,13 +343,11 @@ start:
                     echo();
                     system(CLEAR_BIN);
                     /* Execute the shell; if we fail, print something 
-                     * useful to syslog */
+                     * useful to syslog for debugging */
                     if ((execl(SHELL_BIN, SHELL_BIN, "--rcfile", GLOBAL_BASHRC,
                             "-i", (char *) NULL)) == -1) {
-                        openlog(LOG_PREFIX, LOG_OPTIONS, LOG_FACILITY);
-                        syslog(LOG_ERR, "Calling execl() failed: %s",
+                        DEBUG_LOG("Calling execl() failed: %s",
                                 strerror(errno));
-                        closelog();
                     }
                     exit(2);
                 } else {
@@ -657,6 +660,8 @@ start:
 
     /* All done -- clean up */
 quit:
+    DEBUG_LOG("Quitting...");
+    closelog();
     if (cdk_screen != NULL) {
         destroyCDKScreenObjects(cdk_screen);
         destroyCDKScreen(cdk_screen);
@@ -682,7 +687,7 @@ void termSize(WINDOW *screen) {
     int input_char = 0, screen_x = 0, screen_y = 0;
     char curr_term_size[MISC_STRING_LEN] = {0},
             reqd_screen_size[MISC_STRING_LEN] = {0};
-    boolean first_run = true;
+    boolean first_run = TRUE;
 
     /* Start half-delay mode */
     halfdelay(REFRESH_DELAY);
@@ -698,7 +703,7 @@ void termSize(WINDOW *screen) {
 
         /* Wait for a resize event or escape */
         if (input_char == KEY_RESIZE) {
-            first_run = false;
+            first_run = FALSE;
             clear();
             refresh();
             getmaxyx(screen, screen_y, screen_x);
@@ -740,7 +745,7 @@ void termSize(WINDOW *screen) {
 void screenResize(CDKSCREEN *cdk_screen, WINDOW *main_window,
         WINDOW *sub_window, int *latest_term_y, int *latest_term_x) {
     int input_char = 0, screen_y = 0, screen_x = 0;
-    boolean first_run = true;
+    boolean first_run = TRUE;
 
     getmaxyx(main_window, screen_y, screen_x);
     if ((screen_y < *latest_term_y) || (screen_x < *latest_term_x)) {
@@ -761,7 +766,7 @@ void screenResize(CDKSCREEN *cdk_screen, WINDOW *main_window,
 
             /* A SIGWINCH generates a KEY_RESIZE character with our ncurses */
             if (input_char == KEY_RESIZE) {
-                first_run = false;
+                first_run = FALSE;
                 clear();
                 refresh();
                 getmaxyx(main_window, screen_y, screen_x);
@@ -987,7 +992,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                     curl_easy_setopt(curl, CURLOPT_URL, USAGE_POST_URL);
                     curl_easy_setopt(curl, CURLOPT_HTTPPOST, form_post);
                     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
-                    curl_easy_setopt(curl, CURLOPT_USERAGENT, LOG_PREFIX);
+                    curl_easy_setopt(curl, CURLOPT_USERAGENT, TUI_LOG_PREFIX);
 
                     /* Perform the request */
                     result = curl_easy_perform(curl);

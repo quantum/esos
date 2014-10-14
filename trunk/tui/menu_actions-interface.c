@@ -52,21 +52,25 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&message[16], "to scroll through the text and use ENTER or "
             "ESCAPE to exit.");
 
-    /* Display the TUI help message dialog box */
-    help_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
-            HELP_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
-    if (!help_dialog) {
-        errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
-        goto cleanup;
+    while (1) {
+        /* Display the TUI help message dialog box */
+        help_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
+                HELP_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT,
+                TRUE, TRUE, FALSE);
+        if (!help_dialog) {
+            errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
+            break;
+        }
+        setCDKDialogBackgroundAttrib(help_dialog, COLOR_DIALOG_TEXT);
+        setCDKDialogBoxAttribute(help_dialog, COLOR_DIALOG_BOX);
+
+        /* We don't care how the user exits the widget */
+        activateCDKDialog(help_dialog, 0);
+        destroyCDKDialog(help_dialog);
+        break;
     }
-    setCDKDialogBackgroundAttrib(help_dialog, COLOR_DIALOG_TEXT);
-    setCDKDialogBoxAttribute(help_dialog, COLOR_DIALOG_BOX);
-    /* We don't care how the user exits the widget */
-    activateCDKDialog(help_dialog, 0);
-    destroyCDKDialog(help_dialog);
 
     /* All done */
-    cleanup:
     for (i = 0; i < HELP_MSG_SIZE; i++)
         FREE_NULL(message[i]);
     refreshCDKScreen(main_cdk_screen);
@@ -102,8 +106,7 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
             "/etc /var/log > /dev/null 2>&1", TAR_BIN, bundle_file, file_name);
     ret_val = system(tar_cmd);
     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-        asprintf(&error_msg, "Running %s failed; exited with %d.",
-                TAR_BIN, exit_stat);
+        asprintf(&error_msg, CMD_FAILED_ERR, TAR_BIN, exit_stat);
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
         return;
@@ -121,22 +124,25 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&message[5], " ");
     asprintf(&message[6], " ");
 
-    /* Display the dialog box */
-    bundle_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
-            SUPPORT_PKG_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT,
-            TRUE, TRUE, FALSE);
-    if (!bundle_dialog) {
-        errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
-        goto cleanup;
+    while (1) {
+        /* Display the dialog box */
+        bundle_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
+                SUPPORT_PKG_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT,
+                TRUE, TRUE, FALSE);
+        if (!bundle_dialog) {
+            errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
+            break;
+        }
+        setCDKDialogBackgroundAttrib(bundle_dialog, COLOR_DIALOG_TEXT);
+        setCDKDialogBoxAttribute(bundle_dialog, COLOR_DIALOG_BOX);
+
+        /* We don't care how the user exits the widget */
+        activateCDKDialog(bundle_dialog, 0);
+        destroyCDKDialog(bundle_dialog);
+        break;
     }
-    setCDKDialogBackgroundAttrib(bundle_dialog, COLOR_DIALOG_TEXT);
-    setCDKDialogBoxAttribute(bundle_dialog, COLOR_DIALOG_BOX);
-    /* We don't care how the user exits the widget */
-    activateCDKDialog(bundle_dialog, 0);
-    destroyCDKDialog(bundle_dialog);
 
     /* All done */
-    cleanup:
     for (i = 0; i < SUPPORT_PKG_MSG_SIZE; i++)
         FREE_NULL(message[i]);
     refreshCDKScreen(main_cdk_screen);
@@ -157,7 +163,7 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(esos_ver, MAX_SYSFS_ATTR_SIZE,
             "ESOS - Enterprise Storage OS %s", ESOS_VERSION);
     if (gethostname(hostname, ((sizeof hostname) - 1)) == -1)
-        snprintf(hostname, sizeof(hostname), "hostname");
+        snprintf(hostname, sizeof (hostname), "hostname");
     asprintf(&message[0], "<C></31/B>About ESOS");
     asprintf(&message[1], " ");
     asprintf(&message[2], "</B>This Host:<!B>\t%-.40s", hostname);
@@ -172,21 +178,25 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     asprintf(&message[10], " ");
     asprintf(&message[11], " ");
 
-    /* Display the dialog box */
-    about_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
-            ABOUT_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT, TRUE, TRUE, FALSE);
-    if (!about_dialog) {
-        errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
-        goto cleanup;
+    while (1) {
+        /* Display the dialog box */
+        about_dialog = newCDKDialog(main_cdk_screen, CENTER, CENTER, message,
+                ABOUT_MSG_SIZE, g_ok_msg, 1, COLOR_DIALOG_SELECT,
+                TRUE, TRUE, FALSE);
+        if (!about_dialog) {
+            errorDialog(main_cdk_screen, DIALOG_ERR_MSG, NULL);
+            break;
+        }
+        setCDKDialogBackgroundAttrib(about_dialog, COLOR_DIALOG_TEXT);
+        setCDKDialogBoxAttribute(about_dialog, COLOR_DIALOG_BOX);
+
+        /* We don't care how the user exits the widget */
+        activateCDKDialog(about_dialog, 0);
+        destroyCDKDialog(about_dialog);
+        break;
     }
-    setCDKDialogBackgroundAttrib(about_dialog, COLOR_DIALOG_TEXT);
-    setCDKDialogBoxAttribute(about_dialog, COLOR_DIALOG_BOX);
-    /* We don't care how the user exits the widget */
-    activateCDKDialog(about_dialog, 0);
-    destroyCDKDialog(about_dialog);
 
     /* All done */
-    cleanup:
     for (i = 0; i < ABOUT_MSG_SIZE; i++)
         FREE_NULL(message[i]);
     refreshCDKScreen(main_cdk_screen);

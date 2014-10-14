@@ -9,15 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iniparser.h>
-#include <sys/ioctl.h>
-#undef CTRL /* This is defined in sys/ioctl.h which conflicts with cdk.h */
+// TODO: #undef CTRL /* This is defined in sys/ioctl.h which conflicts with cdk.h */
 #include <cdk.h>
-#include <net/if.h>
 #include <string.h>
-#include <arpa/inet.h>
-#include <net/if_arp.h>
-#include <linux/sockios.h>
-#include <linux/ethtool.h>
 #include <cdk/swindow.h>
 #include <sys/time.h>
 
@@ -30,7 +24,6 @@
  * Run the Networking dialog
  */
 void networkDialog(CDKSCREEN *main_cdk_screen) {
-    CDKSCROLL *net_conf_list = 0;
     CDKSCREEN *net_screen = 0;
     CDKLABEL *net_label = 0, *short_label = 0;
     CDKENTRY *host_name = 0, *domain_name = 0, *default_gw = 0,
@@ -44,21 +37,12 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     dictionary *ini_dict = NULL;
     FILE *ini_file = NULL;
-    struct ifreq ifr; /* How do we properly initialize this? */
-    struct if_nameindex* if_name = NULL;
-    struct ethtool_cmd edata = {0};
-    unsigned char* mac_addy = NULL;
-    int sock = 0, i = 0, j = 0, net_conf_choice = 0, window_y = 0, window_x = 0,
+    int i = 0, window_y = 0, window_x = 0,
             traverse_ret = 0, net_window_lines = 0, net_window_cols = 0,
             poten_slave_cnt = 0, slaves_line_size = 0, slave_val_size = 0,
             poten_br_member_cnt = 0, br_members_line_size = 0,
             br_member_val_size = 0, temp_int = 0;
-    char *net_scroll_msg[MAX_NET_IFACE] = {NULL},
-            *net_if_name[MAX_NET_IFACE] = {NULL},
-            *net_if_mac[MAX_NET_IFACE] = {NULL},
-            *net_if_speed[MAX_NET_IFACE] = {NULL},
-            *net_if_duplex[MAX_NET_IFACE] = {NULL},
-            *net_info_msg[MAX_NET_INFO_LINES] = {NULL},
+    char *net_info_msg[MAX_NET_INFO_LINES] = {NULL},
             *short_label_msg[NET_SHORT_INFO_LINES] = {NULL},
             *poten_slaves[MAX_NET_IFACE] = {NULL},
             *poten_br_members[MAX_NET_IFACE] = {NULL};
@@ -68,941 +52,708 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             *conf_broadcast = NULL, *error_msg = NULL, *conf_if_mtu = NULL,
             *temp_pstr = NULL, *conf_slaves = NULL, *conf_brmembers = NULL,
             *strtok_result = NULL, *conf_bondopts = NULL;
-    char eth_duplex[MISC_STRING_LEN] = {0}, temp_str[MISC_STRING_LEN] = {0},
+    char net_if_name[MISC_STRING_LEN] = {0}, net_if_mac[MISC_STRING_LEN] = {0},
+            net_if_speed[MISC_STRING_LEN] = {0},
+            net_if_duplex[MISC_STRING_LEN] = {0},
             temp_ini_str[MAX_INI_VAL] = {0},
             slaves_list_line_buffer[MAX_SLAVES_LIST_BUFF] = {0},
             br_members_list_line_buffer[MAX_BR_MEMBERS_LIST_BUFF] = {0},
             bond_opts_buffer[MAX_BOND_OPTS_BUFF] = {0};
-    __be16 eth_speed = 0;
-    boolean question = FALSE;
-    short saved_ifr_flags = 0;
-    enum bonding_t net_if_bonding[MAX_NET_IFACE] = {0};
-    struct stat bridge_test = {0};
-    boolean net_if_bridge[MAX_NET_IFACE] = {FALSE};
+    bonding_t net_if_bonding = {0};
+    boolean general_opt = FALSE, question = FALSE, net_if_bridge = FALSE;
 
-    /* Get socket handle */
-    sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if (sock < 0) {
-        errorDialog(main_cdk_screen, "Couldn't get socket handle!", NULL);
+    /* Have the user select a network configuration option */
+    getNetConfChoice(main_cdk_screen, &general_opt, net_if_name, net_if_mac,
+            net_if_speed, net_if_duplex, &net_if_bonding, &net_if_bridge,
+            poten_slaves, &poten_slave_cnt,
+            poten_br_members, &poten_br_member_cnt);
+    if ((general_opt == FALSE) && (net_if_name[0] == '\0'))
         return;
-    }
 
-    /* Get all network interface names */
-    if_name = if_nameindex();
+    while (1) {
+        /* Present the "General Network Settings" screen of widgets */
+        if (general_opt) {
+            /* Setup a new CDK screen */
+            net_window_lines = 16;
+            net_window_cols = 68;
+            window_y = ((LINES / 2) - (net_window_lines / 2));
+            window_x = ((COLS / 2) - (net_window_cols / 2));
+            net_window = newwin(net_window_lines, net_window_cols,
+                    window_y, window_x);
+            if (net_window == NULL) {
+                errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
+                break;
+            }
+            net_screen = initCDKScreen(net_window);
+            if (net_screen == NULL) {
+                errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
+                break;
+            }
+            boxWindow(net_window, COLOR_DIALOG_BOX);
+            wbkgd(net_window, COLOR_DIALOG_TEXT);
+            wrefresh(net_window);
 
-    /* We set the counter ahead since the first row is for general settings */
-    j = 1;
-    asprintf(&net_scroll_msg[0], "<C>General Network Settings");
-    
-    while ((if_name[i].if_index != 0) && (if_name[i].if_name != NULL)) {
-        /* Put the interface name into the ifreq struct */
-        memcpy(&ifr.ifr_name, if_name[i].if_name, IFNAMSIZ);
+            asprintf(&net_info_msg[0], "</31/B>General network settings...");
+            asprintf(&net_info_msg[1], " ");
 
-        /* Get interface flags */
-        if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-            asprintf(&error_msg, "ioctl(): SIOCGIFFLAGS Error (%s)",
-                    ifr.ifr_name);
-            errorDialog(main_cdk_screen, error_msg, NULL);
-            FREE_NULL(error_msg);
-            return;
-        }
-        saved_ifr_flags = ifr.ifr_flags;
-
-        /* We don't want to include the loopback interface */
-        if (!(saved_ifr_flags & IFF_LOOPBACK)) {
-
-            /* Get interface hardware address (MAC) */
-            if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
-                asprintf(&error_msg, "ioctl(): SIOCGIFHWADDR Error (%s)",
-                        ifr.ifr_name);
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
+            /* Read network configuration file (INI file) */
+            ini_dict = iniparser_load(NETWORK_CONF);
+            if (ini_dict == NULL) {
+                errorDialog(main_cdk_screen, NET_CONF_READ_ERR, NULL);
                 return;
             }
+            conf_hostname = iniparser_getstring(ini_dict,
+                    "general:hostname", "");
+            conf_domainname = iniparser_getstring(ini_dict,
+                    "general:domainname", "");
+            conf_defaultgw = iniparser_getstring(ini_dict,
+                    "general:defaultgw", "");
+            conf_nameserver1 = iniparser_getstring(ini_dict,
+                    "general:nameserver1", "");
+            conf_nameserver2 = iniparser_getstring(ini_dict,
+                    "general:nameserver2", "");
 
-            if (ifr.ifr_hwaddr.sa_family == ARPHRD_ETHER) {
-                /* For Ethernet interfaces */
-                mac_addy = (unsigned char*) &ifr.ifr_hwaddr.sa_data;
-                asprintf(&net_if_name[j], "%s", if_name[i].if_name);
-                asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X",
-                        mac_addy[0], mac_addy[1], mac_addy[2], mac_addy[3],
-                        mac_addy[4], mac_addy[5]);
+            /* Information label */
+            net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
+                    net_info_msg, 2, FALSE, FALSE);
+            if (!net_label) {
+                errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+                break;
+            }
+            setCDKLabelBackgroundAttrib(net_label, COLOR_DIALOG_TEXT);
 
-                /* Check if interface is a bridge */
-                snprintf(temp_str, MISC_STRING_LEN, "%s/%s/bridge",
-                        SYSFS_NET, ifr.ifr_name);
-                if (stat(temp_str, &bridge_test) == 0) {
-                    net_if_bridge[j] = TRUE;
-                    snprintf(temp_str, MISC_STRING_LEN, "Ethernet Bridge");
-                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
-                            net_if_name[j], net_if_mac[j], temp_str);
-                    /* We can continue to the next iteration if its a bridge */
-                    j++;
-                    i++;
-                    continue;
-                } else {
-                    net_if_bridge[j] = FALSE;
+            /* Host name field */
+            host_name = newCDKEntry(net_screen, (window_x + 1), (window_y + 3),
+                    NULL, "</B>System host name: ",
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    MAX_HOSTNAME, 0, MAX_HOSTNAME, FALSE, FALSE);
+            if (!host_name) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
+            }
+            setCDKEntryBoxAttribute(host_name, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(host_name, conf_hostname);
+
+            /* Domain name field */
+            domain_name = newCDKEntry(net_screen, (window_x + 1),
+                    (window_y + 5), NULL, "</B>System domain name: ",
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    MAX_DOMAINNAME, 0, MAX_DOMAINNAME, FALSE, FALSE);
+            if (!domain_name) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
+            }
+            setCDKEntryBoxAttribute(domain_name, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(domain_name, conf_domainname);
+
+            /* Default gateway field */
+            default_gw = newCDKEntry(net_screen, (window_x + 1), (window_y + 7),
+                    NULL, "</B>Default gateway (leave blank if using DHCP): ",
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
+            if (!default_gw) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
+            }
+            setCDKEntryBoxAttribute(default_gw, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(default_gw, conf_defaultgw);
+
+            /* A very small label for instructions */
+            asprintf(&short_label_msg[0],
+                    "</B>Name Servers (leave blank if using DHCP)");
+            short_label = newCDKLabel(net_screen,
+                    (window_x + 1), (window_y + 9),
+                    short_label_msg, NET_SHORT_INFO_LINES, FALSE, FALSE);
+            if (!short_label) {
+                errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+                break;
+            }
+            setCDKLabelBackgroundAttrib(short_label, COLOR_DIALOG_TEXT);
+
+            /* Primary name server field */
+            name_server_1 = newCDKEntry(net_screen, (window_x + 1),
+                    (window_y + 10), NULL, "</B>NS 1: ",
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
+            if (!name_server_1) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
+            }
+            setCDKEntryBoxAttribute(name_server_1, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(name_server_1, conf_nameserver1);
+
+            /* Secondary name server field */
+            name_server_2 = newCDKEntry(net_screen, (window_x + 1),
+                    (window_y + 11), NULL, "</B>NS 2: ",
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
+            if (!name_server_2) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
+            }
+            setCDKEntryBoxAttribute(name_server_2, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(name_server_2, conf_nameserver2);
+
+            /* Buttons */
+            ok_button = newCDKButton(net_screen, (window_x + 26),
+                    (window_y + 14), g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
+            if (!ok_button) {
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+                break;
+            }
+            setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+            cancel_button = newCDKButton(net_screen, (window_x + 36),
+                    (window_y + 14), g_ok_cancel_msg[1], cancel_cb,
+                    FALSE, FALSE);
+            if (!cancel_button) {
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+                break;
+            }
+            setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+
+            /* Allow user to traverse the screen */
+            refreshCDKScreen(net_screen);
+            traverse_ret = traverseCDKScreen(net_screen);
+
+            /* User hit 'OK' button */
+            if (traverse_ret == 1) {
+                /* Turn the cursor off (pretty) */
+                curs_set(0);
+
+                /* Check the host name value (field entry) */
+                if (!checkInputStr(main_cdk_screen, NAME_CHARS,
+                        getCDKEntryValue(host_name))) {
+                    traverse_ret = 0; /* Skip the prompt */
+                    break;
                 }
 
-                /* Check for NIC bonding */
-                if (saved_ifr_flags & IFF_MASTER) {
-                    net_if_bonding[j] = MASTER;
-                    snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
-                            g_bonding_map[net_if_bonding[j]]);
-                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
-                            net_if_name[j], net_if_mac[j], temp_str);
-                    /* We can continue to the next iteration if its a master */
-                    j++;
-                    i++;
-                    continue;
-                } else if (saved_ifr_flags & IFF_SLAVE) {
-                    net_if_bonding[j] = SLAVE;
-                    /* Already a bonding slave interface, add it to the list */
-                    asprintf(&poten_slaves[poten_slave_cnt], "%s",
-                            net_if_name[j]);
-                    poten_slave_cnt++;
-                } else {
-                    net_if_bonding[j] = NO_BONDING;
-                    /* No bonding for this interface, add it to the list */
-                    asprintf(&poten_slaves[poten_slave_cnt], "%s",
-                            net_if_name[j]);
-                    poten_slave_cnt++;
-                    /* For now we only grab interfaces that have no
-                     * part in bonding */
-                    asprintf(&poten_br_members[poten_br_member_cnt], "%s",
-                            net_if_name[j]);
-                    poten_br_member_cnt++;
+                /* Check the domain name value (field entry) */
+                if (!checkInputStr(main_cdk_screen, NAME_CHARS,
+                        getCDKEntryValue(domain_name))) {
+                    traverse_ret = 0; /* Skip the prompt */
+                    break;
                 }
 
-                /* Get additional Ethernet interface information */
-                ifr.ifr_data = (caddr_t) & edata;
-                edata.cmd = ETHTOOL_GSET;
-                if (ioctl(sock, SIOCETHTOOL, &ifr) < 0) {
-                    asprintf(&error_msg, "ioctl(): SIOCETHTOOL Error (%s)",
-                            ifr.ifr_name);
+                /* Check the default gateway value (field entry) */
+                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                        getCDKEntryValue(default_gw))) {
+                    traverse_ret = 0; /* Skip the prompt */
+                    break;
+                }
+
+                /* Check the name server (1) value (field entry) */
+                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                        getCDKEntryValue(name_server_1))) {
+                    traverse_ret = 0; /* Skip the prompt */
+                    break;
+                }
+
+                /* Check the name server (2) value (field entry) */
+                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                        getCDKEntryValue(name_server_2))) {
+                    traverse_ret = 0; /* Skip the prompt */
+                    break;
+                }
+
+                /* Write to network config. file */
+                if (iniparser_set(ini_dict, "general", NULL) == -1) {
+                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                    break;
+                }
+                if (iniparser_set(ini_dict, "general:hostname",
+                        getCDKEntryValue(host_name)) == -1) {
+                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                    break;
+                }
+                if (iniparser_set(ini_dict, "general:domainname",
+                        getCDKEntryValue(domain_name)) == -1) {
+                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                    break;
+                }
+                if (iniparser_set(ini_dict, "general:defaultgw",
+                        getCDKEntryValue(default_gw)) == -1) {
+                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                    break;
+                }
+                if (iniparser_set(ini_dict, "general:nameserver1",
+                        getCDKEntryValue(name_server_1)) == -1) {
+                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                    break;
+                }
+                if (iniparser_set(ini_dict, "general:nameserver2",
+                        getCDKEntryValue(name_server_2)) == -1) {
+                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                    break;
+                }
+                ini_file = fopen(NETWORK_CONF, "w");
+                if (ini_file == NULL) {
+                    asprintf(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
-                    return;
-                }
-
-                /* Get speed of Ethernet link; we use the returned speed value
-                 * to determine the link status -- probably not the best
-                 * solution long term, but its easy for now */
-                eth_speed = ethtool_cmd_speed(&edata);
-                if (eth_speed == 0 || eth_speed == (__be16) (-1) ||
-                        eth_speed == (__be32) (-1)) {
-                    snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
-                            g_bonding_map[net_if_bonding[j]]);
-                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-26s",
-                            net_if_name[j], net_if_mac[j],
-                            temp_str, "No Link");
                 } else {
-                    switch (edata.duplex) {
-                        case DUPLEX_HALF:
-                            snprintf(eth_duplex, MISC_STRING_LEN,
-                                    "Half Duplex");
-                            break;
-                        case DUPLEX_FULL:
-                            snprintf(eth_duplex, MISC_STRING_LEN,
-                                    "Full Duplex");
-                            break;
-                        default:
-                            snprintf(eth_duplex, MISC_STRING_LEN,
-                                    "Unknown Duplex");
-                            break;
-                    }
-                    asprintf(&net_if_speed[j], "%u Mb/s", eth_speed);
-                    asprintf(&net_if_duplex[j], "%s", eth_duplex);
-                    snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
-                            g_bonding_map[net_if_bonding[j]]);
-                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-12s%-14s",
-                            net_if_name[j], net_if_mac[j],
-                            temp_str, net_if_speed[j],
-                            net_if_duplex[j]);
+                    fprintf(ini_file, NET_CONF_COMMENT_1);
+                    fprintf(ini_file, INI_CONF_COMMENT);
+                    iniparser_dump_ini(ini_dict, ini_file);
+                    fclose(ini_file);
+                    iniparser_freedict(ini_dict);
                 }
-                j++;
-
-            } else if (ifr.ifr_hwaddr.sa_family == ARPHRD_INFINIBAND) {
-                /* For InfiniBand interfaces */
-                mac_addy = (unsigned char*) &ifr.ifr_hwaddr.sa_data;
-                asprintf(&net_if_name[j], "%s", if_name[i].if_name);
-                /* Yes, the link-layer address is 20 bytes, but we'll
-                 * keep it simple */
-                asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X...",
-                        mac_addy[0], mac_addy[1], mac_addy[2],
-                        mac_addy[3], mac_addy[4], mac_addy[5]);
-                asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
-                            net_if_name[j], net_if_mac[j], "IPoIB");
-                j++;
-            }
-        }
-        i++;
-    }
-
-    /* Clean up */
-    if_freenameindex(if_name);
-
-    /* Scroll widget for network configuration choices */
-    net_conf_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 15, 76,
-            "<C></31/B>Choose a Network Configuration Option\n",
-            net_scroll_msg, j, FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
-    if (!net_conf_list) {
-        errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKScrollBoxAttribute(net_conf_list, COLOR_DIALOG_BOX);
-    setCDKScrollBackgroundAttrib(net_conf_list, COLOR_DIALOG_TEXT);
-    net_conf_choice = activateCDKScroll(net_conf_list, 0);
-
-    /* Check exit from widget */
-    if (net_conf_list->exitType == vESCAPE_HIT) {
-        destroyCDKScroll(net_conf_list);
-        refreshCDKScreen(main_cdk_screen);
-        goto cleanup;
-
-    } else if (net_conf_list->exitType == vNORMAL) {
-        destroyCDKScroll(net_conf_list);
-        refreshCDKScreen(main_cdk_screen);
-    }
-
-    /* Present the 'general network settings' screen of widgets */
-    if (net_conf_choice == 0) {
-        /* Setup a new CDK screen */
-        net_window_lines = 16;
-        net_window_cols = 68;
-        window_y = ((LINES / 2) - (net_window_lines / 2));
-        window_x = ((COLS / 2) - (net_window_cols / 2));
-        net_window = newwin(net_window_lines, net_window_cols,
-                window_y, window_x);
-        if (net_window == NULL) {
-            errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        net_screen = initCDKScreen(net_window);
-        if (net_screen == NULL) {
-            errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        boxWindow(net_window, COLOR_DIALOG_BOX);
-        wbkgd(net_window, COLOR_DIALOG_TEXT);
-        wrefresh(net_window);
-
-        asprintf(&net_info_msg[0], "</31/B>General network settings...");
-        asprintf(&net_info_msg[1], " ");
-
-        /* Read network configuration file (INI file) */
-        ini_dict = iniparser_load(NETWORK_CONF);
-        if (ini_dict == NULL) {
-            errorDialog(main_cdk_screen, NET_CONF_READ_ERR, NULL);
-            return;
-        }
-        conf_hostname = iniparser_getstring(ini_dict,
-                "general:hostname", "");
-        conf_domainname = iniparser_getstring(ini_dict,
-                "general:domainname", "");
-        conf_defaultgw = iniparser_getstring(ini_dict,
-                "general:defaultgw", "");
-        conf_nameserver1 = iniparser_getstring(ini_dict,
-                "general:nameserver1", "");
-        conf_nameserver2 = iniparser_getstring(ini_dict,
-                "general:nameserver2", "");
-        
-        /* Information label */
-        net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
-                net_info_msg, 2, FALSE, FALSE);
-        if (!net_label) {
-            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKLabelBackgroundAttrib(net_label, COLOR_DIALOG_TEXT);
-
-        /* Host name field */
-        host_name = newCDKEntry(net_screen, (window_x + 1), (window_y + 3),
-                NULL, "</B>System host name: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                MAX_HOSTNAME, 0, MAX_HOSTNAME, FALSE, FALSE);
-        if (!host_name) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(host_name, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(host_name, conf_hostname);
-
-        /* Domain name field */
-        domain_name = newCDKEntry(net_screen, (window_x + 1), (window_y + 5),
-                NULL, "</B>System domain name: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                MAX_DOMAINNAME, 0, MAX_DOMAINNAME, FALSE, FALSE);
-        if (!domain_name) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(domain_name, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(domain_name, conf_domainname);
-
-        /* Default gateway field */
-        default_gw = newCDKEntry(net_screen, (window_x + 1), (window_y + 7),
-                NULL, "</B>Default gateway (leave blank if using DHCP): ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
-        if (!default_gw) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(default_gw, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(default_gw, conf_defaultgw);
-
-        /* A very small label for instructions */
-        asprintf(&short_label_msg[0],
-                "</B>Name Servers (leave blank if using DHCP)");
-        short_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 9),
-                short_label_msg, NET_SHORT_INFO_LINES, FALSE, FALSE);
-        if (!short_label) {
-            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKLabelBackgroundAttrib(short_label, COLOR_DIALOG_TEXT);
-        
-        /* Primary name server field */
-        name_server_1 = newCDKEntry(net_screen, (window_x + 1), (window_y + 10),
-                NULL, "</B>NS 1: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
-        if (!name_server_1) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(name_server_1, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(name_server_1, conf_nameserver1);
-
-        /* Secondary name server field */
-        name_server_2 = newCDKEntry(net_screen, (window_x + 1), (window_y + 11),
-                NULL, "</B>NS 2: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
-        if (!name_server_2) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(name_server_2, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(name_server_2, conf_nameserver2);
-
-        /* Buttons */
-        ok_button = newCDKButton(net_screen, (window_x + 26), (window_y + 14),
-                g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
-        if (!ok_button) {
-            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-        cancel_button = newCDKButton(net_screen, (window_x + 36),
-                (window_y + 14), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
-        if (!cancel_button) {
-            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
-
-        /* Allow user to traverse the screen */
-        refreshCDKScreen(net_screen);
-        traverse_ret = traverseCDKScreen(net_screen);
-
-        /* User hit 'OK' button */
-        if (traverse_ret == 1) {
-            /* Turn the cursor off (pretty) */
-            curs_set(0);
-
-            /* Check the host name value (field entry) */
-            strncpy(temp_str, getCDKEntryValue(host_name), MISC_STRING_LEN);
-            i = 0;
-            while (temp_str[i] != '\0') {
-                /* If the user didn't input an acceptable name,
-                 * then cancel out */
-                if (!VALID_NAME_CHAR(temp_str[i])) {
-                    errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                            VALID_NAME_CHAR_MSG);
-                    traverse_ret = 0; /* Skip the prompt */
-                    goto cleanup;
-                }
-                i++;
             }
 
-            /* Check the domain name value (field entry) */
-            strncpy(temp_str, getCDKEntryValue(domain_name), MISC_STRING_LEN);
-            i = 0;
-            while (temp_str[i] != '\0') {
-                /* If the user didn't input an acceptable name,
-                 * then cancel out */
-                if (!VALID_NAME_CHAR(temp_str[i])) {
-                    errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                            VALID_NAME_CHAR_MSG);
-                    traverse_ret = 0; /* Skip the prompt */
-                    goto cleanup;
-                }
-                i++;
-            }
-
-            /* Check the default gateway value (field entry) */
-            strncpy(temp_str, getCDKEntryValue(default_gw), MISC_STRING_LEN);
-            i = 0;
-            while (temp_str[i] != '\0') {
-                /* If the user didn't input an acceptable name,
-                 * then cancel out */
-                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
-                    errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                            VALID_IP_ADDR_CHAR_MSG);
-                    traverse_ret = 0; /* Skip the prompt */
-                    goto cleanup;
-                }
-                i++;
-            }
-
-            /* Check the name server (1) value (field entry) */
-            strncpy(temp_str, getCDKEntryValue(name_server_1), MISC_STRING_LEN);
-            i = 0;
-            while (temp_str[i] != '\0') {
-                /* If the user didn't input an acceptable name,
-                 * then cancel out */
-                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
-                    errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                            VALID_IP_ADDR_CHAR_MSG);
-                    traverse_ret = 0; /* Skip the prompt */
-                    goto cleanup;
-                }
-                i++;
-            }
-
-            /* Check the name server (2) value (field entry) */
-            strncpy(temp_str, getCDKEntryValue(name_server_2), MISC_STRING_LEN);
-            i = 0;
-            while (temp_str[i] != '\0') {
-                /* If the user didn't input an acceptable name,
-                 * then cancel out */
-                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
-                    errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                            VALID_IP_ADDR_CHAR_MSG);
-                    traverse_ret = 0; /* Skip the prompt */
-                    goto cleanup;
-                }
-                i++;
-            }
-
-            /* Write to network config. file */
-            if (iniparser_set(ini_dict, "general", NULL) == -1) {
-                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                goto cleanup;
-            }
-            if (iniparser_set(ini_dict, "general:hostname",
-                    getCDKEntryValue(host_name)) == -1) {
-                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                goto cleanup;
-            }
-            if (iniparser_set(ini_dict, "general:domainname",
-                    getCDKEntryValue(domain_name)) == -1) {
-                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                goto cleanup;
-            }
-            if (iniparser_set(ini_dict, "general:defaultgw",
-                    getCDKEntryValue(default_gw)) == -1) {
-                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                goto cleanup;
-            }
-            if (iniparser_set(ini_dict, "general:nameserver1",
-                    getCDKEntryValue(name_server_1)) == -1) {
-                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                goto cleanup;
-            }
-            if (iniparser_set(ini_dict, "general:nameserver2",
-                    getCDKEntryValue(name_server_2)) == -1) {
-                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                goto cleanup;
-            }
-            ini_file = fopen(NETWORK_CONF, "w");
-            if (ini_file == NULL) {
-                asprintf(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
+            /* Present the screen for a specific
+             * network interface configuration */
+        } else {
+            /* If an interface is enslaved, there is nothing to configure */
+            if (net_if_bonding == SLAVE) {
+                asprintf(&error_msg,
+                        "Interface '%s' is currently enslaved to a master",
+                        net_if_name);
+                errorDialog(main_cdk_screen, error_msg,
+                        "bonding interface, so there is nothing to configure.");
                 FREE_NULL(error_msg);
-            } else {
-                fprintf(ini_file, NET_CONF_COMMENT_1);
-                fprintf(ini_file, INI_CONF_COMMENT);
-                iniparser_dump_ini(ini_dict, ini_file);
-                fclose(ini_file);
-                iniparser_freedict(ini_dict);
+                break;
             }
-        }
 
-    /* Present the screen for a specific network interface configuration */
-    } else {
-        /* If an interface is enslaved, there is nothing to configure */
-        if (net_if_bonding[net_conf_choice] == SLAVE) {
-            asprintf(&error_msg,
-                    "Interface '%s' is currently enslaved to a master",
-                    net_if_name[net_conf_choice]);
-            errorDialog(main_cdk_screen, error_msg,
-                    "bonding interface, so there is nothing to configure.");
-            FREE_NULL(error_msg);
-            goto cleanup;
-        }
+            /* Setup a new CDK screen */
+            net_window_lines = 18;
+            net_window_cols = 70;
+            window_y = ((LINES / 2) - (net_window_lines / 2));
+            window_x = ((COLS / 2) - (net_window_cols / 2));
+            net_window = newwin(net_window_lines, net_window_cols,
+                    window_y, window_x);
+            if (net_window == NULL) {
+                errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
+                break;
+            }
+            net_screen = initCDKScreen(net_window);
+            if (net_screen == NULL) {
+                errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
+                break;
+            }
+            boxWindow(net_window, COLOR_DIALOG_BOX);
+            wbkgd(net_window, COLOR_DIALOG_TEXT);
+            wrefresh(net_window);
 
-        /* Setup a new CDK screen */
-        net_window_lines = 18;
-        net_window_cols = 70;
-        window_y = ((LINES / 2) - (net_window_lines / 2));
-        window_x = ((COLS / 2) - (net_window_cols / 2));
-        net_window = newwin(net_window_lines, net_window_cols,
-                window_y, window_x);
-        if (net_window == NULL) {
-            errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        net_screen = initCDKScreen(net_window);
-        if (net_screen == NULL) {
-            errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        boxWindow(net_window, COLOR_DIALOG_BOX);
-        wbkgd(net_window, COLOR_DIALOG_TEXT);
-        wrefresh(net_window);
+            /* Make a nice, informational label */
+            asprintf(&net_info_msg[0], "</31/B>Configuring interface %s...",
+                    net_if_name);
+            asprintf(&net_info_msg[1], " ");
+            asprintf(&net_info_msg[2], "</B>MAC Address:<!B>\t%s",
+                    net_if_mac);
+            if (net_if_speed[0] == '\0')
+                asprintf(&net_info_msg[3], "</B>Link Status:<!B>\tNone");
+            else
+                asprintf(&net_info_msg[3], "</B>Link Status:<!B>\t%s, %s",
+                    net_if_speed,
+                    net_if_duplex);
+            asprintf(&net_info_msg[4], "</B>Bonding:<!B>\t%s",
+                    g_bonding_map[net_if_bonding]);
 
-        /* Make a nice, informational label */
-        asprintf(&net_info_msg[0], "</31/B>Configuring interface %s...",
-                net_if_name[net_conf_choice]);
-        asprintf(&net_info_msg[1], " ");
-        asprintf(&net_info_msg[2], "</B>MAC Address:<!B>\t%s",
-        net_if_mac[net_conf_choice]);
-        if (net_if_speed[net_conf_choice] == NULL)
-            asprintf(&net_info_msg[3], "</B>Link Status:<!B>\tNone");
-        else
-            asprintf(&net_info_msg[3], "</B>Link Status:<!B>\t%s, %s",
-                    net_if_speed[net_conf_choice],
-                    net_if_duplex[net_conf_choice]);
-        asprintf(&net_info_msg[4], "</B>Bonding:<!B>\t%s",
-                g_bonding_map[net_if_bonding[net_conf_choice]]);
+            /* Read network configuration file (INI file) */
+            ini_dict = iniparser_load(NETWORK_CONF);
+            if (ini_dict == NULL) {
+                errorDialog(main_cdk_screen, NET_CONF_READ_ERR, NULL);
+                break;
+            }
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:bootproto",
+                    net_if_name);
+            conf_bootproto = iniparser_getstring(ini_dict, temp_ini_str, "");
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:ipaddr",
+                    net_if_name);
+            conf_ipaddr = iniparser_getstring(ini_dict, temp_ini_str, "");
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:netmask",
+                    net_if_name);
+            conf_netmask = iniparser_getstring(ini_dict, temp_ini_str, "");
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast",
+                    net_if_name);
+            conf_broadcast = iniparser_getstring(ini_dict, temp_ini_str, "");
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:slaves",
+                    net_if_name);
+            conf_slaves = iniparser_getstring(ini_dict, temp_ini_str, "");
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:brmembers",
+                    net_if_name);
+            conf_brmembers = iniparser_getstring(ini_dict, temp_ini_str, "");
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:bondopts",
+                    net_if_name);
+            conf_bondopts = iniparser_getstring(ini_dict, temp_ini_str, "");
 
-        /* Read network configuration file (INI file) */
-        ini_dict = iniparser_load(NETWORK_CONF);
-        if (ini_dict == NULL) {
-            errorDialog(main_cdk_screen, NET_CONF_READ_ERR, NULL);
-            goto cleanup;
-        }
-        snprintf(temp_ini_str, MAX_INI_VAL, "%s:bootproto",
-                net_if_name[net_conf_choice]);
-        conf_bootproto = iniparser_getstring(ini_dict, temp_ini_str, "");
-        snprintf(temp_ini_str, MAX_INI_VAL, "%s:ipaddr",
-                net_if_name[net_conf_choice]);
-        conf_ipaddr = iniparser_getstring(ini_dict, temp_ini_str, "");
-        snprintf(temp_ini_str, MAX_INI_VAL, "%s:netmask",
-                net_if_name[net_conf_choice]);
-        conf_netmask = iniparser_getstring(ini_dict, temp_ini_str, "");
-        snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast",
-                net_if_name[net_conf_choice]);
-        conf_broadcast = iniparser_getstring(ini_dict, temp_ini_str, "");
-        snprintf(temp_ini_str, MAX_INI_VAL, "%s:slaves",
-                net_if_name[net_conf_choice]);
-        conf_slaves = iniparser_getstring(ini_dict, temp_ini_str, "");
-        snprintf(temp_ini_str, MAX_INI_VAL, "%s:brmembers",
-                net_if_name[net_conf_choice]);
-        conf_brmembers = iniparser_getstring(ini_dict, temp_ini_str, "");
-        snprintf(temp_ini_str, MAX_INI_VAL, "%s:bondopts",
-                net_if_name[net_conf_choice]);
-        conf_bondopts = iniparser_getstring(ini_dict, temp_ini_str, "");
+            /* If value doesn't exist, use a default MTU based on the
+             * interface type */
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu", net_if_name);
+            if (strstr(net_if_name, "eth") != NULL)
+                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
+                    DEFAULT_ETH_MTU);
+            else if (strstr(net_if_name, "ib") != NULL)
+                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
+                    DEFAULT_IB_MTU);
+            else if (strstr(net_if_name, "bond") != NULL)
+                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
+                    DEFAULT_ETH_MTU);
+            else if (strstr(net_if_name, "br") != NULL)
+                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
+                    DEFAULT_ETH_MTU);
+            else
+                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, "");
 
-        /* If value doesn't exist, use a default MTU based on the
-         * interface type */
-        snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu",
-                net_if_name[net_conf_choice]);
-        if (strstr(net_if_name[net_conf_choice], "eth") != NULL)
-            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
-                DEFAULT_ETH_MTU);
-        else if (strstr(net_if_name[net_conf_choice], "ib") != NULL)
-            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
-                DEFAULT_IB_MTU);
-        else if (strstr(net_if_name[net_conf_choice], "bond") != NULL)
-            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
-                DEFAULT_ETH_MTU);
-        else if (strstr(net_if_name[net_conf_choice], "br") != NULL)
-            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
-                DEFAULT_ETH_MTU);
-        else
-            conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, "");
+            /* Information label */
+            net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
+                    net_info_msg, 5, FALSE, FALSE);
+            if (!net_label) {
+                errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+                break;
+            }
+            setCDKLabelBackgroundAttrib(net_label, COLOR_DIALOG_TEXT);
 
-        /* Information label */
-        net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
-                net_info_msg, 5, FALSE, FALSE);
-        if (!net_label) {
-            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKLabelBackgroundAttrib(net_label, COLOR_DIALOG_TEXT);
+            /* Interface MTU field */
+            iface_mtu = newCDKEntry(net_screen, (window_x + 50), (window_y + 3),
+                    "</B>Interface MTU:  ", NULL,
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
+                    15, 0, 15, FALSE, FALSE);
+            if (!iface_mtu) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
+            }
+            setCDKEntryBoxAttribute(iface_mtu, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(iface_mtu, conf_if_mtu);
 
-        /* Interface MTU field */
-        iface_mtu = newCDKEntry(net_screen, (window_x + 50), (window_y + 3),
-                "</B>Interface MTU:  ", NULL,
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
-                15, 0, 15, FALSE, FALSE);
-        if (!iface_mtu) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(iface_mtu, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(iface_mtu, conf_if_mtu);
+            /* IP settings radio */
+            ip_config = newCDKRadio(net_screen, (window_x + 1), (window_y + 7),
+                    NONE, 5, 10, "</B>IP Settings:", g_ip_opts, 3,
+                    '#' | COLOR_DIALOG_SELECT, 1,
+                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+            if (!ip_config) {
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+                break;
+            }
+            setCDKRadioBackgroundAttrib(ip_config, COLOR_DIALOG_TEXT);
+            if (strcasecmp(conf_bootproto, g_ip_opts[1]) == 0)
+                setCDKRadioCurrentItem(ip_config, 1);
+            else if (strcasecmp(conf_bootproto, g_ip_opts[2]) == 0)
+                setCDKRadioCurrentItem(ip_config, 2);
+            else
+                setCDKRadioCurrentItem(ip_config, 0);
 
-        /* IP settings radio */
-        ip_config = newCDKRadio(net_screen, (window_x + 1), (window_y + 7),
-                NONE, 5, 10, "</B>IP Settings:", g_ip_opts, 3,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
-        if (!ip_config) {
-            errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKRadioBackgroundAttrib(ip_config, COLOR_DIALOG_TEXT);
-        if (strcasecmp(conf_bootproto, g_ip_opts[1]) == 0)
-            setCDKRadioCurrentItem(ip_config, 1);
-        else if (strcasecmp(conf_bootproto, g_ip_opts[2]) == 0)
-            setCDKRadioCurrentItem(ip_config, 2);
-        else
-            setCDKRadioCurrentItem(ip_config, 0);
+            /* A very small label for instructions */
+            asprintf(&short_label_msg[0],
+                    "</B>Static IP Settings (leave blank if using DHCP)");
+            short_label = newCDKLabel(net_screen,
+                    (window_x + 20), (window_y + 7),
+                    short_label_msg, NET_SHORT_INFO_LINES, FALSE, FALSE);
+            if (!short_label) {
+                errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+                break;
+            }
+            setCDKLabelBackgroundAttrib(short_label, COLOR_DIALOG_TEXT);
 
-        /* A very small label for instructions */
-        asprintf(&short_label_msg[0],
-        "</B>Static IP Settings (leave blank if using DHCP)");
-        short_label = newCDKLabel(net_screen, (window_x + 20), (window_y + 7),
-                short_label_msg, NET_SHORT_INFO_LINES, FALSE, FALSE);
-        if (!short_label) {
-            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKLabelBackgroundAttrib(short_label, COLOR_DIALOG_TEXT);
-
-        /* IP address field */
-        ip_addy = newCDKEntry(net_screen, (window_x + 20), (window_y + 8),
-                NULL, "</B>IP address: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
-        if (!ip_addy) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(ip_addy, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(ip_addy, conf_ipaddr);
-
-        /* Netmask field */
-        netmask = newCDKEntry(net_screen, (window_x + 20), (window_y + 9),
-                NULL, "</B>Netmask:    ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
-        if (!netmask) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(netmask, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(netmask, conf_netmask);
-
-        /* Broadcast field */
-        broadcast = newCDKEntry(net_screen, (window_x + 20), (window_y + 10),
-                NULL, "</B>Broadcast:  ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
-        if (!broadcast) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKEntryBoxAttribute(broadcast, COLOR_DIALOG_INPUT);
-        setCDKEntryValue(broadcast, conf_broadcast);
-
-        // TODO: For now, bridging and bonding are mutually exclusive.
-        if (net_if_bonding[net_conf_choice] == MASTER) {
-            /* If the interface is a master (bonding) they can set options */
-            bond_opts = newCDKMentry(net_screen, (window_x + 1),
-                    (window_y + 11), "</B>Bonding Options:", NULL,
+            /* IP address field */
+            ip_addy = newCDKEntry(net_screen, (window_x + 20), (window_y + 8),
+                    NULL, "</B>IP address: ",
                     COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-                    25, 2, 50, 0, TRUE, FALSE);
-            if (!bond_opts) {
-                errorDialog(main_cdk_screen, MENTRY_ERR_MSG, NULL);
-                goto cleanup;
+                    MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
+            if (!ip_addy) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
             }
-            // TODO: Some tweaking to make this widget look like the
-            // others; CDK bug?
-            setCDKMentryBoxAttribute(bond_opts, COLOR_PAIR(55));
-            setCDKMentryBackgroundAttrib(bond_opts, COLOR_DIALOG_TEXT);
-            setCDKMentryValue(bond_opts, conf_bondopts);
-            /* They can also select slaves for the bond interface */
-            slave_select = newCDKSelection(net_screen, (window_x + 35),
-                    (window_y + 12), RIGHT, 3, 20, "</B>Bonding Slaves:",
-                    poten_slaves, poten_slave_cnt,
-                    g_choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
-            if (!slave_select) {
-                errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
-                goto cleanup;
+            setCDKEntryBoxAttribute(ip_addy, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(ip_addy, conf_ipaddr);
+
+            /* Netmask field */
+            netmask = newCDKEntry(net_screen, (window_x + 20), (window_y + 9),
+                    NULL, "</B>Netmask:    ",
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
+            if (!netmask) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
             }
-            setCDKSelectionBackgroundAttrib(slave_select, COLOR_DIALOG_TEXT);
-            /* Parse the existing slaves (if any) */
-            strtok_result = strtok(conf_slaves, ",");
-            while (strtok_result != NULL) {
-                for (i = 0; i < poten_slave_cnt; i++) {
-                    if (strstr(strStrip(strtok_result), poten_slaves[i]))
-                        setCDKSelectionChoice(slave_select, i, 1);
+            setCDKEntryBoxAttribute(netmask, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(netmask, conf_netmask);
+
+            /* Broadcast field */
+            broadcast = newCDKEntry(net_screen, (window_x + 20),
+                    (window_y + 10), NULL, "</B>Broadcast:  ",
+                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
+            if (!broadcast) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
+            }
+            setCDKEntryBoxAttribute(broadcast, COLOR_DIALOG_INPUT);
+            setCDKEntryValue(broadcast, conf_broadcast);
+
+            // TODO: For now, bridging and bonding are mutually exclusive.
+            if (net_if_bonding == MASTER) {
+                /* If the interface is a master (bonding)
+                 * they can set options */
+                bond_opts = newCDKMentry(net_screen, (window_x + 1),
+                        (window_y + 11), "</B>Bonding Options:", NULL,
+                        COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                        25, 2, 50, 0, TRUE, FALSE);
+                if (!bond_opts) {
+                    errorDialog(main_cdk_screen, MENTRY_ERR_MSG, NULL);
+                    break;
                 }
-                strtok_result = strtok(NULL, ",");
-            }
-
-        } else if (net_if_bridge[net_conf_choice] == TRUE) {
-            /* If the interface is a bridge interface then they
-             * can select members */
-            br_member_select = newCDKSelection(net_screen, (window_x + 35),
-                    (window_y + 12), RIGHT, 3, 20, "</B>Bridge Members:",
-                    poten_br_members, poten_br_member_cnt,
-                    g_choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
-            if (!br_member_select) {
-                errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
-                goto cleanup;
-            }
-            setCDKSelectionBackgroundAttrib(br_member_select,
-                    COLOR_DIALOG_TEXT);
-            /* Parse the existing members (if any) */
-            strtok_result = strtok(conf_brmembers, ",");
-            while (strtok_result != NULL) {
-                for (i = 0; i < poten_br_member_cnt; i++) {
-                    if (strstr(strStrip(strtok_result), poten_br_members[i]))
-                        setCDKSelectionChoice(br_member_select, i, 1);
+                // TODO: Some tweaking to make this widget look like the
+                // others; CDK bug?
+                setCDKMentryBoxAttribute(bond_opts, COLOR_PAIR(55));
+                setCDKMentryBackgroundAttrib(bond_opts, COLOR_DIALOG_TEXT);
+                setCDKMentryValue(bond_opts, conf_bondopts);
+                /* They can also select slaves for the bond interface */
+                slave_select = newCDKSelection(net_screen, (window_x + 35),
+                        (window_y + 12), RIGHT, 3, 20, "</B>Bonding Slaves:",
+                        poten_slaves, poten_slave_cnt,
+                        g_choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
+                if (!slave_select) {
+                    errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
+                    break;
                 }
-                strtok_result = strtok(NULL, ",");
+                setCDKSelectionBackgroundAttrib(slave_select,
+                        COLOR_DIALOG_TEXT);
+                /* Parse the existing slaves (if any) */
+                strtok_result = strtok(conf_slaves, ",");
+                while (strtok_result != NULL) {
+                    for (i = 0; i < poten_slave_cnt; i++) {
+                        if (strstr(strStrip(strtok_result), poten_slaves[i]))
+                            setCDKSelectionChoice(slave_select, i, 1);
+                    }
+                    strtok_result = strtok(NULL, ",");
+                }
+
+            } else if (net_if_bridge == TRUE) {
+                /* If the interface is a bridge interface then they
+                 * can select members */
+                br_member_select = newCDKSelection(net_screen, (window_x + 35),
+                        (window_y + 12), RIGHT, 3, 20, "</B>Bridge Members:",
+                        poten_br_members, poten_br_member_cnt,
+                        g_choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
+                if (!br_member_select) {
+                    errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
+                    break;
+                }
+                setCDKSelectionBackgroundAttrib(br_member_select,
+                        COLOR_DIALOG_TEXT);
+                /* Parse the existing members (if any) */
+                strtok_result = strtok(conf_brmembers, ",");
+                while (strtok_result != NULL) {
+                    for (i = 0; i < poten_br_member_cnt; i++) {
+                        if (strstr(strStrip(strtok_result),
+                                poten_br_members[i]))
+                            setCDKSelectionChoice(br_member_select, i, 1);
+                    }
+                    strtok_result = strtok(NULL, ",");
+                }
             }
-        }
 
-        /* Buttons */
-        ok_button = newCDKButton(net_screen, (window_x + 26), (window_y + 16),
-                g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
-        if (!ok_button) {
-            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-        cancel_button = newCDKButton(net_screen, (window_x + 36),
-                (window_y + 16), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
-        if (!cancel_button) {
-            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-            goto cleanup;
-        }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+            /* Buttons */
+            ok_button = newCDKButton(net_screen, (window_x + 26),
+                    (window_y + 16), g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
+            if (!ok_button) {
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+                break;
+            }
+            setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+            cancel_button = newCDKButton(net_screen, (window_x + 36),
+                    (window_y + 16), g_ok_cancel_msg[1], cancel_cb,
+                    FALSE, FALSE);
+            if (!cancel_button) {
+                errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+                break;
+            }
+            setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
 
-        /* Allow user to traverse the screen */
-        refreshCDKScreen(net_screen);
-        traverse_ret = traverseCDKScreen(net_screen);
+            /* Allow user to traverse the screen */
+            refreshCDKScreen(net_screen);
+            traverse_ret = traverseCDKScreen(net_screen);
 
-        /* User hit 'OK' button */
-        if (traverse_ret == 1) {
-            /* Turn the cursor off (pretty) */
-            curs_set(0);
+            /* User hit 'OK' button */
+            if (traverse_ret == 1) {
+                /* Turn the cursor off (pretty) */
+                curs_set(0);
 
-            /* Check the IP address value (field entry) */
-            strncpy(temp_str, getCDKEntryValue(ip_addy), MISC_STRING_LEN);
-            i = 0;
-            while (temp_str[i] != '\0') {
-                /* If the user didn't input an acceptable name,
-                 * then cancel out */
-                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
-                    errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                            VALID_IP_ADDR_CHAR_MSG);
+                /* Check the IP address value (field entry) */
+                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                        getCDKEntryValue(ip_addy))) {
                     traverse_ret = 0; /* Skip the prompt */
-                    goto cleanup;
+                    break;
                 }
-                i++;
-            }
 
-            /* Check the netmask value (field entry) */
-            strncpy(temp_str, getCDKEntryValue(netmask), MISC_STRING_LEN);
-            i = 0;
-            while (temp_str[i] != '\0') {
-                /* If the user didn't input an acceptable name,
-                 * then cancel out */
-                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
-                    errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                            VALID_IP_ADDR_CHAR_MSG);
+                /* Check the netmask value (field entry) */
+                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                        getCDKEntryValue(netmask))) {
                     traverse_ret = 0; /* Skip the prompt */
-                    goto cleanup;
+                    break;
                 }
-                i++;
-            }
 
-            /* Check the broadcast value (field entry) */
-            strncpy(temp_str, getCDKEntryValue(broadcast), MISC_STRING_LEN);
-            i = 0;
-            while (temp_str[i] != '\0') {
-                /* If the user didn't input an acceptable name,
-                 * then cancel out */
-                if (!VALID_IP_ADDR_CHAR(temp_str[i])) {
-                    errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                            VALID_IP_ADDR_CHAR_MSG);
+                /* Check the broadcast value (field entry) */
+                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                        getCDKEntryValue(broadcast))) {
                     traverse_ret = 0; /* Skip the prompt */
-                    goto cleanup;
-                }
-                i++;
-            }
-
-            if (getCDKRadioCurrentItem(ip_config) == 0) {
-                /* If the user sets the interface to disabled/unconfigured
-                 * then we remove the section */
-                iniparser_unset(ini_dict, net_if_name[net_conf_choice]);
-
-            } else {
-                /* Network interface should be configured (static or DHCP) */
-                if (iniparser_set(ini_dict,
-                        net_if_name[net_conf_choice], NULL) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    goto cleanup;
-                }
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:bootproto",
-                        net_if_name[net_conf_choice]);
-                if (iniparser_set(ini_dict, temp_ini_str,
-                        g_ip_opts[getCDKRadioCurrentItem(ip_config)]) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    goto cleanup;
-                }
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:ipaddr",
-                        net_if_name[net_conf_choice]);
-                if (iniparser_set(ini_dict, temp_ini_str,
-                        getCDKEntryValue(ip_addy)) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    goto cleanup;
-                }
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:netmask",
-                        net_if_name[net_conf_choice]);
-                if (iniparser_set(ini_dict, temp_ini_str,
-                        getCDKEntryValue(netmask)) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    goto cleanup;
-                }
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:broadcast",
-                        net_if_name[net_conf_choice]);
-                if (iniparser_set(ini_dict, temp_ini_str,
-                        getCDKEntryValue(broadcast)) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    goto cleanup;
-                }
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu",
-                        net_if_name[net_conf_choice]);
-                if (iniparser_set(ini_dict, temp_ini_str,
-                        getCDKEntryValue(iface_mtu)) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    goto cleanup;
-                }
-            }
-
-            if (net_if_bonding[net_conf_choice] == MASTER) {
-                /* If its a bonding master, store bonding options */
-                snprintf(bond_opts_buffer, MAX_BOND_OPTS_BUFF, "%s",
-                        getCDKMentryValue(bond_opts));
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:bondopts",
-                        net_if_name[net_conf_choice]);
-                if (iniparser_set(ini_dict, temp_ini_str,
-                        bond_opts_buffer) == -1) {
-                    errorDialog(main_cdk_screen,
-                            "Couldn't set configuration file value!", NULL);
-                    goto cleanup;
+                    break;
                 }
 
-                /* For master interfaces, we need to check if any slave
-                 * interfaces were selected (or removed) */
-                for (i = 0; i < poten_slave_cnt; i++) {
-                    if (slave_select->selections[i] == 1) {
-                        asprintf(&temp_pstr, "%s,", poten_slaves[i]);
-                        /* We add one extra for the null byte */
-                        slave_val_size = strlen(temp_pstr) + 1;
-                        slaves_line_size = slaves_line_size + slave_val_size;
-                        if (slaves_line_size >= MAX_SLAVES_LIST_BUFF) {
-                            errorDialog(main_cdk_screen, "The maximum slaves "
-                                    "list line buffer size has been reached!",
-                                    NULL);
-                            FREE_NULL(temp_pstr);
-                            goto cleanup;
-                        } else {
-                            strcat(slaves_list_line_buffer, temp_pstr);
-                            FREE_NULL(temp_pstr);
-                        }
-                        /* Remove the slave interface sections
-                         * from the INI file */
-                        iniparser_unset(ini_dict, poten_slaves[i]);
+                if (getCDKRadioCurrentItem(ip_config) == 0) {
+                    /* If the user sets the interface to disabled/unconfigured
+                     * then we remove the section */
+                    iniparser_unset(ini_dict, net_if_name);
+
+                } else {
+                    /* Network interface should be
+                     * configured (static or DHCP) */
+                    if (iniparser_set(ini_dict, net_if_name, NULL) == -1) {
+                        errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                        break;
+                    }
+                    snprintf(temp_ini_str, MAX_INI_VAL,
+                            "%s:bootproto", net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            g_ip_opts[getCDKRadioCurrentItem(
+                            ip_config)]) == -1) {
+                        errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                        break;
+                    }
+                    snprintf(temp_ini_str, MAX_INI_VAL, "%s:ipaddr",
+                            net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            getCDKEntryValue(ip_addy)) == -1) {
+                        errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                        break;
+                    }
+                    snprintf(temp_ini_str, MAX_INI_VAL, "%s:netmask",
+                            net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            getCDKEntryValue(netmask)) == -1) {
+                        errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                        break;
+                    }
+                    snprintf(temp_ini_str, MAX_INI_VAL,
+                            "%s:broadcast", net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            getCDKEntryValue(broadcast)) == -1) {
+                        errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                        break;
+                    }
+                    snprintf(temp_ini_str, MAX_INI_VAL, "%s:mtu",
+                            net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            getCDKEntryValue(iface_mtu)) == -1) {
+                        errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                        break;
                     }
                 }
-                /* Remove the trailing comma (if any) */
-                if (slaves_list_line_buffer[0] != '\0') {
-                    temp_int = strlen(slaves_list_line_buffer) - 1;
-                    if (slaves_list_line_buffer[temp_int] == ',')
-                        slaves_list_line_buffer[temp_int] = '\0';
-                }
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:slaves",
-                        net_if_name[net_conf_choice]);
-                if (iniparser_set(ini_dict, temp_ini_str,
-                        slaves_list_line_buffer) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    goto cleanup;
-                }
-            }
 
-            if (net_if_bridge[net_conf_choice] == TRUE) {
-                /* For bridge interfaces, we need to check if any member
-                 * interfaces were selected (or removed) */
-                for (i = 0; i < poten_br_member_cnt; i++) {
-                    if (br_member_select->selections[i] == 1) {
-                        asprintf(&temp_pstr, "%s,", poten_br_members[i]);
-                        /* We add one extra for the null byte */
-                        br_member_val_size = strlen(temp_pstr) + 1;
-                        br_members_line_size = br_members_line_size +
-                                br_member_val_size;
-                        if (br_members_line_size >= MAX_BR_MEMBERS_LIST_BUFF) {
-                            errorDialog(main_cdk_screen, "The maximum bridge "
-                                    "members list line buffer size has "
-                                    "been reached!", NULL);
-                            FREE_NULL(temp_pstr);
-                            goto cleanup;
-                        } else {
-                            strcat(br_members_list_line_buffer, temp_pstr);
-                            FREE_NULL(temp_pstr);
+                if (net_if_bonding == MASTER) {
+                    /* If its a bonding master, store bonding options */
+                    snprintf(bond_opts_buffer, MAX_BOND_OPTS_BUFF, "%s",
+                            getCDKMentryValue(bond_opts));
+                    snprintf(temp_ini_str, MAX_INI_VAL, "%s:bondopts",
+                            net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            bond_opts_buffer) == -1) {
+                        errorDialog(main_cdk_screen,
+                                "Couldn't set configuration file value!", NULL);
+                        break;
+                    }
+
+                    /* For master interfaces, we need to check if any slave
+                     * interfaces were selected (or removed) */
+                    for (i = 0; i < poten_slave_cnt; i++) {
+                        if (slave_select->selections[i] == 1) {
+                            asprintf(&temp_pstr, "%s,", poten_slaves[i]);
+                            /* We add one extra for the null byte */
+                            slave_val_size = strlen(temp_pstr) + 1;
+                            slaves_line_size = 
+                                    slaves_line_size + slave_val_size;
+                            if (slaves_line_size >= MAX_SLAVES_LIST_BUFF) {
+                                errorDialog(main_cdk_screen, "The maximum "
+                                        "slaves list line buffer size "
+                                        "has been reached!", NULL);
+                                FREE_NULL(temp_pstr);
+                                break;
+                            } else {
+                                strcat(slaves_list_line_buffer, temp_pstr);
+                                FREE_NULL(temp_pstr);
+                            }
+                            /* Remove the slave interface sections
+                             * from the INI file */
+                            iniparser_unset(ini_dict, poten_slaves[i]);
                         }
                     }
+                    /* Remove the trailing comma (if any) */
+                    if (slaves_list_line_buffer[0] != '\0') {
+                        temp_int = strlen(slaves_list_line_buffer) - 1;
+                        if (slaves_list_line_buffer[temp_int] == ',')
+                            slaves_list_line_buffer[temp_int] = '\0';
+                    }
+                    snprintf(temp_ini_str, MAX_INI_VAL, "%s:slaves",
+                            net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            slaves_list_line_buffer) == -1) {
+                        errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                        break;
+                    }
                 }
-                /* Remove the trailing comma (if any) */
-                if (br_members_list_line_buffer[0] != '\0') {
-                    temp_int = strlen(br_members_list_line_buffer) - 1;
-                    if (br_members_list_line_buffer[temp_int] == ',')
-                        br_members_list_line_buffer[temp_int] = '\0';
-                }
-                /* Set the INI value */
-                snprintf(temp_ini_str, MAX_INI_VAL, "%s:brmembers",
-                        net_if_name[net_conf_choice]);
-                if (iniparser_set(ini_dict, temp_ini_str,
-                        br_members_list_line_buffer) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    goto cleanup;
-                }
-            }
 
-            /* Write to network config. file */
-            ini_file = fopen(NETWORK_CONF, "w");
-            if (ini_file == NULL) {
-                asprintf(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
-            } else {
-                fprintf(ini_file, NET_CONF_COMMENT_1);
-                fprintf(ini_file, INI_CONF_COMMENT);
-                iniparser_dump_ini(ini_dict, ini_file);
-                fclose(ini_file);
-                iniparser_freedict(ini_dict);
+                if (net_if_bridge == TRUE) {
+                    /* For bridge interfaces, we need to check if any member
+                     * interfaces were selected (or removed) */
+                    for (i = 0; i < poten_br_member_cnt; i++) {
+                        if (br_member_select->selections[i] == 1) {
+                            asprintf(&temp_pstr, "%s,", poten_br_members[i]);
+                            /* We add one extra for the null byte */
+                            br_member_val_size = strlen(temp_pstr) + 1;
+                            br_members_line_size = br_members_line_size +
+                                    br_member_val_size;
+                            if (br_members_line_size >=
+                                    MAX_BR_MEMBERS_LIST_BUFF) {
+                                errorDialog(main_cdk_screen, "The maximum "
+                                        "bridge members list line buffer "
+                                        "size has been reached!", NULL);
+                                FREE_NULL(temp_pstr);
+                                break;
+                            } else {
+                                strcat(br_members_list_line_buffer, temp_pstr);
+                                FREE_NULL(temp_pstr);
+                            }
+                        }
+                    }
+                    /* Remove the trailing comma (if any) */
+                    if (br_members_list_line_buffer[0] != '\0') {
+                        temp_int = strlen(br_members_list_line_buffer) - 1;
+                        if (br_members_list_line_buffer[temp_int] == ',')
+                            br_members_list_line_buffer[temp_int] = '\0';
+                    }
+                    /* Set the INI value */
+                    snprintf(temp_ini_str, MAX_INI_VAL,
+                            "%s:brmembers", net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            br_members_list_line_buffer) == -1) {
+                        errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                        break;
+                    }
+                }
+
+                /* Write to network config. file */
+                ini_file = fopen(NETWORK_CONF, "w");
+                if (ini_file == NULL) {
+                    asprintf(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                } else {
+                    fprintf(ini_file, NET_CONF_COMMENT_1);
+                    fprintf(ini_file, INI_CONF_COMMENT);
+                    iniparser_dump_ini(ini_dict, ini_file);
+                    fclose(ini_file);
+                    iniparser_freedict(ini_dict);
+                }
             }
         }
+        break;
     }
 
-    cleanup:
+    /* All done -- clean up */
     for (i = 0; i < MAX_NET_IFACE; i++) {
-        FREE_NULL(net_scroll_msg[i]);
-        FREE_NULL(net_if_name[i]);
-        FREE_NULL(net_if_mac[i]);
-        FREE_NULL(net_if_speed[i]);
-        FREE_NULL(net_if_duplex[i]);
+        /* These are allocated in getNetConfChoice() but free'd here */
         FREE_NULL(poten_slaves[i]);
+        FREE_NULL(poten_br_members[i]);
     }
     if (net_screen != NULL) {
         destroyCDKScreenObjects(net_screen);
@@ -1062,108 +813,108 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     /* Set our line counter */
     i = 0;
 
-    /* Stop networking */
-    if (i < MAX_NET_RESTART_INFO_LINES) {
-        asprintf(&swindow_info[i], "</B>Stopping network:<!B>");
-        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-        i++;
-    }
-    snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s stop", RC_NETWORK);
-    net_rc = popen(net_rc_cmd, "r");
-    if (!net_rc) {
-        asprintf(&error_msg, "popen(): %s", strerror(errno));
-        errorDialog(main_cdk_screen, error_msg, NULL);
-        FREE_NULL(error_msg);
-        goto cleanup;
-    } else {
-        while (fgets(line, sizeof (line), net_rc) != NULL) {
-            if (i < MAX_NET_RESTART_INFO_LINES) {
-                asprintf(&swindow_info[i], "%s", line);
-                addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-                i++;
-            }
+    while (1) {
+        /* Stop networking */
+        if (i < MAX_NET_RESTART_INFO_LINES) {
+            asprintf(&swindow_info[i], "</B>Stopping network:<!B>");
+            addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+            i++;
         }
-        status = pclose(net_rc);
-        if (status == -1) {
-            asprintf(&error_msg, "pclose(): %s", strerror(errno));
+        snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s stop", RC_NETWORK);
+        net_rc = popen(net_rc_cmd, "r");
+        if (!net_rc) {
+            asprintf(&error_msg, "popen(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
-            goto cleanup;
+            break;
         } else {
-            if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-                asprintf(&error_msg, "The %s command exited with %d.",
-                        RC_NETWORK, WEXITSTATUS(status));
+            while (fgets(line, sizeof (line), net_rc) != NULL) {
+                if (i < MAX_NET_RESTART_INFO_LINES) {
+                    asprintf(&swindow_info[i], "%s", line);
+                    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+                    i++;
+                }
+            }
+            status = pclose(net_rc);
+            if (status == -1) {
+                asprintf(&error_msg, "pclose(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
-                goto cleanup;
+                break;
+            } else {
+                if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
+                    asprintf(&error_msg, "The %s command exited with %d.",
+                            RC_NETWORK, WEXITSTATUS(status));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                    break;
+                }
             }
         }
-    }
 
-    /* Start networking */
-    if (i < MAX_NET_RESTART_INFO_LINES) {
-        asprintf(&swindow_info[i], " ");
-        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-        i++;
-    }
-    if (i < MAX_NET_RESTART_INFO_LINES) {
-        asprintf(&swindow_info[i], "</B>Starting network:<!B>");
-        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-        i++;
-    }
-    snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s start", RC_NETWORK);
-    net_rc = popen(net_rc_cmd, "r");
-    if (!net_rc) {
-        asprintf(&error_msg, "popen(): %s", strerror(errno));
-        errorDialog(main_cdk_screen, error_msg, NULL);
-        FREE_NULL(error_msg);
-        goto cleanup;
-    } else {
-        while (fgets(line, sizeof (line), net_rc) != NULL) {
-            if (i < MAX_NET_RESTART_INFO_LINES) {
-                asprintf(&swindow_info[i], "%s", line);
-                addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-                i++;
-            }
+        /* Start networking */
+        if (i < MAX_NET_RESTART_INFO_LINES) {
+            asprintf(&swindow_info[i], " ");
+            addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+            i++;
         }
-        status = pclose(net_rc);
-        if (status == -1) {
-            asprintf(&error_msg, "pclose(): %s", strerror(errno));
+        if (i < MAX_NET_RESTART_INFO_LINES) {
+            asprintf(&swindow_info[i], "</B>Starting network:<!B>");
+            addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+            i++;
+        }
+        snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s start", RC_NETWORK);
+        net_rc = popen(net_rc_cmd, "r");
+        if (!net_rc) {
+            asprintf(&error_msg, "popen(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
-            goto cleanup;
+            break;
         } else {
-            if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-                asprintf(&error_msg, "The %s command exited with %d.",
-                        RC_NETWORK, WEXITSTATUS(status));
+            while (fgets(line, sizeof (line), net_rc) != NULL) {
+                if (i < MAX_NET_RESTART_INFO_LINES) {
+                    asprintf(&swindow_info[i], "%s", line);
+                    addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+                    i++;
+                }
+            }
+            status = pclose(net_rc);
+            if (status == -1) {
+                asprintf(&error_msg, "pclose(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
-                goto cleanup;
+                break;
+            } else {
+                if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
+                    asprintf(&error_msg, "The %s command exited with %d.",
+                            RC_NETWORK, WEXITSTATUS(status));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                    break;
+                }
             }
         }
-    }
-    if (i < MAX_NET_RESTART_INFO_LINES) {
-        asprintf(&swindow_info[i], " ");
-        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-        i++;
-    }
-    if (i < MAX_NET_RESTART_INFO_LINES) {
-        asprintf(&swindow_info[i], CONTINUE_MSG);
-        addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
-        i++;
-    }
+        if (i < MAX_NET_RESTART_INFO_LINES) {
+            asprintf(&swindow_info[i], " ");
+            addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+            i++;
+        }
+        if (i < MAX_NET_RESTART_INFO_LINES) {
+            asprintf(&swindow_info[i], CONTINUE_MSG);
+            addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
+            i++;
+        }
 
-    /* Lets not scroll to the top in this one for now, its kind of annoying */
-    //injectCDKSwindow(net_restart_info, 'g');
-    activateCDKSwindow(net_restart_info, 0);
+        /* Activate, but don't scroll to the top */
+        activateCDKSwindow(net_restart_info, 0);
+        break;
+    }
 
     /* Done */
-    cleanup:
     if (net_restart_info)
         destroyCDKSwindow(net_restart_info);
-    for (i = 0; i < MAX_NET_RESTART_INFO_LINES; i++) {
+    for (i = 0; i < MAX_NET_RESTART_INFO_LINES; i++)
         FREE_NULL(swindow_info[i]);
-    }
     return;
 }
 
@@ -1182,10 +933,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     int i = 0, traverse_ret = 0, window_y = 0, window_x = 0,
             mail_window_lines = 0, mail_window_cols = 0;
-    char tmp_email_addr[MAX_EMAIL_LEN] = {0}, tmp_smtp_host[MAX_SMTP_LEN] = {0},
-            tmp_auth_user[MAX_SMTP_USER_LEN] = {0},
-            tmp_auth_pass[MAX_SMTP_PASS_LEN] = {0},
-            new_mailhub[MAX_INI_VAL] = {0}, new_authmethod[MAX_INI_VAL] = {0},
+    char new_mailhub[MAX_INI_VAL] = {0}, new_authmethod[MAX_INI_VAL] = {0},
             new_usetls[MAX_INI_VAL] = {0}, new_usestarttls[MAX_INI_VAL] = {0},
             hostname[MISC_STRING_LEN] = {0};
     char *conf_root = NULL, *conf_mailhub = NULL, *conf_authuser = NULL,
@@ -1211,319 +959,295 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     conf_usetls = iniparser_getstring(ini_dict, ":usetls", "");
     conf_usestarttls = iniparser_getstring(ini_dict, ":usestarttls", "");
 
-    /* Get the host name here (used below in sSMTP configuration) */
-    if (gethostname(hostname, ((sizeof hostname) - 1)) == -1) {
-        asprintf(&error_msg, "gethostname(): %s", strerror(errno));
-        errorDialog(main_cdk_screen, error_msg, NULL);
-        FREE_NULL(error_msg);
-        goto cleanup;
-    }
-    
-    /* Setup a new CDK screen for mail setup */
-    mail_window_lines = 17;
-    mail_window_cols = 68;
-    window_y = ((LINES / 2) - (mail_window_lines / 2));
-    window_x = ((COLS / 2) - (mail_window_cols / 2));
-    mail_window = newwin(mail_window_lines, mail_window_cols,
-            window_y, window_x);
-    if (mail_window == NULL) {
-        errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    mail_screen = initCDKScreen(mail_window);
-    if (mail_screen == NULL) {
-        errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    boxWindow(mail_window, COLOR_DIALOG_BOX);
-    wbkgd(mail_window, COLOR_DIALOG_TEXT);
-    wrefresh(mail_window);
-
-    /* Screen title label */
-    mail_label = newCDKLabel(mail_screen, (window_x + 1), (window_y + 1),
-            g_mail_title_msg, 1, FALSE, FALSE);
-    if (!mail_label) {
-        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKLabelBackgroundAttrib(mail_label, COLOR_DIALOG_TEXT);
-
-    /* Email address (to send alerts to) field */
-    email_addr = newCDKEntry(mail_screen, (window_x + 1), (window_y + 3),
-            NULL, "</B>Alert Email Address: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-            MAX_EMAIL_LEN, 0, MAX_EMAIL_LEN, FALSE, FALSE);
-    if (!email_addr) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(email_addr, COLOR_DIALOG_INPUT);
-    setCDKEntryValue(email_addr, conf_root);
-
-    /* Split up mailhub string from configuration */
-    mailhub_host = conf_mailhub;
-    if ((mailhub_port = strchr(conf_mailhub, ':')) != NULL) {
-        *mailhub_port = '\0';
-        mailhub_port++;
-    }
-
-    /* SMTP host field */
-    smtp_host = newCDKEntry(mail_screen, (window_x + 1), (window_y + 5),
-            NULL, "</B>SMTP Host: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-            24, 0, MAX_SMTP_LEN, FALSE, FALSE);
-    if (!smtp_host) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(smtp_host, COLOR_DIALOG_INPUT);
-    setCDKEntryValue(smtp_host, mailhub_host);
-
-    /* SMTP port field */
-    smtp_port = newCDKEntry(mail_screen, (window_x + 38), (window_y + 5),
-            NULL, "</B>SMTP Port: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
-            5, 0, 5, FALSE, FALSE);
-    if (!smtp_port) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(smtp_port, COLOR_DIALOG_INPUT);
-    if (mailhub_port != NULL)
-        setCDKEntryValue(smtp_port, mailhub_port);
-
-    /* TLS radio */
-    use_tls = newCDKRadio(mail_screen, (window_x + 1), (window_y + 7),
-            NONE, 5, 10, "</B>Use TLS", g_no_yes_opts, 2,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
-    if (!use_tls) {
-        errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKRadioBackgroundAttrib(use_tls, COLOR_DIALOG_TEXT);
-    if (strcasecmp(conf_usetls, "yes") == 0)
-        setCDKRadioCurrentItem(use_tls, 1);
-    else
-        setCDKRadioCurrentItem(use_tls, 0);
-
-    /* STARTTLS radio */
-    use_starttls = newCDKRadio(mail_screen, (window_x + 15), (window_y + 7),
-            NONE, 5, 10, "</B>Use STARTTLS", g_no_yes_opts, 2,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
-    if (!use_starttls) {
-        errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKRadioBackgroundAttrib(use_starttls, COLOR_DIALOG_TEXT);
-    if (strcasecmp(conf_usestarttls, "yes") == 0)
-        setCDKRadioCurrentItem(use_starttls, 1);
-    else
-        setCDKRadioCurrentItem(use_starttls, 0);
-
-    /* Auth. Method radio */
-    auth_method = newCDKRadio(mail_screen, (window_x + 29), (window_y + 7),
-            NONE, 9, 10, "</B>Auth. Method", g_auth_meth_opts, 3,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
-    if (!auth_method) {
-        errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKRadioBackgroundAttrib(auth_method, COLOR_DIALOG_TEXT);
-    if (strcasecmp(conf_authmethod, "NOT_SET") == 0)
-        setCDKRadioCurrentItem(auth_method, 0);
-    else if (strcasecmp(conf_authmethod, "cram-md5") == 0)
-        setCDKRadioCurrentItem(auth_method, 2);
-    else
-        setCDKRadioCurrentItem(auth_method, 1);
-
-    /* Auth. User field */
-    auth_user = newCDKEntry(mail_screen, (window_x + 1), (window_y + 12),
-            NULL, "</B>Auth. User: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-            15, 0, MAX_SMTP_USER_LEN, FALSE, FALSE);
-    if (!auth_user) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(auth_user, COLOR_DIALOG_INPUT);
-    setCDKEntryValue(auth_user, conf_authuser);
-
-    /* Auth. Password field */
-    auth_pass = newCDKEntry(mail_screen, (window_x + 30), (window_y + 12),
-            NULL, "</B>Auth. Password: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-            15, 0, MAX_SMTP_PASS_LEN, FALSE, FALSE);
-    if (!auth_pass) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(auth_pass, COLOR_DIALOG_INPUT);
-    setCDKEntryValue(auth_pass, conf_authpass);
-
-    /* Buttons */
-    ok_button = newCDKButton(mail_screen, (window_x + 26), (window_y + 15),
-            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
-    if (!ok_button) {
-        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-    cancel_button = newCDKButton(mail_screen, (window_x + 36), (window_y + 15),
-            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
-    if (!cancel_button) {
-        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
-
-    /* Allow user to traverse the screen */
-    refreshCDKScreen(mail_screen);
-    traverse_ret = traverseCDKScreen(mail_screen);
-
-    /* User hit 'OK' button */
-    if (traverse_ret == 1) {
-        /* Turn the cursor off (pretty) */
-        curs_set(0);
-
-        /* Check email address (field entry) */
-        strncpy(tmp_email_addr, getCDKEntryValue(email_addr), MAX_EMAIL_LEN);
-        i = 0;
-        while (tmp_email_addr[i] != '\0') {
-            /* If the user didn't input an acceptable name, then cancel out */
-            if (!VALID_EMAIL_CHAR(tmp_email_addr[i])) {
-                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                        VALID_EMAIL_CHAR_MSG);
-                traverse_ret = 0; /* Skip the prompt */
-                goto cleanup;
-            }
-            i++;
-        }
-
-        /* Check SMTP host (field entry) */
-        strncpy(tmp_smtp_host, getCDKEntryValue(smtp_host), MAX_SMTP_LEN);
-        i = 0;
-        while (tmp_smtp_host[i] != '\0') {
-            /* If the user didn't input an acceptable name, then cancel out */
-            if (!VALID_NAME_CHAR(tmp_smtp_host[i])) {
-                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                        VALID_NAME_CHAR_MSG);
-                traverse_ret = 0; /* Skip the prompt */
-                goto cleanup;
-            }
-            i++;
-        }
-
-        /* Check auth. user (field entry) */
-        strncpy(tmp_auth_user, getCDKEntryValue(auth_user), MAX_SMTP_USER_LEN);
-        i = 0;
-        while (tmp_auth_user[i] != '\0') {
-            /* If the user didn't input an acceptable name, then cancel out */
-            if (!VALID_EMAIL_CHAR(tmp_auth_user[i])) {
-                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                        VALID_EMAIL_CHAR_MSG);
-                traverse_ret = 0; /* Skip the prompt */
-                goto cleanup;
-            }
-            i++;
-        }
-
-        /* Check auth. password (field entry) */
-        strncpy(tmp_auth_pass, getCDKEntryValue(auth_pass), MAX_SMTP_PASS_LEN);
-        i = 0;
-        while (tmp_auth_pass[i] != '\0') {
-            /* If the user didn't input an acceptable name, then cancel out */
-            if (!VALID_ASCII_CHAR(tmp_auth_pass[i])) {
-                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                        VALID_ASCII_CHAR_MSG);
-                /* Skip the prompt */
-                traverse_ret = 0;
-                goto cleanup;
-            }
-            i++;
-        }
-
-        /* Set config. file */
-        if (iniparser_set(ini_dict, ":root",
-                getCDKEntryValue(email_addr)) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            goto cleanup;
-        }
-        snprintf(new_mailhub, MAX_INI_VAL, "%s:%s",
-                getCDKEntryValue(smtp_host), getCDKEntryValue(smtp_port));
-        if (iniparser_set(ini_dict, ":mailhub", new_mailhub) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            goto cleanup;
-        }
-        if (iniparser_set(ini_dict, ":authuser",
-                getCDKEntryValue(auth_user)) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            goto cleanup;
-        }
-        if (iniparser_set(ini_dict, ":authpass",
-                getCDKEntryValue(auth_pass)) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            goto cleanup;
-        }
-        if (getCDKRadioSelectedItem(auth_method) == 0) {
-            iniparser_unset(ini_dict, ":authmethod");
-            iniparser_unset(ini_dict, ":authuser");
-            iniparser_unset(ini_dict, ":authpass");
-        } else {
-            if (getCDKRadioSelectedItem(auth_method) == 2)
-                snprintf(new_authmethod, MAX_INI_VAL, "CRAM-MD5");
-            else if (getCDKRadioSelectedItem(auth_method) == 1)
-                snprintf(new_authmethod, MAX_INI_VAL, " ");
-            if (iniparser_set(ini_dict, ":authmethod", new_authmethod) == -1) {
-                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                goto cleanup;
-            }
-        }
-        if (getCDKRadioSelectedItem(use_tls) == 1)
-            snprintf(new_usetls, MAX_INI_VAL, "YES");
-        else
-            snprintf(new_usetls, MAX_INI_VAL, "NO");
-        if (iniparser_set(ini_dict, ":usetls", new_usetls) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            goto cleanup;
-        }
-        if (getCDKRadioSelectedItem(use_starttls) == 1)
-            snprintf(new_usestarttls, MAX_INI_VAL, "YES");
-        else
-            snprintf(new_usestarttls, MAX_INI_VAL, "NO");
-        if (iniparser_set(ini_dict, ":usestarttls", new_usestarttls) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            goto cleanup;
-        }
-        if (iniparser_set(ini_dict, ":hostname", hostname) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            goto cleanup;
-        }
-
-        /* Write the configuration file */
-        ini_file = fopen(SSMTP_CONF, "w");
-        if (ini_file == NULL) {
-            asprintf(&error_msg, SSMTP_CONF_WRITE_ERR, strerror(errno));
+    while (1) {
+        /* Get the host name here (used below in sSMTP configuration) */
+        if (gethostname(hostname, ((sizeof hostname) - 1)) == -1) {
+            asprintf(&error_msg, "gethostname(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
-        } else {
-            /* sSMTP is very picky about its configuration file, so we can't
-             * use the iniparser_dump_ini function */
-            fprintf(ini_file, SSMTP_CONF_COMMENT_1);
-            fprintf(ini_file, INI_CONF_COMMENT);
-            for (i = 0; i < ini_dict->size; i++) {
-                if (ini_dict->key[i] == NULL)
-                    continue;
-                fprintf(ini_file, "%s=%s\n", ini_dict->key[i]+1,
-                        ini_dict->val[i] ? ini_dict->val[i] : "");
-            }
-            fclose(ini_file);
+            break;
         }
+
+        /* Setup a new CDK screen for mail setup */
+        mail_window_lines = 17;
+        mail_window_cols = 68;
+        window_y = ((LINES / 2) - (mail_window_lines / 2));
+        window_x = ((COLS / 2) - (mail_window_cols / 2));
+        mail_window = newwin(mail_window_lines, mail_window_cols,
+                window_y, window_x);
+        if (mail_window == NULL) {
+            errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
+            break;
+        }
+        mail_screen = initCDKScreen(mail_window);
+        if (mail_screen == NULL) {
+            errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
+            break;
+        }
+        boxWindow(mail_window, COLOR_DIALOG_BOX);
+        wbkgd(mail_window, COLOR_DIALOG_TEXT);
+        wrefresh(mail_window);
+
+        /* Screen title label */
+        mail_label = newCDKLabel(mail_screen, (window_x + 1), (window_y + 1),
+                g_mail_title_msg, 1, FALSE, FALSE);
+        if (!mail_label) {
+            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKLabelBackgroundAttrib(mail_label, COLOR_DIALOG_TEXT);
+
+        /* Email address (to send alerts to) field */
+        email_addr = newCDKEntry(mail_screen, (window_x + 1), (window_y + 3),
+                NULL, "</B>Alert Email Address: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                MAX_EMAIL_LEN, 0, MAX_EMAIL_LEN, FALSE, FALSE);
+        if (!email_addr) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(email_addr, COLOR_DIALOG_INPUT);
+        setCDKEntryValue(email_addr, conf_root);
+
+        /* Split up mailhub string from configuration */
+        mailhub_host = conf_mailhub;
+        if ((mailhub_port = strchr(conf_mailhub, ':')) != NULL) {
+            *mailhub_port = '\0';
+            mailhub_port++;
+        }
+
+        /* SMTP host field */
+        smtp_host = newCDKEntry(mail_screen, (window_x + 1), (window_y + 5),
+                NULL, "</B>SMTP Host: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                24, 0, MAX_SMTP_LEN, FALSE, FALSE);
+        if (!smtp_host) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(smtp_host, COLOR_DIALOG_INPUT);
+        setCDKEntryValue(smtp_host, mailhub_host);
+
+        /* SMTP port field */
+        smtp_port = newCDKEntry(mail_screen, (window_x + 38), (window_y + 5),
+                NULL, "</B>SMTP Port: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
+                5, 0, 5, FALSE, FALSE);
+        if (!smtp_port) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(smtp_port, COLOR_DIALOG_INPUT);
+        if (mailhub_port != NULL)
+            setCDKEntryValue(smtp_port, mailhub_port);
+
+        /* TLS radio */
+        use_tls = newCDKRadio(mail_screen, (window_x + 1), (window_y + 7),
+                NONE, 5, 10, "</B>Use TLS", g_no_yes_opts, 2,
+                '#' | COLOR_DIALOG_SELECT, 1,
+                COLOR_DIALOG_SELECT, FALSE, FALSE);
+        if (!use_tls) {
+            errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+            break;
+        }
+        setCDKRadioBackgroundAttrib(use_tls, COLOR_DIALOG_TEXT);
+        if (strcasecmp(conf_usetls, "yes") == 0)
+            setCDKRadioCurrentItem(use_tls, 1);
+        else
+            setCDKRadioCurrentItem(use_tls, 0);
+
+        /* STARTTLS radio */
+        use_starttls = newCDKRadio(mail_screen, (window_x + 15), (window_y + 7),
+                NONE, 5, 10, "</B>Use STARTTLS", g_no_yes_opts, 2,
+                '#' | COLOR_DIALOG_SELECT, 1,
+                COLOR_DIALOG_SELECT, FALSE, FALSE);
+        if (!use_starttls) {
+            errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+            break;
+        }
+        setCDKRadioBackgroundAttrib(use_starttls, COLOR_DIALOG_TEXT);
+        if (strcasecmp(conf_usestarttls, "yes") == 0)
+            setCDKRadioCurrentItem(use_starttls, 1);
+        else
+            setCDKRadioCurrentItem(use_starttls, 0);
+
+        /* Auth. Method radio */
+        auth_method = newCDKRadio(mail_screen, (window_x + 29), (window_y + 7),
+                NONE, 9, 10, "</B>Auth. Method", g_auth_meth_opts, 3,
+                '#' | COLOR_DIALOG_SELECT, 1,
+                COLOR_DIALOG_SELECT, FALSE, FALSE);
+        if (!auth_method) {
+            errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+            break;
+        }
+        setCDKRadioBackgroundAttrib(auth_method, COLOR_DIALOG_TEXT);
+        if (strcasecmp(conf_authmethod, "NOT_SET") == 0)
+            setCDKRadioCurrentItem(auth_method, 0);
+        else if (strcasecmp(conf_authmethod, "cram-md5") == 0)
+            setCDKRadioCurrentItem(auth_method, 2);
+        else
+            setCDKRadioCurrentItem(auth_method, 1);
+
+        /* Auth. User field */
+        auth_user = newCDKEntry(mail_screen, (window_x + 1), (window_y + 12),
+                NULL, "</B>Auth. User: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                15, 0, MAX_SMTP_USER_LEN, FALSE, FALSE);
+        if (!auth_user) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(auth_user, COLOR_DIALOG_INPUT);
+        setCDKEntryValue(auth_user, conf_authuser);
+
+        /* Auth. Password field */
+        auth_pass = newCDKEntry(mail_screen, (window_x + 30), (window_y + 12),
+                NULL, "</B>Auth. Password: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                15, 0, MAX_SMTP_PASS_LEN, FALSE, FALSE);
+        if (!auth_pass) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(auth_pass, COLOR_DIALOG_INPUT);
+        setCDKEntryValue(auth_pass, conf_authpass);
+
+        /* Buttons */
+        ok_button = newCDKButton(mail_screen, (window_x + 26), (window_y + 15),
+                g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
+        if (!ok_button) {
+            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+            break;
+        }
+        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        cancel_button = newCDKButton(mail_screen, (window_x + 36),
+                (window_y + 15), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
+        if (!cancel_button) {
+            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+            break;
+        }
+        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+
+        /* Allow user to traverse the screen */
+        refreshCDKScreen(mail_screen);
+        traverse_ret = traverseCDKScreen(mail_screen);
+
+        /* User hit 'OK' button */
+        if (traverse_ret == 1) {
+            /* Turn the cursor off (pretty) */
+            curs_set(0);
+
+            /* Check email address (field entry) */
+            if (!checkInputStr(main_cdk_screen, EMAIL_CHARS,
+                    getCDKEntryValue(email_addr))) {
+                traverse_ret = 0; /* Skip the prompt */
+                break;
+            }
+
+            /* Check SMTP host (field entry) */
+            if (!checkInputStr(main_cdk_screen, NAME_CHARS,
+                    getCDKEntryValue(smtp_host))) {
+                traverse_ret = 0; /* Skip the prompt */
+                break;
+            }
+
+            /* Check auth. user (field entry) */
+            if (!checkInputStr(main_cdk_screen, EMAIL_CHARS,
+                    getCDKEntryValue(auth_user))) {
+                traverse_ret = 0; /* Skip the prompt */
+                break;
+            }
+
+            /* Check auth. password (field entry) */
+            if (!checkInputStr(main_cdk_screen, ASCII_CHARS,
+                    getCDKEntryValue(auth_pass))) {
+                traverse_ret = 0; /* Skip the prompt */
+                break;
+            }
+
+            /* Set config. file */
+            if (iniparser_set(ini_dict, ":root",
+                    getCDKEntryValue(email_addr)) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                break;
+            }
+            snprintf(new_mailhub, MAX_INI_VAL, "%s:%s",
+                    getCDKEntryValue(smtp_host), getCDKEntryValue(smtp_port));
+            if (iniparser_set(ini_dict, ":mailhub", new_mailhub) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                break;
+            }
+            if (iniparser_set(ini_dict, ":authuser",
+                    getCDKEntryValue(auth_user)) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                break;
+            }
+            if (iniparser_set(ini_dict, ":authpass",
+                    getCDKEntryValue(auth_pass)) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                break;
+            }
+            if (getCDKRadioSelectedItem(auth_method) == 0) {
+                iniparser_unset(ini_dict, ":authmethod");
+                iniparser_unset(ini_dict, ":authuser");
+                iniparser_unset(ini_dict, ":authpass");
+            } else {
+                if (getCDKRadioSelectedItem(auth_method) == 2)
+                    snprintf(new_authmethod, MAX_INI_VAL, "CRAM-MD5");
+                else if (getCDKRadioSelectedItem(auth_method) == 1)
+                    snprintf(new_authmethod, MAX_INI_VAL, " ");
+                if (iniparser_set(ini_dict, ":authmethod",
+                        new_authmethod) == -1) {
+                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                    break;
+                }
+            }
+            if (getCDKRadioSelectedItem(use_tls) == 1)
+                snprintf(new_usetls, MAX_INI_VAL, "YES");
+            else
+                snprintf(new_usetls, MAX_INI_VAL, "NO");
+            if (iniparser_set(ini_dict, ":usetls", new_usetls) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                break;
+            }
+            if (getCDKRadioSelectedItem(use_starttls) == 1)
+                snprintf(new_usestarttls, MAX_INI_VAL, "YES");
+            else
+                snprintf(new_usestarttls, MAX_INI_VAL, "NO");
+            if (iniparser_set(ini_dict, ":usestarttls",
+                    new_usestarttls) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                break;
+            }
+            if (iniparser_set(ini_dict, ":hostname", hostname) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                break;
+            }
+
+            /* Write the configuration file */
+            ini_file = fopen(SSMTP_CONF, "w");
+            if (ini_file == NULL) {
+                asprintf(&error_msg, SSMTP_CONF_WRITE_ERR, strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+            } else {
+                /* sSMTP is very picky about its configuration file,
+                 * so we can't use the iniparser_dump_ini function */
+                fprintf(ini_file, SSMTP_CONF_COMMENT_1);
+                fprintf(ini_file, INI_CONF_COMMENT);
+                for (i = 0; i < ini_dict->size; i++) {
+                    if (ini_dict->key[i] == NULL)
+                        continue;
+                    fprintf(ini_file, "%s=%s\n", ini_dict->key[i] + 1,
+                            ini_dict->val[i] ? ini_dict->val[i] : "");
+                }
+                fclose(ini_file);
+            }
+        }
+        break;
     }
 
-    cleanup:
+    /* All done -- clean up */
     iniparser_freedict(ini_dict);
     if (mail_screen != NULL) {
         destroyCDKScreenObjects(mail_screen);
@@ -1569,59 +1293,61 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
         return;
     }
 
-    /* Display a nice short label message while we sync */
-    snprintf(email_addy, MAX_EMAIL_LEN, "%s", conf_root);
-    asprintf(&message[0], " ");
-    asprintf(&message[1], " ");
-    asprintf(&message[2], "</B>   Sending a test email to %s...   ",
-            email_addy);
-    asprintf(&message[3], " ");
-    asprintf(&message[4], " ");
-    test_email_label = newCDKLabel(main_cdk_screen, CENTER, CENTER,
-            message, 5, TRUE, FALSE);
-    if (!test_email_label) {
-        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKLabelBackgroundAttrib(test_email_label, COLOR_DIALOG_TEXT);
-    setCDKLabelBoxAttribute(test_email_label, COLOR_DIALOG_BOX);
-    refreshCDKScreen(main_cdk_screen);
+    while (1) {
+        /* Display a nice short label message while we send the email */
+        snprintf(email_addy, MAX_EMAIL_LEN, "%s", conf_root);
+        asprintf(&message[0], " ");
+        asprintf(&message[1], " ");
+        asprintf(&message[2], "</B>   Sending a test email to %s...   ",
+                email_addy);
+        asprintf(&message[3], " ");
+        asprintf(&message[4], " ");
+        test_email_label = newCDKLabel(main_cdk_screen, CENTER, CENTER,
+                message, 5, TRUE, FALSE);
+        if (!test_email_label) {
+            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKLabelBackgroundAttrib(test_email_label, COLOR_DIALOG_TEXT);
+        setCDKLabelBoxAttribute(test_email_label, COLOR_DIALOG_BOX);
+        refreshCDKScreen(main_cdk_screen);
 
-    /* Send the test email message */
-    snprintf(ssmtp_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1",
-            SSMTP_BIN, email_addy);
-    ssmtp = popen(ssmtp_cmd, "w");
-    if (!ssmtp) {
-        asprintf(&error_msg, "popen(): %s", strerror(errno));
-        errorDialog(main_cdk_screen, error_msg, NULL);
-        FREE_NULL(error_msg);
-        goto cleanup;
-    } else {
-        fprintf(ssmtp, "To: %s\n", email_addy);
-        fprintf(ssmtp, "From: root\n");
-        fprintf(ssmtp, "Subject: ESOS Test Email Message\n\n");
-        fprintf(ssmtp, "This is an email from ESOS to verify/confirm "
-                "your email settings.");
-        status = pclose(ssmtp);
-        if (status == -1) {
-            asprintf(&error_msg, "pclose(): %s", strerror(errno));
+        /* Send the test email message */
+        snprintf(ssmtp_cmd, MAX_SHELL_CMD_LEN, "%s %s > /dev/null 2>&1",
+                SSMTP_BIN, email_addy);
+        ssmtp = popen(ssmtp_cmd, "w");
+        if (!ssmtp) {
+            asprintf(&error_msg, "popen(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
-            goto cleanup;
+            break;
         } else {
-            if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-                asprintf(&error_msg, "The %s command exited with %d.",
-                        SSMTP_BIN, WEXITSTATUS(status));
-                errorDialog(main_cdk_screen, error_msg,
-                        "Check the mail log for more information.");
+            fprintf(ssmtp, "To: %s\n", email_addy);
+            fprintf(ssmtp, "From: root\n");
+            fprintf(ssmtp, "Subject: ESOS Test Email Message\n\n");
+            fprintf(ssmtp, "This is an email from ESOS to verify/confirm "
+                    "your email settings.");
+            status = pclose(ssmtp);
+            if (status == -1) {
+                asprintf(&error_msg, "pclose(): %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
-                goto cleanup;
+                break;
+            } else {
+                if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
+                    asprintf(&error_msg, "The %s command exited with %d.",
+                            SSMTP_BIN, WEXITSTATUS(status));
+                    errorDialog(main_cdk_screen, error_msg,
+                            "Check the mail log for more information.");
+                    FREE_NULL(error_msg);
+                    break;
+                }
             }
         }
+        break;
     }
 
     /* Done */
-    cleanup:
     iniparser_freedict(ini_dict);
     if (test_email_label)
         destroyCDKLabel(test_email_label);
@@ -1641,165 +1367,151 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
     CDKENTRY *uname_field = 0, *pass_1_field = 0, *pass_2_field = 0;
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
-    int i = 0, traverse_ret = 0, window_y = 0, window_x = 0, ret_val = 0,
+    int traverse_ret = 0, window_y = 0, window_x = 0, ret_val = 0,
             exit_stat = 0, add_user_window_lines = 0, add_user_window_cols = 0;
-    char add_user_cmd[MAX_SHELL_CMD_LEN] = {0}, username[MAX_UNAME_LEN] = {0},
+    char add_user_cmd[MAX_SHELL_CMD_LEN] = {0},
             chg_pass_cmd[MAX_SHELL_CMD_LEN] = {0},
             password_1[MAX_PASSWD_LEN] = {0}, password_2[MAX_PASSWD_LEN] = {0};
     char *error_msg = NULL;
-    
-    /* Setup a new CDK screen for adding a new user account */
-    add_user_window_lines = 12;
-    add_user_window_cols = 50;
-    window_y = ((LINES / 2) - (add_user_window_lines / 2));
-    window_x = ((COLS / 2) - (add_user_window_cols / 2));
-    add_user_window = newwin(add_user_window_lines, add_user_window_cols,
-            window_y, window_x);
-    if (add_user_window == NULL) {
-        errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    add_user_screen = initCDKScreen(add_user_window);
-    if (add_user_screen == NULL) {
-        errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    boxWindow(add_user_window, COLOR_DIALOG_BOX);
-    wbkgd(add_user_window, COLOR_DIALOG_TEXT);
-    wrefresh(add_user_window);
 
-    /* Screen title label */
-    add_user_label = newCDKLabel(add_user_screen, (window_x + 1),
-            (window_y + 1), g_add_user_title_msg, 1, FALSE, FALSE);
-    if (!add_user_label) {
-        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKLabelBackgroundAttrib(add_user_label, COLOR_DIALOG_TEXT);
+    while (1) {
+        /* Setup a new CDK screen for adding a new user account */
+        add_user_window_lines = 12;
+        add_user_window_cols = 50;
+        window_y = ((LINES / 2) - (add_user_window_lines / 2));
+        window_x = ((COLS / 2) - (add_user_window_cols / 2));
+        add_user_window = newwin(add_user_window_lines, add_user_window_cols,
+                window_y, window_x);
+        if (add_user_window == NULL) {
+            errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
+            break;
+        }
+        add_user_screen = initCDKScreen(add_user_window);
+        if (add_user_screen == NULL) {
+            errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
+            break;
+        }
+        boxWindow(add_user_window, COLOR_DIALOG_BOX);
+        wbkgd(add_user_window, COLOR_DIALOG_TEXT);
+        wrefresh(add_user_window);
 
-    /* Username field */
-    uname_field = newCDKEntry(add_user_screen, (window_x + 1), (window_y + 3),
-            NULL, "</B>Username: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
-            MAX_UNAME_LEN, 0, MAX_UNAME_LEN, FALSE, FALSE);
-    if (!uname_field) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(uname_field, COLOR_DIALOG_INPUT);
+        /* Screen title label */
+        add_user_label = newCDKLabel(add_user_screen, (window_x + 1),
+                (window_y + 1), g_add_user_title_msg, 1, FALSE, FALSE);
+        if (!add_user_label) {
+            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKLabelBackgroundAttrib(add_user_label, COLOR_DIALOG_TEXT);
 
-    /* Password field (1) */
-    pass_1_field = newCDKEntry(add_user_screen, (window_x + 1), (window_y + 5),
-            NULL, "</B>User Password:   ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
-            25, 0, MAX_PASSWD_LEN, FALSE, FALSE);
-    if (!pass_1_field) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(pass_1_field, COLOR_DIALOG_INPUT);
-    setCDKEntryHiddenChar(pass_1_field, '*' | COLOR_DIALOG_SELECT);
-    
-    /* Password field (2) */
-    pass_2_field = newCDKEntry(add_user_screen, (window_x + 1), (window_y + 6),
-            NULL, "</B>Retype Password: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
-            25, 0, MAX_PASSWD_LEN, FALSE, FALSE);
-    if (!pass_2_field) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(pass_2_field, COLOR_DIALOG_INPUT);
-    setCDKEntryHiddenChar(pass_2_field, '*' | COLOR_DIALOG_SELECT);
+        /* Username field */
+        uname_field = newCDKEntry(add_user_screen, (window_x + 1),
+                (window_y + 3), NULL, "</B>Username: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                MAX_UNAME_LEN, 0, MAX_UNAME_LEN, FALSE, FALSE);
+        if (!uname_field) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(uname_field, COLOR_DIALOG_INPUT);
 
-    /* Buttons */
-    ok_button = newCDKButton(add_user_screen, (window_x + 17), (window_y + 10),
-            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
-    if (!ok_button) {
-        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-    cancel_button = newCDKButton(add_user_screen, (window_x + 27),
-            (window_y + 10), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
-    if (!cancel_button) {
-        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        /* Password field (1) */
+        pass_1_field = newCDKEntry(add_user_screen, (window_x + 1),
+                (window_y + 5), NULL, "</B>User Password:   ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
+                25, 0, MAX_PASSWD_LEN, FALSE, FALSE);
+        if (!pass_1_field) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(pass_1_field, COLOR_DIALOG_INPUT);
+        setCDKEntryHiddenChar(pass_1_field, '*' | COLOR_DIALOG_SELECT);
 
-    /* Allow user to traverse the screen */
-    refreshCDKScreen(add_user_screen);
-    traverse_ret = traverseCDKScreen(add_user_screen);
+        /* Password field (2) */
+        pass_2_field = newCDKEntry(add_user_screen, (window_x + 1),
+                (window_y + 6), NULL, "</B>Retype Password: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
+                25, 0, MAX_PASSWD_LEN, FALSE, FALSE);
+        if (!pass_2_field) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(pass_2_field, COLOR_DIALOG_INPUT);
+        setCDKEntryHiddenChar(pass_2_field, '*' | COLOR_DIALOG_SELECT);
 
-    /* User hit 'OK' button */
-    if (traverse_ret == 1) {
-        /* Turn the cursor off (pretty) */
-        curs_set(0);
+        /* Buttons */
+        ok_button = newCDKButton(add_user_screen, (window_x + 17),
+                (window_y + 10), g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
+        if (!ok_button) {
+            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+            break;
+        }
+        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        cancel_button = newCDKButton(add_user_screen, (window_x + 27),
+                (window_y + 10), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
+        if (!cancel_button) {
+            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+            break;
+        }
+        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
 
-        /* Check username (field entry) */
-        strncpy(username, getCDKEntryValue(uname_field), MAX_UNAME_LEN);
-        i = 0;
-        while (username[i] != '\0') {
-            /* If the user didn't input an acceptable name, then cancel out */
-            if (!VALID_NAME_CHAR(username[i])) {
-                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                        VALID_NAME_CHAR_MSG);
-                goto cleanup;
+        /* Allow user to traverse the screen */
+        refreshCDKScreen(add_user_screen);
+        traverse_ret = traverseCDKScreen(add_user_screen);
+
+        /* User hit 'OK' button */
+        if (traverse_ret == 1) {
+            /* Turn the cursor off (pretty) */
+            curs_set(0);
+
+            /* Check username (field entry) */
+            if (!checkInputStr(main_cdk_screen, NAME_CHARS,
+                    getCDKEntryValue(uname_field)))
+                break;
+
+            /* Make sure the password fields match */
+            strncpy(password_1, getCDKEntryValue(pass_1_field), MAX_PASSWD_LEN);
+            strncpy(password_2, getCDKEntryValue(pass_2_field), MAX_PASSWD_LEN);
+            if (strcmp(password_1, password_2) != 0) {
+                errorDialog(main_cdk_screen,
+                        "The given passwords do not match!", NULL);
+                break;
             }
-            i++;
-        }
-        
-        /* Make sure the password fields match */
-        strncpy(password_1, getCDKEntryValue(pass_1_field), MAX_PASSWD_LEN);
-        strncpy(password_2, getCDKEntryValue(pass_2_field), MAX_PASSWD_LEN);
-        if (strcmp(password_1, password_2) != 0) {
-            errorDialog(main_cdk_screen,
-                    "The given passwords do not match!", NULL);
-            goto cleanup;
-        }
-        
-        /* Check first password field (we assume both match if
-         * we got this far) */
-        i = 0;
-        while (password_1[i] != '\0') {
-            if (!VALID_ASCII_CHAR(password_1[i])) {
-                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                        VALID_ASCII_CHAR_MSG);
-                goto cleanup;
-            }
-            i++;
-        }
 
-        /* Add the new user account */
-        snprintf(add_user_cmd, MAX_SHELL_CMD_LEN,
-                "%s -h %s -g 'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
-                ADDUSER_BIN, TEMP_DIR, SHELL_BIN, ESOS_GROUP, username);
-        ret_val = system(add_user_cmd);
-        if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.",
-                    ADDUSER_BIN, exit_stat);
-            errorDialog(main_cdk_screen, error_msg, NULL);
-            FREE_NULL(error_msg);
-            goto cleanup;
+            /* Check first password field (we assume both match if
+             * we got this far) */
+            if (!checkInputStr(main_cdk_screen, ASCII_CHARS, password_1))
+                break;
+
+            /* Add the new user account */
+            snprintf(add_user_cmd, MAX_SHELL_CMD_LEN, "%s -h %s -g "
+                    "'ESOS User' -s %s -G %s -D %s > /dev/null 2>&1",
+                    ADDUSER_BIN, TEMP_DIR, SHELL_BIN, ESOS_GROUP,
+                    getCDKEntryValue(uname_field));
+            ret_val = system(add_user_cmd);
+            if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+                asprintf(&error_msg, CMD_FAILED_ERR, ADDUSER_BIN, exit_stat);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+                break;
+            }
+
+            /* Set the password for the new account */
+            snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN,
+                    "echo '%s:%s' | %s -m > /dev/null 2>&1",
+                    getCDKEntryValue(uname_field), password_1, CHPASSWD_BIN);
+            ret_val = system(chg_pass_cmd);
+            if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+                asprintf(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN, exit_stat);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+                break;
+            }
         }
-        
-        /* Set the password for the new account */
-        snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN,
-                "echo '%s:%s' | %s -m > /dev/null 2>&1",
-                username, password_1, CHPASSWD_BIN);
-        ret_val = system(chg_pass_cmd);
-        if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.",
-                    CHPASSWD_BIN, exit_stat);
-            errorDialog(main_cdk_screen, error_msg, NULL);
-            FREE_NULL(error_msg);
-            goto cleanup;
-        }
+        break;
     }
 
     /* Done */
-    cleanup:
     if (add_user_screen != NULL) {
         destroyCDKScreenObjects(add_user_screen);
         destroyCDKScreen(add_user_screen);
@@ -1845,7 +1557,7 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "Are you sure you want to delete user %s?",
+    asprintf(&confirm_msg, "Are you sure you want to delete user '%s'?",
             user_acct);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
     FREE_NULL(confirm_msg);
@@ -1856,8 +1568,7 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
                 DELGROUP_BIN, user_acct, ESOS_GROUP);
         ret_val = system(del_grp_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.",
-                    DELGROUP_BIN, exit_stat);
+            asprintf(&error_msg, CMD_FAILED_ERR, DELGROUP_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
@@ -1868,8 +1579,7 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
                 DELUSER_BIN, user_acct);
         ret_val = system(del_user_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.",
-                    DELUSER_BIN, exit_stat);
+            asprintf(&error_msg, CMD_FAILED_ERR, DELUSER_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
@@ -1898,129 +1608,124 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
             password_1[MAX_PASSWD_LEN] = {0},
             password_2[MAX_PASSWD_LEN] = {0}, user_acct[MAX_UNAME_LEN] = {0};
     char *error_msg = NULL;
-    
+
     /* Have the user choose a user account */
     getUserAcct(main_cdk_screen, user_acct);
     if (user_acct[0] == '\0')
         return;
-    
-    /* Setup a new CDK screen for password change */
-    chg_pass_window_lines = 10;
-    chg_pass_window_cols = 45;
-    window_y = ((LINES / 2) - (chg_pass_window_lines / 2));
-    window_x = ((COLS / 2) - (chg_pass_window_cols / 2));
-    chg_pass_window = newwin(chg_pass_window_lines, chg_pass_window_cols,
-            window_y, window_x);
-    if (chg_pass_window == NULL) {
-        errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    chg_pass_screen = initCDKScreen(chg_pass_window);
-    if (chg_pass_screen == NULL) {
-        errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    boxWindow(chg_pass_window, COLOR_DIALOG_BOX);
-    wbkgd(chg_pass_window, COLOR_DIALOG_TEXT);
-    wrefresh(chg_pass_window);
 
-    /* Screen title label */
-    asprintf(&screen_title[0], "</31/B>Changing password for user %s...",
-            user_acct);
-    passwd_label = newCDKLabel(chg_pass_screen, (window_x + 1), (window_y + 1),
-            screen_title, CHG_PASSWD_INFO_LINES, FALSE, FALSE);
-    if (!passwd_label) {
-        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKLabelBackgroundAttrib(passwd_label, COLOR_DIALOG_TEXT);
-
-    /* New password field (1) */
-    new_pass_1 = newCDKEntry(chg_pass_screen, (window_x + 1), (window_y + 3),
-            NULL, "</B>New Password:    ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
-            20, 0, MAX_PASSWD_LEN, FALSE, FALSE);
-    if (!new_pass_1) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(new_pass_1, COLOR_DIALOG_INPUT);
-    setCDKEntryHiddenChar(new_pass_1, '*' | COLOR_DIALOG_SELECT);
-    
-    /* New password field (2) */
-    new_pass_2 = newCDKEntry(chg_pass_screen, (window_x + 1), (window_y + 4),
-            NULL, "</B>Retype Password: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
-            20, 0, MAX_PASSWD_LEN, FALSE, FALSE);
-    if (!new_pass_2) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(new_pass_2, COLOR_DIALOG_INPUT);
-    setCDKEntryHiddenChar(new_pass_2, '*' | COLOR_DIALOG_SELECT);
-
-    /* Buttons */
-    ok_button = newCDKButton(chg_pass_screen, (window_x + 14), (window_y + 8),
-            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
-    if (!ok_button) {
-        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-    cancel_button = newCDKButton(chg_pass_screen, (window_x + 24),
-            (window_y + 8), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
-    if (!cancel_button) {
-        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
-
-    /* Allow user to traverse the screen */
-    refreshCDKScreen(chg_pass_screen);
-    traverse_ret = traverseCDKScreen(chg_pass_screen);
-
-    /* User hit 'OK' button */
-    if (traverse_ret == 1) {
-        /* Turn the cursor off (pretty) */
-        curs_set(0);
-
-        /* Make sure the password fields match */
-        strncpy(password_1, getCDKEntryValue(new_pass_1), MAX_PASSWD_LEN);
-        strncpy(password_2, getCDKEntryValue(new_pass_2), MAX_PASSWD_LEN);
-        if (strcmp(password_1, password_2) != 0) {
-            errorDialog(main_cdk_screen,
-                    "The given passwords do not match!", NULL);
-            goto cleanup;
+    while (1) {
+        /* Setup a new CDK screen for password change */
+        chg_pass_window_lines = 10;
+        chg_pass_window_cols = 45;
+        window_y = ((LINES / 2) - (chg_pass_window_lines / 2));
+        window_x = ((COLS / 2) - (chg_pass_window_cols / 2));
+        chg_pass_window = newwin(chg_pass_window_lines, chg_pass_window_cols,
+                window_y, window_x);
+        if (chg_pass_window == NULL) {
+            errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
+            break;
         }
-        
-        /* Check first password field (we assume both match
-         * if we got this far) */
-        i = 0;
-        while (password_1[i] != '\0') {
-            if (!VALID_ASCII_CHAR(password_1[i])) {
-                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                        VALID_ASCII_CHAR_MSG);
-                goto cleanup;
+        chg_pass_screen = initCDKScreen(chg_pass_window);
+        if (chg_pass_screen == NULL) {
+            errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
+            break;
+        }
+        boxWindow(chg_pass_window, COLOR_DIALOG_BOX);
+        wbkgd(chg_pass_window, COLOR_DIALOG_TEXT);
+        wrefresh(chg_pass_window);
+
+        /* Screen title label */
+        asprintf(&screen_title[0], "</31/B>Changing password for user %s...",
+                user_acct);
+        passwd_label = newCDKLabel(chg_pass_screen,
+                (window_x + 1), (window_y + 1),
+                screen_title, CHG_PASSWD_INFO_LINES, FALSE, FALSE);
+        if (!passwd_label) {
+            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKLabelBackgroundAttrib(passwd_label, COLOR_DIALOG_TEXT);
+
+        /* New password field (1) */
+        new_pass_1 = newCDKEntry(chg_pass_screen, (window_x + 1),
+                (window_y + 3), NULL, "</B>New Password:    ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
+                20, 0, MAX_PASSWD_LEN, FALSE, FALSE);
+        if (!new_pass_1) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(new_pass_1, COLOR_DIALOG_INPUT);
+        setCDKEntryHiddenChar(new_pass_1, '*' | COLOR_DIALOG_SELECT);
+
+        /* New password field (2) */
+        new_pass_2 = newCDKEntry(chg_pass_screen, (window_x + 1),
+                (window_y + 4), NULL, "</B>Retype Password: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
+                20, 0, MAX_PASSWD_LEN, FALSE, FALSE);
+        if (!new_pass_2) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(new_pass_2, COLOR_DIALOG_INPUT);
+        setCDKEntryHiddenChar(new_pass_2, '*' | COLOR_DIALOG_SELECT);
+
+        /* Buttons */
+        ok_button = newCDKButton(chg_pass_screen, (window_x + 14),
+                (window_y + 8), g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
+        if (!ok_button) {
+            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+            break;
+        }
+        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        cancel_button = newCDKButton(chg_pass_screen, (window_x + 24),
+                (window_y + 8), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
+        if (!cancel_button) {
+            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+            break;
+        }
+        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+
+        /* Allow user to traverse the screen */
+        refreshCDKScreen(chg_pass_screen);
+        traverse_ret = traverseCDKScreen(chg_pass_screen);
+
+        /* User hit 'OK' button */
+        if (traverse_ret == 1) {
+            /* Turn the cursor off (pretty) */
+            curs_set(0);
+
+            /* Make sure the password fields match */
+            strncpy(password_1, getCDKEntryValue(new_pass_1), MAX_PASSWD_LEN);
+            strncpy(password_2, getCDKEntryValue(new_pass_2), MAX_PASSWD_LEN);
+            if (strcmp(password_1, password_2) != 0) {
+                errorDialog(main_cdk_screen,
+                        "The given passwords do not match!", NULL);
+                break;
             }
-            i++;
-        }
 
-        /* Set the new password */
-        snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN,
-                "echo '%s:%s' | %s -m > /dev/null 2>&1",
-                user_acct, password_1, CHPASSWD_BIN);
-        ret_val = system(chg_pass_cmd);
-        if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, "Running %s failed; exited with %d.",
-                    CHPASSWD_BIN, exit_stat);
-            errorDialog(main_cdk_screen, error_msg, NULL);
-            FREE_NULL(error_msg);
-            goto cleanup;
+            /* Check first password field (we assume both match
+             * if we got this far) */
+            if (!checkInputStr(main_cdk_screen, ASCII_CHARS, password_1))
+                break;
+
+            /* Set the new password */
+            snprintf(chg_pass_cmd, MAX_SHELL_CMD_LEN,
+                    "echo '%s:%s' | %s -m > /dev/null 2>&1",
+                    user_acct, password_1, CHPASSWD_BIN);
+            ret_val = system(chg_pass_cmd);
+            if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+                asprintf(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN, exit_stat);
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+                break;
+            }
         }
+        break;
     }
 
     /* Done */
-    cleanup:
     for (i = 0; i < CHG_PASSWD_INFO_LINES; i++)
         FREE_NULL(screen_title[i]);
     if (chg_pass_screen != NULL) {
@@ -2094,8 +1799,10 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(tmp_sysfs_path, MAX_SYSFS_PATH_SIZE,
             "%s/sgv/global_stats", SYSFS_SCST_TGT);
     if ((sysfs_file = fopen(tmp_sysfs_path, "r")) == NULL) {
-        asprintf(&swindow_info[i], "fopen(): %s", strerror(errno));
-        addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
+        if (i < MAX_SCST_INFO_LINES) {
+            asprintf(&swindow_info[i], "fopen(): %s", strerror(errno));
+            addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
+        }
     } else {
         while (fgets(tmp_attr_line, sizeof (tmp_attr_line),
                 sysfs_file) != NULL) {
@@ -2251,331 +1958,334 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             *sub_dir2_entry = NULL;
     struct tm *curr_date_info = NULL;
     time_t curr_clock = 0;
-    boolean time_changed = FALSE;
+    boolean time_changed = FALSE, finished = FALSE;
 
-    /* New CDK screen for date and time settings */
-    date_window_lines = 20;
-    date_window_cols = 66;
-    window_y = ((LINES / 2) - (date_window_lines / 2));
-    window_x = ((COLS / 2) - (date_window_cols / 2));
-    date_window = newwin(date_window_lines, date_window_cols,
-            window_y, window_x);
-    if (date_window == NULL) {
-        errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    date_screen = initCDKScreen(date_window);
-    if (date_screen == NULL) {
-        errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    boxWindow(date_window, COLOR_DIALOG_BOX);
-    wbkgd(date_window, COLOR_DIALOG_TEXT);
-    wrefresh(date_window);
-
-    /* Date/time title label */
-    date_title_label = newCDKLabel(date_screen, (window_x + 1), (window_y + 1),
-            g_date_title_msg, 1, FALSE, FALSE);
-    if (!date_title_label) {
-        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKLabelBackgroundAttrib(date_title_label, COLOR_DIALOG_TEXT);
-
-    /* Get time zone information  -- we only traverse two directories deep */
-    file_cnt = 0;
-    if ((tz_base_dir = opendir(ZONEINFO)) == NULL) {
-        asprintf(&error_msg, "opendir(): %s", strerror(errno));
-        errorDialog(main_cdk_screen, error_msg, NULL);
-        FREE_NULL(error_msg);
-        goto cleanup;
-    }
-    while (((base_dir_entry = readdir(tz_base_dir)) != NULL) &&
-            (file_cnt < MAX_TZ_FILES)) {
-        /* We want to skip the '.' and '..' directories */
-        if ((base_dir_entry->d_type == DT_DIR) &&
-                (strcmp(base_dir_entry->d_name, ".") != 0) &&
-                (strcmp(base_dir_entry->d_name, "..") != 0)) {
-            snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s", ZONEINFO,
-                    base_dir_entry->d_name);
-            if ((tz_sub_dir1 = opendir(dir_name)) == NULL) {
-                asprintf(&error_msg, "opendir(): %s", strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
-                goto cleanup;
-            }
-            while (((sub_dir1_entry = readdir(tz_sub_dir1)) != NULL) &&
-                    (file_cnt < MAX_TZ_FILES)) {
-                /* We want to skip the '.' and '..' directories */
-                if ((sub_dir1_entry->d_type == DT_DIR) &&
-                        (strcmp(sub_dir1_entry->d_name, ".") != 0) &&
-                        (strcmp(sub_dir1_entry->d_name, "..") != 0)) {
-                    snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s/%s", ZONEINFO,
-                            base_dir_entry->d_name, sub_dir1_entry->d_name);
-                    if ((tz_sub_dir2 = opendir(dir_name)) == NULL) {
-                        asprintf(&error_msg, "opendir(): %s", strerror(errno));
-                        errorDialog(main_cdk_screen, error_msg, NULL);
-                        FREE_NULL(error_msg);
-                        goto cleanup;
-                    }
-                    while (((sub_dir2_entry = readdir(tz_sub_dir2)) != NULL) &&
-                            (file_cnt < MAX_TZ_FILES)) {
-                        if (sub_dir2_entry->d_type == DT_REG) {
-                            asprintf(&tz_files[file_cnt], "%s/%s/%s",
-                                    base_dir_entry->d_name,
-                                    sub_dir1_entry->d_name,
-                                    sub_dir2_entry->d_name);
-                            file_cnt++;
-                        }
-                    }
-                    closedir(tz_sub_dir2);
-                } else if (sub_dir1_entry->d_type == DT_REG) {
-                    asprintf(&tz_files[file_cnt], "%s/%s",
-                            base_dir_entry->d_name, sub_dir1_entry->d_name);
-                    file_cnt++;
-                }
-            }
-            closedir(tz_sub_dir1);
-        } else if (base_dir_entry->d_type == DT_REG) {
-            asprintf(&tz_files[file_cnt], "%s", base_dir_entry->d_name);
-            file_cnt++;
+    while (1) {
+        /* New CDK screen for date and time settings */
+        date_window_lines = 20;
+        date_window_cols = 66;
+        window_y = ((LINES / 2) - (date_window_lines / 2));
+        window_x = ((COLS / 2) - (date_window_cols / 2));
+        date_window = newwin(date_window_lines, date_window_cols,
+                window_y, window_x);
+        if (date_window == NULL) {
+            errorDialog(main_cdk_screen, NEWWIN_ERR_MSG, NULL);
+            break;
         }
-    }
-    closedir(tz_base_dir);
-
-    /* A radio widget for displaying/choosing time zone */
-    tz_select = newCDKRadio(date_screen, (window_x + 1), (window_y + 3),
-            NONE, 12, 34, "</B>Time Zone\n", tz_files, file_cnt,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
-    if (!tz_select) {
-        errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKRadioBackgroundAttrib(tz_select, COLOR_DIALOG_TEXT);
-    
-    /* Get the current time zone data file path (from sym. link) */
-    if (readlink(LOCALTIME, zoneinfo_path, MAX_ZONEINFO_PATH) == -1) {
-        asprintf(&error_msg, "readlink(): %s", strerror(errno));
-        errorDialog(main_cdk_screen, error_msg, NULL);
-        FREE_NULL(error_msg);
-        goto cleanup;
-    }
-
-    /* Parse the current time zone link target path and set the radio item */
-    strstr_result = strstr(zoneinfo_path, ZONEINFO);
-    if (strstr_result) {
-        strstr_result = strstr_result + (sizeof(ZONEINFO) - 1);
-        if (*strstr_result == '/')
-            strstr_result++;
-        for (i = 0; i < MAX_TZ_FILES; i++) {
-            if (strcmp(tz_files[i], strstr_result) == 0) {
-                setCDKRadioCurrentItem(tz_select, i);
-                curr_tz_item = i;
-                break;
-            }
+        date_screen = initCDKScreen(date_window);
+        if (date_screen == NULL) {
+            errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
+            break;
         }
-    } else {
-        setCDKRadioCurrentItem(tz_select, 0);
-    }
+        boxWindow(date_window, COLOR_DIALOG_BOX);
+        wbkgd(date_window, COLOR_DIALOG_TEXT);
+        wrefresh(date_window);
 
-    /* Get current date/time information */
-    time(&curr_clock);
-    curr_date_info = localtime(&curr_clock);
-    curr_day = curr_date_info->tm_mday;
-    curr_month = curr_date_info->tm_mon + 1;
-    curr_year = curr_date_info->tm_year + 1900;
-    curr_hour = curr_date_info->tm_hour;
-    curr_minute = curr_date_info->tm_min;
-    curr_second = curr_date_info->tm_sec;
+        /* Date/time title label */
+        date_title_label = newCDKLabel(date_screen, (window_x + 1),
+                (window_y + 1), g_date_title_msg, 1, FALSE, FALSE);
+        if (!date_title_label) {
+            errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+            break;
+        }
+        setCDKLabelBackgroundAttrib(date_title_label, COLOR_DIALOG_TEXT);
 
-    /* Calendar widget for displaying/setting current date */
-    calendar = newCDKCalendar(date_screen, (window_x + 39), (window_y + 3),
-            "</B>Current Date", curr_day, curr_month, curr_year,
-            COLOR_DIALOG_TEXT, COLOR_DIALOG_TEXT, COLOR_DIALOG_TEXT,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
-    if (!calendar) {
-        errorDialog(main_cdk_screen, CALENDAR_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKCalendarBackgroundAttrib(calendar, COLOR_DIALOG_TEXT);
-    
-    /* Hour, minute, second scale widgets */
-    hour = newCDKUScale(date_screen, (window_x + 39), (window_y + 15),
-            "</B>Hour  ", NULL, COLOR_DIALOG_INPUT, 3, curr_hour, 0, 23,
-            1, 5, FALSE, FALSE);
-    if (!hour) {
-        errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKUScaleBackgroundAttrib(hour, COLOR_DIALOG_TEXT);
-    minute = newCDKUScale(date_screen, (window_x + 47), (window_y + 15),
-            "</B>Minute", NULL, COLOR_DIALOG_INPUT, 3, curr_minute, 0, 59,
-            1, 5, FALSE, FALSE);
-    if (!minute) {
-        errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKUScaleBackgroundAttrib(minute, COLOR_DIALOG_TEXT);
-    second = newCDKUScale(date_screen, (window_x + 55), (window_y + 15),
-            "</B>Second", NULL, COLOR_DIALOG_INPUT, 3, curr_second, 0, 59,
-            1, 5, FALSE, FALSE);
-    if (!second) {
-        errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKUScaleBackgroundAttrib(second, COLOR_DIALOG_TEXT);
-    
-    /* NTP server */
-    ntp_server = newCDKEntry(date_screen, (window_x + 1), (window_y + 16),
-            NULL, "</B>NTP Server: ",
-            COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED, 20,
-            0, MAX_NTP_LEN, FALSE, FALSE);
-    if (!ntp_server) {
-        errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKEntryBoxAttribute(ntp_server, COLOR_DIALOG_INPUT);
-    
-    /* Get the current NTP server setting (if any) and set widget */
-    if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
-        /* ENOENT is okay since its possible this file doesn't exist yet */
-        if (errno != ENOENT) {
-            asprintf(&error_msg, "fopen(): %s", strerror(errno));
+        /* Get time zone information; we only traverse
+         * two directories deep */
+        file_cnt = 0;
+        if ((tz_base_dir = opendir(ZONEINFO)) == NULL) {
+            asprintf(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
-            goto cleanup;
+            break;
         }
-    } else {
-        fgets(ntp_serv_val, MAX_NTP_LEN, ntp_server_file);
-        fclose(ntp_server_file);
-        remove_me = strrchr(ntp_serv_val, '\n');
-        if (remove_me)
-            *remove_me = '\0';
-        setCDKEntryValue(ntp_server, ntp_serv_val);
-    }
-
-    /* Buttons */
-    ok_button = newCDKButton(date_screen, (window_x + 24), (window_y + 18),
-            g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
-    if (!ok_button) {
-        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
-    cancel_button = newCDKButton(date_screen, (window_x + 34), (window_y + 18),
-            g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
-    if (!cancel_button) {
-        errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
-        goto cleanup;
-    }
-    setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
-
-    /* Allow user to traverse the screen */
-    refreshCDKScreen(date_screen);
-    traverse_ret = traverseCDKScreen(date_screen);
-
-    /* User hit 'OK' button */
-    if (traverse_ret == 1) {
-        /* Turn the cursor off (pretty) */
-        curs_set(0);
-
-        /* Check time zone radio */
-        temp_int = getCDKRadioSelectedItem(tz_select);
-        /* If the time zone setting was changed, create a new sym. link */
-        if (temp_int != curr_tz_item) {
-            if (unlink(LOCALTIME) == -1) {
-                asprintf(&error_msg, "unlink(): %s", strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
-                goto cleanup;
-            } else {
-                snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s",
-                        ZONEINFO, tz_files[temp_int]);
-                if (symlink(dir_name, LOCALTIME) == -1) {
-                    asprintf(&error_msg, "symlink(): %s", strerror(errno));
+        while (((base_dir_entry = readdir(tz_base_dir)) != NULL) &&
+                (file_cnt < MAX_TZ_FILES)) {
+            /* We want to skip the '.' and '..' directories */
+            if ((base_dir_entry->d_type == DT_DIR) &&
+                    (strcmp(base_dir_entry->d_name, ".") != 0) &&
+                    (strcmp(base_dir_entry->d_name, "..") != 0)) {
+                snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s", ZONEINFO,
+                        base_dir_entry->d_name);
+                if ((tz_sub_dir1 = opendir(dir_name)) == NULL) {
+                    asprintf(&error_msg, "opendir(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
-                    goto cleanup;
+                    finished = TRUE;
+                    break;
+                }
+                while (((sub_dir1_entry = readdir(tz_sub_dir1)) != NULL) &&
+                        (file_cnt < MAX_TZ_FILES)) {
+                    /* We want to skip the '.' and '..' directories */
+                    if ((sub_dir1_entry->d_type == DT_DIR) &&
+                            (strcmp(sub_dir1_entry->d_name, ".") != 0) &&
+                            (strcmp(sub_dir1_entry->d_name, "..") != 0)) {
+                        snprintf(dir_name, MAX_ZONEINFO_PATH,
+                                "%s/%s/%s", ZONEINFO,
+                                base_dir_entry->d_name, sub_dir1_entry->d_name);
+                        if ((tz_sub_dir2 = opendir(dir_name)) == NULL) {
+                            asprintf(&error_msg, "opendir(): %s",
+                                    strerror(errno));
+                            errorDialog(main_cdk_screen, error_msg, NULL);
+                            FREE_NULL(error_msg);
+                            finished = TRUE;
+                            break;
+                        }
+                        while ((sub_dir2_entry = readdir(tz_sub_dir2)) !=
+                                NULL) {
+                            if (sub_dir2_entry->d_type == DT_REG) {
+                                asprintf(&tz_files[file_cnt], "%s/%s/%s",
+                                        base_dir_entry->d_name,
+                                        sub_dir1_entry->d_name,
+                                        sub_dir2_entry->d_name);
+                                file_cnt++;
+                            }
+                        }
+                        closedir(tz_sub_dir2);
+                    } else if (sub_dir1_entry->d_type == DT_REG) {
+                        asprintf(&tz_files[file_cnt], "%s/%s",
+                                base_dir_entry->d_name, sub_dir1_entry->d_name);
+                        file_cnt++;
+                    }
+                }
+                closedir(tz_sub_dir1);
+            } else if (base_dir_entry->d_type == DT_REG) {
+                asprintf(&tz_files[file_cnt], "%s", base_dir_entry->d_name);
+                file_cnt++;
+            }
+        }
+        closedir(tz_base_dir);
+        if (finished)
+            break;
+
+        /* A radio widget for displaying/choosing time zone */
+        tz_select = newCDKRadio(date_screen, (window_x + 1), (window_y + 3),
+                NONE, 12, 34, "</B>Time Zone\n", tz_files, file_cnt,
+                '#' | COLOR_DIALOG_SELECT, 1,
+                COLOR_DIALOG_SELECT, FALSE, FALSE);
+        if (!tz_select) {
+            errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+            break;
+        }
+        setCDKRadioBackgroundAttrib(tz_select, COLOR_DIALOG_TEXT);
+
+        /* Get the current time zone data file path (from sym. link) */
+        if (readlink(LOCALTIME, zoneinfo_path, MAX_ZONEINFO_PATH) == -1) {
+            asprintf(&error_msg, "readlink(): %s", strerror(errno));
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            FREE_NULL(error_msg);
+            break;
+        }
+
+        /* Parse the current time zone link target
+         * path and set the radio item */
+        strstr_result = strstr(zoneinfo_path, ZONEINFO);
+        if (strstr_result) {
+            strstr_result = strstr_result + (sizeof (ZONEINFO) - 1);
+            if (*strstr_result == '/')
+                strstr_result++;
+            for (i = 0; i < MAX_TZ_FILES; i++) {
+                if (strcmp(tz_files[i], strstr_result) == 0) {
+                    setCDKRadioCurrentItem(tz_select, i);
+                    curr_tz_item = i;
+                    break;
                 }
             }
+        } else {
+            setCDKRadioCurrentItem(tz_select, 0);
         }
 
-        /* Check NTP server setting (field entry) */
-        strncpy(new_ntp_serv_val, getCDKEntryValue(ntp_server), MAX_NTP_LEN);
-        i = 0;
-        while (new_ntp_serv_val[i] != '\0') {
-            /* If the user didn't input an acceptable value, then cancel out */
-            if (!VALID_NAME_CHAR(new_ntp_serv_val[i])) {
-                errorDialog(main_cdk_screen, INVALID_CHAR_MSG,
-                        VALID_NAME_CHAR_MSG);
-                goto cleanup;
-            }
-            i++;
-        }
+        /* Get current date/time information */
+        time(&curr_clock);
+        curr_date_info = localtime(&curr_clock);
+        curr_day = curr_date_info->tm_mday;
+        curr_month = curr_date_info->tm_mon + 1;
+        curr_year = curr_date_info->tm_year + 1900;
+        curr_hour = curr_date_info->tm_hour;
+        curr_minute = curr_date_info->tm_min;
+        curr_second = curr_date_info->tm_sec;
 
-        /* If the value has changed, write it to the file */
-        if (strcmp(ntp_serv_val, new_ntp_serv_val) != 0) {
-            if ((ntp_server_file = fopen(NTP_SERVER, "w+")) == NULL) {
+        /* Calendar widget for displaying/setting current date */
+        calendar = newCDKCalendar(date_screen, (window_x + 39), (window_y + 3),
+                "</B>Current Date", curr_day, curr_month, curr_year,
+                COLOR_DIALOG_TEXT, COLOR_DIALOG_TEXT, COLOR_DIALOG_TEXT,
+                COLOR_DIALOG_SELECT, FALSE, FALSE);
+        if (!calendar) {
+            errorDialog(main_cdk_screen, CALENDAR_ERR_MSG, NULL);
+            break;
+        }
+        setCDKCalendarBackgroundAttrib(calendar, COLOR_DIALOG_TEXT);
+
+        /* Hour, minute, second scale widgets */
+        hour = newCDKUScale(date_screen, (window_x + 39), (window_y + 15),
+                "</B>Hour  ", NULL, COLOR_DIALOG_INPUT, 3, curr_hour, 0, 23,
+                1, 5, FALSE, FALSE);
+        if (!hour) {
+            errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
+            break;
+        }
+        setCDKUScaleBackgroundAttrib(hour, COLOR_DIALOG_TEXT);
+        minute = newCDKUScale(date_screen, (window_x + 47), (window_y + 15),
+                "</B>Minute", NULL, COLOR_DIALOG_INPUT, 3, curr_minute, 0, 59,
+                1, 5, FALSE, FALSE);
+        if (!minute) {
+            errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
+            break;
+        }
+        setCDKUScaleBackgroundAttrib(minute, COLOR_DIALOG_TEXT);
+        second = newCDKUScale(date_screen, (window_x + 55), (window_y + 15),
+                "</B>Second", NULL, COLOR_DIALOG_INPUT, 3, curr_second, 0, 59,
+                1, 5, FALSE, FALSE);
+        if (!second) {
+            errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
+            break;
+        }
+        setCDKUScaleBackgroundAttrib(second, COLOR_DIALOG_TEXT);
+
+        /* NTP server */
+        ntp_server = newCDKEntry(date_screen, (window_x + 1), (window_y + 16),
+                NULL, "</B>NTP Server: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED, 20,
+                0, MAX_NTP_LEN, FALSE, FALSE);
+        if (!ntp_server) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(ntp_server, COLOR_DIALOG_INPUT);
+
+        /* Get the current NTP server setting (if any) and set widget */
+        if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
+            /* ENOENT is okay since its possible this file doesn't exist yet */
+            if (errno != ENOENT) {
                 asprintf(&error_msg, "fopen(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
-                goto cleanup;
-            } else {
-                fprintf(ntp_server_file, "%s", new_ntp_serv_val);
-                if (fclose(ntp_server_file) != 0) {
-                    asprintf(&error_msg, "fclose(): %s", strerror(errno));
+                break;
+            }
+        } else {
+            fgets(ntp_serv_val, MAX_NTP_LEN, ntp_server_file);
+            fclose(ntp_server_file);
+            remove_me = strrchr(ntp_serv_val, '\n');
+            if (remove_me)
+                *remove_me = '\0';
+            setCDKEntryValue(ntp_server, ntp_serv_val);
+        }
+
+        /* Buttons */
+        ok_button = newCDKButton(date_screen, (window_x + 24), (window_y + 18),
+                g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
+        if (!ok_button) {
+            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+            break;
+        }
+        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        cancel_button = newCDKButton(date_screen, (window_x + 34),
+                (window_y + 18), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
+        if (!cancel_button) {
+            errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
+            break;
+        }
+        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+
+        /* Allow user to traverse the screen */
+        refreshCDKScreen(date_screen);
+        traverse_ret = traverseCDKScreen(date_screen);
+
+        /* User hit 'OK' button */
+        if (traverse_ret == 1) {
+            /* Turn the cursor off (pretty) */
+            curs_set(0);
+
+            /* Check time zone radio */
+            temp_int = getCDKRadioSelectedItem(tz_select);
+            /* If the time zone setting was changed, create a new sym. link */
+            if (temp_int != curr_tz_item) {
+                if (unlink(LOCALTIME) == -1) {
+                    asprintf(&error_msg, "unlink(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
-                    goto cleanup;
+                    break;
+                } else {
+                    snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s",
+                            ZONEINFO, tz_files[temp_int]);
+                    if (symlink(dir_name, LOCALTIME) == -1) {
+                        asprintf(&error_msg, "symlink(): %s", strerror(errno));
+                        errorDialog(main_cdk_screen, error_msg, NULL);
+                        FREE_NULL(error_msg);
+                        break;
+                    }
+                }
+            }
+
+            /* Check NTP server setting (field entry) */
+            strncpy(new_ntp_serv_val, getCDKEntryValue(ntp_server),
+                    MAX_NTP_LEN);
+            if (!checkInputStr(main_cdk_screen, NAME_CHARS, new_ntp_serv_val))
+                break;
+
+            /* If the value has changed, write it to the file */
+            if (strcmp(ntp_serv_val, new_ntp_serv_val) != 0) {
+                if ((ntp_server_file = fopen(NTP_SERVER, "w+")) == NULL) {
+                    asprintf(&error_msg, "fopen(): %s", strerror(errno));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                    break;
+                } else {
+                    fprintf(ntp_server_file, "%s", new_ntp_serv_val);
+                    if (fclose(ntp_server_file) != 0) {
+                        asprintf(&error_msg, "fclose(): %s", strerror(errno));
+                        errorDialog(main_cdk_screen, error_msg, NULL);
+                        FREE_NULL(error_msg);
+                        break;
+                    }
+                }
+            }
+
+            /* Get/check date/time settings */
+            getCDKCalendarDate(calendar, &new_day, &new_month, &new_year);
+            new_hour = getCDKUScaleValue(hour);
+            new_minute = getCDKUScaleValue(minute);
+            new_second = getCDKUScaleValue(second);
+            if (new_day != curr_day) {
+                curr_date_info->tm_mday = new_day;
+                time_changed = TRUE;
+            }
+            if (new_month != curr_month) {
+                curr_date_info->tm_mon = new_month - 1;
+                time_changed = TRUE;
+            }
+            if (new_year != curr_year) {
+                curr_date_info->tm_year = new_year - 1900;
+                time_changed = TRUE;
+            }
+            if (new_hour != curr_hour) {
+                curr_date_info->tm_hour = new_hour;
+                time_changed = TRUE;
+            }
+            if (new_minute != curr_minute) {
+                curr_date_info->tm_min = new_minute;
+                time_changed = TRUE;
+            }
+            if (new_second != curr_second) {
+                curr_date_info->tm_sec = new_second;
+                time_changed = TRUE;
+            }
+            /* Set date & time (if it changed) */
+            if (time_changed) {
+                curr_date_info->tm_isdst = -1;
+                const struct timeval time_val = {mktime(curr_date_info), 0};
+                if (settimeofday(&time_val, 0) == -1) {
+                    asprintf(&error_msg, "settimeofday(): %s", strerror(errno));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                    break;
                 }
             }
         }
-        
-        /* Get/check date/time settings */
-        getCDKCalendarDate(calendar, &new_day, &new_month, &new_year);
-        new_hour = getCDKUScaleValue(hour);
-        new_minute = getCDKUScaleValue(minute);
-        new_second = getCDKUScaleValue(second);
-        if (new_day != curr_day) {
-            curr_date_info->tm_mday = new_day;
-            time_changed = TRUE;
-        }
-        if (new_month != curr_month) {
-            curr_date_info->tm_mon = new_month - 1;
-            time_changed = TRUE;
-        }
-        if (new_year != curr_year) {
-            curr_date_info->tm_year = new_year - 1900;
-            time_changed = TRUE;
-        }
-        if (new_hour != curr_hour) {
-            curr_date_info->tm_hour = new_hour;
-            time_changed = TRUE;
-        }
-        if (new_minute != curr_minute) {
-            curr_date_info->tm_min = new_minute;
-            time_changed = TRUE;
-        }
-        if (new_second != curr_second) {
-            curr_date_info->tm_sec = new_second;
-            time_changed = TRUE;
-        }
-        /* Set date & time (if it changed) */
-        if (time_changed) {
-            curr_date_info->tm_isdst = -1;
-            const struct timeval time_val = {mktime(curr_date_info), 0};
-            if (settimeofday(&time_val, 0) == -1) {
-                asprintf(&error_msg, "settimeofday(): %s", strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
-                goto cleanup;
-            }
-        }
+        break;
     }
 
     /* All done -- clean up */
-    cleanup:
     if (date_screen != NULL) {
         destroyCDKScreenObjects(date_screen);
         destroyCDKScreen(date_screen);
