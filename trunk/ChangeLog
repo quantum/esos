@@ -1,3 +1,15 @@
+2014-10-14 17:28  msmith626@gmail.com
+
+	* tui/dialogs.h, tui/info_labels.c, tui/main.c, tui/megaraid.c,
+	  tui/megaraid.h, tui/menu_actions-alua.c,
+	  tui/menu_actions-back_storage.c, tui/menu_actions-devices.c,
+	  tui/menu_actions-hosts.c, tui/menu_actions-interface.c,
+	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
+	  tui/menu_actions.c, tui/prototypes.h, tui/strings.h,
+	  tui/system.h, tui/utility.c: lots of TUI code cleanup:
+	  consolidated common strings, broke out some dialog actions,
+	  refined new ALUA dialogs, code style formatting
+
 2014-10-06 16:06  msmith626@gmail.com
 
 	* tui/dialogs.h, tui/main.c, tui/menu_actions-alua.c,
