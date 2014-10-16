@@ -35,7 +35,6 @@ c57477edd6d18bd9eeca2f21add73919  Python-2.7.3.tar.bz2
 c556a13dce0276992a866f1819a4647e  mhvtl-1.4.tar.gz
 95380bd4081f85ef08c5209f4107e9f8  lzo-2.06.tar.gz
 f91c74f9ccab2b574a98be5bc31eb280  mhash-0.9.9.9.tar.bz2
-23a144ae4b69d423443df72c817b8b8b  lessfs-1.5.13.tar.gz
 fd03df6965f8f56dd5b8518ca43b4f5e  tokyocabinet-1.4.48.tar.gz
 7d80d0dc9cc2b9199a0c53787c151205  fuse-2.9.2.tar.gz
 3fda0b004acdaa6fa350bfc41a3b95ca  db-5.3.21.tar.gz
@@ -121,3 +120,4 @@ baa2deaf70fc9ffa4589a363416db5a7  bash-4.3_025.tar.xz
 7572070bd4bb20e5081dbf838ddc0781  scst-trunk_r5816.tar.gz
 12e8c6131a27c05422edcd2ae3e79dfb  qlogic_fw-20140928.tar.gz
 f8d708a47dedc2f4210dded1bb8ee6c9  linux-3.14.19.tar.xz
+8afdb925dba24a58b74fff74d7f3180e  lessfs-1.7.0.tar.gz

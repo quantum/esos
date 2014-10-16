@@ -119,7 +119,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		mhvtl-1.4.tar.gz \
 		lzo-2.06.tar.gz \
 		mhash-0.9.9.9.tar.bz2 \
-		lessfs-1.5.13.tar.gz \
+		lessfs-1.7.0.tar.gz \
 		tokyocabinet-1.4.48.tar.gz \
 		fuse-2.9.2.tar.gz \
 		db-5.3.21.tar.gz \
@@ -321,8 +321,8 @@ image: $(build_targets)
 	$(MOUNT) $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p1 $(MOUNT_DIR)/boot
 	cd $(IMAGE_DIR) && \
-	$(FIND) . -depth ! -path "./usr/include*" ! -path "*.a" | \
-	$(CPIO) -pmdvu $(MOUNT_DIR)
+	$(FIND) . -depth ! -path "./usr/include*" ! -path "*.a" \
+	! -path "./usr/share/doc*" | $(CPIO) -pmdvu $(MOUNT_DIR)
 	$(INSTALL) -D $(wildcard $(IMAGE_DIR)/usr/include/python*/pyconfig.h) \
 	$(MOUNT_DIR)/usr/include/$(notdir \
 	$(wildcard $(IMAGE_DIR)/usr/include/python*))/pyconfig.h
@@ -904,7 +904,8 @@ setuptools: Python
 	$(TOUCH) $(@)
 
 openssl: glibc gcc
-	cd $(tgt_src_dir) && ./config shared --prefix=/usr \
+	cd $(tgt_src_dir) && ./config shared \
+	--prefix=/usr --openssldir=/etc/ssl \
 	-I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/include \
 	$(LDFLAGS)
 	$(SED) -i '/LD_LIBRARY_PATH/d' $(tgt_src_dir)/Makefile.shared
@@ -2043,7 +2044,7 @@ leveldb: glibc snappy
 	$(TOUCH) $(@)
 
 libmcrypt: glibc gcc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libmcrypt)

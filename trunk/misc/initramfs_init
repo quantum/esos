@@ -10,7 +10,9 @@ rescue_shell() {
 
 # Install BusyBox
 /bin/busybox --install -s
-sleep 10
+
+# Hide kernel console messages
+dmesg -n 1
 
 # A few requirements
 mount -t proc none /proc
