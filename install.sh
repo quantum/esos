@@ -2,7 +2,8 @@
 #
 # $Id$
 
-TEMP_DIR=`mktemp -u -d /tmp/esos_install.XXXXX` || exit 1
+PKG_DIR="${PWD}"
+TEMP_DIR="${PKG_DIR}/temp"
 MNT_DIR="${TEMP_DIR}/mnt"
 REQD_TOOLS="tar rpm2cpio cpio dd md5sum sha256sum grep blockdev unzip findfs"
 MD5_CHECKSUM="dist_md5sum.txt"
@@ -87,24 +88,24 @@ for i in ${PROP_TOOLS}; do
     echo "### Required file: ${!tool_file}"
     tool_url=TOOL_URL_${i}
     echo "### Download URL: ${!tool_url}"
-    echo "### Place downloaded file in this directory: ${TEMP_DIR}"
+    echo "### Place downloaded file in this directory: ${PKG_DIR}"
     echo
 done
 
 # Prompt user to continue
 echo
-read -p "*** Once the file(s) have been loaded and placed in the '${TEMP_DIR}' directory, press ENTER to install the RAID controller CLI tools on your new ESOS USB drive. ***"
+read -p "*** Once the file(s) have been loaded and placed in the '${PKG_DIR}' directory, press ENTER to install the RAID controller CLI tools on your new ESOS USB drive. ***"
 
 # Check downloaded packages
 echo && echo
 echo "### Checking downloaded packages..."
 for i in ${PROP_TOOLS}; do
     tool_file=TOOL_FILE_${i}
-    if [ -e "${TEMP_DIR}/${!tool_file}" ]; then
-        echo "${TEMP_DIR}/${!tool_file}: Adding to the install list."
+    if [ -e "${PKG_DIR}/${!tool_file}" ]; then
+        echo "${PKG_DIR}/${!tool_file}: Adding to the install list."
         install_list="${install_list} ${i}"
     else
-        echo "${TEMP_DIR}/${!tool_file}: File not found."
+        echo "${PKG_DIR}/${!tool_file}: File not found."
     fi
 done
 
@@ -129,22 +130,22 @@ else
     cd ${TEMP_DIR}
     for i in ${install_list}; do
         if [ "${i}" = "MegaCLI" ]; then
-            unzip -o *_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm | \
+            unzip -o ${PKG_DIR}/*_MegaCLI.zip && rpm2cpio Linux/MegaCli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "StorCLI" ]; then
-            unzip -o *_StorCLI.zip && rpm2cpio storcli_all_os/Linux/storcli-*.rpm | \
+            unzip -o ${PKG_DIR}/*_StorCLI.zip && rpm2cpio storcli_all_os/Linux/storcli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/storcli/storcli64 ${MNT_DIR}/opt/sbin/ && \
             cp opt/MegaRAID/storcli/libstorelibir* ${MNT_DIR}/opt/lib/
         elif [ "${i}" = "arcconf" ]; then
-            unzip -o arcconf_*.zip && cp linux_x64/arcconf ${MNT_DIR}/opt/sbin/
+            unzip -o ${PKG_DIR}/arcconf_*.zip && cp linux_x64/arcconf ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "hpacucli" ]; then
-            rpm2cpio hpacucli-*.x86_64.rpm | cpio -idmv && \
+            rpm2cpio ${PKG_DIR}/hpacucli-*.x86_64.rpm | cpio -idmv && \
             cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli
         elif [ "${i}" = "linuxcli" ]; then
-            unzip -o linuxcli_*.zip && \
+            unzip -o ${PKG_DIR}/linuxcli_*.zip && \
             cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "3DM2_CLI" ]; then
-            unzip -o 3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && \
+            unzip -o ${PKG_DIR}/3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && \
             cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/
         fi
     done
@@ -158,3 +159,4 @@ fi
 # Done
 rm -rf ${TEMP_DIR}
 exit 0
+

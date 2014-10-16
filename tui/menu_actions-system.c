@@ -569,25 +569,26 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 /* Turn the cursor off (pretty) */
                 curs_set(0);
 
-                /* Check the IP address value (field entry) */
-                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
-                        getCDKEntryValue(ip_addy))) {
-                    traverse_ret = 0; /* Skip the prompt */
-                    break;
-                }
-
-                /* Check the netmask value (field entry) */
-                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
-                        getCDKEntryValue(netmask))) {
-                    traverse_ret = 0; /* Skip the prompt */
-                    break;
-                }
-
-                /* Check the broadcast value (field entry) */
-                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
-                        getCDKEntryValue(broadcast))) {
-                    traverse_ret = 0; /* Skip the prompt */
-                    break;
+                /* Only check the fields if its a static IP configuration */
+                if (getCDKRadioCurrentItem(ip_config) == 1) {
+                    /* Check the IP address value (field entry) */
+                    if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                            getCDKEntryValue(ip_addy))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
+                    /* Check the netmask value (field entry) */
+                    if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                            getCDKEntryValue(netmask))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
+                    /* Check the broadcast value (field entry) */
+                    if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                            getCDKEntryValue(broadcast))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
                 }
 
                 if (getCDKRadioCurrentItem(ip_config) == 0) {
