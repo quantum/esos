@@ -15,7 +15,7 @@ _If you have any hardware that you would like supported that is not listed below
 
 === Local RAID Controllers ===
 While there is support for a number of different RAID controllers, not all brands include the CLI tools that allow creating/destroying/etc. volumes from inside ESOS. If your favorite RAID controller has a CLI tool, please let us know so we can consider including it with ESOS.
-  * LSI Logic MegaRAID cards (CLI tool: MegaCli64)
+  * LSI Logic MegaRAID cards (CLI tool: MegaCli64 / storcli64)
     * Including re-branded MegaRAID compatible adapters: Dell PERC; IBM ServeRAID; Sun/Oracle, Cisco, and Intel RAID controllers
   * Adaptec AACRAID cards (CLI tool: arcconf)
     * Including re-branded AACRAID compatible adapters: IBM ServeRAID; Sun/Oracle RAID controllers 
@@ -25,9 +25,13 @@ While there is support for a number of different RAID controllers, not all brand
 
 <br>
 
-=== Fibre Channel HBAs ===
-Currently only QLogic FC HBAs are supported. SCST does support Emulex HBAs, however, the SCST-to-LPFC shim driver does not support newer kernels (eg, the version ESOS uses). We anticipate that we will be able to support Emulex FC HBAs in the near future.
+=== Fibre Channel HBAs / FCoE CNAs ===
+QLogic FC HBAs and FCoE CNAs are fully supported in ESOS. Emulex FC/FCoE products based on SLI-4 are supported via the OneCore Storage SDK from Emulex (manual build required). Chelsio T5 10/40 GbE FCoE adapters are supported via the Unified Wire driver (manual build required).
   * QLogic QLA2XXX FC Host Bus Adapters (QLE2460, QLE2560, QLA2340, etc.)
+  * QLogic QLE8XXX FCoE Converged Network Adapters (QLE8360, QLE8362, etc.)
+  * Emulex XE201 IOC combo adapters (LPe15004, LPe16000B, LPe16202, and LPe16004)
+  * Emulex XE100-series 10/40 GbE CNAs (OCe14102-UX, OCe14102-UM, OCe14101-NX, OCe14102-NX, and OCe14401-NX)
+  * Chelsio T5 UWire CNAs (T520, T580, T540, and T522)
 
 <br>
 
