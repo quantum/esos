@@ -25,7 +25,7 @@ While there is support for a number of different RAID controllers, not all brand
 
 <br>
 
-=== Fibre Channel HBAs / FCoE CNAs ===
+=== Fibre Channel HBAs / FCoE CNAs (Target, Initiator Support) ===
 QLogic FC HBAs and FCoE CNAs are fully supported in ESOS. Emulex FC/FCoE products based on SLI-4 are supported via the OneCore Storage SDK from Emulex (manual build required). Chelsio T5 10/40 GbE FCoE adapters are supported via the Unified Wire driver (manual build required).
   * QLogic QLA2XXX FC Host Bus Adapters (QLE2460, QLE2560, QLA2340, etc.)
   * QLogic QLE8XXX FCoE Converged Network Adapters (QLE8360, QLE8362, etc.)
@@ -35,16 +35,19 @@ QLogic FC HBAs and FCoE CNAs are fully supported in ESOS. Emulex FC/FCoE product
 
 <br>
 
-=== InfiniBand HCAs ===
-Mellanox and QLogic InfiniBand Host Channel Adapters work with ESOS.
+=== InfiniBand HCAs (Target, Initiator Support) ===
+Several different brand/model IB Host Channel Adapters work with ESOS.
   * Mellanox InfiniHost Host Channel Adapters (MT23108, MT25208, etc.)
   * Mellanox ConnectX PCI Express HCAs (MNPH29D-XTR, MHGH28-XTC, etc.)
   * QLogic HTX Host Channel Adapter (QHT7140)
-  * QLogic PCIe QLE InfiniBand HCAs (QLE7340, QLE7280, etc.)
+  * Intel PCIe QLE InfiniBand HCAs (QLogic QLE7340, QLE7280, etc.)
+  * Chelsio iWARP/RDMA T3 1/10 GbE adapters
+  * Cehlsio iWARP/RDMA T4 1/10 GbE adapters
+  * NetEffect Ethernet Cluster Server Adapters (RNIC driver)
 
 <br>
 
-=== Network Interface Cards / CNAs ===
+=== Network Interface Cards / CNAs (Initiator, NIC Support) ===
 Although Linux provides drivers for a ton of different NICs, we tried to keep it simple and only support NICs that are common in enterprise IT environments. The list below includes popular 10 GbE and 1 GbE cards, and even a couple lower-end cards that might be useful for console/configuration access (SSH).
   * Intel PRO/1000 Gigabit Ethernet adapters
   * Intel PRO/1000 PCI-Express Gigabit Ethernet adapters
