@@ -52,13 +52,13 @@ Although Linux provides drivers for a ton of different NICs, we tried to keep it
   * Broadcom Tigon3 adapters
   * Broadcom NetXtremeII adapters (with CNIC support)
   * QLogic QLA3XXX adapters
-  * Chelsio T1/T3/T4 1 GbE and 10 GbE adapters (with T3/T4 iSCSI offload support)
+  * Chelsio T1/T3/T4 1 GbE and 10 GbE adapters (with T3/T4 initiator iSCSI offload support)
   * Cisco VIC Ethernet NIC adapter
   * Intel 10GbE PCI Express adapters
   * Intel PRO/10GbE adapters
   * Mellanox Technologies ConnectX 10Gbit Ethernet adapters
-  * Broadcom NetXtremeII 10Gb cards (with iSCSI/FCoE offload support)
-  * QLOGIC QLCNIC 1/10Gb CNAs (QLE8240, QLE8242)
+  * Broadcom NetXtremeII 10Gb cards (with iSCSI/FCoE initiator offload support)
+  * QLogic QLCNIC 1/10Gb CNAs (QLE8240, QLE8242)
   * QLogic QLGE ISP8XXX 10Gb Ethernet adapters
   * Brocade 1010/1020 10Gb Ethernet cards
   * Intel(R) PRO/100+ Ethernet cards
