@@ -14,8 +14,6 @@ INITRAMFS_DIR	:= @initramfs_dir@
 MOUNT_DIR	:= @mount_dir@
 
 QUIET		:= @
-STRIP		:= -s
-
 SHELL		:= @bash@
 
 WGET		:= @wget@ -t 5
@@ -52,7 +50,10 @@ XARGS		:= @xargs@
 OPENSSL		:= @openssl@
 ZIP		:= @zip@
 XZ		:= @xz@
+READLINK	:= @readlink@
+STRIP		:= @strip@
 
+enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
 enable_valgrind	:= @enable_valgrind@
 with_ocs_sdk	:= @with_ocs_sdk@
@@ -98,7 +99,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		drbd-8.4.4.tar.gz \
 		LVM2-2.02.108.tar.gz \
 		xfsprogs-3.1.8.tar.gz \
-		mdadm-3.2.6.tar.gz \
+		mdadm-3.3.2.tar.gz \
 		parted-2.3.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2 \
 		libqb-0.14.4.tar.xz \
@@ -375,6 +376,15 @@ image: $(build_targets)
 	$(MOUNT_DIR)/usr/lib/libc.so
 	$(SED) -i 's/ $(subst /,\/,$(IMAGE_DIR))\// \//g' \
 	$(MOUNT_DIR)/usr/lib/libpthread.so
+	cd $(MOUNT_DIR)/usr/share/man && \
+	$(FIND) . -type l ! -path "*.gz" -exec \
+	sh -c '$(LN) `$(READLINK) $$1`.gz $$1.gz && $(RM) $$1' _ {} \;
+	cd $(MOUNT_DIR)/usr/share/man && \
+	$(FIND) . -type f ! -path "*.gz" -exec $(GZIP) {} \;
+	$(QUIET) if [ "x$(enable_debug)" != "xyes" ]; then \
+	  $(FIND) $(MOUNT_DIR)/{,usr/}{lib,bin,sbin} -type f \
+	  -exec $(STRIP) --strip-debug '{}' ';'; \
+	fi
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
@@ -717,13 +727,13 @@ busybox: glibc
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
 	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).config > $(tgt_src_dir)/.config
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
-	$(INSTALL) $(STRIP) $(tgt_src_dir)/busybox_unstripped \
+	$(INSTALL) $(tgt_src_dir)/busybox_unstripped \
 	$(WORK_DIR)/initramfs/bin/busybox
 	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(CP) $(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).config $(tgt_src_dir)/.config
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
-	$(INSTALL) $(STRIP) $(tgt_src_dir)/busybox_unstripped \
+	$(INSTALL) $(tgt_src_dir)/busybox_unstripped \
 	$(IMAGE_DIR)/bin/busybox
 	$(INSTALL) -d $(IMAGE_DIR)/usr/share/udhcpc
 	$(INSTALL) $(tgt_src_dir)/examples/udhcp/simple.script \
@@ -875,8 +885,8 @@ openssh: glibc zlib openssl
 
 vixie-cron: glibc
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" all
-	$(INSTALL) $(STRIP) -m 111 $(tgt_src_dir)/cron $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) $(STRIP) -m 4111 $(tgt_src_dir)/crontab $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 111 $(tgt_src_dir)/cron $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 4111 $(tgt_src_dir)/crontab $(IMAGE_DIR)/usr/bin/
 	$(TOUCH) $(@)
 
 gcc: glibc
@@ -932,7 +942,8 @@ e2fsprogs: glibc util-linux
 	cd $(WORK_DIR)/e2fsprogs-build && LIBS="-lpthread" \
 	$(tgt_src_dir)/configure --prefix=/usr --enable-elf-shlibs \
 	--sysconfdir=/etc --enable-verbose-makecmds --disable-libuuid \
-	--disable-libblkid --disable-uuidd
+	--disable-libblkid --disable-uuidd --enable-symlink-install \
+	--enable-symlink-build
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build \
 	CC="$(esos_cc)" LD="$(cc_base)" LIBUUID="-luuid" LIBBLKID="-lblkid"
 	$(MAKE) --directory=$(WORK_DIR)/e2fsprogs-build \
@@ -945,7 +956,7 @@ ssmtp: glibc openssl
 	cd $(tgt_src_dir) && CFLAGS="$(CPPFLAGS) $(LDFLAGS) -lcrypto" \
 	./configure --enable-ssl --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(INSTALL) $(STRIP) -m 755 $(tgt_src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 755 $(tgt_src_dir)/ssmtp $(IMAGE_DIR)/usr/sbin/
 	$(LN) ssmtp $(IMAGE_DIR)/usr/sbin/sendmail
 	$(TOUCH) $(@)
 
@@ -1076,7 +1087,9 @@ drbd: glibc
 
 mdadm: glibc
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdadm $(IMAGE_DIR)/sbin/mdadm
+	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdmon $(IMAGE_DIR)/sbin/mdmon
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-man
 	$(TOUCH) $(@)
 
 parted: glibc util-linux LVM2
@@ -1799,9 +1812,9 @@ btier: glibc
 	$(CC) -Wall $(tgt_src_dir)/tools/writetest.c -o $(tgt_src_dir)/tools/writetest
 	$(CC) -Wall $(tgt_src_dir)/tools/show_block_details.c \
 	-o $(tgt_src_dir)/tools/show_block_details
-	$(INSTALL) -D -m 755 $(STRIP) $(tgt_src_dir)/cli/btier_setup \
+	$(INSTALL) -D -m 755 $(tgt_src_dir)/cli/btier_setup \
 	$(IMAGE_DIR)/usr/sbin/btier_setup
-	$(INSTALL) -D -m 755 $(STRIP) $(tgt_src_dir)/cli/btier_inspect \
+	$(INSTALL) -D -m 755 $(tgt_src_dir)/cli/btier_inspect \
 	$(IMAGE_DIR)/usr/sbin/btier_inspect
 	$(INSTALL) -D -m 644 $(tgt_src_dir)/man/btier_setup.1 \
 	$(IMAGE_DIR)/usr/share/man/man1/btier_setup.1
