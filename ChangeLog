@@ -1,3 +1,13 @@
+2014-10-20 14:57  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
+	  tui/Makefile, tui/menu_actions.c: up'd mdadm to version 3.3.2;
+	  add optimization for TUI binary; add new 'debug' autoconf
+	  configure script option that control debug symbol stripping;
+	  remove use of STRIP variable in Makefile and strip all debug
+	  symbols by default in 'image' target; compress all man pages in
+	  'image' target
+
 2014-10-16 20:58  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, install.sh,
