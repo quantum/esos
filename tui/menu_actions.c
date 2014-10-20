@@ -477,7 +477,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
         closedir(dir_stream);
 
         /* Loop over our list of SCSI disks */
-        while (i < dev_cnt) {
+        while ((i < dev_cnt) && (i < MAX_SCSI_DISKS)) {
             /* Get the SCSI block device node */
             snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/block",
                     SYSFS_SCSI_DISK, scsi_dsk_dev[i]);

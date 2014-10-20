@@ -59,6 +59,8 @@ MY_PATH_PROG([xargs])
 MY_PATH_PROG([openssl])
 MY_PATH_PROG([zip])
 MY_PATH_PROG([xz])
+MY_PATH_PROG([readlink])
+MY_PATH_PROG([strip])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
@@ -115,6 +117,15 @@ if test -d "${image_dir}"; then
 else
 	AC_MSG_ERROR([the image directory does not exist])
 fi
+
+dnl Optional feature debug
+AC_ARG_ENABLE(debug,
+	AS_HELP_STRING([--enable-debug], [build for debugging (do not strip userland binaries)]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_debug="${enableval}"], [enable_debug="no"]), enable_debug="no")
+AS_IF([test "x$enable_debug" = "xyes"], [build_opts="${build_opts} debug"])
+AC_SUBST(enable_debug, ${enable_debug})
+AC_MSG_NOTICE([debug: ${enable_debug}])
 
 dnl Optional feature gdb
 AC_ARG_ENABLE(gdb,
