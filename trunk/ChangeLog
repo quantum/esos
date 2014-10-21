@@ -1,3 +1,8 @@
+2014-10-21 19:51  msmith626@gmail.com
+
+	* Makefile.in, configure.ac: changed distribution files repository
+	  to new 'download.esos-project.com' site
+
 2014-10-20 14:57  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
