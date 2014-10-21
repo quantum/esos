@@ -68,9 +68,9 @@ if test x"${PWD}" != x; then
 	work_dir="${PWD}/work"
 	${mkdir} -p ${work_dir} || exit 1
 	AC_SUBST(work_dir, ${work_dir})
-	distfiles_dir="${work_dir}/distfiles"
-	${mkdir} -p ${distfiles_dir} || exit 1
-	AC_SUBST(distfiles_dir, ${distfiles_dir})
+	dist_files_dir="${work_dir}/dist_files"
+	${mkdir} -p ${dist_files_dir} || exit 1
+	AC_SUBST(dist_files_dir, ${dist_files_dir})
 	pkg_src_dir="${work_dir}/build"
 	${mkdir} -p ${pkg_src_dir} || exit 1
 	AC_SUBST(pkg_src_dir, ${pkg_src_dir})
