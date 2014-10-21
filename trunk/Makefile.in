@@ -7,7 +7,7 @@
 SRC_DIR		:= @src_dir@
 BUILD_DIR	:= @build_dir@
 WORK_DIR	:= @work_dir@
-DISTFILES_DIR	:= @distfiles_dir@
+DIST_FILES_DIR	:= @dist_files_dir@
 PKG_SRC_DIR	:= @pkg_src_dir@
 IMAGE_DIR	:= @image_dir@
 INITRAMFS_DIR	:= @initramfs_dir@
@@ -71,7 +71,7 @@ esos_ver	:= $(svn_branch)_r$(svn_rev)$(opt_suffix)
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
-distfiles	= $(addprefix $(DISTFILES_DIR)/, \
+dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		busybox-1.20.2.tar.bz2 \
 		grub-2.00.tar.gz \
 		sysvinit-2.88dsf.tar.bz2 \
@@ -193,7 +193,7 @@ distfiles	= $(addprefix $(DISTFILES_DIR)/, \
 		attr-2.4.47.tar.gz \
 		acl-2.2.52.tar.gz \
 		win_binaries-20140704.tar.xz)
-distfiles_repo	= https://googledrive.com/host/0B-MvNl-PpBFPZEgyaWJvNVZnVDQ
+dist_files_repo	= http://download.esos-project.com/dist_files
 
 build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		makedumpfile elfutils sysvinit grub glibc perl Python \
@@ -217,11 +217,11 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
-	distfiles += $(addprefix $(DISTFILES_DIR)/,gdb-7.7.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,gdb-7.7.tar.bz2)
 	build_targets += gdb
 endif
 ifeq ($(enable_valgrind),yes)
-	distfiles += $(addprefix $(DISTFILES_DIR)/,valgrind-3.9.0.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.9.0.tar.bz2)
 	build_targets += valgrind
 endif
 ifeq ($(with_ocs_sdk),yes)
@@ -237,7 +237,7 @@ linux_src		= $(wildcard $(PKG_SRC_DIR)/linux-*)
 scst_src		= $(wildcard $(PKG_SRC_DIR)/scst-*)
 tarball_src_dirs	= $(addprefix $(PKG_SRC_DIR)/,$(subst .tar.xz,,\
 			$(subst .tar.bz2,,$(subst .tar.gz,,\
-			$(notdir $(distfiles))))))
+			$(notdir $(dist_files))))))
 img_file		:= $(BUILD_DIR)/esos-$(esos_ver).img
 
 # The ld scripts (eg, libc.so) are modified in-place and then
@@ -448,18 +448,17 @@ distclean: clean
 
 
 # fetch - Grab all required packages from distribution file repositories.
-fetch: $(distfiles) ;
+fetch: $(dist_files) ;
 
-$(distfiles):
-	$(WGET) --no-check-certificate \
-	-P $(DISTFILES_DIR) $(distfiles_repo)/$(notdir $(@))
-	$(QUIET) cd $(DISTFILES_DIR) && \
+$(dist_files):
+	$(WGET) -P $(DIST_FILES_DIR) $(dist_files_repo)/$(notdir $(@))
+	$(QUIET) cd $(DIST_FILES_DIR) && \
 	if ! $(GREP) $(notdir $(@)) $(SRC_DIR)/CHECKSUM.MD5 | \
 	  $(MD5SUM) -c -; then \
 	  $(RM) $(@); \
 	  exit 1; \
 	fi
-	$(QUIET) cd $(DISTFILES_DIR) && \
+	$(QUIET) cd $(DIST_FILES_DIR) && \
 	if ! $(GREP) $(notdir $(@)) $(SRC_DIR)/CHECKSUM.SHA256 | \
 	  $(SHA256SUM) -c -; then \
 	  $(RM) $(@); \
@@ -471,7 +470,7 @@ $(distfiles):
 # extract - Extract all of the previously downloaded packages/archives.
 extract: fetch $(tarball_src_dirs) ;
 
-$(tarball_src_dirs): src_file = $(wildcard $(DISTFILES_DIR)/$(notdir $(@)).*)
+$(tarball_src_dirs): src_file = $(wildcard $(DIST_FILES_DIR)/$(notdir $(@)).*)
 $(tarball_src_dirs):
 	$(MKDIR) $(PKG_SRC_DIR)
 	$(QUIET) if [ "$(suffix $(src_file))" = ".gz" ]; then \
