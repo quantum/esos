@@ -1,3 +1,9 @@
+2014-10-22 13:43  msmith626@gmail.com
+
+	* Makefile.in, configure.ac: build fix for mdadm and resolved
+	  mapfile lock error message with mdadm (missing /var/run/mdadm
+	  directory)
+
 2014-10-21 19:51  msmith626@gmail.com
 
 	* Makefile.in, configure.ac: changed distribution files repository
