@@ -251,5 +251,17 @@ _*Be sure to use the naming format brX for all bridge interfaces!*_
 
 <br>
 
+=== Ethernet Auto-negotiation (Speed/Duplex) ===
+You can enable/disable auto-negotiating using the TUI to configure the speed/duplex settings of an interface manually. ESOS utilizes the `ethtool` utility to perform this configuration.
+
+To disable auto-negotiation and set the speed to 100 Mbps and duplex to half, set the following under the "ethtool options" in the TUI (System -> Network Settings):
+{{{
+autoneg off speed 100 duplex full
+}}}
+
+You can also use this setting to configure additional interface options that are supported using "ethtool -s" -- see the `ethtool` manual page for details.
+
+<br>
+
 === What's Next ===
 From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
