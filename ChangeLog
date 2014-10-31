@@ -1,3 +1,13 @@
+2014-10-31 21:06  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/rc.network, tui/dialogs.h,
+	  tui/menu_actions-system.c, tui/strings.c: added new "ethtool
+	  options" setting in the network dialog -- allows users to set
+	  autonegotation on/off and specify speed/duplex settings
+	  (satisfies issue/request #60); updated the rc.network script to
+	  handle new 'ethtoolopts' setting; fixed build issue for ceph
+	  package that affected some platforms (cryptopp vs. nss)
+
 2014-10-22 13:43  msmith626@gmail.com
 
 	* Makefile.in, configure.ac: build fix for mdadm and resolved
