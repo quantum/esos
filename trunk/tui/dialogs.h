@@ -113,6 +113,7 @@ extern "C" {
 #define MAX_SLAVES_LIST_BUFF            512
 #define MAX_BR_MEMBERS_LIST_BUFF        512
 #define MAX_BOND_OPTS_BUFF              512
+#define MAX_ETHTOOL_OPTS_BUFF           512
 
 /* Character validation */
 typedef enum {

@@ -2022,7 +2022,7 @@ ceph: glibc util-linux keyutils libedit snappy leveldb boost Python
 	LIBEDIT_LIBS="-ledit -ltinfo" PYTHON="$(WORK_DIR)/python" \
 	./configure --prefix=/usr \
 	--without-tcmalloc --without-libatomic-ops --without-radosgw \
-	--without-libxfs --without-fuse
+	--without-libxfs --without-fuse --with-nss --without-cryptopp
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/src DESTDIR=$(IMAGE_DIR) \
 	install_sh_PROGRAM="$(tgt_src_dir)/install-sh -c -s" \
