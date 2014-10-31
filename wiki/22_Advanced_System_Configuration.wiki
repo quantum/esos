@@ -254,7 +254,7 @@ _*Be sure to use the naming format brX for all bridge interfaces!*_
 === Ethernet Auto-negotiation (Speed/Duplex) ===
 You can enable/disable auto-negotiating using the TUI to configure the speed/duplex settings of an interface manually. ESOS utilizes the `ethtool` utility to perform this configuration.
 
-To disable auto-negotiation and set the speed to 100 Mbps and duplex to half, set the following under the "ethtool options" in the TUI (System -> Network Settings):
+To disable auto-negotiation and set the speed to "100 Mbps" and duplex to "full", set the following under the "ethtool options" in the TUI (System -> Network Settings):
 {{{
 autoneg off speed 100 duplex full
 }}}
