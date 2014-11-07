@@ -222,14 +222,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 /* Turn the cursor off (pretty) */
                 curs_set(0);
 
-                /* Check the host name value (field entry) */
+                /* Check the host name value (field entry)  -- required */
                 if (!checkInputStr(main_cdk_screen, NAME_CHARS,
                         getCDKEntryValue(host_name))) {
                     traverse_ret = 0; /* Skip the prompt */
                     break;
                 }
 
-                /* Check the domain name value (field entry) */
+                /* Check the domain name value (field entry)  -- required */
                 if (!checkInputStr(main_cdk_screen, NAME_CHARS,
                         getCDKEntryValue(domain_name))) {
                     traverse_ret = 0; /* Skip the prompt */
@@ -237,24 +237,30 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 }
 
                 /* Check the default gateway value (field entry) */
-                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
-                        getCDKEntryValue(default_gw))) {
-                    traverse_ret = 0; /* Skip the prompt */
-                    break;
+                if (strlen(getCDKEntryValue(default_gw)) != 0) {
+                    if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                            getCDKEntryValue(default_gw))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
                 }
 
                 /* Check the name server (1) value (field entry) */
-                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
-                        getCDKEntryValue(name_server_1))) {
-                    traverse_ret = 0; /* Skip the prompt */
-                    break;
+                if (strlen(getCDKEntryValue(name_server_1)) != 0) {
+                    if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                            getCDKEntryValue(name_server_1))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
                 }
 
                 /* Check the name server (2) value (field entry) */
-                if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
-                        getCDKEntryValue(name_server_2))) {
-                    traverse_ret = 0; /* Skip the prompt */
-                    break;
+                if (strlen(getCDKEntryValue(name_server_2)) != 0) {
+                    if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                            getCDKEntryValue(name_server_2))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
                 }
 
                 /* Write to network config. file */
