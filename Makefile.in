@@ -192,6 +192,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		btrfs-progs-v3.16.tar.xz \
 		attr-2.4.47.tar.gz \
 		acl-2.2.52.tar.gz \
+		htop-1.0.3.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -213,7 +214,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		sysstat pciutils tar net-snmp nut libusb libusb_compat \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
-		libmcrypt nsca btrfs-progs attr acl
+		libmcrypt nsca btrfs-progs attr acl htop
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -299,7 +300,7 @@ image: $(build_targets)
 	# 4000 MB (not MiB)
 	# 4000000000 B
 	# 4000000000 B / 512 B = 7812500 sectors
-	$(DD) if=/dev/zero of=$(img_file) bs=512 count=0 seek=7812500
+	$(DD) if=/dev/zero of=$(img_file) bs=512 count=7812500
 	$(ECHO) -e "2048,204800,L,*\n206848,2048000,L\n2254848,204800,L\n\
 	2459648,4096000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
@@ -2098,5 +2099,13 @@ acl: glibc attr
 	$(MAKE) --directory=$(tgt_src_dir)/include \
 	PKG_INC_DIR=$(IMAGE_DIR)/usr/include install-dev
 	$(call clean_la_files,libacl)
+	$(TOUCH) $(@)
+
+htop: glibc ncurses
+	cd $(tgt_src_dir) && LIBS="-ltinfo" ./configure --prefix=/usr \
+	--disable-unicode
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	install-binPROGRAMS install-man1
 	$(TOUCH) $(@)
 
