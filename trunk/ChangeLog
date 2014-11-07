@@ -1,3 +1,11 @@
+2014-11-07 21:41  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  tui/menu_actions-system.c: added the 'htop' utility; fixed issue
+	  in network conf dialog where a empty default GW / name server
+	  field gave an error; updated image target to write zeros to loop
+	  device instead of seek'ing
+
 2014-10-31 21:06  msmith626@gmail.com
 
 	* Makefile.in, etc/rc.d/rc.network, tui/dialogs.h,
