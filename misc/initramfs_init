@@ -14,16 +14,22 @@ rescue_shell() {
 # Hide kernel console messages
 dmesg -n 1
 
+# Some devices are delayed
+echo "Waiting for devices to settle..."
+sleep 5
+
 # A few requirements
-mount -t proc none /proc
-mount -t sysfs none /sys
-mdev -s
+mount -t proc none /proc || rescue_shell
+mount -t sysfs none /sys || rescue_shell
+mdev -s || rescue_shell
 
 # Catch if /proc/vmcore exists -- we capture the crash dump and reboot
 if [ -e /proc/vmcore ]; then
 	echo "It appears a crash dump kernel is running."
 	echo "Saving /proc/vmcore to the ESOS log file system..."
-	mount $(findfs LABEL=esos_logs) /mnt/tmp || rescue_shell
+	logs_fs_dev="$(findfs LABEL=esos_logs)" || \
+	(echo "Error resolving the logs device node!"; rescue_shell)
+	mount ${logs_fs_dev} /mnt/tmp || rescue_shell
 	makedumpfile -E -d 31 /proc/vmcore /mnt/tmp/dumpfile-`date +"%s"` || rescue_shell
 	umount /mnt/tmp || rescue_shell
 	reboot -f || rescue_shell
@@ -35,9 +41,13 @@ if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3800000 ]; then
 	rescue_shell
 fi
 
+# Attempt to resolve the FS label here
+root_fs_dev="$(findfs LABEL=esos_root)" || \
+(echo "Error resolving the root device node!"; rescue_shell)
+
 # Mount up
 mount -t tmpfs -o size=1536m tmpfs /mnt/root || rescue_shell
-mount -o ro $(findfs LABEL=esos_root) /mnt/tmp || rescue_shell
+mount -o ro ${root_fs_dev} /mnt/tmp || rescue_shell
 
 # Setup the root file system
 echo "Initializing root file system..."
