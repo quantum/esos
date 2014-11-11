@@ -1,3 +1,14 @@
+2014-11-11 21:59  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, install.sh,
+	  install.vbs, misc/initramfs_init: updated hpacucli tool install
+	  recipe for Linux and Windows installer scripts so it also
+	  includes a missing library (thanks Chris); changes to the
+	  initramfs script so it now waits for devices to settle before
+	  continuing (USB mass storage devices can be delayed via
+	  delay_use) and handle findfs failures more gracefully; up'd SCST
+	  version to latest (r5854)
+
 2014-11-07 21:41  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
