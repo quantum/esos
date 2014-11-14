@@ -193,6 +193,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		attr-2.4.47.tar.gz \
 		acl-2.2.52.tar.gz \
 		htop-1.0.3.tar.gz \
+		dmidecode-2.12.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -214,7 +215,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		sysstat pciutils tar net-snmp nut libusb libusb_compat \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
-		libmcrypt nsca btrfs-progs attr acl htop
+		libmcrypt nsca btrfs-progs attr acl htop dmidecode
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2107,5 +2108,11 @@ htop: glibc ncurses
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	install-binPROGRAMS install-man1
+	$(TOUCH) $(@)
+
+dmidecode: glibc
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir) install prefix=/usr \
+	DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
 

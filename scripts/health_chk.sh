@@ -63,6 +63,27 @@ if [ -x "${MEGACLI}" ]; then
         done
         IFS=${SAVED_IFS}
         echo "Checked ${pd_count} physical drive(s)."
+        # Check the status of attached enclosures
+        echo "Checking enclosures..."
+        SAVED_IFS=${IFS}
+        IFS=$(echo -en "\n\b")
+        for i in `${MEGACLI} -EncStatus -a${adapter} -NoLog`; do
+            if echo "${i}" | grep "Slot Status" > /dev/null 2>&1 ||
+                echo "${i}" | grep "Power Supply Status" > /dev/null 2>&1 ||
+                echo "${i}" | grep "Fan Status" > /dev/null 2>&1 ||
+                echo "${i}" | grep "Temperature Sensor Status" > /dev/null 2>&1 ||
+                echo "${i}" | grep "SIM Module Status" > /dev/null 2>&1; then
+                line_name=`echo "${i}" | cut -d: -f1 | sed 's/ *$//' | tr -d '\n'`
+                line_status=`echo "${i}" | cut -d: -f2 | sed 's/^ *//' | tr -d '\n'`
+                if [ "${line_status}" != "OK" ] &&
+                    [ "${line_status}" != "Not Installed" ]; then
+                    echo "** Warning! An enclosure health/status issue" \
+                        "has been detected on adapter ${adapter}!" 1>&2
+                    echo "** ${line_name} -> ${line_status}" 1>&2
+                fi
+            fi
+        done
+        IFS=${SAVED_IFS}
     done
 else
     echo "It appears the '${MEGACLI}' tool is not installed, or at least"
@@ -118,6 +139,7 @@ if [ -x "${ARCCONF}" ]; then
         done
         IFS=${SAVED_IFS}
         echo "Checked ${pd_count} physical drive(s)."
+        # TODO: Need to implement enclosure status check.
     done
 else
     echo "It appears the '${ARCCONF}' tool is not installed, or at least"

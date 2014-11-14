@@ -36,8 +36,8 @@ if [ -e /proc/vmcore ]; then
 fi
 
 # Make sure we have enough physical memory
-if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3800000 ]; then
-	echo "This system doesn't have enough RAM (need at least 4 GB)!"
+if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3500000 ]; then
+	echo "ESOS requires at least 3.5 GB of usable RAM!"
 	rescue_shell
 fi
 
