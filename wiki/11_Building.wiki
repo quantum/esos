@@ -20,12 +20,12 @@ Here is a list of the build host system requirements:
 Using _Red Hat Enterprise Linux (or CentOS) 6.2 Server x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * yum groupinstall "Development tools"
-  * yum install lsscsi kpartx libxslt bc wget
+  * yum install lsscsi kpartx libxslt bc wget gettext
 
 Using _Fedora 16 Desktop Edition x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
   * yum groupinstall "Development tools"
-  * yum install wget lsscsi kpartx libxslt
+  * yum install wget lsscsi kpartx libxslt gettext-devel
 
 Using _Ubuntu 12.04.2 LTS x86_64_ as your build host:
   * Standard/basic install, defaults for everything.
