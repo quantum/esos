@@ -2138,6 +2138,35 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             setCDKRadioCurrentItem(tz_select, 0);
         }
 
+        /* NTP server */
+        ntp_server = newCDKEntry(date_screen, (window_x + 1), (window_y + 16),
+                NULL, "</B>NTP Server: ",
+                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED, 20,
+                0, MAX_NTP_LEN, FALSE, FALSE);
+        if (!ntp_server) {
+            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+            break;
+        }
+        setCDKEntryBoxAttribute(ntp_server, COLOR_DIALOG_INPUT);
+
+        /* Get the current NTP server setting (if any) and set widget */
+        if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
+            /* ENOENT is okay since its possible this file doesn't exist yet */
+            if (errno != ENOENT) {
+                asprintf(&error_msg, "fopen(): %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+                break;
+            }
+        } else {
+            fgets(ntp_serv_val, MAX_NTP_LEN, ntp_server_file);
+            fclose(ntp_server_file);
+            remove_me = strrchr(ntp_serv_val, '\n');
+            if (remove_me)
+                *remove_me = '\0';
+            setCDKEntryValue(ntp_server, ntp_serv_val);
+        }
+
         /* Get current date/time information */
         time(&curr_clock);
         curr_date_info = localtime(&curr_clock);
@@ -2184,35 +2213,6 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKUScaleBackgroundAttrib(second, COLOR_DIALOG_TEXT);
-
-        /* NTP server */
-        ntp_server = newCDKEntry(date_screen, (window_x + 1), (window_y + 16),
-                NULL, "</B>NTP Server: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED, 20,
-                0, MAX_NTP_LEN, FALSE, FALSE);
-        if (!ntp_server) {
-            errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
-            break;
-        }
-        setCDKEntryBoxAttribute(ntp_server, COLOR_DIALOG_INPUT);
-
-        /* Get the current NTP server setting (if any) and set widget */
-        if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
-            /* ENOENT is okay since its possible this file doesn't exist yet */
-            if (errno != ENOENT) {
-                asprintf(&error_msg, "fopen(): %s", strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
-                break;
-            }
-        } else {
-            fgets(ntp_serv_val, MAX_NTP_LEN, ntp_server_file);
-            fclose(ntp_server_file);
-            remove_me = strrchr(ntp_serv_val, '\n');
-            if (remove_me)
-                *remove_me = '\0';
-            setCDKEntryValue(ntp_server, ntp_serv_val);
-        }
 
         /* Buttons */
         ok_button = newCDKButton(date_screen, (window_x + 24), (window_y + 18),
@@ -2263,8 +2263,11 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             /* Check NTP server setting (field entry) */
             strncpy(new_ntp_serv_val, getCDKEntryValue(ntp_server),
                     MAX_NTP_LEN);
-            if (!checkInputStr(main_cdk_screen, NAME_CHARS, new_ntp_serv_val))
-                break;
+            if (strlen(new_ntp_serv_val) != 0) {
+                if (!checkInputStr(main_cdk_screen,
+                        NAME_CHARS, new_ntp_serv_val))
+                    break;
+            }
 
             /* If the value has changed, write it to the file */
             if (strcmp(ntp_serv_val, new_ntp_serv_val) != 0) {

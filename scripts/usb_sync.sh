@@ -10,6 +10,8 @@ SYNC_DIRS="/etc /var/lib /opt" # These are absolute paths (leading '/' required)
 MKDIR="mkdir -m 0755 -p"
 CP="cp -af"
 CPIO="cpio -pdum --quiet"
+LN="ln -sf"
+READLINK="readlink -n"
 LOOP_IFS=$(echo -en "\n\b")
 ORIG_IFS=${IFS}
 CTIME="stat -c %Z"
@@ -23,7 +25,8 @@ for i in ${SYNC_DIRS}; do
     # Make sure all of the local directories exist on USB
     local_dir_base="${i}"
     IFS=${LOOP_IFS}
-    for j in `test -d ${local_dir_base} && find ${local_dir_base} -type d \( ! -name rc.d \)`; do
+    for j in $(test -d ${local_dir_base} && \
+        find ${local_dir_base} -type d \( ! -name rc.d \)); do
         IFS=${ORIG_IFS}
         local_dir=${j}
         usb_dir=${CONF_MNT}${local_dir}
@@ -31,114 +34,137 @@ for i in ${SYNC_DIRS}; do
         if [ ! -d "${usb_dir}" ]; then
             # Create the directory
             echo ${local_dir} | ${CPIO} ${CONF_MNT}
-            continue
         fi
         IFS=${LOOP_IFS}
     done
+    IFS=${ORIG_IFS}
     # Make sure all of the local files exist on USB
     IFS=${LOOP_IFS}
-    for j in `test -d ${local_dir_base} && find ${local_dir_base} -path /etc/rc.d -prune -o -type f -print`; do
+    for j in $(test -d ${local_dir_base} && \
+        find ${local_dir_base} -path /etc/rc.d -prune -o -type f -print); do
         IFS=${ORIG_IFS}
         local_file=${j}
         usb_file=${CONF_MNT}${local_file}
         # The file doesn't exist on the USB drive
         if [ ! -f "${usb_file}" ]; then
             # Copy the local file to USB
-            ${CP} "${local_file}" "${usb_file}" && touch "${local_file}" "${usb_file}"
-            continue
-        fi
+            ${CP} "${local_file}" "${usb_file}" && \
+                touch "${local_file}" "${usb_file}"
         # The file exists in both locations
-        if [ -f "${usb_file}" ] && [ -f "${local_file}" ]; then
-            # Check and see which version is the newest (first check mtime, then ctime)
-            if [ $(${MTIME} "${local_file}") -gt $(${MTIME} "${usb_file}") ]; then
+        elif [ -f "${usb_file}" ] && [ -f "${local_file}" ]; then
+            # Check and see which version is the newest
+            if [ $(${MTIME} "${local_file}") -gt \
+                $(${MTIME} "${usb_file}") ]; then
                 # Update the USB file with the local copy (mtime check)
-                ${CP} "${local_file}" "${usb_file}" && touch "${local_file}" "${usb_file}"
-            elif [ $(${MTIME} "${local_file}") -lt $(${MTIME} "${usb_file}") ]; then
+                ${CP} "${local_file}" "${usb_file}" && \
+                    touch "${local_file}" "${usb_file}"
+            elif [ $(${MTIME} "${local_file}") -lt \
+                $(${MTIME} "${usb_file}") ]; then
                 # Update the local file with the USB copy (mtime check)
-                ${CP} "${usb_file}" "${local_file}" && touch "${usb_file}" "${local_file}"
-            elif [ $(${CTIME} "${local_file}") -gt $(${CTIME} "${usb_file}") ]; then
+                ${CP} "${usb_file}" "${local_file}" && \
+                    touch "${usb_file}" "${local_file}"
+            elif [ $(${CTIME} "${local_file}") -gt \
+                $(${CTIME} "${usb_file}") ]; then
                 # Update the USB file with the local copy (ctime check)
-                ${CP} "${local_file}" "${usb_file}" && touch "${local_file}" "${usb_file}"
-            elif [ $(${CTIME} "${local_file}") -lt $(${CTIME} "${usb_file}") ]; then
+                ${CP} "${local_file}" "${usb_file}" && \
+                    touch "${local_file}" "${usb_file}"
+            elif [ $(${CTIME} "${local_file}") -lt \
+                $(${CTIME} "${usb_file}") ]; then
                 # Update the local file with the USB copy (ctime check)
-                ${CP} "${usb_file}" "${local_file}" && touch "${usb_file}" "${local_file}"
+                ${CP} "${usb_file}" "${local_file}" && \
+                    touch "${usb_file}" "${local_file}"
             else
                 # The files are the same; do nothing
-                continue
+                :
             fi
         fi
         IFS=${LOOP_IFS}
     done
+    IFS=${ORIG_IFS}
     # Make sure all of the USB directories exist locally
     usb_dir_base="${CONF_MNT}${i}"
     IFS=${LOOP_IFS}
-    for j in `test -d ${usb_dir_base} && find ${usb_dir_base} -type d`; do
+    for j in $(test -d ${usb_dir_base} && find ${usb_dir_base} -type d); do
         IFS=${ORIG_IFS}
         usb_dir=${j}
-        local_dir=`echo "${usb_dir}" | sed -e s@${CONF_MNT}@@`
+        local_dir=$(echo "${usb_dir}" | sed -e s@${CONF_MNT}@@)
         # The directory doesn't exist on the local file system
         if [ ! -d "${local_dir}" ]; then
             # Create the directory
-            cd ${CONF_MNT} && echo ${usb_dir} | sed -e s@${CONF_MNT}/@@ | ${CPIO} / && cd - > /dev/null
-            continue
+            cd ${CONF_MNT} && echo ${usb_dir} | \
+                sed -e s@${CONF_MNT}/@@ | ${CPIO} / && cd - > /dev/null
         fi
         IFS=${LOOP_IFS}
     done
+    IFS=${ORIG_IFS}
     # Make sure all of the USB files exist locally
     IFS=${LOOP_IFS}
-    for j in `test -d ${usb_dir_base} && find ${usb_dir_base} -type f`; do
+    for j in $(test -d ${usb_dir_base} && find ${usb_dir_base} -type f); do
         IFS=${ORIG_IFS}
         usb_file=${j}
-        local_file=`echo "${usb_file}" | sed -e s@${CONF_MNT}@@`
+        local_file=$(echo "${usb_file}" | sed -e s@${CONF_MNT}@@)
         # The file doesn't exist on the local file system
         if [ ! -f "${local_file}" ]; then
             # Copy the USB file to the local FS
-            ${CP} "${usb_file}" "${local_file}" && touch "${usb_file}" "${local_file}"
-            continue
-        fi
+            ${CP} "${usb_file}" "${local_file}" && \
+                touch "${usb_file}" "${local_file}"
         # The file exists in both locations
-        if [ -f "${local_file}" ] && [ -f "${usb_file}" ]; then
-            # Check and see which version is the newest (first check mtime, then ctime)
-            if [ $(${MTIME} "${usb_file}") -gt $(${MTIME} "${local_file}") ]; then
+        elif [ -f "${local_file}" ] && [ -f "${usb_file}" ]; then
+            # Check and see which version is the newest
+            if [ $(${MTIME} "${usb_file}") -gt \
+                $(${MTIME} "${local_file}") ]; then
                 # Update the local file with the USB copy (mtime)
-                ${CP} "${usb_file}" "${local_file}" && touch "${usb_file}" "${local_file}"
-            elif [ $(${MTIME} "${usb_file}") -lt $(${MTIME} "${local_file}") ]; then
+                ${CP} "${usb_file}" "${local_file}" && \
+                    touch "${usb_file}" "${local_file}"
+            elif [ $(${MTIME} "${usb_file}") -lt \
+                $(${MTIME} "${local_file}") ]; then
                 # Update the USB file with the local copy (mtime)
-                ${CP} "${local_file}" "${usb_file}" && touch "${local_file}" "${usb_file}"
-            elif [ $(${CTIME} "${usb_file}") -gt $(${CTIME} "${local_file}") ]; then
+                ${CP} "${local_file}" "${usb_file}" && \
+                    touch "${local_file}" "${usb_file}"
+            elif [ $(${CTIME} "${usb_file}") -gt \
+                $(${CTIME} "${local_file}") ]; then
                 # Update the local file with the USB copy (ctime)
-                ${CP} "${usb_file}" "${local_file}" && touch "${usb_file}" "${local_file}"
-            elif [ $(${CTIME} "${usb_file}") -lt $(${CTIME} "${local_file}") ]; then
+                ${CP} "${usb_file}" "${local_file}" && \
+                    touch "${usb_file}" "${local_file}"
+            elif [ $(${CTIME} "${usb_file}") -lt \
+                $(${CTIME} "${local_file}") ]; then
                 # Update the USB file with the local copy (ctime)
-                ${CP} "${local_file}" "${usb_file}" && touch "${local_file}" "${usb_file}"
+                ${CP} "${local_file}" "${usb_file}" && \
+                    touch "${local_file}" "${usb_file}"
             else
                 # The files are the same; do nothing
-                continue
+                :
             fi
         fi
         IFS=${LOOP_IFS}
     done
+    IFS=${ORIG_IFS}
 done
 
 # Make sure our sole symbolic link for the time zone is up to date
 local_tz_link="/etc/localtime"
 usb_tz_link="${CONF_MNT}${local_tz_link}"
+# We [re-]create both links to keep timestamps accurate
 if [ ! -L "${usb_tz_link}" ] && [ -L "${local_tz_link}" ]; then
     # The link doesn't exist on the USB drive
-    ${CP} ${local_tz_link} ${usb_tz_link}
+    ${LN} $(${READLINK} "${local_tz_link}") "${usb_tz_link}"
+    ${LN} $(${READLINK} "${local_tz_link}") "${local_tz_link}"
 elif [ ! -L "${local_tz_link}" ] && [ -L "${usb_tz_link}" ]; then
     # The link doesn't exist on the local file system
-    ${CP} ${usb_tz_link} ${local_tz_link}
+    ${LN} $(${READLINK} "${usb_tz_link}") "${local_tz_link}"
+    ${LN} $(${READLINK} "${usb_tz_link}") "${usb_tz_link}"
 elif [ -L "${usb_tz_link}" ] && [ -L "${local_tz_link}" ]; then
     # The link exists in both locations
-    if [ $(${MTIME} "${local_tz_link}") -gt $(${MTIME} "${usb_tz_link}") ]; then
+    if [ $(${MTIME} "${local_tz_link}") -gt \
+        $(${MTIME} "${usb_tz_link}") ]; then
         # Update the USB link with the local copy
-        ln -sf $(readlink -n "${local_tz_link}") "${usb_tz_link}"
-        ln -sf $(readlink -n "${local_tz_link}") "${local_tz_link}"
-    elif [ $(${MTIME} "${local_tz_link}") -lt $(${MTIME} "${usb_tz_link}") ]; then
+        ${LN} $(${READLINK} "${local_tz_link}") "${usb_tz_link}"
+        ${LN} $(${READLINK} "${local_tz_link}") "${local_tz_link}"
+    elif [ $(${MTIME} "${local_tz_link}") -lt \
+        $(${MTIME} "${usb_tz_link}") ]; then
         # Update the local link with the USB copy
-        ln -sf $(readlink -n "${usb_tz_link}") "${local_tz_link}"
-        ln -sf $(readlink -n "${usb_tz_link}") "${usb_tz_link}"
+        ${LN} $(${READLINK} "${usb_tz_link}") "${local_tz_link}"
+        ${LN} $(${READLINK} "${usb_tz_link}") "${usb_tz_link}"
     else
         # The links are the same; do nothing
         :
