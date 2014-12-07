@@ -2240,7 +2240,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Open our (new) virtual disk file */
             if ((new_vdisk_fd = open(new_vdisk_file,
-                    O_WRONLY | O_CREAT)) == -1) {
+                    O_WRONLY | O_CREAT, 0666)) == -1) {
                 asprintf(&error_msg, "open(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);

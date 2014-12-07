@@ -216,7 +216,7 @@ extern "C" {
 /* Logger settings */
 #define TUI_LOG_PREFIX      "esos_tui"
 #define TUI_LOG_OPTIONS     LOG_PID
-#define TUI_LOG_FACILITY    LOG_LOCAL2
+#define TUI_LOG_FACILITY    LOG_LOCAL4
 #define TUI_LOG_PRIORITY    LOG_ERR
 
 /* Other useful macros */
