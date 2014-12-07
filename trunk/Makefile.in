@@ -1128,6 +1128,8 @@ pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  $(SED) -i 's/HAVE_dbus\=1/HAVE_dbus\=0/' $(tgt_src_dir)/configure.ac; \
 	  $(SED) -i 's/^DBUS_LIBS.*/DBUS_LIBS\=\"\$$CFLAGS\"/' $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/ -I\$${prefix}\/include\/heartbeat//' $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/ -I\$${prefix}\/include//g' $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
 	cd $(tgt_src_dir) && \
@@ -1609,10 +1611,12 @@ dlm: glibc corosync
 	$(RM) $(IMAGE_DIR)/lib/udev
 	$(TOUCH) $(@)
 
-ipmitool: glibc openssl ncurses readline
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-intf-lan \
-	--enable-intf-lanplus
-	$(MAKE) --directory=$(tgt_src_dir)
+ipmitool: glibc openssl ncurses readline libedit
+	cd $(tgt_src_dir) && \
+	LIBS="-ltinfo -lncurses -lreadline -ledit" \
+	./configure --prefix=/usr --enable-intf-lan --enable-intf-lanplus
+	$(MAKE) --directory=$(tgt_src_dir) \
+	LIBS="-lreadline -ltinfo -lncurses -lcrypto -ledit"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -2012,7 +2016,8 @@ nagios-plugins: glibc
 	$(SED) -i -e '/gets is a security/d' $(tgt_src_dir)/gl/stdio.in.h
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-gnutls \
 	--without-pgsql --without-mysql --without-dbi --without-radius \
-	--without-ldap --with-ipv6 --with-perl=/usr/bin/perl
+	--without-ldap --with-ipv6 --with-perl=/usr/bin/perl \
+	--with-openssl=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
@@ -2039,7 +2044,8 @@ ceph: glibc util-linux keyutils libedit snappy leveldb boost Python
 keyutils: glibc
 	$(SED) -i 's/$$(LNS) $$(LIBDIR)\//$$(LNS) /' $(tgt_src_dir)/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" LDFLAGS="$(LDFLAGS)"
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir) LIBDIR=/usr/lib USRLIBDIR=/usr/lib \
+	DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 libedit: glibc ncurses

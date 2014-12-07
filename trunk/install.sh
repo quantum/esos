@@ -117,16 +117,17 @@ if [ -z "${install_list}" ]; then
 else
     echo "### Installing proprietary CLI tools..."
     mkdir -p ${MNT_DIR} || exit 1
-    esos_root=$(findfs LABEL=esos_root)
+    esos_conf=$(findfs LABEL=esos_conf)
     if [ ${?} -ne 0 ]; then
         exit 1
     fi
     # Just in case this system has an auto-mounter
-    if grep ${esos_root} /proc/mounts > /dev/null 2>&1; then
-        umount ${esos_root} || exit 1
+    if grep ${esos_conf} /proc/mounts > /dev/null 2>&1; then
+        umount ${esos_conf} || exit 1
     fi
     # Mount it and inject all (if any) of the tools
-    mount ${esos_root} ${MNT_DIR} || exit 1
+    mount ${esos_conf} ${MNT_DIR} || exit 1
+    mkdir -p ${MNT_DIR}/opt/{sbin,lib} || exit 1
     cd ${TEMP_DIR}
     for i in ${install_list}; do
         if [ "${i}" = "MegaCLI" ]; then

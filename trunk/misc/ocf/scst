@@ -20,6 +20,7 @@ PRE_SCST_CONF="/etc/pre-scst_xtra_conf"
 POST_SCST_CONF="/etc/post-scst_xtra_conf"
 SCST_SYSFS="/sys/kernel/scst_tgt"
 ALUA_STATES="active nonoptimized standby unavailable offline transitioning"
+NO_CLOBBER="/tmp/scst_ra-no_clobber"
 
 # For optional SCST modules
 if [ -f "/lib/modules/$(uname -r)/extra/ocs_fc_scst.ko" ]; then
@@ -78,7 +79,17 @@ scst_start() {
     # Configure SCST
     if [ -f "${SCST_CFG}" ]; then
         ocf_log info "Applying SCST configuration..."
-        ocf_run scstadmin -config "${SCST_CFG}" || exit ${OCF_ERR_GENERIC}
+        ocf_run scstadmin -config "${SCST_CFG}"
+        # Prevent scst_stop() from clobbering the configuration file
+        if [ ${?} -ne 0 ]; then
+            ocf_log err "Something is wrong with the SCST configuration!"
+            ocf_run touch "${NO_CLOBBER}"
+            exit ${OCF_ERR_GENERIC}
+        else
+            if [ -f "${NO_CLOBBER}" ]; then
+                ocf_run rm -f "${NO_CLOBBER}"
+            fi
+        fi
     fi
 
     # If our post-SCST file exists, run it
@@ -145,8 +156,13 @@ scst_stop() {
 
     # Save the SCST configuration, just in case
     ocf_log info "Saving SCST configuration..."
-    ocf_run scstadmin -force -nonkey -write_config \
-        ${SCST_CFG} || exit ${OCF_ERR_GENERIC}
+    if [ -f "${NO_CLOBBER}" ]; then
+        ocf_log warn "The '${NO_CLOBBER}' file exists," \
+            "not writing configuration!"
+    else
+        ocf_run scstadmin -force -nonkey -write_config \
+            ${SCST_CFG} || exit ${OCF_ERR_GENERIC}
+    fi
 
     # Stop all of the daemons and wait for each
     ocf_log info "Stopping daemons..."
