@@ -1,3 +1,20 @@
+2014-12-07 00:28  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/rc.2, install.sh,
+	  misc/linux-3.14.19.config, misc/ocf/scst, scripts/health_chk.sh,
+	  scripts/usb_sync.sh, tui/menu_actions-back_storage.c,
+	  tui/system.h: updated usb_sync script so it will now handle
+	  changes in permissions/mode, we do this by first checking mtime,
+	  and secondly ctime for file changes; enabled support for sync'ing
+	  /opt in the usb_sync script; updated Linux install script to
+	  write CLI tools to the esos_conf file system (Windows to follow);
+	  updated health_chk script to handle status 'Not Available' for MR
+	  enclosure check (resolves issue # 90); updates to scst RA to
+	  prevent clobbering scst.conf in the case of a bad conf; changed
+	  TUI log level to local4; enabled ATTO SAS driver and Emulex OC
+	  NIC driver in kernel config; TUI build fix for open(); several
+	  build fixes for Ubuntu
+
 2014-11-14 19:11  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, misc/initramfs_init,
