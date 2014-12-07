@@ -1,3 +1,11 @@
+2014-12-07 17:20  msmith626@gmail.com
+
+	* install.vbs, scripts/usb_sync.sh, tui/menu_actions-system.c:
+	  cleanup and several fixes for usb_sync script involving IFS;
+	  updated Windows installer script to now write CLI tools to the
+	  esos_conf FS; fixed TUI bug in Date/Time dialog for empty/blank
+	  NTP server and adjusted tab order
+
 2014-12-07 00:28  msmith626@gmail.com
 
 	* Makefile.in, etc/rc.d/rc.2, install.sh,
