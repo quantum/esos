@@ -38,6 +38,11 @@ Using _SUSE Linux Enterprise Desktop 11.4 x86_64_ as your build host:
   * zypper install -t pattern "linux_kernel_devel"
   * zypper install subversion kpartx libxslt
 
+Using _SUSE Linux Enterprise Server 12 x86_64_ as your build host:
+  * Standard/basic install, defaults for everything.
+  * zypper install -t pattern "SDK-C-C++"
+  * zypper install subversion kpartx libxslt1 groff-full
+
 <br>
 
 === Building ESOS ===
