@@ -9306,3 +9306,14 @@ index 7b2333d..a60212f 100644
  # define MAP_ANONYMOUS	0x20		/* Don't use a file.  */
  # define MAP_ANON	MAP_ANONYMOUS
  # define MAP_32BIT	0x40		/* Only give out 32-bit addresses.  */
+--- a/configure	2014-12-09 10:22:31.441583210 -0500
++++ b/configure	2014-12-09 10:22:55.181276681 -0500
+@@ -5116,7 +5116,7 @@
+   ac_prog_version=`$MAKE --version 2>&1 | sed -n 's/^.*GNU Make[^0-9]*\([0-9][0-9.]*\).*$/\1/p'`
+   case $ac_prog_version in
+     '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
+-    3.79* | 3.[89]*)
++    3.79* | 3.[89]* | [4-9].* | [1-9][0-9]*)
+        ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
+     *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
+ 

@@ -1116,8 +1116,11 @@ opensm: glibc gcc libibumad libibverbs
 	$(call clean_la_files,libosmcomp)
 	$(TOUCH) $(@)
 
-libqb: glibc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+libqb: glibc glib
+	cd $(tgt_src_dir) && \
+	GLIB_CFLAGS="-I$(IMAGE_DIR)/usr/include/glib-2.0 \
+	-I$(IMAGE_DIR)/usr/lib/glib-2.0/include" \
+	GLIB_LIBS="-L$(IMAGE_DIR)/usr/lib -lglib-2.0" ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libqb)
@@ -1640,7 +1643,7 @@ less: glibc ncurses
 	$(TOUCH) $(@)
 
 irqbalance: glibc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-glib2
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
@@ -1761,7 +1764,7 @@ util-linux: glibc ncurses zlib
 	cd $(tgt_src_dir) && ./autogen.sh
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-most-builds \
 	--disable-bash-completion --with-ncurses --disable-silent-rules \
-	--without-udev
+	--without-udev --disable-setpriv
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-usrlib_execLTLIBRARIES \
 	DESTDIR=$(IMAGE_DIR)
