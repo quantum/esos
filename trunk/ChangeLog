@@ -1,3 +1,10 @@
+2014-12-09 21:21  msmith626@gmail.com
+
+	* Makefile.in, misc/glibc-2.12.2.patch, scripts/health_chk.sh:
+	  update for the health_chk script to handle another "normal"
+	  non-optimal condition for MR enclosure state; several build fixes
+	  for SUSE platforms
+
 2014-12-07 17:20  msmith626@gmail.com
 
 	* install.vbs, scripts/usb_sync.sh, tui/menu_actions-system.c:
