@@ -77,6 +77,7 @@ if [ -x "${MEGACLI}" ]; then
                 line_status=`echo "${i}" | cut -d: -f2 | sed 's/^ *//' | tr -d '\n'`
                 if [ "${line_status}" != "OK" ] &&
                     [ "${line_status}" != "Not Installed" ] &&
+                    [ "${line_status}" != "Unknown" ] &&
                     [ "${line_status}" != "Not Available" ]; then
                     echo "** Warning! An enclosure health/status issue" \
                         "has been detected on adapter ${adapter}!" 1>&2
