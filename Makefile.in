@@ -52,6 +52,7 @@ ZIP		:= @zip@
 XZ		:= @xz@
 READLINK	:= @readlink@
 STRIP		:= @strip@
+BZIP2		:= @bzip2@
 
 enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
@@ -241,6 +242,7 @@ tarball_src_dirs	= $(addprefix $(PKG_SRC_DIR)/,$(subst .tar.xz,,\
 			$(subst .tar.bz2,,$(subst .tar.gz,,\
 			$(notdir $(dist_files))))))
 img_file		:= $(BUILD_DIR)/esos-$(esos_ver).img
+bz2_img_file		:= $(img_file).bz2
 
 # The ld scripts (eg, libc.so) are modified in-place and then
 # fixed after installing
@@ -391,9 +393,12 @@ image: $(build_targets)
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
 	$(LOSETUP) -d $(loop_dev)
-	cd $(dir $(img_file)) && $(MD5SUM) -b $(notdir $(img_file)) > \
+	$(QUIET) $(ECHO) && $(ECHO)
+	$(QUIET) $(ECHO) "### Compressing image file..."
+	$(BZIP2) -z -9 -c $(img_file) > $(bz2_img_file)
+	cd $(dir $(bz2_img_file)) && $(MD5SUM) -b $(notdir $(bz2_img_file)) > \
 	$(BUILD_DIR)/dist_md5sum.txt
-	cd $(dir $(img_file)) && $(SHA256SUM) -b $(notdir $(img_file)) > \
+	cd $(dir $(bz2_img_file)) && $(SHA256SUM) -b $(notdir $(bz2_img_file)) > \
 	$(BUILD_DIR)/dist_sha256sum.txt
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### All done; your ESOS disk image file is ready!"
@@ -402,14 +407,15 @@ image: $(build_targets)
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = esos-$(esos_ver)
-pkg_dist: $(img_file)
+pkg_dist: $(bz2_img_file)
 	$(LN) $(BUILD_DIR) $(pkg_prefix)
-	$(ZIP) -9 $(pkg_prefix).zip $(pkg_prefix)/$(notdir $(img_file)) \
+	$(ZIP) -9 $(pkg_prefix).zip $(pkg_prefix)/$(notdir $(bz2_img_file)) \
 	$(pkg_prefix)/dist_*.txt
 	$(RM) $(pkg_prefix)
 	$(LN) $(SRC_DIR) $(pkg_prefix)
 	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/install_common \
 	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
+	$(pkg_prefix)/rpm2cpio.sh \
 	$(pkg_prefix)/INSTALL $(pkg_prefix)/README \
 	$(pkg_prefix)/COPYING $(pkg_prefix)/ChangeLog
 	$(RM) $(pkg_prefix)
