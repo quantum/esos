@@ -5,8 +5,8 @@
 PKG_DIR="${PWD}"
 TEMP_DIR="${PKG_DIR}/temp"
 MNT_DIR="${TEMP_DIR}/mnt"
-RPM2CPIO="${PKG_DIR}/rpm2cpio.sh"
-LINUX_REQD_TOOLS="tar cpio dd md5sum sha256sum grep blockdev lsscsi unzip findfs bunzip2"
+LOCAL_RPM2CPIO="${PKG_DIR}/rpm2cpio.sh"
+LINUX_REQD_TOOLS="tar cpio dd md5sum sha256sum grep blockdev lsscsi unzip findfs bunzip2 rpm2cpio"
 MACOSX_REQD_TOOLS="tar cpio dd md5 shasum cat cut sed diff grep diskutil unzip bunzip2 fuse-ext2"
 MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
@@ -44,22 +44,100 @@ for i in ${!reqd_tools}; do
 done
 echo
 
+# Set the rpm2cpio that we're using
+if [ "${this_os}" = "${LINUX}" ]; then
+    rpm2cpio=$(which rpm2cpio)
+elif [ "${this_os}" = "${MACOSX}" ]; then
+    rpm2cpio=${LOCAL_RPM2CPIO}
+fi
+
 # Checksums
 echo "### Verifying checksums..."
 if [ "${this_os}" = "${LINUX}" ]; then
     md5sum -w -c ${MD5_CHECKSUM} || exit 1
     sha256sum -w -c ${SHA256_CHECKSUM} || exit 1
 elif [ "${this_os}" = "${MACOSX}" ]; then
-    img_file="$(cat ${MD5_CHECKSUM} | cut -d' ' -f2 | sed -e 's/\*//')"
-    if md5 -r ${img_file} | sed 's/ / */' | diff ${MD5_CHECKSUM} - > /dev/null 2>&1; then
-        echo "${img_file}: OK"
+    chksum_img_file="$(cat ${MD5_CHECKSUM} | cut -d' ' -f2 | sed -e 's/\*//')"
+    if md5 -r ${chksum_img_file} | sed 's/ / */' | diff ${MD5_CHECKSUM} - > /dev/null 2>&1; then
+        echo "${chksum_img_file}: OK"
     else
-        echo "${img_file}: The MD5 checksum doesn't match!"
+        echo "${chksum_img_file}: The MD5 checksum doesn't match!"
         exit 1
     fi
     shasum -a 256 -c ${SHA256_CHECKSUM} || exit 1
 fi
 echo
+
+# Locate the image file
+image_file="$(ls esos-*.img.bz2)" || exit 1
+
+# Check if we're doing an upgrade
+if [ -f "/etc/esos-release" ]; then
+    while true; do
+        # Look up the ESOS block device node
+        esos_boot="$(findfs LABEL=esos_boot)"
+        if [ ${?} -ne 0 ]; then
+            exit 1
+        fi
+        esos_blk_dev="$(echo ${esos_boot} | sed -e 's/1//')"
+        # Make sure the image disk label and the ESOS USB drive match
+        image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
+        disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
+        image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
+        bunzip2 -d -c ${image_file} | dd of=${image_mbr} bs=512 count=1 > /dev/null 2>&1 || exit 1
+        fdisk -u -l ${esos_blk_dev} | egrep "^${esos_blk_dev}" | sed -e 's/\*//' | \
+            awk '{ print $2 }' > ${disk_parts}
+        fdisk -u -l ${image_mbr} | egrep "^${image_mbr}" | sed -e 's/\*//' | \
+            awk '{ print $2 }' > ${image_parts}
+        if ! diff ${disk_parts} ${image_parts} > /dev/null 2>&1; then
+            echo "### The image file and current ESOS disk labels do not match!" \
+                "An in-place upgrade is not supported, continuing..."
+            echo
+            rm -f ${image_mbr} ${disk_parts} ${image_parts}
+            break
+        fi
+        # Get confirmation for an upgrade
+        echo "### This installation script is running on a live ESOS host." \
+            "Okay to perform an in-place upgrade? Log file system data will" \
+            "persist and you will not be prompted to install propietary" \
+            "CLI tools." && read confirm
+            echo
+        if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
+            echo "### We believe '${esos_blk_dev}' is the correct ESOS boot" \
+                "device to upgrade. Here is what it looks like:"
+            fdisk -l ${esos_blk_dev} || exit 1
+            echo
+            echo "### Is this the correct ESOS device? All data on" \
+                "'${esos_blk_dev}' will be destroyed! Please double-check!" \
+                "Okay to continue (type 'YES' to confirm)?" && read confirm
+                echo
+            if [ "${confirm}" = "YES" ]; then
+                # Get the device sector size and ending sector of esos_root (2)
+                dev_sector_size=$(blockdev --getss ${esos_blk_dev}) || exit 1
+                esos_root_end=$(fdisk -u -l ${esos_blk_dev} | \
+                    egrep "^${esos_blk_dev}2" | awk '{ print $3 }') || exit 1
+                # A simple sanity check
+                if [ ${dev_sector_size} -gt 0 ] && [ ${esos_root_end} -gt 0 ]; then
+                    echo "### Writing ${image_file} to ${esos_blk_dev}" \
+                        "(bs=${dev_sector_size} count=${esos_root_end});" \
+                        "this may take a while..."
+                    bunzip2 -d -c ${image_file} | dd of=${esos_blk_dev} \
+                        bs=${dev_sector_size} count=${esos_root_end} || exit 1
+                    echo
+                    echo "### Your ESOS USB flash drive has been upgraded!" \
+                        "Please run conf_sync.sh to check file system" \
+                        "integrity before rebooting."
+                        exit 0
+                fi
+                exit 1
+            else
+                exit 0
+            fi
+        else
+            break
+        fi
+    done
+fi
 
 # Print out a list of disk devices
 echo "### Here is a list of disk devices on this machine:"
@@ -82,14 +160,17 @@ if mount | grep ${dev_node} > /dev/null; then
     exit 1
 fi
 if [ "${this_os}" = "${LINUX}" ]; then
-    dev_sectors=`blockdev --getsz ${dev_node}` || exit 1
-    dev_bytes=`expr ${dev_sectors} \\* 512`
+    dev_sectors=$(blockdev --getsz ${dev_node}) || exit 1
+    dev_sect_sz=$(blockdev --getss ${dev_node}) || exit 1
+    dev_bytes=$(expr ${dev_sectors} \* ${dev_sect_sz})
 elif [ "${this_os}" = "${MACOSX}" ]; then
-    dev_bytes=$(diskutil info -plist ${dev_node} | grep -A1 "<key>TotalSize</key>" | \
-        grep -o '<integer>'.*'</integer>' | grep -o [^'<'integer'>'].*[^'<''/'integer'>']) || exit 1
+    dev_bytes=$(diskutil info -plist ${dev_node} | \
+        grep -A1 "<key>TotalSize</key>" | grep -o '<integer>'.*'</integer>' | \
+        grep -o [^'<'integer'>'].*[^'<''/'integer'>']) || exit 1
 fi
 if [ ${dev_bytes} -lt 4000000000 ]; then
-    echo "ERROR: Your USB flash drive isn't large enough; it must be at least 4000 MiB."
+    echo "ERROR: Your USB flash drive isn't large enough;" \
+        "it must be at least 4000 MiB."
     exit 1
 fi
 
@@ -97,9 +178,13 @@ fi
 echo "### Proceeding will completely wipe the '${dev_node}' device. Are you sure?" && read confirm
 echo
 if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
-    image_file=`ls esos-*.img.bz2`
+    if [ "${this_os}" = "${LINUX}" ]; then
+        suffix="M"
+    elif [ "${this_os}" = "${MACOSX}" ]; then
+        suffix="m"
+    fi
     echo "### Writing ${image_file} to ${dev_node}; this may take a while..."
-    bunzip2 -d -c ${image_file} | dd of=${dev_node} bs=1m || exit 1
+    bunzip2 -d -c ${image_file} | dd of=${dev_node} bs=1${suffix} || exit 1
     if [ "${this_os}" = "${LINUX}" ]; then
         blockdev --rereadpt ${dev_node} || exit 1
     fi
@@ -173,16 +258,16 @@ else
     cd ${TEMP_DIR}
     for i in ${install_list}; do
         if [ "${i}" = "MegaCLI" ]; then
-            unzip -o ${PKG_DIR}/*_MegaCLI.zip && ${RPM2CPIO} Linux/MegaCli-*.rpm | \
+            unzip -o ${PKG_DIR}/*_MegaCLI.zip && ${rpm2cpio} Linux/MegaCli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "StorCLI" ]; then
-            unzip -o ${PKG_DIR}/*_StorCLI.zip && ${RPM2CPIO} storcli_all_os/Linux/storcli-*.rpm | \
+            unzip -o ${PKG_DIR}/*_StorCLI.zip && ${rpm2cpio} storcli_all_os/Linux/storcli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/storcli/storcli64 ${MNT_DIR}/opt/sbin/ && \
             cp opt/MegaRAID/storcli/libstorelibir* ${MNT_DIR}/opt/lib/
         elif [ "${i}" = "arcconf" ]; then
             unzip -o ${PKG_DIR}/arcconf_*.zip && cp linux_x64/arcconf ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "hpacucli" ]; then
-            ${RPM2CPIO} ${PKG_DIR}/hpacucli-*.x86_64.rpm | cpio -idmv && \
+            ${rpm2cpio} ${PKG_DIR}/hpacucli-*.x86_64.rpm | cpio -idmv && \
             cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli && \
             cp opt/compaq/hpacucli/bld/*.so ${MNT_DIR}/opt/lib/
         elif [ "${i}" = "linuxcli" ]; then
