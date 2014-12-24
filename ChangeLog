@@ -1,3 +1,10 @@
+2014-12-24 06:07  msmith626@gmail.com
+
+	* install.sh: updates for Linux installer script to handle an
+	  in-place ESOS upgrade... only write from start of MBR to end of
+	  esos_root partition which preserves esos_conf and esos_logs;
+	  other fixes for updated install.sh script
+
 2014-12-23 14:21  msmith626@gmail.com
 
 	* Makefile.in, configure.ac, install.sh, install.vbs, rpm2cpio.sh:
