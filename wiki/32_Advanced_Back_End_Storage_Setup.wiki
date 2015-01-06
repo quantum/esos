@@ -457,6 +457,21 @@ To add the cache back in, you will need to recreate the cache pool from scratch 
 === Automatic Tiered Block Devices (BTIER) ===
 TODO
 
+Special thanks to Riccardo Bicelli for creating a BTIER resource agent (RA) for use with Pacemaker. This RA is included in ESOS; here is his original post for the BTIER RA: http://think-brick.blogspot.it/2014/09/btier-resource-agents-for-pacemaker.html
+
+Example usage in ESOS:
+{{{
+crm
+cib new btier
+configure primitive p_btier ocf:esos:btier \ 
+params tier_devices="/dev/sda:/dev/sdb" \
+device_name="mybtierdev01"
+op monitor interval="10s"
+configure show
+cib commit btier
+quit
+}}}
+
 <br>
 
 === Ceph RBD Mapping ===
