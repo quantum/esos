@@ -1,3 +1,9 @@
+2015-01-06 02:36  msmith626@gmail.com
+
+	* install_common, scripts/health_chk.sh: updated health_chk script
+	  to handle yet another MR enclosure status; updated hpacucli and
+	  linuxcli tool download URLs
+
 2014-12-24 06:07  msmith626@gmail.com
 
 	* install.sh: updates for Linux installer script to handle an
