@@ -78,6 +78,7 @@ if [ -x "${MEGACLI}" ]; then
                 if [ "${line_status}" != "OK" ] &&
                     [ "${line_status}" != "Not Installed" ] &&
                     [ "${line_status}" != "Unknown" ] &&
+                    [ "${line_status}" != "Unsupported" ] &&
                     [ "${line_status}" != "Not Available" ]; then
                     echo "** Warning! An enclosure health/status issue" \
                         "has been detected on adapter ${adapter}!" 1>&2
