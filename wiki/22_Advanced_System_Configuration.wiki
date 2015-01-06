@@ -140,10 +140,9 @@ SCST multi-state resource example; two nodes (both master):
 crm
 cib new scst
 configure primitive p_scst ocf:esos:scst \
-params alua="true" \
-device_group=”esos” \
-local_tgt_grp=”local” \
-remote_tgt_grp=”remote”
+params alua="true" device_group=”esos” \
+local_tgt_grp=”local” remote_tgt_grp=”remote” \
+m_alua_state="active" s_alua_state="nonoptimized" \
 op monitor interval=”10” role="Master" \
 op monitor interval=”20” role="Slave" \
 op start interval="0" timeout="120" \
