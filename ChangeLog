@@ -1,3 +1,18 @@
+2015-01-24 05:29  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
+	  etc/rc.d/common, etc/rc.d/rc.2, etc/rc.d/rc.local,
+	  etc/rc.d/rc.stunnel, etc/rc.local, etc/stunnel,
+	  etc/stunnel/stunnel.conf, misc/ocf/btier,
+	  misc/sysvinit-2.88dsf.patch, scripts/health_chk.sh: updated
+	  health check script to use "MemAvailable" from /proc/meminfo
+	  instead of attempting to calculating available memory (new
+	  feature in 3.14.x); added xmlrpc-c libs and stunnel; moved
+	  rc.local script to /etc/; updated autoconf script and other rc.d
+	  components for stunnel; patched sysvinit so bootlogd handles log
+	  file lines that start with tabs; added the "btier" RA (thanks
+	  Riccardo)
+
 2015-01-06 02:36  msmith626@gmail.com
 
 	* install_common, scripts/health_chk.sh: updated health_chk script
