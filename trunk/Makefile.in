@@ -195,6 +195,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		acl-2.2.52.tar.gz \
 		htop-1.0.3.tar.gz \
 		dmidecode-2.12.tar.gz \
+		xmlrpc-c-1.33.15.tar.gz \
+		stunnel-5.10.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -216,7 +218,8 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		sysstat pciutils tar net-snmp nut libusb libusb_compat \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
-		libmcrypt nsca btrfs-progs attr acl htop dmidecode
+		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
+		stunnel
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -372,6 +375,8 @@ image: $(build_targets)
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/pacemaker
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/heartbeat
 	$(CHOWN) 101:101 $(MOUNT_DIR)/var/run/crm
+	$(CHOWN) 0:65534 $(MOUNT_DIR)/var/lib/stunnel
+	$(CHMOD) 1770 $(MOUNT_DIR)/var/lib/stunnel
 	$(FIND) $(MOUNT_DIR)/etc -path $(MOUNT_DIR)/etc/rc.d -prune -o \
 	-print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
 	$(FIND) $(MOUNT_DIR)/var/lib -print0 | \
@@ -774,6 +779,8 @@ elfutils: glibc
 	$(TOUCH) $(@)
 
 sysvinit: glibc
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	$(MAKE) --directory=$(tgt_src_dir)/src SULOGINLIBS=-lcrypt \
 	CFLAGS="-O2 -fomit-frame-pointer" CC="$(esos_cc)"
 	$(MAKE) --directory=$(tgt_src_dir)/src ROOT=$(IMAGE_DIR) install
@@ -1080,7 +1087,8 @@ xfsprogs: glibc util-linux
 	$(TOUCH) $(@)
 
 drbd: glibc
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < $(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-km \
 	--without-udev --without-xen --with-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic \
@@ -2129,5 +2137,28 @@ dmidecode: glibc
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir) install prefix=/usr \
 	DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+xmlrpc-c: glibc curl libxml2
+	cd $(tgt_src_dir) && PATH="$$PATH:$(IMAGE_DIR)/usr/bin" \
+	./configure --prefix=/usr --disable-wininet-client \
+	--disable-libwww-client --disable-cgi-server --enable-curl-client \
+	--enable-libxml2-backend
+	$(MAKE) --directory=$(tgt_src_dir) CURL_LIBDIR="$(IMAGE_DIR)/usr/lib" \
+	LIBXML=XML_PARSER_LIBDEP="-lxml2 -lz -lm -ldl" \
+	LIBXML_INCLUDES="-I$(IMAGE_DIR)/usr/include/libxml2"
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/tools/xmlrpc \
+	LDFLAGS_ALL="-L$(IMAGE_DIR)/usr/lib -lxml2 -lcurl"
+	$(INSTALL) -vD -m 755 $(tgt_src_dir)/tools/xmlrpc/xmlrpc \
+	$(IMAGE_DIR)/usr/bin/xmlrpc
+	$(TOUCH) $(@)
+
+stunnel: glibc openssl
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-ssl="$(IMAGE_DIR)/usr"
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir)/src DESTDIR=$(IMAGE_DIR) install-exec
+	$(MAKE) --directory=$(tgt_src_dir)/doc DESTDIR=$(IMAGE_DIR) install-data
+	$(call clean_la_files,libstunnel)
 	$(TOUCH) $(@)
 

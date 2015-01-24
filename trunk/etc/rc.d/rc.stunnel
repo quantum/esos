@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# $Id$
+
+source /etc/rc.d/common
+
+STUNNEL="/usr/bin/stunnel"
+STUNNEL_LOCK="/var/lock/stunnel"
+
+# Check arguments
+if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
+    /bin/echo "Usage: $0 {start | stop}"
+    exit 1
+fi
+
+start() {
+    /bin/echo "Starting stunnel..."
+    ${STUNNEL} || exit 1
+    /bin/touch ${STUNNEL_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping stunnel..."
+    /bin/kill -TERM $(/bin/pidof ${STUNNEL}) || exit 1
+    wait_for_stop ${STUNNEL} && /bin/rm -f ${STUNNEL_LOCK}
+}
+
+# Perform specified action
+${1}
