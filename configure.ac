@@ -110,6 +110,7 @@ if test -d "${image_dir}"; then
         ${mkdir} -p ${image_dir}/var/run/{crm,mdadm} || exit 1
         ${mkdir} -p ${image_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
         ${mkdir} -p ${image_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
+        ${mkdir} -p ${image_dir}/var/lib/stunnel || exit 1
         ${ln} -sf lib ${image_dir}/lib64 || exit 1
         ${ln} -sf lib ${image_dir}/usr/lib64 || exit 1
         ${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1

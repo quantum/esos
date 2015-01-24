@@ -1,0 +1,16 @@
+--- a/src/bootlogd.c	2015-01-24 00:04:59.636244572 -0500
++++ b/src/bootlogd.c	2015-01-24 00:06:59.166814087 -0500
+@@ -381,9 +381,10 @@
+ 				dosync = 1;
+ 				break;
+ 			case '\t':
+-				line.pos += (line.pos / 8 + 1) * 8;
+-				if (line.pos >= (int)sizeof(line.buf))
+-					line.pos = sizeof(line.buf) - 1;
++				//line.pos += (line.pos / 8 + 1) * 8;
++				//if (line.pos >= (int)sizeof(line.buf))
++				//	line.pos = sizeof(line.buf) - 1;
++				strcpy(tmp, "    ");
+ 				break;
+ 			case  32 ... 127:
+ 			case 161 ... 255:

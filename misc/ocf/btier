@@ -1,0 +1,245 @@
+# !/bin/bash
+#
+# $Id$
+
+#
+# 	BTIER OCF RA. Exports and manages iSCSI SCST targets.
+#
+#   (c) 2014 Riccardo Bicelli
+#                 and Linux-HA contributors
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it would be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Further, this software is distributed without any warranty that it is
+# free of the rightful claim of any third person regarding infringement
+# or the like.  Any license provided herein, whether implied or
+# otherwise, applies only to this software file.  Patent licenses, if
+# any, provided herein do not apply to combinations of this program with
+# other software, or any other product whatsoever.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
+#
+
+#######################################################################
+# Initialization:
+: ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}
+. ${OCF_FUNCTIONS_DIR}/ocf-shellfuncs
+
+# Lockfile, used for controlling tier device
+LOCKFILE=${HA_RSCTMP}/btier-${OCF_RESKEY_implementation}.lock
+
+SYSFS_PATH="/sys/block"
+#######################################################################
+
+meta_data() {
+	cat <<END
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="btier" version="0.2">
+<version>1.0</version>
+
+<longdesc lang="en">
+Btier is an automated tiering block device for the Linux kernel.
+It works with any type of file-system and it’s purpose is to 
+automatically move data between different block devices in such
+a way that the performance is improved while the costs for storage
+are reduced.
+</longdesc>
+<shortdesc lang="en">BTIER block device Export Agent</shortdesc>
+
+<parameters>
+
+<parameter name="tier_devices" required="1" unique="1">
+<longdesc lang="en">
+List of devices belonging to the tier device, ordered from fastest
+to slowest.
+Syntax is the same as btier_setup command: /dev/tier1:/dev/tier2[...]
+</longdesc>
+<shortdesc lang="en">List of devices belonging to tier, ordered 
+from fastest to slowest</shortdesc>
+<content type="string" />
+</parameter>
+
+<parameter name="device_name" required="0" unique="1">
+<longdesc lang="en">
+Arbitrary device name: if set, when tier device is assembled,
+a symlink to /dev/sdtier[a-z] device will be created in /dev.
+</longdesc>
+<shortdesc lang="en">Arbitrary device name</shortdesc>
+<content type="string" />
+</parameter>
+
+
+
+</parameters>
+
+<actions>
+<action name="start"        timeout="10" />
+<action name="stop"         timeout="180" />
+<action name="status "      timeout="10" interval="10" depth="0" />
+<action name="monitor"      timeout="10" interval="10" depth="0" />
+<action name="meta-data"    timeout="5" />
+<action name="validate-all"   timeout="10" />
+</actions>
+</resource-agent>
+END
+}
+
+
+l_load_module () {
+	n=`lsmod | grep -c "^$1 "`
+	if [ $n -gt 0 ];
+	then
+		return 0
+	else
+		modprobe $1> /dev/null 2>&1 || return 1
+		return 0
+	fi
+}
+
+get_tier_dev (){
+	if [ -e $LOCKFILE ]; then
+		TIER_DEV=$(cat $LOCKFILE)
+	else
+		TIER_DEV="XXXNONEX"
+		return 1
+	fi
+}
+
+set_tier_dev (){
+	# Read across /sys/block/sdtier* and writes last value into LOCKFILE	
+	local rc=0	
+	for DEV in /sys/block/sdtier*
+	do
+		TIER_DEV=$(basename $DEV)
+	done
+	if [ "${OCF_RESKEY_device_name}" != "" ]; then
+		#TODO: Check if device already exists. If yes resource MUST be stopped
+		if [ -e /dev/${OCF_RESKEY_device_name} ]; then 			
+			ocf_log warn "Device ${OCF_RESKEY_device_name} already exists"
+			rc=1
+		else
+			ocf_log info "Creating symlink /dev/${OCF_RESKEY_device_name}"
+			ln -s /dev/${TIER_DEV} /dev/${OCF_RESKEY_device_name}
+		fi
+	fi
+	echo $TIER_DEV > $LOCKFILE
+	return $rc
+}
+
+btier_usage() {
+	cat <<END
+usage: $0 {start|stop|status|monitor|validate-all|meta-data}
+
+Expects to have a fully populated OCF RA-compliant environment set.
+END
+}
+
+btier_start() {
+    btier_monitor
+
+    if [ $? =  $OCF_SUCCESS ]; then
+	return $OCF_SUCCESS
+    fi
+
+	ocf_log info "BTIER: Starting..."
+	l_load_module btier
+	
+	# Assemble Tier Device
+	/sbin/btier_setup -f ${OCF_RESKEY_tier_devices} -B
+	if [ $? = 0 ]; then
+		set_tier_dev
+		get_tier_dev
+		ocf_log info "started device ${TIER_DEV}"
+		return $OCF_SUCCESS
+	else
+		ocf-log warn "unable to start btier device"
+		return $OCF_ERROR_GENERIC
+	fi
+		
+}
+
+btier_stop() {
+    btier_monitor
+
+    if [ $? =  $OCF_SUCCESS ]; then
+	ocf_log info "stopping tier device ${TIER_DEV}"
+	btier_setup -d /dev/${TIER_DEV}
+	if [ $? -eq 0 ]; then
+		rm $LOCKFILE
+		# Remove Symlink		
+		if [ "${OCF_RESKEY_device_name}" != "" ]; then
+			rm /dev/${OCF_RESKEY_device_name}		
+		fi
+	fi
+    fi
+    return $OCF_SUCCESS
+}
+
+btier_monitor() {
+	get_tier_dev
+
+	if [ -d "${SYSFS_PATH}/${TIER_DEV}" ]; then	 
+		return $OCF_SUCCESS
+	else    	
+		return $OCF_NOT_RUNNING
+	fi
+}
+
+btier_validate() {
+    # Do we have all required variables?
+    local required_vars
+	    required_vars="tier_devices"
+    for var in ${required_vars}; do
+	param="OCF_RESKEY_${var}"
+	if [ -z "${!param}" ]; then
+	    ocf_log error "Missing resource parameter \"$var\"!"
+	    exit $OCF_ERR_CONFIGURED
+	fi
+    done
+
+    if ! ocf_is_probe; then
+		check_binary btier_setup
+    fi    
+
+    return $OCF_SUCCESS
+}
+
+
+case $1 in
+  meta-data)
+	meta_data
+	exit $OCF_SUCCESS
+	;;
+  usage|help)
+	btier_usage
+	exit $OCF_SUCCESS
+	;;
+esac
+
+# Everything except usage and meta-data must pass the validate test
+btier_validate
+
+case $__OCF_ACTION in
+start)		btier_start;;
+stop)		btier_stop;;
+monitor|status)	btier_monitor;;
+#reload)		ocf_log err "Reloading..."
+#	        btier_start
+#		;;
+validate-all)	;;
+*)		btier_usage
+		exit $OCF_ERR_UNIMPLEMENTED
+		;;
+esac
+rc=$?
+ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : $rc"
+exit $rc

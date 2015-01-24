@@ -8,7 +8,7 @@
 
 MEGACLI="/opt/sbin/MegaCli64"
 ARCCONF="/opt/sbin/arcconf"
-MEM_PRCT_THRESH=0.95
+MEM_PRCT_THRESH=0.90
 DISK_PRCT_THRESH=0.80
 CHK_FS_LABEL="esos_root"
 EMAIL_TO="root"
@@ -151,10 +151,7 @@ fi
 
 # Check physical RAM
 mem_total=`cat /proc/meminfo | grep "^MemTotal:" | awk '{print $2}'`
-mem_free=`cat /proc/meminfo | grep "^MemFree:" | awk '{print $2}'`
-mem_cached=`cat /proc/meminfo | grep "^Cached:" | awk '{print $2}'`
-mem_mapped=`cat /proc/meminfo | grep "^Mapped:" | awk '{print $2}'`
-mem_avail=`expr ${mem_free} + ${mem_cached} - ${mem_mapped}`
+mem_avail=`cat /proc/meminfo | grep "^MemAvailable:" | awk '{print $2}'`
 mem_used=`expr ${mem_total} - ${mem_avail}`
 echo "Physical RAM check..."
 echo -e "Total Memory:\t\t${mem_total} kB\nUsed Memory:\t\t${mem_used} kB\nAvailable Memory:\t${mem_avail} kB"
@@ -163,7 +160,7 @@ echo -e "Memory used percent:\t${prct_mem_used}"
 if expr ${prct_mem_used} '>' ${MEM_PRCT_THRESH} > /dev/null; then
     echo "** Warning! Maximum memory used threshold (${MEM_PRCT_THRESH}) has been exceeded..." 1>&2
     echo "Total Physical RAM: ${mem_total} kB" 1>&2
-    echo "Available Physical RAM: ${mem_free} kB" 1>&2
+    echo "Available Physical RAM: ${mem_avail} kB" 1>&2
 fi
 
 # Check disk space (well, tmpfs root FS space)
