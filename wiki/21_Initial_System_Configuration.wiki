@@ -113,6 +113,19 @@ The TUI is not available when connecting via serial, only the shell is usable.
 
 <br>
 
+=== Shutting Down & Rebooting ===
+To power off / shut down a running ESOS server, execute the following command from the shell:
+{{{
+poweroff
+}}}
+
+To reboot a running ESOS server, execute the following command from the shell:
+{{{
+reboot
+}}}
+
+<br>
+
 === What's Next ===
 From here, you can now SSH into your ESOS storage server, configure your back-storage and setup your targets. Continue with the [31_Basic_Back_End_Storage_Setup] document.
 
