@@ -1,3 +1,8 @@
+2015-01-26 02:38  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.conf, etc/stunnel/stunnel.conf: fixed build
+	  dependency issue; updated default configuration for stunnel
+
 2015-01-24 05:29  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
