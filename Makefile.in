@@ -2139,7 +2139,7 @@ dmidecode: glibc
 	DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
 
-xmlrpc-c: glibc curl libxml2
+xmlrpc-c: glibc gcc curl libxml2
 	cd $(tgt_src_dir) && PATH="$$PATH:$(IMAGE_DIR)/usr/bin" \
 	./configure --prefix=/usr --disable-wininet-client \
 	--disable-libwww-client --disable-cgi-server --enable-curl-client \
@@ -2155,7 +2155,8 @@ xmlrpc-c: glibc curl libxml2
 	$(TOUCH) $(@)
 
 stunnel: glibc openssl
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-ssl="$(IMAGE_DIR)/usr"
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--with-ssl="$(IMAGE_DIR)/usr"
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/src DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/doc DESTDIR=$(IMAGE_DIR) install-data
