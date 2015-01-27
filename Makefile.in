@@ -825,7 +825,7 @@ glibc: kernel_headers
 	$(SRC_DIR)/misc/glibc-2.12.2.patch
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
-	cd $(WORK_DIR)/glibc-build && \
+	cd $(WORK_DIR)/glibc-build BASH_SHELL="/bin/bash" && \
 	CC="" CXX="" CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" \
 	LDFLAGS="" $(tgt_src_dir)/configure --prefix=/usr --without-selinux
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
@@ -1265,6 +1265,9 @@ libxml2: glibc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libxml2)
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/usr/bin/xml2-config \
+	--prefix=$(IMAGE_DIR)/usr \"\044\0100\"\n" > $(WORK_DIR)/xml2-config
+	$(CHMOD) +x $(WORK_DIR)/xml2-config
 	$(TOUCH) $(@)
 
 libxslt: glibc libxml2
@@ -1496,6 +1499,9 @@ curl: glibc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libcurl)
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/usr/bin/curl-config \
+	\"\044\0100\"\n" > $(WORK_DIR)/curl-config
+	$(CHMOD) +x $(WORK_DIR)/curl-config
 	$(TOUCH) $(@)
 
 Net-Telnet: perl_lib = $(wildcard $(IMAGE_DIR)/usr/lib/perl5/5.*)
@@ -2140,16 +2146,14 @@ dmidecode: glibc
 	$(TOUCH) $(@)
 
 xmlrpc-c: glibc gcc curl libxml2
-	cd $(tgt_src_dir) && PATH="$$PATH:$(IMAGE_DIR)/usr/bin" \
+	cd $(tgt_src_dir) && PATH="$$PATH:$(WORK_DIR)" \
 	./configure --prefix=/usr --disable-wininet-client \
 	--disable-libwww-client --disable-cgi-server --enable-curl-client \
 	--enable-libxml2-backend
-	$(MAKE) --directory=$(tgt_src_dir) CURL_LIBDIR="$(IMAGE_DIR)/usr/lib" \
-	LIBXML=XML_PARSER_LIBDEP="-lxml2 -lz -lm -ldl" \
-	LIBXML_INCLUDES="-I$(IMAGE_DIR)/usr/include/libxml2"
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/tools/xmlrpc \
-	LDFLAGS_ALL="-L$(IMAGE_DIR)/usr/lib -lxml2 -lcurl"
+	PATH="$$PATH:$(WORK_DIR)" $(MAKE) -j1 --directory=$(tgt_src_dir)
+	PATH="$$PATH:$(WORK_DIR)" $(MAKE) --directory=$(tgt_src_dir) \
+	DESTDIR=$(IMAGE_DIR) install
+	PATH="$$PATH:$(WORK_DIR)" $(MAKE) --directory=$(tgt_src_dir)/tools/xmlrpc
 	$(INSTALL) -vD -m 755 $(tgt_src_dir)/tools/xmlrpc/xmlrpc \
 	$(IMAGE_DIR)/usr/bin/xmlrpc
 	$(TOUCH) $(@)

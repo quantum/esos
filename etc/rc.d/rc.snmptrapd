@@ -7,11 +7,7 @@ source /etc/rc.d/common
 SNMPTRAPD="/usr/sbin/snmptrapd"
 SNMPTRAPD_LOCK="/var/lock/snmptrapd"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Starting snmptrapd..."
@@ -23,6 +19,11 @@ stop() {
     /bin/echo "Stopping snmptrapd..."
     /bin/kill -TERM $(/bin/pidof ${SNMPTRAPD}) || exit 1
     wait_for_stop ${SNMPTRAPD} && /bin/rm -f ${SNMPTRAPD_LOCK}
+}
+
+status() {
+    /bin/pidof ${SNMPTRAPD} > /dev/null 2>&1
+    exit ${?}
 }
 
 # Perform specified action

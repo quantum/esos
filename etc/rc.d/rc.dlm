@@ -7,11 +7,7 @@ source /etc/rc.d/common
 DLM_CONTROLD="/usr/sbin/dlm_controld"
 DLM_CONTROLD_LOCK="/var/lock/dlm_controld"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Setting up for DLM..."
@@ -26,6 +22,11 @@ stop() {
     /bin/echo "Stopping dlm_controld..."
     /bin/kill -TERM $(/bin/pidof ${DLM_CONTROLD}) || exit 1
     wait_for_stop ${DLM_CONTROLD} && /bin/rm -f ${DLM_CONTROLD_LOCK}
+}
+
+status() {
+    /bin/pidof ${DLM_CONTROLD} > /dev/null 2>&1
+    exit ${?}
 }
 
 # Perform specified action

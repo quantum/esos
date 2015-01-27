@@ -7,11 +7,7 @@ source /etc/rc.d/common
 COROSYNC="/usr/sbin/corosync"
 COROSYNC_LOCK="/var/lock/corosync"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Starting corosync..."
@@ -24,6 +20,11 @@ stop() {
     /bin/echo "Stopping corosync..."
     /bin/kill -TERM $(/bin/pidof ${COROSYNC}) || exit 1
     wait_for_stop ${COROSYNC} && /bin/rm -f ${COROSYNC_LOCK}
+}
+
+status() {
+    /bin/pidof ${COROSYNC} > /dev/null 2>&1
+    exit ${?}
 }
 
 # Perform specified action

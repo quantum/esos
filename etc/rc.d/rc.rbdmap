@@ -2,14 +2,12 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 RBD="/usr/bin/rbd"
 RBDMAP_FILE="/etc/ceph/rbdmap"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     # Make sure the map file exists
@@ -50,6 +48,11 @@ stop() {
             ${RBD} unmap ${dev}
         done
     fi
+}
+
+status() {
+    # We don't know anything
+    exit ${UNKNOWN}
 }
 
 # Perform specified action

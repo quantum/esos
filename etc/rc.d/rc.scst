@@ -23,11 +23,7 @@ if [ -f "/lib/modules/$(/bin/uname -r)/extra/chfcoe.ko" ]; then
     SCST_MODS="${SCST_MODS} chfcoe"
 fi
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 load_kern_mods() {
     /bin/echo "Loading SCST kernel modules..."
@@ -102,6 +98,14 @@ stop() {
     stop_user_progs || exit 1
     # Unload all of the modules in reverse order
     unload_kern_mods || exit 1
+}
+
+status() {
+    if [ -d "/sys/kernel/scst_tgt" ]; then
+        exit ${RUNNING}
+    else
+        exit ${STOPPED}
+    fi
 }
 
 # Perform specified action
