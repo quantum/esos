@@ -1,3 +1,19 @@
+2015-01-27 14:57  msmith626@gmail.com
+
+	* Makefile.in, etc/rc.d/common, etc/rc.d/rc.btier,
+	  etc/rc.d/rc.clvmd, etc/rc.d/rc.corosync, etc/rc.d/rc.dlm,
+	  etc/rc.d/rc.dmcache, etc/rc.d/rc.drbd, etc/rc.d/rc.eio,
+	  etc/rc.d/rc.fsmount, etc/rc.d/rc.lvm2, etc/rc.d/rc.mdraid,
+	  etc/rc.d/rc.mhvtl, etc/rc.d/rc.nrpe, etc/rc.d/rc.nut,
+	  etc/rc.d/rc.openibd, etc/rc.d/rc.opensm, etc/rc.d/rc.pacemaker,
+	  etc/rc.d/rc.rbdmap, etc/rc.d/rc.scst, etc/rc.d/rc.smartd,
+	  etc/rc.d/rc.snmpd, etc/rc.d/rc.snmptrapd, etc/rc.d/rc.sshd,
+	  etc/rc.d/rc.stunnel: updated rc scripts to now handle a 'status'
+	  argument which simply returns an exit status code, no string
+	  message; additional rc script clean-up; fixed issue with ldd
+	  script from glibc (wrong bash location); more build tweaks/fixes
+	  for recent package adds
+
 2015-01-26 02:38  msmith626@gmail.com
 
 	* Makefile.in, etc/rc.conf, etc/stunnel/stunnel.conf: fixed build
