@@ -2,14 +2,12 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 IB_CONFIG="/etc/infiniband/openib.conf"
 IB_SYSFS="/sys/class/infiniband"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 # Make sure the IB configuration file exists
 if [ ! -f "${IB_CONFIG}" ]; then
@@ -100,6 +98,11 @@ stop() {
     done
     /sbin/rmmod -w ib_uverbs
     /sbin/rmmod -w ib_umad
+}
+
+status() {
+    # We don't know anything
+    exit ${UNKNOWN}
 }
 
 # Perform specified action

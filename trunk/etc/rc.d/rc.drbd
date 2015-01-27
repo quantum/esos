@@ -2,15 +2,13 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 DRBDADM="/sbin/drbdadm"
 DEV_TIMEOUT=10
 PROC_DRBD="/proc/drbd"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Setting DRBD parameters..."
@@ -40,6 +38,11 @@ stop() {
     else
         /bin/echo "DRBD devices mounted; please unmount them before trying to stop DRBD!"
     fi
+}
+
+status() {
+    # We don't know anything
+    exit ${UNKNOWN}
 }
 
 # Perform specified action

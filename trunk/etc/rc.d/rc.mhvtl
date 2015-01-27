@@ -2,14 +2,12 @@
 
 # $Id$
 
+source /etc/rc.d/common
+
 VTL_USER="vtl"
 MHVTL_CONFIG_PATH="/etc/mhvtl"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Starting mhVTL services..."
@@ -35,6 +33,14 @@ stop() {
         /usr/bin/vtlcmd ${i} exit
         /bin/usleep 100
     done
+}
+
+status() {
+    if /bin/grep mhvtl /proc/modules > /dev/null 2>&1; then
+        exit ${RUNNING}
+    else
+        exit ${STOPPED}
+    fi
 }
 
 # Perform specified action

@@ -2,11 +2,9 @@
 
 # $Id$
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+source /etc/rc.d/common
+
+check_args ${@}
 
 start() {
     # Setup LVM 2
@@ -19,6 +17,11 @@ start() {
 stop() {
     # Do nothing
     :
+}
+
+status() {
+    # We don't know anything
+    exit ${UNKNOWN}
 }
 
 # Perform specified action

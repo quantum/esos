@@ -7,11 +7,7 @@ source /etc/rc.d/common
 SSHD="/usr/sbin/sshd"
 SSHD_LOCK="/var/lock/sshd"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     # Generate keys if necessary
@@ -32,6 +28,11 @@ stop() {
     /bin/echo "Stopping sshd..."
     /bin/kill -TERM $(/bin/pidof ${SSHD}) || exit 1
     wait_for_stop ${SSHD} && /bin/rm -f ${SSHD_LOCK}
+}
+
+status() {
+    /bin/pidof ${SSHD} > /dev/null 2>&1
+    exit ${?}
 }
 
 # Perform specified action

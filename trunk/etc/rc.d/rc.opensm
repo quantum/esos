@@ -7,11 +7,7 @@ source /etc/rc.d/common
 OPENSM="/usr/sbin/opensm"
 OPENSM_LOCK="/var/lock/opensm"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Starting IB Subnet Manager..."
@@ -24,6 +20,11 @@ stop() {
     /bin/echo "Stopping IB Subnet Manager..."
     /bin/kill -15 $(/bin/pidof ${OPENSM}) || exit 1
     wait_for_stop ${OPENSM} && /bin/rm -f ${OPENSM_LOCK}
+}
+
+status() {
+    /bin/pidof ${OPENSM} > /dev/null 2>&1
+    exit ${?}
 }
 
 # Perform specified action

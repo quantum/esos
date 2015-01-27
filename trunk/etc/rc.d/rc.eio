@@ -21,8 +21,9 @@ my @sections;
 my %ini_hash;
 
 # Check arguments
-if ((@ARGV != 1) || (($ARGV[0] ne "start") && ($ARGV[0] ne "stop"))) {
-    print("Usage: $0 {start | stop}\n");
+if ((@ARGV != 1) || (($ARGV[0] ne "start") && ($ARGV[0] ne "stop") &&
+    ($ARGV[0] ne "status"))) {
+    print("Usage: $0 {start|stop|status}\n");
     exit(1);
 }
 
@@ -175,5 +176,13 @@ if ($ARGV[0] eq "start") {
                 exit 1;
             }
         }
+    }
+
+} elsif ($ARGV[0] eq "status") {
+    # Check if EnhanceIO is loaded
+    if (-d "$eio_proc_dir") {
+        exit 0;
+    } else {
+        exit 1;
     }
 }

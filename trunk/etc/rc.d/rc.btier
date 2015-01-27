@@ -7,11 +7,7 @@ source /etc/rc.d/common
 BTTAB="/etc/bttab"
 BTIER_SETUP="/usr/sbin/btier_setup"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Loading btier devices..."
@@ -39,6 +35,14 @@ stop() {
     done
     # Unload the btier module
     /sbin/rmmod -w btier
+}
+
+status() {
+    if /bin/grep btier /proc/modules > /dev/null 2>&1; then
+        exit ${RUNNING}
+    else
+        exit ${STOPPED}
+    fi
 }
 
 # Perform specified action

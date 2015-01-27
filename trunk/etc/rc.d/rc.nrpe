@@ -8,11 +8,7 @@ NRPE="/usr/bin/nrpe"
 NRPE_LOCK="/var/lock/nrpe"
 NRPE_CFG="/etc/nrpe.cfg"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Starting nrpe..."
@@ -25,6 +21,11 @@ stop() {
     /bin/echo "Stopping nrpe..."
     /bin/kill -15 $(/bin/pidof ${NRPE}) || exit 1
     wait_for_stop ${NRPE} && /bin/rm -f ${NRPE_LOCK}
+}
+
+status() {
+    /bin/pidof ${NRPE} > /dev/null 2>&1
+    exit ${?}
 }
 
 # Perform specified action

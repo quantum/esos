@@ -9,6 +9,11 @@ LATE_SERVICES="rc.sshd rc.mdraid rc.lvm2 rc.eio rc.dmcache rc.btier rc.drbd \
 rc.rbdmap rc.corosync rc.dlm rc.clvmd rc.pacemaker rc.fsmount rc.mhvtl rc.scst \
 rc.perfagent rc.nrpe rc.snmpd rc.snmptrapd rc.nut rc.smartd rc.stunnel"
 
+# Script status values
+RUNNING=0
+STOPPED=1
+UNKNOWN=-1
+
 # Check if the service is enabled, or not
 check_enabled() {
     rc_conf_line="$(/bin/egrep ^${1}_enable /etc/rc.conf)"
@@ -49,5 +54,14 @@ wait_for_stop() {
         fi
     done
     return ${rc}
+}
+
+# Check arguments
+check_args() {
+    if [ ${#} -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ] && \
+    [ "${1}" != "status" ]; then
+        /bin/echo "Usage: $0 {start|stop|status}"
+        exit 1
+    fi
 }
 

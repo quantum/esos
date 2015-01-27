@@ -4,11 +4,7 @@
 
 source /etc/rc.d/common
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Assembling software RAID devices..."
@@ -18,6 +14,11 @@ start() {
 stop() {
     # Do nothing
     :
+}
+
+status() {
+    # We don't know anything
+    exit ${UNKNOWN}
 }
 
 # Perform specified action

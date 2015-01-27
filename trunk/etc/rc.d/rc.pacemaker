@@ -7,11 +7,7 @@ source /etc/rc.d/common
 PACEMAKERD="/usr/sbin/pacemakerd"
 LOCK_FILE="/var/lock/pacemakerd"
 
-# Check arguments
-if [ $# -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ]; then
-    /bin/echo "Usage: $0 {start | stop}"
-    exit 1
-fi
+check_args ${@}
 
 start() {
     /bin/echo "Starting pacemakerd..."
@@ -24,6 +20,11 @@ stop() {
     /bin/echo "Stopping pacemakerd..."
     /bin/kill -TERM $(/bin/pidof ${PACEMAKERD}) || exit 1
     wait_for_stop ${PACEMAKERD} && /bin/rm -f ${LOCK_FILE}
+}
+
+status() {
+    /bin/pidof ${PACEMAKERD} > /dev/null 2>&1
+    exit ${?}
 }
 
 # Perform specified action
