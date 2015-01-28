@@ -1,3 +1,14 @@
+2015-01-28 22:02  msmith626@gmail.com
+
+	* Makefile.in, configure.ac, tui/Makefile, tui/info_labels.c,
+	  tui/main.c, tui/megaraid.c, tui/menu_actions-alua.c,
+	  tui/menu_actions-back_storage.c, tui/menu_actions-devices.c,
+	  tui/menu_actions-hosts.c, tui/menu_actions-interface.c,
+	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
+	  tui/menu_actions.c, tui/system.h, tui/utility.c: swapped
+	  asprintf() for macro throughout TUI code; few minor fixes and
+	  clean up in TUI
+
 2015-01-28 15:36  msmith626@gmail.com
 
 	* Makefile.in, misc/glibc-2.12.2.patch: patch for glibc to fix the
