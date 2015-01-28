@@ -85,24 +85,24 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
         wrefresh(adapter_window);
 
         /* Adapter info. label */
-        asprintf(&adp_info_msg[0],
+        SAFE_ASPRINTF(&adp_info_msg[0],
                 "</31/B>Properties for MegaRAID adapter # %d...", adp_choice);
-        asprintf(&adp_info_msg[1], " ");
-        asprintf(&adp_info_msg[2], "</B>Model:<!B>\t\t\t%-30s",
+        SAFE_ASPRINTF(&adp_info_msg[1], " ");
+        SAFE_ASPRINTF(&adp_info_msg[2], "</B>Model:<!B>\t\t\t%-30s",
                 mr_adapters[adp_choice]->prod_name);
-        asprintf(&adp_info_msg[3], "</B>Serial Number:<!B>\t\t%-30s",
+        SAFE_ASPRINTF(&adp_info_msg[3], "</B>Serial Number:<!B>\t\t%-30s",
                 mr_adapters[adp_choice]->serial);
-        asprintf(&adp_info_msg[4], "</B>Firmware Version:<!B>\t%-30s",
+        SAFE_ASPRINTF(&adp_info_msg[4], "</B>Firmware Version:<!B>\t%-30s",
                 mr_adapters[adp_choice]->firmware);
-        asprintf(&adp_info_msg[5], "</B>Memory:<!B>\t\t\t%-30s",
+        SAFE_ASPRINTF(&adp_info_msg[5], "</B>Memory:<!B>\t\t\t%-30s",
                 mr_adapters[adp_choice]->memory);
-        asprintf(&adp_info_msg[6], "</B>Battery:<!B>\t\t%-30s",
+        SAFE_ASPRINTF(&adp_info_msg[6], "</B>Battery:<!B>\t\t%-30s",
                 mr_adapters[adp_choice]->bbu);
-        asprintf(&adp_info_msg[7], "</B>Host Interface:<!B>\t\t%-30s",
+        SAFE_ASPRINTF(&adp_info_msg[7], "</B>Host Interface:<!B>\t\t%-30s",
                 mr_adapters[adp_choice]->interface);
-        asprintf(&adp_info_msg[8], "</B>Physical Disks:<!B>\t\t%-30d",
+        SAFE_ASPRINTF(&adp_info_msg[8], "</B>Physical Disks:<!B>\t\t%-30d",
                 mr_adapters[adp_choice]->disk_cnt);
-        asprintf(&adp_info_msg[9], "</B>Logical Drives:<!B>\t\t%-30d",
+        SAFE_ASPRINTF(&adp_info_msg[9], "</B>Logical Drives:<!B>\t\t%-30d",
                 mr_adapters[adp_choice]->logical_drv_cnt);
         adapter_info = newCDKLabel(adapter_screen, (window_x + 1),
                 (window_y + 1), adp_info_msg, ADP_PROP_INFO_LINES,
@@ -217,7 +217,7 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
             /* Set adapter properties */
             temp_int = setMRAdapterProps(mr_adp_props);
             if (temp_int != 0) {
-                asprintf(&error_msg, "Couldn't update adapter properties; "
+                SAFE_ASPRINTF(&error_msg, "Couldn't update adapter properties; "
                         "MegaCLI exited with %d.", temp_int);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -279,7 +279,7 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
         for (i = 0; i < encl_count; i++) {
             mr_enclosures[i] = getMREnclosure(adp_choice, i);
             if (!mr_enclosures[i]) {
-                asprintf(&error_msg,
+                SAFE_ASPRINTF(&error_msg,
                         "Couldn't get data from MegaRAID enclosure # %d!", i);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -289,7 +289,7 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
                 mr_disks[i][j] = getMRDisk(adp_choice,
                         mr_enclosures[i]->device_id, j);
                 if (!mr_disks[i][j]) {
-                    asprintf(&error_msg, "Couldn't get disk information for "
+                    SAFE_ASPRINTF(&error_msg, "Couldn't get disk information for "
                             "slot %d, enclosure %d!", j, i);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -300,7 +300,7 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Setup scrolling window widget */
-    asprintf(&encl_title, "<C></31/B>Enclosures/Slots on MegaRAID "
+    SAFE_ASPRINTF(&encl_title, "<C></31/B>Enclosures/Slots on MegaRAID "
             "Adapter # %d\n", adp_choice);
     encl_swindow = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (ADP_INFO_ROWS + 2), (ADP_INFO_COLS + 2), encl_title,
@@ -316,14 +316,14 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     line_pos = 0;
     for (i = 0; i < encl_count; i++) {
         if (line_pos < MAX_ADP_INFO_LINES) {
-            asprintf(&swindow_info[line_pos],
+            SAFE_ASPRINTF(&swindow_info[line_pos],
                     "</B>Enclosure %d (%s %s)",
                     i, mr_enclosures[i]->vendor, mr_enclosures[i]->product);
             addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
             line_pos++;
         }
         if (line_pos < MAX_ADP_INFO_LINES) {
-            asprintf(&swindow_info[line_pos],
+            SAFE_ASPRINTF(&swindow_info[line_pos],
                     "</B>Device ID: %d, Status: %s, Slots: %d",
                     mr_enclosures[i]->device_id, mr_enclosures[i]->status,
                     mr_enclosures[i]->slots);
@@ -333,10 +333,10 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
         for (j = 0; (j < mr_enclosures[i]->slots) &&
                 (line_pos < MAX_ADP_INFO_LINES); j++) {
             if (mr_disks[i][j]->present)
-                asprintf(&swindow_info[line_pos],
+                SAFE_ASPRINTF(&swindow_info[line_pos],
                         "\tSlot %3d: %s", j, mr_disks[i][j]->inquiry);
             else
-                asprintf(&swindow_info[line_pos], "\tSlot %3d: Not Present", j);
+                SAFE_ASPRINTF(&swindow_info[line_pos], "\tSlot %3d: Not Present", j);
             addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
             line_pos++;
         }
@@ -344,12 +344,12 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Add a message to the bottom explaining how to close the dialog */
     if (line_pos < MAX_ADP_INFO_LINES) {
-        asprintf(&swindow_info[line_pos], " ");
+        SAFE_ASPRINTF(&swindow_info[line_pos], " ");
         addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
         line_pos++;
     }
     if (line_pos < MAX_ADP_INFO_LINES) {
-        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
         addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
         line_pos++;
     }
@@ -432,7 +432,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
         for (i = 0; i < encl_count; i++) {
             mr_enclosures[i] = getMREnclosure(adp_choice, i);
             if (!mr_enclosures[i]) {
-                asprintf(&error_msg,
+                SAFE_ASPRINTF(&error_msg,
                         "Couldn't get data from MegaRAID enclosure # %d!", i);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -443,7 +443,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
                 mr_disks[i][j] = getMRDisk(adp_choice,
                         mr_enclosures[i]->device_id, j);
                 if (!mr_disks[i][j]) {
-                    asprintf(&error_msg, "Couldn't get disk information "
+                    SAFE_ASPRINTF(&error_msg, "Couldn't get disk information "
                             "for slot %d, enclosure %d!", j, i);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -454,7 +454,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
                             mr_disks[i][j]->part_of_ld == FALSE) {
                         /* Fill selection list */
                         if (selection_size < MAX_DISKS) {
-                            asprintf(&selection_list[selection_size],
+                            SAFE_ASPRINTF(&selection_list[selection_size],
                                     "<C>Enclosure %3.3d, Slot %3.3d: %40.40s",
                                     i, j, mr_disks[i][j]->inquiry);
                             disk_selection[selection_size] = mr_disks[i][j];
@@ -473,7 +473,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     /* If we don't have any available disks, then display a message saying so
      * and return */
     if (selection_size == 0) {
-        asprintf(&error_msg, "There are no available physical disks "
+        SAFE_ASPRINTF(&error_msg, "There are no available physical disks "
                 "on adapter # %d.", adp_choice);
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
@@ -481,7 +481,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     }
     
     /* Selection widget for disks */
-    asprintf(&dsk_select_title,
+    SAFE_ASPRINTF(&dsk_select_title,
             "<C></31/B>Select Disks for New LD (MegaRAID Adapter # %d)\n",
             adp_choice);
     disk_select = newCDKSelection(main_cdk_screen, CENTER, CENTER, NONE,
@@ -545,10 +545,10 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     /* Put selected physical disk "enclosure:slot" information into a string */
     for (i = 0; i < chosen_disk_cnt; i++) {
         if (i == (chosen_disk_cnt - 1))
-            asprintf(&temp_pstr, "[%d:%d]", chosen_disks[i]->enclosure_id,
+            SAFE_ASPRINTF(&temp_pstr, "[%d:%d]", chosen_disks[i]->enclosure_id,
                     chosen_disks[i]->slot_num);
         else
-            asprintf(&temp_pstr, "[%d:%d], ", chosen_disks[i]->enclosure_id,
+            SAFE_ASPRINTF(&temp_pstr, "[%d:%d], ", chosen_disks[i]->enclosure_id,
                 chosen_disks[i]->slot_num);
         /* We add one extra for the null byte */
         pd_info_size = strlen(temp_pstr) + 1;
@@ -568,12 +568,12 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
         break;
 
     /* Make a new label for the add-logical-drive screen */
-    asprintf(&new_ld_msg[0],
+    SAFE_ASPRINTF(&new_ld_msg[0],
             "</31/B>Creating new MegaRAID LD (on adapter # %d)...",
             adp_choice);
-    /* Using asprintf for a blank space makes it easier on clean-up (free) */
-    asprintf(&new_ld_msg[1], " ");
-    asprintf(&new_ld_msg[2], "Selected Disks [ENCL:SLOT] - %.35s",
+    /* Using asprintf() for a blank space makes it easier on clean-up (free) */
+    SAFE_ASPRINTF(&new_ld_msg[1], " ");
+    SAFE_ASPRINTF(&new_ld_msg[2], "Selected Disks [ENCL:SLOT] - %.35s",
             pd_info_line_buffer);
     new_ld_label = newCDKLabel(new_ld_screen, (window_x + 1), (window_y + 1),
             new_ld_msg, NEW_LD_INFO_LINES, FALSE, FALSE);
@@ -707,7 +707,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
         temp_int = addMRLogicalDrive(new_ld_props, chosen_disk_cnt,
                 chosen_disks, new_ld_raid_lvl, new_ld_strip_size);
         if (temp_int != 0) {
-            asprintf(&error_msg, "Error creating new logical drive; "
+            SAFE_ASPRINTF(&error_msg, "Error creating new logical drive; "
                     "MegaCLI exited with %d.", temp_int);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -776,7 +776,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, "No logical drives found!", NULL);
             break;
         } else if (ld_count == -1) {
-            asprintf(&error_msg, "Error getting LD count for adapter # %d!",
+            SAFE_ASPRINTF(&error_msg, "Error getting LD count for adapter # %d!",
                     adp_choice);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -792,14 +792,14 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
             for (i = 0; i < ld_count; i++) {
                 mr_ldrives[i] = getMRLogicalDrive(adp_choice, mr_ld_ids[i]);
                 if (!mr_ldrives[i]) {
-                    asprintf(&error_msg, "Couldn't get data from "
+                    SAFE_ASPRINTF(&error_msg, "Couldn't get data from "
                             "MegaRAID logical drive # %d!", i);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     finished = TRUE;
                     break;
                 } else {
-                    asprintf(&logical_drives[i],
+                    SAFE_ASPRINTF(&logical_drives[i],
                             "<C>MegaRAID Virtual Drive # %d (on adapter %d)",
                             mr_ldrives[i]->ldrive_id, adp_choice);
                 }
@@ -827,7 +827,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
             break;
 
         /* Get a final confirmation from user before we delete */
-        asprintf(&confirm_msg, "logical drive # %d on adapter %d?",
+        SAFE_ASPRINTF(&confirm_msg, "logical drive # %d on adapter %d?",
                 mr_ldrives[ld_choice]->ldrive_id, adp_choice);
         confirm = confirmDialog(main_cdk_screen,
                 "Are you sure you want to delete", confirm_msg);
@@ -836,7 +836,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
             temp_int = delMRLogicalDrive(adp_choice,
                     mr_ldrives[ld_choice]->ldrive_id);
             if (temp_int != 0) {
-                asprintf(&error_msg, "Error deleting logical drive; "
+                SAFE_ASPRINTF(&error_msg, "Error deleting logical drive; "
                         "MegaCLI exited with %d.", temp_int);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -903,7 +903,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, "No logical drives found!", NULL);
             break;
         } else if (ld_count == -1) {
-            asprintf(&error_msg, "Error getting LD count for adapter # %d!",
+            SAFE_ASPRINTF(&error_msg, "Error getting LD count for adapter # %d!",
                     adp_choice);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -919,14 +919,14 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             for (i = 0; i < ld_count; i++) {
                 mr_ldrives[i] = getMRLogicalDrive(adp_choice, mr_ld_ids[i]);
                 if (!mr_ldrives[i]) {
-                    asprintf(&error_msg, "Couldn't get data from "
+                    SAFE_ASPRINTF(&error_msg, "Couldn't get data from "
                             "MegaRAID logical drive # %d!", i);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     finished = TRUE;
                     break;
                 } else {
-                    asprintf(&logical_drives[i],
+                    SAFE_ASPRINTF(&logical_drives[i],
                             "<C>MegaRAID Virtual Drive # %d (on adapter %d)",
                             mr_ldrives[i]->ldrive_id, adp_choice);
                 }
@@ -986,9 +986,9 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
                 ld_slots);
         for (i = 0; i < mr_ldrives[ld_choice]->drive_cnt; i++) {
             if (i == (mr_ldrives[ld_choice]->drive_cnt - 1))
-                asprintf(&temp_pstr, "[%d:%d]", ld_encl_ids[i], ld_slots[i]);
+                SAFE_ASPRINTF(&temp_pstr, "[%d:%d]", ld_encl_ids[i], ld_slots[i]);
             else
-                asprintf(&temp_pstr, "[%d:%d], ", ld_encl_ids[i], ld_slots[i]);
+                SAFE_ASPRINTF(&temp_pstr, "[%d:%d], ", ld_encl_ids[i], ld_slots[i]);
             /* We add one extra for the null byte */
             pd_info_size = strlen(temp_pstr) + 1;
             pd_info_line_size = pd_info_line_size + pd_info_size;
@@ -1007,22 +1007,22 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             break;
 
         /* Logical drive info. label */
-        asprintf(&ld_info_msg[0], "</31/B>Properties for MegaRAID LD # "
+        SAFE_ASPRINTF(&ld_info_msg[0], "</31/B>Properties for MegaRAID LD # "
                 "%d (on adapter # %d)...",
                 mr_ldrives[ld_choice]->ldrive_id, adp_choice);
-        asprintf(&ld_info_msg[1], " ");
-        asprintf(&ld_info_msg[2], "</B>RAID Level:<!B>\t%s",
+        SAFE_ASPRINTF(&ld_info_msg[1], " ");
+        SAFE_ASPRINTF(&ld_info_msg[2], "</B>RAID Level:<!B>\t%s",
                 mr_ldrives[ld_choice]->raid_lvl);
-        asprintf(&ld_info_msg[3], "</B>Size:<!B>\t\t%s",
+        SAFE_ASPRINTF(&ld_info_msg[3], "</B>Size:<!B>\t\t%s",
                 mr_ldrives[ld_choice]->size);
-        asprintf(&ld_info_msg[4], "</B>State:<!B>\t\t%s",
+        SAFE_ASPRINTF(&ld_info_msg[4], "</B>State:<!B>\t\t%s",
                 mr_ldrives[ld_choice]->state);
-        asprintf(&ld_info_msg[5], "</B>Strip Size:<!B>\t%s",
+        SAFE_ASPRINTF(&ld_info_msg[5], "</B>Strip Size:<!B>\t%s",
                 mr_ldrives[ld_choice]->strip_size);
-        asprintf(&ld_info_msg[6], "</B>Drive Count:<!B>\t%d",
+        SAFE_ASPRINTF(&ld_info_msg[6], "</B>Drive Count:<!B>\t%d",
                 mr_ldrives[ld_choice]->drive_cnt);
-        asprintf(&ld_info_msg[7], " ");
-        asprintf(&ld_info_msg[8], "Disks [ENCL:SLOT] - %.60s",
+        SAFE_ASPRINTF(&ld_info_msg[7], " ");
+        SAFE_ASPRINTF(&ld_info_msg[8], "Disks [ENCL:SLOT] - %.60s",
                 pd_info_line_buffer);
         ld_info = newCDKLabel(ld_screen, (window_x + 1), (window_y + 1),
                 ld_info_msg, LD_PROPS_INFO_LINES, FALSE, FALSE);
@@ -1152,7 +1152,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             /* Set logical drive properties */
             temp_int = setMRLDProps(mr_ld_props);
             if (temp_int != 0) {
-                asprintf(&error_msg, "Couldn't update logical drive "
+                SAFE_ASPRINTF(&error_msg, "Couldn't update logical drive "
                         "properties; MegaCLI exited with %d.", temp_int);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -1193,7 +1193,7 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Open the file */
     if ((drbd_file = fopen(PROC_DRBD, "r")) == NULL) {
-        asprintf(&error_msg, "fopen(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "fopen(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
     } else {
@@ -1214,7 +1214,7 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
         line_pos = 0;
         while (fgets(line, sizeof (line), drbd_file) != NULL) {
             if (line_pos < MAX_DRBD_INFO_LINES) {
-                asprintf(&swindow_info[line_pos], "%s", line);
+                SAFE_ASPRINTF(&swindow_info[line_pos], "%s", line);
                 line_pos++;
             }
         }
@@ -1222,11 +1222,11 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Add a message to the bottom explaining how to close the dialog */
         if (line_pos < MAX_DRBD_INFO_LINES) {
-            asprintf(&swindow_info[line_pos], " ");
+            SAFE_ASPRINTF(&swindow_info[line_pos], " ");
             line_pos++;
         }
         if (line_pos < MAX_DRBD_INFO_LINES) {
-            asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+            SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
             line_pos++;
         }
 
@@ -1262,7 +1262,7 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Open the file */
     if ((mdstat_file = fopen(PROC_MDSTAT, "r")) == NULL) {
-        asprintf(&error_msg, "fopen(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "fopen(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
     } else {
@@ -1282,7 +1282,7 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
         line_pos = 0;
         while (fgets(line, sizeof (line), mdstat_file) != NULL) {
             if (line_pos < MAX_MDSTAT_INFO_LINES) {
-                asprintf(&swindow_info[line_pos], "%s", line);
+                SAFE_ASPRINTF(&swindow_info[line_pos], "%s", line);
                 line_pos++;
             }
         }
@@ -1290,11 +1290,11 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Add a message to the bottom explaining how to close the dialog */
         if (line_pos < MAX_MDSTAT_INFO_LINES) {
-            asprintf(&swindow_info[line_pos], " ");
+            SAFE_ASPRINTF(&swindow_info[line_pos], " ");
             line_pos++;
         }
         if (line_pos < MAX_MDSTAT_INFO_LINES) {
-            asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+            SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
             line_pos++;
         }
 
@@ -1329,9 +1329,9 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
     FILE *lvdisplay_proc = NULL;
 
     /* Run the lvdisplay command */
-    asprintf(&lvdisplay_cmd, "%s --all 2>&1", LVDISPLAY_BIN);
+    SAFE_ASPRINTF(&lvdisplay_cmd, "%s --all 2>&1", LVDISPLAY_BIN);
     if ((lvdisplay_proc = popen(lvdisplay_cmd, "r")) == NULL) {
-        asprintf(&error_msg, "Couldn't open process for the %s command!",
+        SAFE_ASPRINTF(&error_msg, "Couldn't open process for the %s command!",
                 LVDISPLAY_BIN);
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
@@ -1340,18 +1340,18 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
         line_pos = 0;
         while (fgets(line, sizeof (line), lvdisplay_proc) != NULL) {
             if (line_pos < MAX_LVM2_INFO_LINES) {
-                asprintf(&swindow_info[line_pos], "%s", line);
+                SAFE_ASPRINTF(&swindow_info[line_pos], "%s", line);
                 line_pos++;
             }
         }
 
         /* Add a message to the bottom explaining how to close the dialog */
         if (line_pos < MAX_LVM2_INFO_LINES) {
-            asprintf(&swindow_info[line_pos], " ");
+            SAFE_ASPRINTF(&swindow_info[line_pos], " ");
             line_pos++;
         }
         if (line_pos < MAX_LVM2_INFO_LINES) {
-            asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+            SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
             line_pos++;
         }
         
@@ -1389,7 +1389,7 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
              * we don't care how */
             destroyCDKSwindow(lvm2_info);
         } else {
-            asprintf(&error_msg, "The %s command exited with %d.",
+            SAFE_ASPRINTF(&error_msg, "The %s command exited with %d.",
                     LVDISPLAY_BIN, ret_val);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -1448,7 +1448,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             /* If its a SCSI disk, we need the real block device node */
             if (readlink(block_dev, real_blk_dev_node,
                     MAX_SYSFS_PATH_SIZE) == -1) {
-                asprintf(&error_msg, "readlink(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "readlink(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -1460,7 +1460,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Open the file system tab file */
         if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-            asprintf(&error_msg, "setmntent(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
@@ -1539,26 +1539,26 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Information label */
-        asprintf(&fs_dialog_msg[0],
+        SAFE_ASPRINTF(&fs_dialog_msg[0],
                 "</31/B>Creating new file system (on block device %.20s)...",
                 real_blk_dev_node);
-        /* Using asprintf for a blank space makes it
+        /* Using asprintf() for a blank space makes it
          * easier on clean-up (free) */
-        asprintf(&fs_dialog_msg[1], " ");
-        asprintf(&fs_dialog_msg[2],
+        SAFE_ASPRINTF(&fs_dialog_msg[1], " ");
+        SAFE_ASPRINTF(&fs_dialog_msg[2],
                 "</B>Model:<!B> %-20.20s </B>Transport:<!B>  %s",
                 device->model, g_transports[device->type]);
-        asprintf(&fs_dialog_msg[3],
+        SAFE_ASPRINTF(&fs_dialog_msg[3],
                 "</B>Size:<!B>  %-20.20s </B>Disk label:<!B> %s",
                 device_size, (disk_type) ? disk_type->name : "none");
-        asprintf(&fs_dialog_msg[4],
+        SAFE_ASPRINTF(&fs_dialog_msg[4],
                 "</B>Sector size (logical/physical):<!B>\t%lldB/%lldB",
                 device->sector_size, device->phys_sector_size);
-        asprintf(&fs_dialog_msg[5], " ");
+        SAFE_ASPRINTF(&fs_dialog_msg[5], " ");
         /* Add partition information (if any) */
         info_line_cnt = 6;
         if (disk && (ped_disk_get_last_partition_num(disk) > 0)) {
-            asprintf(&fs_dialog_msg[info_line_cnt],
+            SAFE_ASPRINTF(&fs_dialog_msg[info_line_cnt],
                     "</B>Current layout: %5s %12s %12s %15s<!B>",
                     "No.", "Start", "Size", "FS Type");
             info_line_cnt++;
@@ -1567,7 +1567,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                     partition = ped_disk_next_partition(disk, partition)) {
                 if (partition->num < 0)
                     continue;
-                asprintf(&fs_dialog_msg[info_line_cnt],
+                SAFE_ASPRINTF(&fs_dialog_msg[info_line_cnt],
                         "\t\t%5d %12lld %12lld %15.15s",
                         partition->num, partition->geom.start,
                         partition->geom.length,
@@ -1576,7 +1576,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                 info_line_cnt++;
             }
         } else {
-            asprintf(&fs_dialog_msg[info_line_cnt],
+            SAFE_ASPRINTF(&fs_dialog_msg[info_line_cnt],
                     "</B><No partitions found.><!B>");
             info_line_cnt++;
         }
@@ -1662,7 +1662,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
              * devices actually use the given file system label, but for
              * now we only consider the fstab file as the source of truth */
             if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-                asprintf(&error_msg, "setmntent(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -1691,7 +1691,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             temp_int = getCDKRadioSelectedItem(fs_type);
 
             /* Get confirmation before applying block device changes */
-            asprintf(&confirm_msg,
+            SAFE_ASPRINTF(&confirm_msg,
                     "You are about to write a new file system to '%s';",
                     real_blk_dev_node);
             confirm = confirmDialog(main_cdk_screen, confirm_msg,
@@ -1715,7 +1715,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                 if (getCDKRadioSelectedItem(add_part) == 1) {
                     /* Setup the new partition (if chosen) */
                     if (i < MAX_MAKE_FS_INFO_LINES) {
-                        asprintf(&swindow_info[i],
+                        SAFE_ASPRINTF(&swindow_info[i],
                                 "<C>Creating new disk label and partition...");
                         addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
                         i++;
@@ -1795,7 +1795,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
                 /* Create the file system */
                 if (i < MAX_MAKE_FS_INFO_LINES) {
-                    asprintf(&swindow_info[i],
+                    SAFE_ASPRINTF(&swindow_info[i],
                             "<C>Creating new %s file system...",
                             g_fs_type_opts[temp_int]);
                     addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
@@ -1810,7 +1810,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                         new_blk_dev_node);
                 ret_val = system(mkfs_cmd);
                 if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                    asprintf(&error_msg, "Running '%s' failed; exited with %d.",
+                    SAFE_ASPRINTF(&error_msg, "Running '%s' failed; exited with %d.",
                             mkfs_cmd, exit_stat);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -1819,21 +1819,21 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
                 /* Add the new file system entry to the fstab file */
                 if (i < MAX_MAKE_FS_INFO_LINES) {
-                    asprintf(&swindow_info[i],
+                    SAFE_ASPRINTF(&swindow_info[i],
                             "<C>Adding new entry to fstab file...");
                     addCDKSwindow(make_fs_info, swindow_info[i], BOTTOM);
                     i++;
                 }
                 /* Open the original file system tab file */
                 if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-                    asprintf(&error_msg, "setmntent(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
                 }
                 /* Open the new/temporary file system tab file */
                 if ((new_fstab_file = setmntent(FSTAB_TMP, "w+")) == NULL) {
-                    asprintf(&error_msg, "setmntent(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -1844,13 +1844,13 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                     addmntent(new_fstab_file, fstab_entry);
                 }
                 /* New fstab entry */
-                asprintf(&addtl_fstab_entry.mnt_fsname, "LABEL=%s",
+                SAFE_ASPRINTF(&addtl_fstab_entry.mnt_fsname, "LABEL=%s",
                         fs_label_buff);
-                asprintf(&addtl_fstab_entry.mnt_dir, "%s/%s",
+                SAFE_ASPRINTF(&addtl_fstab_entry.mnt_dir, "%s/%s",
                         VDISK_MNT_BASE, fs_label_buff);
-                asprintf(&addtl_fstab_entry.mnt_type, "%s",
+                SAFE_ASPRINTF(&addtl_fstab_entry.mnt_type, "%s",
                         g_fs_type_opts[temp_int]);
-                asprintf(&addtl_fstab_entry.mnt_opts, "defaults");
+                SAFE_ASPRINTF(&addtl_fstab_entry.mnt_opts, "defaults");
                 addtl_fstab_entry.mnt_freq = 1;
                 addtl_fstab_entry.mnt_passno = 1;
                 addmntent(new_fstab_file, &addtl_fstab_entry);
@@ -1862,7 +1862,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                 FREE_NULL(addtl_fstab_entry.mnt_type);
                 FREE_NULL(addtl_fstab_entry.mnt_opts);
                 if ((rename(FSTAB_TMP, FSTAB)) == -1) {
-                    asprintf(&error_msg, "rename(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "rename(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -1873,7 +1873,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                 if ((mkdir(new_mnt_point,
                         S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)) ==
                         -1) {
-                    asprintf(&error_msg, "mkdir(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "mkdir(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -1893,7 +1893,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                             "%s %s > /dev/null 2>&1", MOUNT_BIN, new_mnt_point);
                     ret_val = system(mount_cmd);
                     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                        asprintf(&error_msg, CMD_FAILED_ERR,
+                        SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR,
                                 MOUNT_BIN, exit_stat);
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
@@ -1950,7 +1950,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
                     UMOUNT_BIN, fs_path);
             ret_val = system(umount_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                asprintf(&error_msg, CMD_FAILED_ERR, UMOUNT_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, UMOUNT_BIN, exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 return;
@@ -1961,7 +1961,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
     }
     
     /* Get confirmation before removing the file system */
-    asprintf(&confirm_msg, "'%s' file system?", fs_name);
+    SAFE_ASPRINTF(&confirm_msg, "'%s' file system?", fs_name);
     confirm = confirmDialog(main_cdk_screen,
             "Are you sure you would like to remove the", confirm_msg);
     FREE_NULL(confirm_msg);
@@ -1970,14 +1970,14 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
     if (confirm) {
         /* Open the original file system tab file */
         if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-            asprintf(&error_msg, "setmntent(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
         }
         /* Open the new/temporary file system tab file */
         if ((new_fstab_file = setmntent(FSTAB_TMP, "w+")) == NULL) {
-            asprintf(&error_msg, "setmntent(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
@@ -1993,7 +1993,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
         endmntent(new_fstab_file);
         endmntent(fstab_file);
         if ((rename(FSTAB_TMP, FSTAB)) == -1) {
-            asprintf(&error_msg, "rename(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "rename(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
@@ -2001,7 +2001,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
         
         /* Remove the mount point directory */
         if ((rmdir(fs_path)) == -1) {
-            asprintf(&error_msg, "rmdir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "rmdir(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
@@ -2059,7 +2059,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                     MOUNT_BIN, fs_path);
             ret_val = system(mount_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                asprintf(&error_msg, CMD_FAILED_ERR, MOUNT_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, MOUNT_BIN, exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 return;
@@ -2096,7 +2096,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         if ((statvfs(fs_path, fs_info)) == -1) {
-            asprintf(&error_msg, "statvfs(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "statvfs(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -2109,15 +2109,15 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                 (bytes_total / GIBIBYTE_SIZE));
 
         /* Fill the information label */
-        asprintf(&vdisk_dialog_msg[0],
+        SAFE_ASPRINTF(&vdisk_dialog_msg[0],
                 "</31/B>Adding new virtual disk file...");
-        /* Using asprintf for a blank space makes
+        /* Using asprintf() for a blank space makes
          * it easier on clean-up (free) */
-        asprintf(&vdisk_dialog_msg[1], " ");
-        asprintf(&vdisk_dialog_msg[2],
+        SAFE_ASPRINTF(&vdisk_dialog_msg[1], " ");
+        SAFE_ASPRINTF(&vdisk_dialog_msg[2],
                 "</B>File System:<!B>\t%-20.20s </B>Type:<!B>\t\t%s",
                 fs_path, fs_type);
-        asprintf(&vdisk_dialog_msg[3],
+        SAFE_ASPRINTF(&vdisk_dialog_msg[3],
                 "</B>Size:<!B>\t\t%-20.20s </B>Available Space:<!B>\t%s",
                 gib_total_str, gib_free_str);
         FREE_NULL(fs_info);
@@ -2201,7 +2201,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(new_vdisk_file, MAX_VDISK_PATH_LEN, "%s/%s",
                     fs_path, vdisk_name_buff);
             if (access(new_vdisk_file, F_OK) != -1) {
-                asprintf(&error_msg, "It appears the '%s'", new_vdisk_file);
+                SAFE_ASPRINTF(&error_msg, "It appears the '%s'", new_vdisk_file);
                 errorDialog(main_cdk_screen, error_msg, "file already exists!");
                 FREE_NULL(error_msg);
                 break;
@@ -2241,7 +2241,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             /* Open our (new) virtual disk file */
             if ((new_vdisk_fd = open(new_vdisk_file,
                     O_WRONLY | O_CREAT, 0666)) == -1) {
-                asprintf(&error_msg, "open(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "open(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -2261,7 +2261,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                         (strcmp(fs_type, "btrfs") == 0)) {
                     if (fallocate(new_vdisk_fd, 0, position,
                             write_length) == -1) {
-                        asprintf(&error_msg, "fallocate(): %s",
+                        SAFE_ASPRINTF(&error_msg, "fallocate(): %s",
                                 strerror(errno));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
@@ -2273,7 +2273,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                     bytes_written = write(new_vdisk_fd, zero_buff,
                             write_length);
                     if (bytes_written == -1) {
-                        asprintf(&error_msg, "write(): %s", strerror(errno));
+                        SAFE_ASPRINTF(&error_msg, "write(): %s", strerror(errno));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
                         close(new_vdisk_fd);
@@ -2311,14 +2311,14 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
             // TODO: Do we actually need to flush to disk before returning?
             if (fsync(new_vdisk_fd) == -1) {
-                asprintf(&error_msg, "fsync(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "fsync(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 close(new_vdisk_fd);
                 break;
             }
             if (close(new_vdisk_fd) == -1) {
-                asprintf(&error_msg, "close(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "close(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -2368,7 +2368,7 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                     MOUNT_BIN, fs_path);
             ret_val = system(mount_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                asprintf(&error_msg, CMD_FAILED_ERR, MOUNT_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, MOUNT_BIN, exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 return;
@@ -2395,7 +2395,7 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     selected_file = activateCDKFselect(file_select, 0);
     if (file_select->exitType == vNORMAL) {
         /* Get confirmation before deleting the virtual disk file */
-        asprintf(&confirm_msg, "'%s'?", selected_file);
+        SAFE_ASPRINTF(&confirm_msg, "'%s'?", selected_file);
         confirm = confirmDialog(main_cdk_screen,
                 "Are you sure you want to delete virtual disk file",
                 confirm_msg);
@@ -2403,7 +2403,7 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
         if (confirm) {
             /* Delete (unlink) the virtual disk file */
             if (unlink(selected_file) == -1) {
-                asprintf(&error_msg, "unlink(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "unlink(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
             }
@@ -2414,7 +2414,7 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     destroyCDKFselect(file_select);
     /* Using the file selector widget changes the CWD -- fix it */
     if ((chdir(getenv("HOME"))) == -1) {
-        asprintf(&error_msg, "chdir(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "chdir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
     }
@@ -2446,7 +2446,7 @@ void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Open the directory */
     if ((dir_stream = opendir(fs_path)) == NULL) {
-        asprintf(&error_msg, "opendir(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
         return;
@@ -2467,7 +2467,7 @@ void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Loop over each entry in the directory */
     if (line_pos < MAX_VDLIST_INFO_LINES) {
-        asprintf(&swindow_info[line_pos], "<C></B>%-20.20s %15.15s",
+        SAFE_ASPRINTF(&swindow_info[line_pos], "<C></B>%-20.20s %15.15s",
                 "File Name", "File Size");
         line_pos++;
     }
@@ -2479,13 +2479,13 @@ void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(file_path, MAX_SYSFS_PATH_SIZE, "%s/%s",
                         fs_path, dir_entry->d_name);
                 if (stat(file_path, &file_stat) == -1) {
-                    asprintf(&error_msg, "stat(): %s", strerror(errno));
-                    asprintf(&swindow_info[line_pos], "<C>%-20.20s %15.15s",
+                    SAFE_ASPRINTF(&error_msg, "stat(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&swindow_info[line_pos], "<C>%-20.20s %15.15s",
                             dir_entry->d_name, error_msg);
                     FREE_NULL(error_msg);
                 } else {
                     pretty_size = prettyFormatBytes(file_stat.st_size);
-                    asprintf(&swindow_info[line_pos], "<C>%-20.20s %15.15s",
+                    SAFE_ASPRINTF(&swindow_info[line_pos], "<C>%-20.20s %15.15s",
                             dir_entry->d_name, pretty_size);
                     FREE_NULL(pretty_size);
                 }
@@ -2499,11 +2499,11 @@ void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Add a message to the bottom explaining how to close the dialog */
     if (line_pos < MAX_VDLIST_INFO_LINES) {
-        asprintf(&swindow_info[line_pos], " ");
+        SAFE_ASPRINTF(&swindow_info[line_pos], " ");
         line_pos++;
     }
     if (line_pos < MAX_VDLIST_INFO_LINES) {
-        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
         line_pos++;
     }
 

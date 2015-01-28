@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -47,25 +48,25 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
     setCDKSwindowBoxAttribute(tgt_info, COLOR_DIALOG_BOX);
 
     /* Add target information */
-    asprintf(&swindow_info[0], "</B>Target Name:<!B>\t%s", scst_tgt);
-    asprintf(&swindow_info[1], "</B>Target Driver:<!B>\t%s", tgt_driver);
+    SAFE_ASPRINTF(&swindow_info[0], "</B>Target Name:<!B>\t%s", scst_tgt);
+    SAFE_ASPRINTF(&swindow_info[1], "</B>Target Driver:<!B>\t%s", tgt_driver);
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/enabled",
             SYSFS_SCST_TGT, tgt_driver, scst_tgt);
     readAttribute(dir_name, tmp_buff);
-    asprintf(&swindow_info[2], "</B>Enabled:<!B>\t%s", tmp_buff);
+    SAFE_ASPRINTF(&swindow_info[2], "</B>Enabled:<!B>\t%s", tmp_buff);
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/cpu_mask",
             SYSFS_SCST_TGT, tgt_driver, scst_tgt);
     readAttribute(dir_name, tmp_buff);
-    asprintf(&swindow_info[3], "</B>CPU Mask:<!B>\t%s", tmp_buff);
-    asprintf(&swindow_info[4], " ");
-    asprintf(&swindow_info[5], "</B>Groups:<!B>");
+    SAFE_ASPRINTF(&swindow_info[3], "</B>CPU Mask:<!B>\t%s", tmp_buff);
+    SAFE_ASPRINTF(&swindow_info[4], " ");
+    SAFE_ASPRINTF(&swindow_info[5], "</B>Groups:<!B>");
 
     /* Add target group information */
     line_pos = 6;
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups",
             SYSFS_SCST_TGT, tgt_driver, scst_tgt);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        asprintf(&swindow_info[line_pos], "opendir(): %s", strerror(errno));
+        SAFE_ASPRINTF(&swindow_info[line_pos], "opendir(): %s", strerror(errno));
     } else {
         /* Loop over each entry in the directory */
         while ((dir_entry = readdir(dir_stream)) != NULL) {
@@ -74,7 +75,7 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
                     (strcmp(dir_entry->d_name, ".") != 0) &&
                     (strcmp(dir_entry->d_name, "..") != 0)) {
                 if (line_pos < MAX_TGT_INFO_LINES) {
-                    asprintf(&swindow_info[line_pos],
+                    SAFE_ASPRINTF(&swindow_info[line_pos],
                             "\t%s", dir_entry->d_name);
                     line_pos++;
                 }
@@ -87,11 +88,11 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Add a message to the bottom explaining how to close the dialog */
     if (line_pos < MAX_TGT_INFO_LINES) {
-        asprintf(&swindow_info[line_pos], " ");
+        SAFE_ASPRINTF(&swindow_info[line_pos], " ");
         line_pos++;
     }
     if (line_pos < MAX_TGT_INFO_LINES) {
-        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
         line_pos++;
     }
     
@@ -148,7 +149,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Get new target name (entry widget) */
-        asprintf(&entry_title, "<C></31/B>Add New iSCSI Target\n");
+        SAFE_ASPRINTF(&entry_title, "<C></31/B>Add New iSCSI Target\n");
         tgt_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
                 entry_title, "</B>New Target Name (no spaces): ",
                 COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
@@ -177,7 +178,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                     "add_target %s", target_name);
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg, "Couldn't add SCST iSCSI target: %s",
+                SAFE_ASPRINTF(&error_msg, "Couldn't add SCST iSCSI target: %s",
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -212,7 +213,7 @@ void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "iSCSI target '%s'?", scst_tgt);
+    SAFE_ASPRINTF(&confirm_msg, "iSCSI target '%s'?", scst_tgt);
     confirm = confirmDialog(main_cdk_screen,
             "Are you sure you want to delete SCST", confirm_msg);
     FREE_NULL(confirm_msg);
@@ -222,7 +223,7 @@ void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
                 "%s/targets/iscsi/mgmt", SYSFS_SCST_TGT);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del_target %s", scst_tgt);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't delete SCST iSCSI target: %s",
+            SAFE_ASPRINTF(&error_msg, "Couldn't delete SCST iSCSI target: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -264,7 +265,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Open the Fibre Channel sysfs directory */
     if ((dir_stream = opendir(SYSFS_FC_HOST)) == NULL) {
-        asprintf(&error_msg, "opendir(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
     } else {
@@ -274,7 +275,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
             /* The FC host names are links */
             if (dir_entry->d_type == DT_LNK) {
                 if (i < MAX_LIP_INFO_LINES) {
-                    asprintf(&swindow_msg[i], "<C>LIP on FC host %s...",
+                    SAFE_ASPRINTF(&swindow_msg[i], "<C>LIP on FC host %s...",
                             dir_entry->d_name);
                     addCDKSwindow(lip_info, swindow_msg[i], BOTTOM);
                     i++;
@@ -284,7 +285,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/%s/issue_lip",
                         SYSFS_FC_HOST, dir_entry->d_name);
                 if ((temp_int = writeAttribute(attr_path, "1")) != 0) {
-                    asprintf(&error_msg, "Couldn't issue LIP on FC host %s: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't issue LIP on FC host %s: %s",
                             dir_entry->d_name, strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -359,14 +360,14 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Information label */
-        asprintf(&tgt_info_msg[0], "</31/B>Enable/disable target...");
-        asprintf(&tgt_info_msg[1], " ");
-        asprintf(&tgt_info_msg[2], "</B>Target:<!B>\t\t%s", scst_tgt);
-        asprintf(&tgt_info_msg[3], "</B>Driver:<!B>\t\t%s", tgt_driver);
+        SAFE_ASPRINTF(&tgt_info_msg[0], "</31/B>Enable/disable target...");
+        SAFE_ASPRINTF(&tgt_info_msg[1], " ");
+        SAFE_ASPRINTF(&tgt_info_msg[2], "</B>Target:<!B>\t\t%s", scst_tgt);
+        SAFE_ASPRINTF(&tgt_info_msg[3], "</B>Driver:<!B>\t\t%s", tgt_driver);
         if (curr_state == 0)
-            asprintf(&tgt_info_msg[4], "</B>Current State:<!B>\tDisabled");
+            SAFE_ASPRINTF(&tgt_info_msg[4], "</B>Current State:<!B>\tDisabled");
         else if (curr_state == 1)
-            asprintf(&tgt_info_msg[4], "</B>Current State:<!B>\tEnabled");
+            SAFE_ASPRINTF(&tgt_info_msg[4], "</B>Current State:<!B>\tEnabled");
         tgt_info = newCDKLabel(tgt_screen, (window_x + 1), (window_y + 1),
                 tgt_info_msg, TGT_ON_OFF_INFO_LINES, FALSE, FALSE);
         if (!tgt_info) {
@@ -417,7 +418,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
             if (new_state != curr_state) {
                 if (new_state == 0) {
                     /* Enabled -> Disabled (we need a warning) */
-                    asprintf(&confirm_msg, "%s (%s)?", scst_tgt, tgt_driver);
+                    SAFE_ASPRINTF(&confirm_msg, "%s (%s)?", scst_tgt, tgt_driver);
                     confirm = confirmDialog(main_cdk_screen,
                             "Are you sure you want to disable SCST target",
                             confirm_msg);
@@ -433,7 +434,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
                     snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d", new_state);
                     if ((temp_int = writeAttribute(attr_path,
                             attr_value)) != 0) {
-                        asprintf(&error_msg,
+                        SAFE_ASPRINTF(&error_msg,
                                 "Couldn't enable iSCSI target support: %s",
                                 strerror(temp_int));
                         errorDialog(main_cdk_screen, error_msg, NULL);
@@ -447,7 +448,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
                         SYSFS_SCST_TGT, tgt_driver, scst_tgt);
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d", new_state);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't set SCST target state: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't set SCST target state: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -502,7 +503,7 @@ void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Get the relative target ID (scale widget) */
-        asprintf(&scale_title, "<C></31/B>Set Relative Target ID (%s)\n",
+        SAFE_ASPRINTF(&scale_title, "<C></31/B>Set Relative Target ID (%s)\n",
                 scst_tgt);
         rel_tgt_id_scale = newCDKScale(main_cdk_screen, CENTER, CENTER,
                 scale_title, "</B>Relative Target ID: ",
@@ -532,7 +533,7 @@ void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                     "%d", new_rel_tgt_id);
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg, SET_REL_TGT_ID_ERR, strerror(temp_int));
+                SAFE_ASPRINTF(&error_msg, SET_REL_TGT_ID_ERR, strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
             }

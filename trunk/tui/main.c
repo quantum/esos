@@ -15,6 +15,7 @@
 #include <iniparser.h>
 #include <uuid/uuid.h>
 #include <curl/curl.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -223,7 +224,7 @@ start:
      * around this; long term we can hopefully do something else */
     saved_uid = getuid();
     if (setresuid(0, -1, saved_uid) == -1) {
-        asprintf(&error_msg, "setresuid(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "setresuid(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg,
                 "Your capabilities may be reduced...");
         FREE_NULL(error_msg);
@@ -326,14 +327,14 @@ start:
                     submenu_choice == INTERFACE_SHELL - 1) {
                 /* Set the UID to what was saved at the start */
                 if (setresuid(saved_uid, 0, -1) == -1) {
-                    asprintf(&error_msg, "setresuid(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "setresuid(): %s", strerror(errno));
                     errorDialog(cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                 }
                 /* Fork and execute a shell */
                 if ((child_pid = fork()) < 0) {
                     /* Could not fork */
-                    asprintf(&error_msg, "fork(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "fork(): %s", strerror(errno));
                     errorDialog(cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                 } else if (child_pid == 0) {
@@ -837,7 +838,7 @@ void statusBar(WINDOW *window) {
 
     /* Box the window and make the status bar */
     boxWindow(window, COLOR_MAIN_BOX);
-    asprintf(&status_msg, "</B> %s%*s%s <!B>", esos_ver_str, bar_space,
+    SAFE_ASPRINTF(&status_msg, "</B> %s%*s%s <!B>", esos_ver_str, bar_space,
             "", username_str);
     status_bar = char2Chtype(status_msg, &junk, &junk);
     writeChtypeAttrib(window, 1, LINES-1, status_bar, COLOR_STATUS_BAR,
@@ -874,7 +875,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
             if (errno == ENOENT) {
                 /* The iniparser_load function expects a file (even empty) */
                 if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    asprintf(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -882,7 +883,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                 fclose(ini_file);
             } else {
                 /* Missing file is okay, but fail otherwise */
-                asprintf(&error_msg, "access(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "access(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -924,7 +925,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
             conf_participate = iniparser_getstring(ini_dict,
                     "usage:participate", "");
             if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                asprintf(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
+                SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -951,7 +952,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                 conf_install_id = iniparser_getstring(ini_dict,
                         "usage:install_id", "");
                 if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    asprintf(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -997,7 +998,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                     /* Perform the request */
                     result = curl_easy_perform(curl);
                     if (result != CURLE_OK) {
-                        asprintf(&error_msg, "curl_easy_perform(): %s",
+                        SAFE_ASPRINTF(&error_msg, "curl_easy_perform(): %s",
                                 curl_easy_strerror(result));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
@@ -1017,7 +1018,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                 }
                 /* Save the file */
                 if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    asprintf(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;

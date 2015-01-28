@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <cdk.h>
 #include <syslog.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -46,22 +47,22 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
     setCDKSwindowBoxAttribute(dev_info, COLOR_DIALOG_BOX);
 
     /* Add device information (common attributes) */
-    asprintf(&swindow_info[0], "</B>Device Name:<!B>\t\t%s", scst_dev);
-    asprintf(&swindow_info[1], "</B>Device Handler:<!B>\t\t%s", scst_hndlr);
+    SAFE_ASPRINTF(&swindow_info[0], "</B>Device Name:<!B>\t\t%s", scst_dev);
+    SAFE_ASPRINTF(&swindow_info[1], "</B>Device Handler:<!B>\t\t%s", scst_hndlr);
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/threads_num",
             SYSFS_SCST_TGT, scst_hndlr, scst_dev);
     readAttribute(dir_name, tmp_buff);
-    asprintf(&swindow_info[2], "</B>Number of Threads:<!B>\t%s", tmp_buff);
+    SAFE_ASPRINTF(&swindow_info[2], "</B>Number of Threads:<!B>\t%s", tmp_buff);
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
             "%s/handlers/%s/%s/threads_pool_type",
             SYSFS_SCST_TGT, scst_hndlr, scst_dev);
     readAttribute(dir_name, tmp_buff);
-    asprintf(&swindow_info[3], "</B>Threads Pool Type:<!B>\t%s", tmp_buff);
+    SAFE_ASPRINTF(&swindow_info[3], "</B>Threads Pool Type:<!B>\t%s", tmp_buff);
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/type",
             SYSFS_SCST_TGT, scst_hndlr, scst_dev);
     readAttribute(dir_name, tmp_buff);
-    asprintf(&swindow_info[4], "</B>SCSI Type:<!B>\t\t%s", tmp_buff);
-    asprintf(&swindow_info[5], " ");
+    SAFE_ASPRINTF(&swindow_info[4], "</B>SCSI Type:<!B>\t\t%s", tmp_buff);
+    SAFE_ASPRINTF(&swindow_info[5], " ");
     line_cnt = 6;
 
     /* Some extra attributes for certain device handlers */
@@ -69,100 +70,100 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/filename",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[6], "</B>Filename:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[6], "</B>Filename:<!B>\t%s", tmp_buff);
         line_cnt = 7;
         
     } else if (strcmp(scst_hndlr, "vdisk_blockio") == 0) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/filename",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[6], "</B>Filename:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[6], "</B>Filename:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/blocksize",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[7], "</B>Block Size:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[7], "</B>Block Size:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/nv_cache",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[8], "</B>NV Cache:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[8], "</B>NV Cache:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/read_only",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[9], "</B>Read Only:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[9], "</B>Read Only:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/removable",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[10], "</B>Removable:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[10], "</B>Removable:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/rotational",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[11], "</B>Rotational:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[11], "</B>Rotational:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
                 "%s/handlers/%s/%s/write_through",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
         line_cnt = 13;
         
     } else if (strcmp(scst_hndlr, "vdisk_fileio") == 0) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/filename",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[6], "</B>Filename:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[6], "</B>Filename:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/blocksize",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[7], "</B>Block Size:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[7], "</B>Block Size:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/nv_cache",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[8], "</B>NV Cache:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[8], "</B>NV Cache:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/read_only",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[9], "</B>Read Only:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[9], "</B>Read Only:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/removable",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[10], "</B>Removable:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[10], "</B>Removable:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/rotational",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[11], "</B>Rotational:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[11], "</B>Rotational:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
                 "%s/handlers/%s/%s/write_through",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
         line_cnt = 13;
         
     } else if (strcmp(scst_hndlr, "vdisk_nullio") == 0) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/blocksize",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[6], "</B>Block Size:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[6], "</B>Block Size:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/read_only",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[7], "</B>Read Only:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[7], "</B>Read Only:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/removable",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[8], "</B>Removable:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[8], "</B>Removable:<!B>\t%s", tmp_buff);
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/rotational",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        asprintf(&swindow_info[9], "</B>Rotational:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[9], "</B>Rotational:<!B>\t%s", tmp_buff);
         line_cnt = 10;
     }
 
     /* Add a message to the bottom explaining how to close the dialog */
     if (line_cnt < MAX_DEV_INFO_LINES) {
-        asprintf(&swindow_info[line_cnt], " ");
+        SAFE_ASPRINTF(&swindow_info[line_cnt], " ");
         line_cnt++;
     }
     if (line_cnt < MAX_DEV_INFO_LINES) {
-        asprintf(&swindow_info[line_cnt], CONTINUE_MSG);
+        SAFE_ASPRINTF(&swindow_info[line_cnt], CONTINUE_MSG);
         line_cnt++;
     }
 
@@ -250,7 +251,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                         "add_device %s", scsi_disk);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -268,7 +269,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                         "add_device %s", scsi_disk);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -304,7 +305,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                         "add_device %s", iso_file_name);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -317,7 +318,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             "%s", selected_file);
                     if ((temp_int = writeAttribute(attr_path,
                             attr_value)) != 0) {
-                        asprintf(&error_msg,
+                        SAFE_ASPRINTF(&error_msg,
                                 "Couldn't update SCST device parameters: %s",
                                 strerror(temp_int));
                         errorDialog(main_cdk_screen, error_msg, NULL);
@@ -356,10 +357,10 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             wrefresh(dev_window);
 
             /* Information label */
-            asprintf(&dev_info_msg[0],
+            SAFE_ASPRINTF(&dev_info_msg[0],
                     "</31/B>Adding new vdisk_blockio SCST device...");
-            asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2],
+            SAFE_ASPRINTF(&dev_info_msg[1], " ");
+            SAFE_ASPRINTF(&dev_info_msg[2],
                     "</B>SCSI Block Device:<!B> %.35s", block_dev);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
@@ -496,7 +497,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         getCDKRadioSelectedItem(removable),
                         getCDKRadioSelectedItem(rotational));
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -599,10 +600,10 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             wrefresh(dev_window);
 
             /* Information label */
-            asprintf(&dev_info_msg[0],
+            SAFE_ASPRINTF(&dev_info_msg[0],
                     "</31/B>Adding new vdisk_fileio SCST device...");
-            asprintf(&dev_info_msg[1], " ");
-            asprintf(&dev_info_msg[2],
+            SAFE_ASPRINTF(&dev_info_msg[1], " ");
+            SAFE_ASPRINTF(&dev_info_msg[2],
                     "</B>Back-End File/Device:<!B> %.35s", fileio_file);
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 3, FALSE, FALSE);
@@ -739,7 +740,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         getCDKRadioSelectedItem(removable),
                         getCDKRadioSelectedItem(rotational));
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -770,9 +771,9 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             wrefresh(dev_window);
 
             /* Information label */
-            asprintf(&dev_info_msg[0],
+            SAFE_ASPRINTF(&dev_info_msg[0],
                     "</31/B>Adding new vdisk_nullio SCST device...");
-            asprintf(&dev_info_msg[1], " ");
+            SAFE_ASPRINTF(&dev_info_msg[1], " ");
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 2, FALSE, FALSE);
             if (!dev_info) {
@@ -881,7 +882,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         getCDKRadioSelectedItem(removable),
                         getCDKRadioSelectedItem(rotational));
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -900,7 +901,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                         "add_device %s", scsi_chgr);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -919,7 +920,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                         "add_device %s", scsi_tape);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -938,7 +939,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                         "add_device %s", scsi_tape);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    asprintf(&error_msg, "Couldn't add SCST device: %s",
+                    SAFE_ASPRINTF(&error_msg, "Couldn't add SCST device: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -961,7 +962,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
     }
     /* Using the file selector widget changes the CWD -- fix it */
     if ((chdir(getenv("HOME"))) == -1) {
-        asprintf(&error_msg, "chdir(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "chdir(): %s", strerror(errno));
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
     }
@@ -987,7 +988,7 @@ void remDeviceDialog(CDKSCREEN *main_cdk_screen) {
         return;
     
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "SCST device '%s' (%s)?", scst_dev, scst_hndlr);
+    SAFE_ASPRINTF(&confirm_msg, "SCST device '%s' (%s)?", scst_dev, scst_hndlr);
     confirm = confirmDialog(main_cdk_screen, "Are you sure you want to delete",
             confirm_msg);
     FREE_NULL(confirm_msg);
@@ -997,7 +998,7 @@ void remDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, scst_hndlr);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del_device %s", scst_dev);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't delete SCST device: %s",
+            SAFE_ASPRINTF(&error_msg, "Couldn't delete SCST device: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -1068,14 +1069,14 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Information label */
-        asprintf(&map_info_msg[0], "</31/B>Mapping SCST device...");
-        asprintf(&map_info_msg[1], " ");
-        asprintf(&map_info_msg[2], "</B>Device:<!B>\t\t%s", scst_dev);
-        asprintf(&map_info_msg[3], "</B>Handler:<!B>\t%s", scst_hndlr);
-        asprintf(&map_info_msg[4], " ");
-        asprintf(&map_info_msg[5], "</B>Target:<!B>\t%s", scst_tgt);
-        asprintf(&map_info_msg[6], "</B>Driver:<!B>\t%s", tgt_driver);
-        asprintf(&map_info_msg[7], "</B>Group:<!B>\t%s", group_name);
+        SAFE_ASPRINTF(&map_info_msg[0], "</31/B>Mapping SCST device...");
+        SAFE_ASPRINTF(&map_info_msg[1], " ");
+        SAFE_ASPRINTF(&map_info_msg[2], "</B>Device:<!B>\t\t%s", scst_dev);
+        SAFE_ASPRINTF(&map_info_msg[3], "</B>Handler:<!B>\t%s", scst_hndlr);
+        SAFE_ASPRINTF(&map_info_msg[4], " ");
+        SAFE_ASPRINTF(&map_info_msg[5], "</B>Target:<!B>\t%s", scst_tgt);
+        SAFE_ASPRINTF(&map_info_msg[6], "</B>Driver:<!B>\t%s", tgt_driver);
+        SAFE_ASPRINTF(&map_info_msg[7], "</B>Group:<!B>\t%s", group_name);
         map_info = newCDKLabel(map_screen, (window_x + 1), (window_y + 1),
                 map_info_msg, MAP_DEV_INFO_LINES, FALSE, FALSE);
         if (!map_info) {
@@ -1139,7 +1140,7 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     scst_dev, getCDKScaleValue(lun),
                     getCDKRadioSelectedItem(read_only));
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg, "Couldn't map SCST device: %s",
+                SAFE_ASPRINTF(&error_msg, "Couldn't map SCST device: %s",
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -1189,7 +1190,7 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before removing the LUN mapping */
-    asprintf(&confirm_msg, "SCST LUN %d from group '%s'?", lun, group_name);
+    SAFE_ASPRINTF(&confirm_msg, "SCST LUN %d from group '%s'?", lun, group_name);
     confirm = confirmDialog(main_cdk_screen, "Are you sure you want to unmap",
             confirm_msg);
     FREE_NULL(confirm_msg);
@@ -1200,7 +1201,7 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt, group_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %d", lun);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't remove SCST LUN: %s",
+            SAFE_ASPRINTF(&error_msg, "Couldn't remove SCST LUN: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -1254,7 +1255,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, tgt_drivers[i]);
         if ((tgt_dir_stream = opendir(dir_name)) == NULL) {
             if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                asprintf(&swindow_info[line_pos], "opendir(): %s",
+                SAFE_ASPRINTF(&swindow_info[line_pos], "opendir(): %s",
                         strerror(errno));
                 line_pos++;
             }
@@ -1266,7 +1267,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                     (strcmp(tgt_dir_entry->d_name, ".") != 0) &&
                     (strcmp(tgt_dir_entry->d_name, "..") != 0)) {
                 if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                    asprintf(&swindow_info[line_pos], "</B>Target:<!B> %s (%s)",
+                    SAFE_ASPRINTF(&swindow_info[line_pos], "</B>Target:<!B> %s (%s)",
                             tgt_dir_entry->d_name, tgt_drivers[i]);
                     line_pos++;
                 }
@@ -1276,7 +1277,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                         tgt_drivers[i], tgt_dir_entry->d_name);
                 if ((group_dir_stream = opendir(dir_name)) == NULL) {
                     if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                        asprintf(&swindow_info[line_pos], "opendir(): %s",
+                        SAFE_ASPRINTF(&swindow_info[line_pos], "opendir(): %s",
                                 strerror(errno));
                         line_pos++;
                     }
@@ -1288,7 +1289,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                             (strcmp(group_dir_entry->d_name, ".") != 0) &&
                             (strcmp(group_dir_entry->d_name, "..") != 0)) {
                         if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                            asprintf(&swindow_info[line_pos],
+                            SAFE_ASPRINTF(&swindow_info[line_pos],
                                     "\t</B>Group:<!B> %s",
                                     group_dir_entry->d_name);
                             line_pos++;
@@ -1302,7 +1303,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                         if ((init_dir_stream = opendir(
                                 dir_name)) == NULL) {
                             if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                asprintf(&swindow_info[line_pos],
+                                SAFE_ASPRINTF(&swindow_info[line_pos],
                                         "opendir(): %s", strerror(errno));
                                 line_pos++;
                             }
@@ -1315,7 +1316,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                                     (strcmp(init_dir_entry->d_name,
                                     "mgmt") != 0)) {
                                 if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                    asprintf(&swindow_info[line_pos],
+                                    SAFE_ASPRINTF(&swindow_info[line_pos],
                                             "\t\t</B>Initiator:<!B> %s",
                                             init_dir_entry->d_name);
                                     line_pos++;
@@ -1332,7 +1333,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                         if ((lun_dir_stream = opendir(
                                 dir_name)) == NULL) {
                             if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                asprintf(&swindow_info[line_pos],
+                                SAFE_ASPRINTF(&swindow_info[line_pos],
                                         "opendir(): %s", strerror(errno));
                                 line_pos++;
                             }
@@ -1360,7 +1361,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                                 if (dev_path_size < MAX_SYSFS_PATH_SIZE)
                                     *(dev_path + dev_path_size) = '\0';
                                 if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                                    asprintf(&swindow_info[line_pos],
+                                    SAFE_ASPRINTF(&swindow_info[line_pos],
                                             "\t\t</B>LUN:<!B> %s (%s)",
                                             lun_dir_entry->d_name,
                                             (strrchr(dev_path, '/') + 1));
@@ -1374,7 +1375,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                 closedir(group_dir_stream);
                 /* Print a blank line to separate targets */
                 if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                    asprintf(&swindow_info[line_pos], " ");
+                    SAFE_ASPRINTF(&swindow_info[line_pos], " ");
                     line_pos++;
                 }
             }
@@ -1385,11 +1386,11 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Add a message to the bottom explaining how to close the dialog */
     if (line_pos < MAX_LUN_LAYOUT_LINES) {
-        asprintf(&swindow_info[line_pos], " ");
+        SAFE_ASPRINTF(&swindow_info[line_pos], " ");
         line_pos++;
     }
     if (line_pos < MAX_LUN_LAYOUT_LINES) {
-        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
         line_pos++;
     }
     

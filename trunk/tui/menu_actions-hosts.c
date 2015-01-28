@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <cdk.h>
 #include <curses.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -35,7 +36,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Get new group name (entry widget) */
-        asprintf(&entry_title, "<C></31/B>Add New Group to Target %s (%s)\n",
+        SAFE_ASPRINTF(&entry_title, "<C></31/B>Add New Group to Target %s (%s)\n",
                 scst_tgt, tgt_driver);
         grp_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
                 entry_title, "</B>New Group Name (no spaces): ",
@@ -64,7 +65,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
                     SYSFS_SCST_TGT, tgt_driver, scst_tgt);
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "create %s", group_name);
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg, "Couldn't add SCST security group: %s",
+                SAFE_ASPRINTF(&error_msg, "Couldn't add SCST security group: %s",
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -105,7 +106,7 @@ void remGroupDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg,
+    SAFE_ASPRINTF(&confirm_msg,
             "Are you sure you want to delete SCST security group '%s'?",
             group_name);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
@@ -117,7 +118,7 @@ void remGroupDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", group_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't delete SCST security group: %s",
+            SAFE_ASPRINTF(&error_msg, "Couldn't delete SCST security group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -166,14 +167,14 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/sessions",
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
         }
 
         /* Give the user an option to enter their own initiator name */
-        asprintf(&scroll_init_list[i], "<C>Enter Initiator Name");
+        SAFE_ASPRINTF(&scroll_init_list[i], "<C>Enter Initiator Name");
         i++;
 
         /* Loop over each entry in the directory */
@@ -192,10 +193,10 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                 if (!isSCSTInitInGroup(scst_tgt, tgt_driver, group_name,
                         dir_entry->d_name)) {
                     if (i < MAX_SCST_SESS_INITS) {
-                        asprintf(&scst_sess_inits[i], "%s", init_attr_val);
+                        SAFE_ASPRINTF(&scst_sess_inits[i], "%s", init_attr_val);
                         init_use_cnt = countSCSTInitUses(scst_tgt, tgt_driver,
                                 init_attr_val);
-                        asprintf(&scroll_init_list[i],
+                        SAFE_ASPRINTF(&scroll_init_list[i],
                                 "<C>%.30s - Used By %d Groups",
                                 scst_sess_inits[i], init_use_cnt);
                         i++;
@@ -208,7 +209,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
         closedir(dir_stream);
 
         /* Get SCST initiator choice from user */
-        asprintf(&scroll_title, "<C></31/B>Select an Initiator (%s)\n",
+        SAFE_ASPRINTF(&scroll_title, "<C></31/B>Select an Initiator (%s)\n",
                 scst_tgt);
         scst_init_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE,
                 15, 55, scroll_title, scroll_init_list, i,
@@ -233,7 +234,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
 
             if (init_choice == 0) {
                 /* Let the user enter their own initiator name (entry widget) */
-                asprintf(&entry_title,
+                SAFE_ASPRINTF(&entry_title,
                         "<C></31/B>Add Initiator to Group %s (%s)\n",
                         group_name, scst_tgt);
                 init_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
@@ -270,7 +271,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                 ((entry_init_name == NULL) ?
                 scst_sess_inits[init_choice] : entry_init_name));
         if ((temp_int = writeAttribute(mgmt_attr_path, mgmt_attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't add initiator to SCST group: %s",
+            SAFE_ASPRINTF(&error_msg, "Couldn't add initiator to SCST group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -322,7 +323,7 @@ void remInitDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "'%s' from group '%s'?", init_name, group_name);
+    SAFE_ASPRINTF(&confirm_msg, "'%s' from group '%s'?", init_name, group_name);
     confirm = confirmDialog(main_cdk_screen,
             "Are you sure you want to remove initiator", confirm_msg);
     FREE_NULL(confirm_msg);
@@ -333,7 +334,7 @@ void remInitDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, tgt_driver, scst_tgt, group_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", init_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't remove initiator: %s",
+            SAFE_ASPRINTF(&error_msg, "Couldn't remove initiator: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);

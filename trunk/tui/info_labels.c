@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <cdk.h>
 #include <sys/param.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -176,7 +177,7 @@ int readTargetData(char *label_msg[]) {
 
     /* Set the initial label messages; the number of characters
      * controls the label width (using white space as padding for width) */
-    asprintf(&label_msg[0],
+    SAFE_ASPRINTF(&label_msg[0],
             "</21/B/U>Target<!21><!B><!U>                            "
             "</21/B/U>Driver<!21><!B><!U>     "
             "</21/B/U>State<!21><!B><!U>      "
@@ -188,7 +189,7 @@ int readTargetData(char *label_msg[]) {
     /* Print a nice message if SCST isn't loaded and return */
     if (!isSCSTLoaded()) {
         snprintf(line_buffer, TARGETS_LABEL_COLS, NO_SCST_MSG);
-        asprintf(&label_msg[row_cnt], "%s", line_buffer);
+        SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
         row_cnt++;
         return row_cnt;
     }
@@ -196,7 +197,7 @@ int readTargetData(char *label_msg[]) {
     /* Fill the array with current SCST target drivers */
     if (!listSCSTTgtDrivers(tgt_drivers, &driver_cnt)) {
         snprintf(line_buffer, TARGETS_LABEL_COLS, TGT_DRIVERS_ERR);
-        asprintf(&label_msg[row_cnt], "%s", line_buffer);
+        SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
         row_cnt++;
         return row_cnt;
     }
@@ -209,7 +210,7 @@ int readTargetData(char *label_msg[]) {
             if (row_cnt < MAX_INFO_LABEL_ROWS) {
                 snprintf(line_buffer, SESSIONS_LABEL_COLS, "opendir(): %s",
                         strerror(errno));
-                asprintf(&label_msg[row_cnt], "%s", line_buffer);
+                SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
                 row_cnt++;
             }
             return row_cnt;
@@ -245,7 +246,7 @@ int readTargetData(char *label_msg[]) {
         if (row_cnt < MAX_INFO_LABEL_ROWS) {
             snprintf(line_buffer, TARGETS_LABEL_COLS, "opendir(): %s",
                     strerror(errno));
-            asprintf(&label_msg[row_cnt], "%s", line_buffer);
+            SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
         }
         return row_cnt;
     }
@@ -293,7 +294,7 @@ int readTargetData(char *label_msg[]) {
         if (row_cnt < MAX_INFO_LABEL_ROWS) {
             snprintf(line_buffer, TARGETS_LABEL_COLS, "opendir(): %s",
                     strerror(errno));
-            asprintf(&label_msg[row_cnt], "%s", line_buffer);
+            SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
         }
         return row_cnt;
     }
@@ -344,7 +345,7 @@ int readTargetData(char *label_msg[]) {
                     "%-33.33s %-10.10s %-10.10s %-20.20s",
                     tgt_name[i], driver_name[i],
                     tgt_state[i], tgt_speed_str[i]);
-            asprintf(&label_msg[row_cnt], "%s", line_buffer);
+            SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
             row_cnt++;
         }
     }
@@ -352,7 +353,7 @@ int readTargetData(char *label_msg[]) {
     /* Done */
     if (row_cnt == 1) {
         /* Add a blank line if there are no rows of data */
-        asprintf(&label_msg[row_cnt], " ");
+        SAFE_ASPRINTF(&label_msg[row_cnt], " ");
         row_cnt++;
     }
     return row_cnt;
@@ -389,7 +390,7 @@ int readSessionData(char *label_msg[]) {
 
     /* Set the initial label messages; the number of characters
      * controls the label width (using white space as padding for width) */
-    asprintf(&label_msg[0],
+    SAFE_ASPRINTF(&label_msg[0],
             "</21/B/U>Session<!21><!B><!U>                  "
             "  </21/B/U>LUNs<!21><!B><!U>"
             "  </21/B/U>Cmds<!21><!B><!U>"
@@ -402,7 +403,7 @@ int readSessionData(char *label_msg[]) {
     /* Print a nice message if SCST isn't loaded and return */
     if (!isSCSTLoaded()) {
         snprintf(line_buffer, SESSIONS_LABEL_COLS, NO_SCST_MSG);
-        asprintf(&label_msg[row_cnt], "%s", line_buffer);
+        SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
         row_cnt++;
         return row_cnt;
     }
@@ -410,7 +411,7 @@ int readSessionData(char *label_msg[]) {
     /* Fill the array with current SCST target drivers */
     if (!listSCSTTgtDrivers(tgt_drivers, &driver_cnt)) {
         snprintf(line_buffer, SESSIONS_LABEL_COLS, TGT_DRIVERS_ERR);
-        asprintf(&label_msg[row_cnt], "%s", line_buffer);
+        SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
         row_cnt++;
         return row_cnt;
     }
@@ -423,7 +424,7 @@ int readSessionData(char *label_msg[]) {
             if (row_cnt < MAX_INFO_LABEL_ROWS) {
                 snprintf(line_buffer, SESSIONS_LABEL_COLS, "opendir(): %s",
                         strerror(errno));
-                asprintf(&label_msg[row_cnt], "%s", line_buffer);
+                SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
                 row_cnt++;
             }
             return row_cnt;
@@ -443,7 +444,7 @@ int readSessionData(char *label_msg[]) {
                     if (row_cnt < MAX_INFO_LABEL_ROWS) {
                         snprintf(line_buffer, SESSIONS_LABEL_COLS,
                                 "opendir(): %s", strerror(errno));
-                        asprintf(&label_msg[row_cnt], "%s", line_buffer);
+                        SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
                         row_cnt++;
                     }
                     return row_cnt;
@@ -488,7 +489,7 @@ int readSessionData(char *label_msg[]) {
                             if (row_cnt < MAX_INFO_LABEL_ROWS) {
                                 snprintf(line_buffer, SESSIONS_LABEL_COLS,
                                         "strtoull(): %s", strerror(errno));
-                                asprintf(&label_msg[row_cnt], "%s",
+                                SAFE_ASPRINTF(&label_msg[row_cnt], "%s",
                                         line_buffer);
                                 row_cnt++;
                             }
@@ -509,7 +510,7 @@ int readSessionData(char *label_msg[]) {
                             if (row_cnt < MAX_INFO_LABEL_ROWS) {
                                 snprintf(line_buffer, SESSIONS_LABEL_COLS,
                                         "strtoull(): %s", strerror(errno));
-                                asprintf(&label_msg[row_cnt], "%s",
+                                SAFE_ASPRINTF(&label_msg[row_cnt], "%s",
                                         line_buffer);
                                 row_cnt++;
                             }
@@ -561,7 +562,7 @@ int readSessionData(char *label_msg[]) {
                     "%-25.25s %5d %5d %18llu %18llu",
                     init_names[i], lun_count[i], active_cmds[i],
                     read_io_kb[i], write_io_kb[i]);
-            asprintf(&label_msg[row_cnt], "%s", line_buffer);
+            SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
             row_cnt++;
         }
     }
@@ -569,7 +570,7 @@ int readSessionData(char *label_msg[]) {
     /* Done */
     if (row_cnt == 1) {
         /* Add a blank line if there are no rows of data */
-        asprintf(&label_msg[row_cnt], " ");
+        SAFE_ASPRINTF(&label_msg[row_cnt], " ");
         row_cnt++;
     }
     return row_cnt;
