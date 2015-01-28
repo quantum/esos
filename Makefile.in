@@ -439,7 +439,7 @@ clean: $(clean_targets)
 	$(RM) $(IMAGE_DIR)
 	$(RM) $(BUILD_DIR)/dist_*.txt
 	$(RM) $(BUILD_DIR)/esos-*.zip
-	$(RM) $(BUILD_DIR)/esos-*.img
+	$(RM) $(BUILD_DIR)/esos-*.img.bz2
 
 $(clean_targets):: target = $(subst clean-,,$(@))
 $(clean_targets)::
