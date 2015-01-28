@@ -20,6 +20,7 @@
 #include <linux/sockios.h>
 #include <linux/ethtool.h>
 #include <sys/ioctl.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -37,18 +38,18 @@ void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     int i = 0;
 
     /* Set the message */
-    asprintf(&message[0], "<C></B>ERROR");
-    asprintf(&message[1], " ");
+    SAFE_ASPRINTF(&message[0], "<C></B>ERROR");
+    SAFE_ASPRINTF(&message[1], " ");
     if (msg_line_1)
-        asprintf(&message[2], "<C>%s", msg_line_1);
+        SAFE_ASPRINTF(&message[2], "<C>%s", msg_line_1);
     else
-        asprintf(&message[2], " ");
+        SAFE_ASPRINTF(&message[2], " ");
     if (msg_line_2)
-         asprintf(&message[3], "<C>%s", msg_line_2);
+         SAFE_ASPRINTF(&message[3], "<C>%s", msg_line_2);
     else
-        asprintf(&message[3], " ");
-    asprintf(&message[4], " ");
-    asprintf(&message[5], " ");
+        SAFE_ASPRINTF(&message[3], " ");
+    SAFE_ASPRINTF(&message[4], " ");
+    SAFE_ASPRINTF(&message[5], " ");
 
     /* Display the error dialog box */
     error = newCDKDialog(screen, CENTER, CENTER, message, ERROR_DIAG_MSG_SIZE,
@@ -89,18 +90,18 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     boolean ret_val = FALSE;
 
     /* Set the message */
-    asprintf(&message[0], "<C></B>CONFIRM");
-    asprintf(&message[1], " ");
+    SAFE_ASPRINTF(&message[0], "<C></B>CONFIRM");
+    SAFE_ASPRINTF(&message[1], " ");
     if (msg_line_1)
-        asprintf(&message[2], "<C>%s", msg_line_1);
+        SAFE_ASPRINTF(&message[2], "<C>%s", msg_line_1);
     else
-        asprintf(&message[2], " ");
+        SAFE_ASPRINTF(&message[2], " ");
     if (msg_line_2)
-         asprintf(&message[3], "<C>%s", msg_line_2);
+         SAFE_ASPRINTF(&message[3], "<C>%s", msg_line_2);
     else
-        asprintf(&message[3], " ");
-    asprintf(&message[4], " ");
-    asprintf(&message[5], " ");
+        SAFE_ASPRINTF(&message[3], " ");
+    SAFE_ASPRINTF(&message[4], " ");
+    SAFE_ASPRINTF(&message[5], " ");
 
     /* Display the confirmation dialog box */
     confirm = newCDKDialog(screen, CENTER, CENTER, message,
@@ -159,7 +160,7 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         } else {
             /* No driver was given, so get a list of them */
             if (!listSCSTTgtDrivers(drivers, &driver_cnt)) {
-                asprintf(&error_msg, "%s", TGT_DRIVERS_ERR);
+                SAFE_ASPRINTF(&error_msg, "%s", TGT_DRIVERS_ERR);
                 errorDialog(cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -172,7 +173,7 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
             snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s",
                     SYSFS_SCST_TGT, drivers[i]);
             if ((dir_stream = opendir(dir_name)) == NULL) {
-                asprintf(&error_msg, "opendir(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
                 errorDialog(cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 finished = TRUE;
@@ -186,9 +187,9 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
                         (strcmp(dir_entry->d_name, ".") != 0) &&
                         (strcmp(dir_entry->d_name, "..") != 0)) {
                     if (j < MAX_SCST_TGTS) {
-                        asprintf(&scst_tgt_name[j], "%s", dir_entry->d_name);
-                        asprintf(&scst_tgt_driver[j], "%s", drivers[i]);
-                        asprintf(&scst_tgt_info[j], "<C>%s (Driver: %s)",
+                        SAFE_ASPRINTF(&scst_tgt_name[j], "%s", dir_entry->d_name);
+                        SAFE_ASPRINTF(&scst_tgt_driver[j], "%s", drivers[i]);
+                        SAFE_ASPRINTF(&scst_tgt_info[j], "<C>%s (Driver: %s)",
                                 dir_entry->d_name, drivers[i]);
                         j++;
                     }
@@ -264,7 +265,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups",
                 SYSFS_SCST_TGT, tgt_driver, tgt_name);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -277,8 +278,8 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
                     (strcmp(dir_entry->d_name, ".") != 0) &&
                     (strcmp(dir_entry->d_name, "..") != 0)) {
                 if (i < MAX_SCST_GROUPS) {
-                    asprintf(&scst_tgt_groups[i], "%s", dir_entry->d_name);
-                    asprintf(&scroll_grp_list[i], "<C>%.30s",
+                    SAFE_ASPRINTF(&scst_tgt_groups[i], "%s", dir_entry->d_name);
+                    SAFE_ASPRINTF(&scroll_grp_list[i], "<C>%.30s",
                             scst_tgt_groups[i]);
                     i++;
                 }
@@ -295,7 +296,7 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         }
 
         /* Get SCST target group choice from user */
-        asprintf(&scroll_title, "<C></31/B>Choose a Group (%s)\n", tgt_name);
+        SAFE_ASPRINTF(&scroll_title, "<C></31/B>Choose a Group (%s)\n", tgt_name);
         scst_grp_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 55,
                 scroll_title, scroll_grp_list, i,
                 FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
@@ -350,7 +351,7 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
                 "%s/targets/%s/%s/ini_groups/%s/luns",
                 SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             ret_val = -1;
@@ -377,7 +378,7 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
                     *(dev_path + dev_path_size) = '\0';
                 /* For our scroll widget */
                 if (i < MAX_SCST_LUNS) {
-                    asprintf(&scst_lun_list[i], "<C>LUN %d (Device: %s)",
+                    SAFE_ASPRINTF(&scst_lun_list[i], "<C>LUN %d (Device: %s)",
                             luns[i], (strrchr(dev_path, '/') + 1));
                     i++;
                 }
@@ -395,7 +396,7 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
         }
 
         /* Get SCST LUN choice from user */
-        asprintf(&scroll_title, "<C></31/B>Choose a LUN (%s)\n",
+        SAFE_ASPRINTF(&scroll_title, "<C></31/B>Choose a LUN (%s)\n",
                 tgt_group);
         lun_scroll = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 45,
                 scroll_title, scst_lun_list, i,
@@ -454,12 +455,12 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
         if ((boot_dev_node = blkid_get_devname(NULL, "LABEL",
                 ESOS_BOOT_PART)) == NULL) {
             /* The function above returns NULL if the device isn't found */
-            asprintf(&boot_dev_node, " ");
+            SAFE_ASPRINTF(&boot_dev_node, " ");
         }
 
         /* Open the directory to get SCSI disks */
         if ((dir_stream = opendir(SYSFS_SCSI_DISK)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -468,7 +469,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
         /* Loop over each entry in the directory (SCSI disks) */
         while ((dir_entry = readdir(dir_stream)) != NULL) {
             if (dir_entry->d_type == DT_LNK && dev_cnt < MAX_SCSI_DISKS) {
-                asprintf(&scsi_dsk_dev[dev_cnt], "%s", dir_entry->d_name);
+                SAFE_ASPRINTF(&scsi_dsk_dev[dev_cnt], "%s", dir_entry->d_name);
                 dev_cnt++;
             }
         }
@@ -483,7 +484,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
                     SYSFS_SCSI_DISK, scsi_dsk_dev[i]);
             if ((dir_stream = opendir(dir_name)) == NULL) {
                 if (i < MAX_SCSI_DISKS)
-                    asprintf(&scsi_dsk_node[i], "opendir(): %s",
+                    SAFE_ASPRINTF(&scsi_dsk_node[i], "opendir(): %s",
                             strerror(errno));
             } else {
                 while ((dir_entry = readdir(dir_stream)) != NULL) {
@@ -493,7 +494,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
                             (strcmp(dir_entry->d_name, "..") != 0)) {
                         /* The first directory is the node name we're using */
                         if (i < MAX_SCSI_DISKS)
-                            asprintf(&scsi_dsk_node[i], "%s",
+                            SAFE_ASPRINTF(&scsi_dsk_node[i], "%s",
                                     dir_entry->d_name);
                         break;
                     }
@@ -519,13 +520,13 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/model",
                         SYSFS_SCSI_DISK, scsi_dsk_dev[i]);
                 readAttribute(dir_name, tmp_buff);
-                asprintf(&scsi_dsk_model[i], "%s", tmp_buff);
+                SAFE_ASPRINTF(&scsi_dsk_model[i], "%s", tmp_buff);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/vendor",
                         SYSFS_SCSI_DISK, scsi_dsk_dev[i]);
                 readAttribute(dir_name, tmp_buff);
-                asprintf(&scsi_dsk_vendor[i], "%s", tmp_buff);
+                SAFE_ASPRINTF(&scsi_dsk_vendor[i], "%s", tmp_buff);
                 /* Fill the list (pretty) for our CDK label with SCSI disks */
-                asprintf(&scsi_dev_info[i], "<C>[%s] %s %s (/dev/%s)",
+                SAFE_ASPRINTF(&scsi_dev_info[i], "<C>[%s] %s %s (/dev/%s)",
                         scsi_dsk_dev[i], scsi_dsk_vendor[i],
                         scsi_dsk_model[i], scsi_dsk_node[i]);
                 /* Next */
@@ -594,12 +595,12 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
 
     while (1) {
         /* Loop over each SCST handler type and grab any open device names */
-        for (i = 0; i < g_scst_handlers_size(); i++) {
+        for (i = 0; i < (int)g_scst_handlers_size(); i++) {
             /* Open the directory */
             snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s",
                     SYSFS_SCST_TGT, g_scst_handlers[i]);
             if ((dir_stream = opendir(dir_name)) == NULL) {
-                asprintf(&error_msg, "opendir(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
                 errorDialog(cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 finished = TRUE;
@@ -610,9 +611,9 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
             while ((dir_entry = readdir(dir_stream)) != NULL) {
                 if (dir_entry->d_type == DT_LNK) {
                     if (j < MAX_SCST_DEVS) {
-                        asprintf(&scst_dev_name[j], "%s", dir_entry->d_name);
-                        asprintf(&scst_dev_hndlr[j], "%s", g_scst_handlers[i]);
-                        asprintf(&scst_dev_info[j], "<C>%s (Handler: %s)",
+                        SAFE_ASPRINTF(&scst_dev_name[j], "%s", dir_entry->d_name);
+                        SAFE_ASPRINTF(&scst_dev_hndlr[j], "%s", g_scst_handlers[i]);
+                        SAFE_ASPRINTF(&scst_dev_info[j], "<C>%s (Handler: %s)",
                                 dir_entry->d_name, g_scst_handlers[i]);
                         j++;
                     }
@@ -689,14 +690,14 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
         for (i = 0; i < adp_count; i++) {
             mr_adapters[i] = getMRAdapter(i);
             if (!mr_adapters[i]) {
-                asprintf(&error_msg,
+                SAFE_ASPRINTF(&error_msg,
                         "Couldn't get data from MegaRAID adapter # %d!", i);
                 errorDialog(cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 return -1;
             } else {
                 if (i < MAX_ADAPTERS)
-                    asprintf(&adapters[i], "<C>MegaRAID Adapter # %d: %s",
+                    SAFE_ASPRINTF(&adapters[i], "<C>MegaRAID Adapter # %d: %s",
                             i, mr_adapters[i]->prod_name);
             }
         }
@@ -746,7 +747,7 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
                 "%s/targets/%s/%s/ini_groups/%s/initiators",
                 SYSFS_SCST_TGT, tgt_driver, tgt_name, tgt_group);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -758,8 +759,8 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
             if ((dir_entry->d_type == DT_REG) &&
                     (strcmp(dir_entry->d_name, "mgmt") != 0)) {
                 if (i < MAX_SCST_INITS) {
-                    asprintf(&init_list[i], "%s", dir_entry->d_name);
-                    asprintf(&scroll_init_list[i], "<C>%.40s", init_list[i]);
+                    SAFE_ASPRINTF(&init_list[i], "%s", dir_entry->d_name);
+                    SAFE_ASPRINTF(&scroll_init_list[i], "<C>%.40s", init_list[i]);
                     i++;
                 }
             }
@@ -775,7 +776,7 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         }
 
         /* Get SCST initiator choice from user */
-        asprintf(&scroll_title, "<C></31/B>Choose an Initiator (%s)\n",
+        SAFE_ASPRINTF(&scroll_title, "<C></31/B>Choose an Initiator (%s)\n",
                 tgt_group);
         lun_scroll = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 45,
                 scroll_title, scroll_init_list, i,
@@ -836,7 +837,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
                     SCSTADMIN_TOOL, SCST_CONF);
             ret_val = system(scstadmin_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                asprintf(&error_msg, CMD_FAILED_ERR, SCSTADMIN_TOOL, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SCSTADMIN_TOOL, exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -848,7 +849,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
                 SYNC_CONF_TOOL);
         ret_val = system(sync_conf_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, CMD_FAILED_ERR, SYNC_CONF_TOOL, exit_stat);
+            SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SYNC_CONF_TOOL, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -884,8 +885,8 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
     /* Add group members for scroll widget */
     for (grp_member = group_info->gr_mem; *grp_member; grp_member++) {
         if (user_cnt < MAX_USERS) {
-            asprintf(&esos_grp_members[user_cnt], "%s", *grp_member);
-            asprintf(&scroll_list[user_cnt], "<C>%.25s", *grp_member);
+            SAFE_ASPRINTF(&esos_grp_members[user_cnt], "%s", *grp_member);
+            SAFE_ASPRINTF(&scroll_list[user_cnt], "<C>%.25s", *grp_member);
             user_cnt++;
         }
     }
@@ -933,18 +934,18 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     boolean ret_val = FALSE;
 
     /* Set the message */
-    asprintf(&message[0], "<C></B>QUESTION");
-    asprintf(&message[1], " ");
+    SAFE_ASPRINTF(&message[0], "<C></B>QUESTION");
+    SAFE_ASPRINTF(&message[1], " ");
     if (msg_line_1)
-        asprintf(&message[2], "<C>%s", msg_line_1);
+        SAFE_ASPRINTF(&message[2], "<C>%s", msg_line_1);
     else
-        asprintf(&message[2], " ");
+        SAFE_ASPRINTF(&message[2], " ");
     if (msg_line_2)
-         asprintf(&message[3], "<C>%s", msg_line_2);
+         SAFE_ASPRINTF(&message[3], "<C>%s", msg_line_2);
     else
-        asprintf(&message[3], " ");
-    asprintf(&message[4], " ");
-    asprintf(&message[5], " ");
+        SAFE_ASPRINTF(&message[3], " ");
+    SAFE_ASPRINTF(&message[4], " ");
+    SAFE_ASPRINTF(&message[5], " ");
 
     /* Display the question dialog box */
     question = newCDKDialog(screen, CENTER, CENTER, message,
@@ -993,7 +994,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
     /* Make a list of file systems that are mounted (by mount
      * path, not device) */
     if ((mtab_file = setmntent(MTAB, "r")) == NULL) {
-        asprintf(&error_msg, "setmntent(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
         return;
@@ -1017,7 +1018,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
     
     /* Open the file system tab file */
     if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-        asprintf(&error_msg, "setmntent(): %s", strerror(errno));
+        SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
         errorDialog(cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
         return;
@@ -1030,14 +1031,14 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
          * we shouldn't touch */
         if (strstr(SYS_FILE_SYSTEMS, fstab_entry->mnt_dir) == NULL) {
             if (fs_cnt < MAX_FILE_SYSTEMS) {
-                asprintf(&fs_names[fs_cnt], "%s", fstab_entry->mnt_fsname);
-                asprintf(&fs_paths[fs_cnt], "%s", fstab_entry->mnt_dir);
-                asprintf(&fs_types[fs_cnt], "%s", fstab_entry->mnt_type);
+                SAFE_ASPRINTF(&fs_names[fs_cnt], "%s", fstab_entry->mnt_fsname);
+                SAFE_ASPRINTF(&fs_paths[fs_cnt], "%s", fstab_entry->mnt_dir);
+                SAFE_ASPRINTF(&fs_types[fs_cnt], "%s", fstab_entry->mnt_type);
                 if (strstr(mnt_line_buffer, fstab_entry->mnt_dir) == NULL)
                     fs_mounted[fs_cnt] = FALSE;
                 else
                     fs_mounted[fs_cnt] = TRUE;
-                asprintf(&scroll_list[fs_cnt],
+                SAFE_ASPRINTF(&scroll_list[fs_cnt],
                         "<C>%-25.25s %-20.20s %-5.5s (Mounted: %d)",
                         fs_names[fs_cnt], fs_paths[fs_cnt],
                         fs_types[fs_cnt], fs_mounted[fs_cnt]);
@@ -1125,7 +1126,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
         if ((boot_dev_node = blkid_get_devname(NULL, "LABEL",
                 ESOS_BOOT_PART)) == NULL) {
             /* The function above returns NULL if the device isn't found */
-            asprintf(&boot_dev_node, " ");
+            SAFE_ASPRINTF(&boot_dev_node, " ");
         } else {
             /* Found the device so chop off the partition number */
             *(boot_dev_node + strlen(boot_dev_node) - 1) = '\0';
@@ -1133,7 +1134,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
 
         /* Open the directory to get block devices */
         if ((dir_stream = opendir(SYSFS_BLOCK)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -1149,7 +1150,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                     continue;
                 } else {
                     if (close(blk_dev_fd) == -1) {
-                        asprintf(&error_msg, "close(): %s", strerror(errno));
+                        SAFE_ASPRINTF(&error_msg, "close(): %s", strerror(errno));
                         errorDialog(cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
                         finished = TRUE;
@@ -1166,78 +1167,78 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                      * be a problem */
                 } else if ((strstr(dev_node_test, "/dev/drbd")) != NULL) {
                     if (dev_cnt < MAX_BLOCK_DEVS) {
-                        asprintf(&blk_dev_name[dev_cnt], "%s",
+                        SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_size[dev_cnt], "%s", tmp_buff);
                         /* Nothing extra for DRBD... yet */
-                        asprintf(&blk_dev_info[dev_cnt], "DRBD Device");
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "DRBD Device");
                         dev_cnt++;
                     }
                     /* For software RAID (md) devices; it appears the mdadm
                      * tool forces the /dev/mdX device node name format */
                 } else if ((strstr(dev_node_test, "/dev/md")) != NULL) {
                     if (dev_cnt < MAX_BLOCK_DEVS) {
-                        asprintf(&blk_dev_name[dev_cnt], "%s",
+                        SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_size[dev_cnt], "%s", tmp_buff);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
                                 "%s/%s/md/level", SYSFS_BLOCK,
                                 blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_info[dev_cnt], "Level: %s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Level: %s", tmp_buff);
                         dev_cnt++;
                     }
                     /* For normal SCSI block devices */
                 } else if ((strstr(dev_node_test, "/dev/sd")) != NULL) {
                     if (dev_cnt < MAX_BLOCK_DEVS) {
-                        asprintf(&blk_dev_name[dev_cnt], "%s",
+                        SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_size[dev_cnt], "%s", tmp_buff);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
                                 "%s/%s/device/model",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_info[dev_cnt], "Model: %s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Model: %s", tmp_buff);
                         dev_cnt++;
                     }
                     /* For device mapper (eg, LVM2) block devices */
                 } else if ((strstr(dev_node_test, "/dev/dm-")) != NULL) {
                     if (dev_cnt < MAX_BLOCK_DEVS) {
-                        asprintf(&blk_dev_name[dev_cnt], "%s",
+                        SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_size[dev_cnt], "%s", tmp_buff);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/dm/name",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_info[dev_cnt], "Name: %s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Name: %s", tmp_buff);
                         dev_cnt++;
                     }
                     /* For Compaq SMART array controllers */
                 } else if ((strstr(dev_node_test, "/dev/cciss")) != NULL) {
                     if (dev_cnt < MAX_BLOCK_DEVS) {
-                        asprintf(&blk_dev_name[dev_cnt], "%s",
+                        SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_size[dev_cnt], "%s", tmp_buff);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
                                 "%s/%s/device/raid_level",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        asprintf(&blk_dev_info[dev_cnt],
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt],
                                 "RAID Level: %s", tmp_buff);
                         dev_cnt++;
                     }
@@ -1262,7 +1263,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
         /* Fill the list (pretty) for our CDK label with block devices */
         for (i = 0; i < dev_cnt; i++) {
             if (i < MAX_BLOCK_DEVS) {
-                asprintf(&blk_dev_scroll_lines[i],
+                SAFE_ASPRINTF(&blk_dev_scroll_lines[i],
                         "<C>%-10.10s Size: %-12.12s %-30.30s",
                         blk_dev_name[i], blk_dev_size[i], blk_dev_info[i]);
             }
@@ -1282,11 +1283,11 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
 
         if (block_dev_list->exitType == vNORMAL) {
             /* Return a unique block device node */
-            asprintf(&block_dev, "/dev/%s", blk_dev_name[blk_dev_choice]);
+            SAFE_ASPRINTF(&block_dev, "/dev/%s", blk_dev_name[blk_dev_choice]);
             if ((strstr(block_dev, "/dev/sd")) != NULL) {
                 /* Get a unique ID for the device using the scsi_id.sh script; this
                  * is then used for the device node link that exists in /dev */
-                asprintf(&cmd_str, "%s %s 2>&1", SCSI_ID_TOOL, block_dev);
+                SAFE_ASPRINTF(&cmd_str, "%s %s 2>&1", SCSI_ID_TOOL, block_dev);
                 scsi_id_cmd = popen(cmd_str, "r");
                 fgets(device_id, sizeof (device_id), scsi_id_cmd);
                 dev_id_ptr = strStrip(device_id);
@@ -1301,7 +1302,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 }
                 FREE_NULL(cmd_str);
                 if (ret_val != 0) {
-                    asprintf(&error_msg, "The %s command exited with %d.",
+                    SAFE_ASPRINTF(&error_msg, "The %s command exited with %d.",
                             SCSI_ID_TOOL, ret_val);
                     errorDialog(cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -1372,7 +1373,7 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
     while (1) {
         /* Open the directory to get SCSI devices */
         if ((dir_stream = opendir(SYSFS_SCSI_DEVICE)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -1386,7 +1387,7 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
                         SYSFS_SCSI_DEVICE, dir_entry->d_name);
                 readAttribute(dir_name, tmp_buff);
                 if ((atoi(tmp_buff)) == scsi_dev_type) {
-                    asprintf(&scsi_device[dev_cnt], "%s", dir_entry->d_name);
+                    SAFE_ASPRINTF(&scsi_device[dev_cnt], "%s", dir_entry->d_name);
                     dev_cnt++;
                 }
             }
@@ -1401,17 +1402,17 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/model",
                         SYSFS_SCSI_DEVICE, scsi_device[i]);
                 readAttribute(dir_name, tmp_buff);
-                asprintf(&scsi_dev_model[i], "%s", tmp_buff);
+                SAFE_ASPRINTF(&scsi_dev_model[i], "%s", tmp_buff);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/vendor",
                         SYSFS_SCSI_DEVICE, scsi_device[i]);
                 readAttribute(dir_name, tmp_buff);
-                asprintf(&scsi_dev_vendor[i], "%s", tmp_buff);
+                SAFE_ASPRINTF(&scsi_dev_vendor[i], "%s", tmp_buff);
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/device/rev",
                         SYSFS_SCSI_DEVICE, scsi_device[i]);
                 readAttribute(dir_name, tmp_buff);
-                asprintf(&scsi_dev_rev[i], "%s", tmp_buff);
+                SAFE_ASPRINTF(&scsi_dev_rev[i], "%s", tmp_buff);
                 /* Fill the list (pretty) for our CDK label with SCSI devices */
-                asprintf(&scsi_dev_info[i], "<C>[%s] %s %s %s", scsi_device[i],
+                SAFE_ASPRINTF(&scsi_dev_info[i], "<C>[%s] %s %s %s", scsi_device[i],
                         scsi_dev_vendor[i], scsi_dev_model[i], scsi_dev_rev[i]);
                 /* Next */
                 i++;
@@ -1425,7 +1426,7 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
         }
 
         /* Get SCSI device choice from user */
-        asprintf(&list_title, "<C></31/B>Choose a SCSI Device (Type %d)\n",
+        SAFE_ASPRINTF(&list_title, "<C></31/B>Choose a SCSI Device (Type %d)\n",
                 scsi_dev_type);
         scsi_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 55,
                 list_title, scsi_dev_info, dev_cnt,
@@ -1481,7 +1482,7 @@ void getSCSTDevGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[]) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/device_groups",
                 SYSFS_SCST_TGT);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -1493,8 +1494,8 @@ void getSCSTDevGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[]) {
                     (strcmp(dir_entry->d_name, ".") != 0) &&
                     (strcmp(dir_entry->d_name, "..") != 0)) {
                 if (i < MAX_SCST_DEV_GRPS) {
-                    asprintf(&scst_dev_grp[i], "%s", dir_entry->d_name);
-                    asprintf(&scst_dev_grp_info[i], "<C>%.30s",
+                    SAFE_ASPRINTF(&scst_dev_grp[i], "%s", dir_entry->d_name);
+                    SAFE_ASPRINTF(&scst_dev_grp_info[i], "<C>%.30s",
                             dir_entry->d_name);
                     i++;
                 }
@@ -1561,7 +1562,7 @@ void getSCSTTgtGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
                 "%s/device_groups/%s/target_groups",
                 SYSFS_SCST_TGT, alua_dev_group);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -1574,8 +1575,8 @@ void getSCSTTgtGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
                     (strcmp(dir_entry->d_name, ".") != 0) &&
                     (strcmp(dir_entry->d_name, "..") != 0)) {
                 if (i < MAX_SCST_TGT_GRPS) {
-                    asprintf(&scst_tgt_groups[i], "%s", dir_entry->d_name);
-                    asprintf(&scroll_tgt_grp_list[i], "<C>%.30s",
+                    SAFE_ASPRINTF(&scst_tgt_groups[i], "%s", dir_entry->d_name);
+                    SAFE_ASPRINTF(&scroll_tgt_grp_list[i], "<C>%.30s",
                             scst_tgt_groups[i]);
                     i++;
                 }
@@ -1592,7 +1593,7 @@ void getSCSTTgtGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
         }
 
         /* Get SCST target group choice from user */
-        asprintf(&scroll_title, "<C></31/B>Choose a Target Group (%s)\n",
+        SAFE_ASPRINTF(&scroll_title, "<C></31/B>Choose a Target Group (%s)\n",
                 alua_dev_group);
         scst_tgt_grp_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE,
                 11, 44, scroll_title, scroll_tgt_grp_list, i,
@@ -1646,7 +1647,7 @@ void getSCSTDevGrpDevChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
                 "%s/device_groups/%s/devices",
                 SYSFS_SCST_TGT, alua_dev_group);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -1656,8 +1657,8 @@ void getSCSTDevGrpDevChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
         while ((dir_entry = readdir(dir_stream)) != NULL) {
             if (dir_entry->d_type == DT_LNK) {
                 if (i < MAX_SCST_DEV_GRP_DEVS) {
-                    asprintf(&scst_device_names[i], "%s", dir_entry->d_name);
-                    asprintf(&scroll_dev_list[i], "<C>%.30s",
+                    SAFE_ASPRINTF(&scst_device_names[i], "%s", dir_entry->d_name);
+                    SAFE_ASPRINTF(&scroll_dev_list[i], "<C>%.30s",
                             scst_device_names[i]);
                     i++;
                 }
@@ -1674,7 +1675,7 @@ void getSCSTDevGrpDevChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
         }
 
         /* Get SCST device group device choice from user */
-        asprintf(&scroll_title, "<C></31/B>Choose a Device (%s)\n",
+        SAFE_ASPRINTF(&scroll_title, "<C></31/B>Choose a Device (%s)\n",
                 alua_dev_group);
         scst_dev_grp_dev_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE,
                 11, 44, scroll_title, scroll_dev_list, i,
@@ -1728,7 +1729,7 @@ void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
                 "%s/device_groups/%s/target_groups/%s",
                 SYSFS_SCST_TGT, alua_dev_group, alua_tgt_group);
         if ((dir_stream = opendir(dir_name)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -1741,8 +1742,8 @@ void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
                     (strcmp(dir_entry->d_name, "..") != 0)) ||
                     (dir_entry->d_type == DT_LNK)) {
                 if (i < MAX_SCST_TGT_GRP_TGTS) {
-                    asprintf(&scst_target_names[i], "%s", dir_entry->d_name);
-                    asprintf(&scroll_tgt_list[i], "<C>%.30s",
+                    SAFE_ASPRINTF(&scst_target_names[i], "%s", dir_entry->d_name);
+                    SAFE_ASPRINTF(&scroll_tgt_list[i], "<C>%.30s",
                             scst_target_names[i]);
                     i++;
                 }
@@ -1759,7 +1760,7 @@ void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
         }
 
         /* Get SCST device group device choice from user */
-        asprintf(&scroll_title, "<C></31/B>Choose a Target (%s -> %s)\n",
+        SAFE_ASPRINTF(&scroll_title, "<C></31/B>Choose a Target (%s -> %s)\n",
                 alua_dev_group, alua_tgt_group);
         scst_tgt_grp_tgt_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE,
                 11, 44, scroll_title, scroll_tgt_list, i,
@@ -1909,7 +1910,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
 
     /* We set the counter ahead since the first row is for general settings */
     j = 1;
-    asprintf(&net_scroll_msg[0], "<C>General Network Settings");
+    SAFE_ASPRINTF(&net_scroll_msg[0], "<C>General Network Settings");
     
     while ((if_name[i].if_index != 0) && (if_name[i].if_name != NULL) &&
             (j < MAX_NET_IFACE)) {
@@ -1918,7 +1919,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
 
         /* Get interface flags */
         if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-            asprintf(&error_msg, "ioctl(): SIOCGIFFLAGS Error (%s)",
+            SAFE_ASPRINTF(&error_msg, "ioctl(): SIOCGIFFLAGS Error (%s)",
                     ifr.ifr_name);
             errorDialog(cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -1931,7 +1932,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
 
             /* Get interface hardware address (MAC) */
             if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
-                asprintf(&error_msg, "ioctl(): SIOCGIFHWADDR Error (%s)",
+                SAFE_ASPRINTF(&error_msg, "ioctl(): SIOCGIFHWADDR Error (%s)",
                         ifr.ifr_name);
                 errorDialog(cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -1941,8 +1942,8 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
             if (ifr.ifr_hwaddr.sa_family == ARPHRD_ETHER) {
                 /* For Ethernet interfaces */
                 mac_addy = (unsigned char*) &ifr.ifr_hwaddr.sa_data;
-                asprintf(&net_if_name[j], "%s", if_name[i].if_name);
-                asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X",
+                SAFE_ASPRINTF(&net_if_name[j], "%s", if_name[i].if_name);
+                SAFE_ASPRINTF(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X",
                         mac_addy[0], mac_addy[1], mac_addy[2], mac_addy[3],
                         mac_addy[4], mac_addy[5]);
 
@@ -1952,7 +1953,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                 if (stat(temp_str, &bridge_test) == 0) {
                     net_if_bridge[j] = TRUE;
                     snprintf(temp_str, MISC_STRING_LEN, "Ethernet Bridge");
-                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
+                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
                             net_if_name[j], net_if_mac[j], temp_str);
                     /* We can continue to the next iteration if its a bridge */
                     j++;
@@ -1967,7 +1968,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                     net_if_bonding[j] = MASTER;
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
                             g_bonding_map[net_if_bonding[j]]);
-                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
+                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
                             net_if_name[j], net_if_mac[j], temp_str);
                     /* We can continue to the next iteration if its a master */
                     j++;
@@ -1977,20 +1978,20 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                     net_if_bonding[j] = SLAVE;
                     /* Already a bonding slave interface, add it to the list */
                     if (*slave_cnt < MAX_NET_IFACE) {
-                        asprintf(&slaves[*slave_cnt], "%s", net_if_name[j]);
+                        SAFE_ASPRINTF(&slaves[*slave_cnt], "%s", net_if_name[j]);
                         *slave_cnt = *slave_cnt + 1;
                     }
                 } else {
                     net_if_bonding[j] = NO_BONDING;
                     /* No bonding for this interface, add it to the list */
                     if (*slave_cnt < MAX_NET_IFACE) {
-                        asprintf(&slaves[*slave_cnt], "%s", net_if_name[j]);
+                        SAFE_ASPRINTF(&slaves[*slave_cnt], "%s", net_if_name[j]);
                         *slave_cnt = *slave_cnt + 1;
                     }
                     /* For now we only grab interfaces that have no
                      * part in bonding */
                     if (*br_member_cnt < MAX_NET_IFACE) {
-                        asprintf(&br_members[*br_member_cnt],
+                        SAFE_ASPRINTF(&br_members[*br_member_cnt],
                                 "%s", net_if_name[j]);
                         *br_member_cnt = *br_member_cnt + 1;
                     }
@@ -2000,7 +2001,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                 ifr.ifr_data = (caddr_t) & edata;
                 edata.cmd = ETHTOOL_GSET;
                 if (ioctl(sock, SIOCETHTOOL, &ifr) < 0) {
-                    asprintf(&error_msg, "ioctl(): SIOCETHTOOL Error (%s)",
+                    SAFE_ASPRINTF(&error_msg, "ioctl(): SIOCETHTOOL Error (%s)",
                             ifr.ifr_name);
                     errorDialog(cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -2015,7 +2016,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                         eth_speed == (__be32) (-1)) {
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
                             g_bonding_map[net_if_bonding[j]]);
-                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-26s",
+                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-26s",
                             net_if_name[j], net_if_mac[j],
                             temp_str, "No Link");
                 } else {
@@ -2033,11 +2034,11 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                                     "Unknown Duplex");
                             break;
                     }
-                    asprintf(&net_if_speed[j], "%u Mb/s", eth_speed);
-                    asprintf(&net_if_duplex[j], "%s", eth_duplex);
+                    SAFE_ASPRINTF(&net_if_speed[j], "%u Mb/s", eth_speed);
+                    SAFE_ASPRINTF(&net_if_duplex[j], "%s", eth_duplex);
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
                             g_bonding_map[net_if_bonding[j]]);
-                    asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-12s%-14s",
+                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-7s%-21s%-16s%-12s%-14s",
                             net_if_name[j], net_if_mac[j],
                             temp_str, net_if_speed[j],
                             net_if_duplex[j]);
@@ -2047,13 +2048,13 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
             } else if (ifr.ifr_hwaddr.sa_family == ARPHRD_INFINIBAND) {
                 /* For InfiniBand interfaces */
                 mac_addy = (unsigned char*) &ifr.ifr_hwaddr.sa_data;
-                asprintf(&net_if_name[j], "%s", if_name[i].if_name);
+                SAFE_ASPRINTF(&net_if_name[j], "%s", if_name[i].if_name);
                 /* Yes, the link-layer address is 20 bytes, but we'll
                  * keep it simple */
-                asprintf(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X...",
+                SAFE_ASPRINTF(&net_if_mac[j], "%02X:%02X:%02X:%02X:%02X:%02X...",
                         mac_addy[0], mac_addy[1], mac_addy[2],
                         mac_addy[3], mac_addy[4], mac_addy[5]);
-                asprintf(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
+                SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-7s%-21s%-42s",
                             net_if_name[j], net_if_mac[j], "IPoIB");
                 j++;
             }

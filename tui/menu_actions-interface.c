@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -24,32 +25,32 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
     int i = 0;
 
     /* Set the message */
-    asprintf(&message[0], "<C></31/B>ESOS TUI Help");
-    asprintf(&message[1], " ");
-    asprintf(&message[2], "</B>Main Menu");
-    asprintf(&message[3], "To activate the main menu, hit any of the "
+    SAFE_ASPRINTF(&message[0], "<C></31/B>ESOS TUI Help");
+    SAFE_ASPRINTF(&message[1], " ");
+    SAFE_ASPRINTF(&message[2], "</B>Main Menu");
+    SAFE_ASPRINTF(&message[3], "To activate the main menu, hit any of the "
             "menu hot keys. You can");
-    asprintf(&message[4], "then use the arrow keys to navigate the menu, "
+    SAFE_ASPRINTF(&message[4], "then use the arrow keys to navigate the menu, "
             "and use ENTER to make");
-    asprintf(&message[5], "a selection. Use ESCAPE to exit the menu without "
+    SAFE_ASPRINTF(&message[5], "a selection. Use ESCAPE to exit the menu without "
             "making a selection.");
-    asprintf(&message[6], " ");
-    asprintf(&message[7], "</B>Navigating Dialogs");
-    asprintf(&message[8], "On dialogs (screens) that contain more than "
+    SAFE_ASPRINTF(&message[6], " ");
+    SAFE_ASPRINTF(&message[7], "</B>Navigating Dialogs");
+    SAFE_ASPRINTF(&message[8], "On dialogs (screens) that contain more than "
             "one widget, you can use");
-    asprintf(&message[9], "TAB and SHIFT+TAB to traverse through the "
+    SAFE_ASPRINTF(&message[9], "TAB and SHIFT+TAB to traverse through the "
             "widgets (field entry, radio");
-    asprintf(&message[10], "lists, buttons, etc.) and use ENTER to execute "
+    SAFE_ASPRINTF(&message[10], "lists, buttons, etc.) and use ENTER to execute "
             "button functions.");
-    asprintf(&message[11], "On selection dialogs, single field entry "
+    SAFE_ASPRINTF(&message[11], "On selection dialogs, single field entry "
             "widgets, etc. you can use");
-    asprintf(&message[12], "ENTER or TAB to make a choice, or use ESCAPE "
+    SAFE_ASPRINTF(&message[12], "ENTER or TAB to make a choice, or use ESCAPE "
             "to cancel.");
-    asprintf(&message[13], " ");
-    asprintf(&message[14], "</B>Scrolling Windows");
-    asprintf(&message[15], "When a scrolling window widget is active, you "
+    SAFE_ASPRINTF(&message[13], " ");
+    SAFE_ASPRINTF(&message[14], "</B>Scrolling Windows");
+    SAFE_ASPRINTF(&message[15], "When a scrolling window widget is active, you "
             "can use the arrow keys");
-    asprintf(&message[16], "to scroll through the text and use ENTER or "
+    SAFE_ASPRINTF(&message[16], "to scroll through the text and use ENTER or "
             "ESCAPE to exit.");
 
     while (1) {
@@ -106,23 +107,23 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
             "/etc /var/log > /dev/null 2>&1", TAR_BIN, bundle_file, file_name);
     ret_val = system(tar_cmd);
     if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-        asprintf(&error_msg, CMD_FAILED_ERR, TAR_BIN, exit_stat);
+        SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, TAR_BIN, exit_stat);
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
         return;
     }
     
     /* Set a message for the dialog */
-    asprintf(&message[0], "<C></31/B>ESOS Support Bundle");
-    asprintf(&message[1], " ");
-    asprintf(&message[2], "<C>An archive containing configuration files "
+    SAFE_ASPRINTF(&message[0], "<C></31/B>ESOS Support Bundle");
+    SAFE_ASPRINTF(&message[1], " ");
+    SAFE_ASPRINTF(&message[2], "<C>An archive containing configuration files "
             "and logs has been");
-    asprintf(&message[3], "<C>created; its located here: </B>%s<!B>",
+    SAFE_ASPRINTF(&message[3], "<C>created; its located here: </B>%s<!B>",
             bundle_file);
-    asprintf(&message[4], "<C>You may now retrieve the file from this host "
+    SAFE_ASPRINTF(&message[4], "<C>You may now retrieve the file from this host "
             "via SFTP/SCP.");
-    asprintf(&message[5], " ");
-    asprintf(&message[6], " ");
+    SAFE_ASPRINTF(&message[5], " ");
+    SAFE_ASPRINTF(&message[6], " ");
 
     while (1) {
         /* Display the dialog box */
@@ -164,19 +165,19 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
             "ESOS - Enterprise Storage OS %s", ESOS_VERSION);
     if (gethostname(hostname, ((sizeof hostname) - 1)) == -1)
         snprintf(hostname, sizeof (hostname), "hostname");
-    asprintf(&message[0], "<C></31/B>About ESOS");
-    asprintf(&message[1], " ");
-    asprintf(&message[2], "</B>This Host:<!B>\t%-.40s", hostname);
-    asprintf(&message[3], "</B>Running:<!B>\t%-.40s", esos_ver);
-    asprintf(&message[4], " ");
-    asprintf(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
-    asprintf(&message[6], " ");
-    asprintf(&message[7], "</B>License Information");
-    asprintf(&message[8], "ESOS is released under the GNU General Public "
+    SAFE_ASPRINTF(&message[0], "<C></31/B>About ESOS");
+    SAFE_ASPRINTF(&message[1], " ");
+    SAFE_ASPRINTF(&message[2], "</B>This Host:<!B>\t%-.40s", hostname);
+    SAFE_ASPRINTF(&message[3], "</B>Running:<!B>\t%-.40s", esos_ver);
+    SAFE_ASPRINTF(&message[4], " ");
+    SAFE_ASPRINTF(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
+    SAFE_ASPRINTF(&message[6], " ");
+    SAFE_ASPRINTF(&message[7], "</B>License Information");
+    SAFE_ASPRINTF(&message[8], "ESOS is released under the GNU General Public "
             "License, version 3.");
-    asprintf(&message[9], "QLogic Binary Firmware License: %s", QLA_FW_LICENSE);
-    asprintf(&message[10], " ");
-    asprintf(&message[11], " ");
+    SAFE_ASPRINTF(&message[9], "QLogic Binary Firmware License: %s", QLA_FW_LICENSE);
+    SAFE_ASPRINTF(&message[10], " ");
+    SAFE_ASPRINTF(&message[11], " ");
 
     while (1) {
         /* Display the dialog box */

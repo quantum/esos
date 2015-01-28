@@ -14,6 +14,7 @@
 #include <string.h>
 #include <cdk/swindow.h>
 #include <sys/time.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -95,8 +96,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             wbkgd(net_window, COLOR_DIALOG_TEXT);
             wrefresh(net_window);
 
-            asprintf(&net_info_msg[0], "</31/B>General network settings...");
-            asprintf(&net_info_msg[1], " ");
+            SAFE_ASPRINTF(&net_info_msg[0], "</31/B>General network settings...");
+            SAFE_ASPRINTF(&net_info_msg[1], " ");
 
             /* Read network configuration file (INI file) */
             ini_dict = iniparser_load(NETWORK_CONF);
@@ -161,7 +162,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             setCDKEntryValue(default_gw, conf_defaultgw);
 
             /* A very small label for instructions */
-            asprintf(&short_label_msg[0],
+            SAFE_ASPRINTF(&short_label_msg[0],
                     "</B>Name Servers (leave blank if using DHCP)");
             short_label = newCDKLabel(net_screen,
                     (window_x + 1), (window_y + 9),
@@ -295,7 +296,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 ini_file = fopen(NETWORK_CONF, "w");
                 if (ini_file == NULL) {
-                    asprintf(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                 } else {
@@ -312,7 +313,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
         } else {
             /* If an interface is enslaved, there is nothing to configure */
             if (net_if_bonding == SLAVE) {
-                asprintf(&error_msg,
+                SAFE_ASPRINTF(&error_msg,
                         "Interface '%s' is currently enslaved to a master",
                         net_if_name);
                 errorDialog(main_cdk_screen, error_msg,
@@ -342,18 +343,18 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             wrefresh(net_window);
 
             /* Make a nice, informational label */
-            asprintf(&net_info_msg[0], "</31/B>Configuring interface %s...",
+            SAFE_ASPRINTF(&net_info_msg[0], "</31/B>Configuring interface %s...",
                     net_if_name);
-            asprintf(&net_info_msg[1], " ");
-            asprintf(&net_info_msg[2], "</B>MAC Address:<!B>\t%s",
+            SAFE_ASPRINTF(&net_info_msg[1], " ");
+            SAFE_ASPRINTF(&net_info_msg[2], "</B>MAC Address:<!B>\t%s",
                     net_if_mac);
             if (net_if_speed[0] == '\0')
-                asprintf(&net_info_msg[3], "</B>Link Status:<!B>\tNone");
+                SAFE_ASPRINTF(&net_info_msg[3], "</B>Link Status:<!B>\tNone");
             else
-                asprintf(&net_info_msg[3], "</B>Link Status:<!B>\t%s, %s",
+                SAFE_ASPRINTF(&net_info_msg[3], "</B>Link Status:<!B>\t%s, %s",
                     net_if_speed,
                     net_if_duplex);
-            asprintf(&net_info_msg[4], "</B>Bonding:<!B>\t%s",
+            SAFE_ASPRINTF(&net_info_msg[4], "</B>Bonding:<!B>\t%s",
                     g_bonding_map[net_if_bonding]);
 
             /* Read network configuration file (INI file) */
@@ -444,7 +445,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 setCDKRadioCurrentItem(ip_config, 0);
 
             /* A very small label for instructions */
-            asprintf(&short_label_msg[0],
+            SAFE_ASPRINTF(&short_label_msg[0],
                     "</B>Static IP Settings (leave blank if using DHCP)");
             short_label = newCDKLabel(net_screen,
                     (window_x + 20), (window_y + 7),
@@ -686,7 +687,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                      * interfaces were selected (or removed) */
                     for (i = 0; i < poten_slave_cnt; i++) {
                         if (slave_select->selections[i] == 1) {
-                            asprintf(&temp_pstr, "%s,", poten_slaves[i]);
+                            SAFE_ASPRINTF(&temp_pstr, "%s,", poten_slaves[i]);
                             /* We add one extra for the null byte */
                             slave_val_size = strlen(temp_pstr) + 1;
                             slaves_line_size = 
@@ -726,7 +727,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                      * interfaces were selected (or removed) */
                     for (i = 0; i < poten_br_member_cnt; i++) {
                         if (br_member_select->selections[i] == 1) {
-                            asprintf(&temp_pstr, "%s,", poten_br_members[i]);
+                            SAFE_ASPRINTF(&temp_pstr, "%s,", poten_br_members[i]);
                             /* We add one extra for the null byte */
                             br_member_val_size = strlen(temp_pstr) + 1;
                             br_members_line_size = br_members_line_size +
@@ -777,7 +778,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 /* Write to network config. file */
                 ini_file = fopen(NETWORK_CONF, "w");
                 if (ini_file == NULL) {
-                    asprintf(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                 } else {
@@ -859,34 +860,34 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     while (1) {
         /* Stop networking */
         if (i < MAX_NET_RESTART_INFO_LINES) {
-            asprintf(&swindow_info[i], "</B>Stopping network:<!B>");
+            SAFE_ASPRINTF(&swindow_info[i], "</B>Stopping network:<!B>");
             addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
             i++;
         }
         snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s stop", RC_NETWORK);
         net_rc = popen(net_rc_cmd, "r");
         if (!net_rc) {
-            asprintf(&error_msg, "popen(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "popen(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
         } else {
             while (fgets(line, sizeof (line), net_rc) != NULL) {
                 if (i < MAX_NET_RESTART_INFO_LINES) {
-                    asprintf(&swindow_info[i], "%s", line);
+                    SAFE_ASPRINTF(&swindow_info[i], "%s", line);
                     addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
                     i++;
                 }
             }
             status = pclose(net_rc);
             if (status == -1) {
-                asprintf(&error_msg, "pclose(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "pclose(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
             } else {
                 if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-                    asprintf(&error_msg, "The %s command exited with %d.",
+                    SAFE_ASPRINTF(&error_msg, "The %s command exited with %d.",
                             RC_NETWORK, WEXITSTATUS(status));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -897,39 +898,39 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Start networking */
         if (i < MAX_NET_RESTART_INFO_LINES) {
-            asprintf(&swindow_info[i], " ");
+            SAFE_ASPRINTF(&swindow_info[i], " ");
             addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
             i++;
         }
         if (i < MAX_NET_RESTART_INFO_LINES) {
-            asprintf(&swindow_info[i], "</B>Starting network:<!B>");
+            SAFE_ASPRINTF(&swindow_info[i], "</B>Starting network:<!B>");
             addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
             i++;
         }
         snprintf(net_rc_cmd, MAX_SHELL_CMD_LEN, "%s start", RC_NETWORK);
         net_rc = popen(net_rc_cmd, "r");
         if (!net_rc) {
-            asprintf(&error_msg, "popen(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "popen(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
         } else {
             while (fgets(line, sizeof (line), net_rc) != NULL) {
                 if (i < MAX_NET_RESTART_INFO_LINES) {
-                    asprintf(&swindow_info[i], "%s", line);
+                    SAFE_ASPRINTF(&swindow_info[i], "%s", line);
                     addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
                     i++;
                 }
             }
             status = pclose(net_rc);
             if (status == -1) {
-                asprintf(&error_msg, "pclose(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "pclose(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
             } else {
                 if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-                    asprintf(&error_msg, "The %s command exited with %d.",
+                    SAFE_ASPRINTF(&error_msg, "The %s command exited with %d.",
                             RC_NETWORK, WEXITSTATUS(status));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -938,12 +939,12 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
             }
         }
         if (i < MAX_NET_RESTART_INFO_LINES) {
-            asprintf(&swindow_info[i], " ");
+            SAFE_ASPRINTF(&swindow_info[i], " ");
             addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
             i++;
         }
         if (i < MAX_NET_RESTART_INFO_LINES) {
-            asprintf(&swindow_info[i], CONTINUE_MSG);
+            SAFE_ASPRINTF(&swindow_info[i], CONTINUE_MSG);
             addCDKSwindow(net_restart_info, swindow_info[i], BOTTOM);
             i++;
         }
@@ -1005,7 +1006,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     while (1) {
         /* Get the host name here (used below in sSMTP configuration) */
         if (gethostname(hostname, ((sizeof hostname) - 1)) == -1) {
-            asprintf(&error_msg, "gethostname(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "gethostname(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -1270,7 +1271,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             /* Write the configuration file */
             ini_file = fopen(SSMTP_CONF, "w");
             if (ini_file == NULL) {
-                asprintf(&error_msg, SSMTP_CONF_WRITE_ERR, strerror(errno));
+                SAFE_ASPRINTF(&error_msg, SSMTP_CONF_WRITE_ERR, strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
             } else {
@@ -1339,12 +1340,12 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
     while (1) {
         /* Display a nice short label message while we send the email */
         snprintf(email_addy, MAX_EMAIL_LEN, "%s", conf_root);
-        asprintf(&message[0], " ");
-        asprintf(&message[1], " ");
-        asprintf(&message[2], "</B>   Sending a test email to %s...   ",
+        SAFE_ASPRINTF(&message[0], " ");
+        SAFE_ASPRINTF(&message[1], " ");
+        SAFE_ASPRINTF(&message[2], "</B>   Sending a test email to %s...   ",
                 email_addy);
-        asprintf(&message[3], " ");
-        asprintf(&message[4], " ");
+        SAFE_ASPRINTF(&message[3], " ");
+        SAFE_ASPRINTF(&message[4], " ");
         test_email_label = newCDKLabel(main_cdk_screen, CENTER, CENTER,
                 message, 5, TRUE, FALSE);
         if (!test_email_label) {
@@ -1360,7 +1361,7 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
                 SSMTP_BIN, email_addy);
         ssmtp = popen(ssmtp_cmd, "w");
         if (!ssmtp) {
-            asprintf(&error_msg, "popen(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "popen(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -1372,13 +1373,13 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
                     "your email settings.");
             status = pclose(ssmtp);
             if (status == -1) {
-                asprintf(&error_msg, "pclose(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "pclose(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
             } else {
                 if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-                    asprintf(&error_msg, "The %s command exited with %d.",
+                    SAFE_ASPRINTF(&error_msg, "The %s command exited with %d.",
                             SSMTP_BIN, WEXITSTATUS(status));
                     errorDialog(main_cdk_screen, error_msg,
                             "Check the mail log for more information.");
@@ -1533,7 +1534,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
                     getCDKEntryValue(uname_field));
             ret_val = system(add_user_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                asprintf(&error_msg, CMD_FAILED_ERR, ADDUSER_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, ADDUSER_BIN, exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -1545,7 +1546,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
                     getCDKEntryValue(uname_field), password_1, CHPASSWD_BIN);
             ret_val = system(chg_pass_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                asprintf(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN, exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -1600,7 +1601,7 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "Are you sure you want to delete user '%s'?",
+    SAFE_ASPRINTF(&confirm_msg, "Are you sure you want to delete user '%s'?",
             user_acct);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
     FREE_NULL(confirm_msg);
@@ -1611,7 +1612,7 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
                 DELGROUP_BIN, user_acct, ESOS_GROUP);
         ret_val = system(del_grp_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, CMD_FAILED_ERR, DELGROUP_BIN, exit_stat);
+            SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, DELGROUP_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
@@ -1622,7 +1623,7 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
                 DELUSER_BIN, user_acct);
         ret_val = system(del_user_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            asprintf(&error_msg, CMD_FAILED_ERR, DELUSER_BIN, exit_stat);
+            SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, DELUSER_BIN, exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             return;
@@ -1679,7 +1680,7 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
         wrefresh(chg_pass_window);
 
         /* Screen title label */
-        asprintf(&screen_title[0], "</31/B>Changing password for user %s...",
+        SAFE_ASPRINTF(&screen_title[0], "</31/B>Changing password for user %s...",
                 user_acct);
         passwd_label = newCDKLabel(chg_pass_screen,
                 (window_x + 1), (window_y + 1),
@@ -1759,7 +1760,7 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
                     user_acct, password_1, CHPASSWD_BIN);
             ret_val = system(chg_pass_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                asprintf(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN, exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -1824,26 +1825,26 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     
     /* Add the attribute values collected above to our
      * scrolling window widget */
-    asprintf(&swindow_info[0],
+    SAFE_ASPRINTF(&swindow_info[0],
             "</B>Version:<!B>\t%-15s</B>Setup ID:<!B>\t\t%s",
             scst_ver, scst_setup_id);
     addCDKSwindow(scst_info, swindow_info[0], BOTTOM);
-    asprintf(&swindow_info[1],
+    SAFE_ASPRINTF(&swindow_info[1],
             "</B>Threads:<!B>\t%-15s</B>Last sysfs result:<!B>\t%s",
             scst_threads, scst_sysfs_res);
     addCDKSwindow(scst_info, swindow_info[1], BOTTOM);
 
      /* Loop over the SGV global statistics attribute/file in sysfs */
-    asprintf(&swindow_info[2], " ");
+    SAFE_ASPRINTF(&swindow_info[2], " ");
     addCDKSwindow(scst_info, swindow_info[2], BOTTOM);
-    asprintf(&swindow_info[3], "</B>Global SGV cache statistics:<!B>");
+    SAFE_ASPRINTF(&swindow_info[3], "</B>Global SGV cache statistics:<!B>");
     addCDKSwindow(scst_info, swindow_info[3], BOTTOM);
     i = 4;
     snprintf(tmp_sysfs_path, MAX_SYSFS_PATH_SIZE,
             "%s/sgv/global_stats", SYSFS_SCST_TGT);
     if ((sysfs_file = fopen(tmp_sysfs_path, "r")) == NULL) {
         if (i < MAX_SCST_INFO_LINES) {
-            asprintf(&swindow_info[i], "fopen(): %s", strerror(errno));
+            SAFE_ASPRINTF(&swindow_info[i], "fopen(): %s", strerror(errno));
             addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
         }
     } else {
@@ -1853,7 +1854,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
                 temp_pstr = strrchr(tmp_attr_line, '\n');
                 if (temp_pstr)
                     *temp_pstr = '\0';
-                asprintf(&swindow_info[i], "%s", tmp_attr_line);
+                SAFE_ASPRINTF(&swindow_info[i], "%s", tmp_attr_line);
                 addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
                 i++;
             }
@@ -1861,12 +1862,12 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
         fclose(sysfs_file);
     }
     if (i < MAX_SCST_INFO_LINES) {
-        asprintf(&swindow_info[i], " ");
+        SAFE_ASPRINTF(&swindow_info[i], " ");
         addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
         i++;
     }
     if (i < MAX_SCST_INFO_LINES) {
-        asprintf(&swindow_info[i], CONTINUE_MSG);
+        SAFE_ASPRINTF(&swindow_info[i], CONTINUE_MSG);
         addCDKSwindow(scst_info, swindow_info[i], BOTTOM);
         i++;
     }
@@ -1896,9 +1897,9 @@ void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
     FILE *crm_proc = NULL;
 
     /* Run the crm command */
-    asprintf(&crm_cmd, "%s status 2>&1", CRM_TOOL);
+    SAFE_ASPRINTF(&crm_cmd, "%s status 2>&1", CRM_TOOL);
     if ((crm_proc = popen(crm_cmd, "r")) == NULL) {
-        asprintf(&error_msg,
+        SAFE_ASPRINTF(&error_msg,
                 "Couldn't open process for the %s command!", CRM_TOOL);
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
@@ -1907,18 +1908,18 @@ void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
         line_pos = 0;
         while (fgets(line, sizeof (line), crm_proc) != NULL) {
             if (line_pos < MAX_CRM_INFO_LINES) {
-                asprintf(&swindow_info[line_pos], "%s", line);
+                SAFE_ASPRINTF(&swindow_info[line_pos], "%s", line);
                 line_pos++;
             }
         }
 
         /* Add a message to the bottom explaining how to close the dialog */
         if (line_pos < MAX_CRM_INFO_LINES) {
-            asprintf(&swindow_info[line_pos], " ");
+            SAFE_ASPRINTF(&swindow_info[line_pos], " ");
             line_pos++;
         }
         if (line_pos < MAX_CRM_INFO_LINES) {
-            asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+            SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
             line_pos++;
         }
         
@@ -1956,7 +1957,7 @@ void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
              * but we don't care how */
             destroyCDKSwindow(crm_info);
         } else {
-            asprintf(&error_msg, "The %s command exited with %d.",
+            SAFE_ASPRINTF(&error_msg, "The %s command exited with %d.",
                     CRM_TOOL, ret_val);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -2037,7 +2038,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
          * two directories deep */
         file_cnt = 0;
         if ((tz_base_dir = opendir(ZONEINFO)) == NULL) {
-            asprintf(&error_msg, "opendir(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -2051,7 +2052,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s", ZONEINFO,
                         base_dir_entry->d_name);
                 if ((tz_sub_dir1 = opendir(dir_name)) == NULL) {
-                    asprintf(&error_msg, "opendir(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     finished = TRUE;
@@ -2067,7 +2068,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                                 "%s/%s/%s", ZONEINFO,
                                 base_dir_entry->d_name, sub_dir1_entry->d_name);
                         if ((tz_sub_dir2 = opendir(dir_name)) == NULL) {
-                            asprintf(&error_msg, "opendir(): %s",
+                            SAFE_ASPRINTF(&error_msg, "opendir(): %s",
                                     strerror(errno));
                             errorDialog(main_cdk_screen, error_msg, NULL);
                             FREE_NULL(error_msg);
@@ -2077,7 +2078,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                         while ((sub_dir2_entry = readdir(tz_sub_dir2)) !=
                                 NULL) {
                             if (sub_dir2_entry->d_type == DT_REG) {
-                                asprintf(&tz_files[file_cnt], "%s/%s/%s",
+                                SAFE_ASPRINTF(&tz_files[file_cnt], "%s/%s/%s",
                                         base_dir_entry->d_name,
                                         sub_dir1_entry->d_name,
                                         sub_dir2_entry->d_name);
@@ -2086,14 +2087,14 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                         }
                         closedir(tz_sub_dir2);
                     } else if (sub_dir1_entry->d_type == DT_REG) {
-                        asprintf(&tz_files[file_cnt], "%s/%s",
+                        SAFE_ASPRINTF(&tz_files[file_cnt], "%s/%s",
                                 base_dir_entry->d_name, sub_dir1_entry->d_name);
                         file_cnt++;
                     }
                 }
                 closedir(tz_sub_dir1);
             } else if (base_dir_entry->d_type == DT_REG) {
-                asprintf(&tz_files[file_cnt], "%s", base_dir_entry->d_name);
+                SAFE_ASPRINTF(&tz_files[file_cnt], "%s", base_dir_entry->d_name);
                 file_cnt++;
             }
         }
@@ -2114,7 +2115,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Get the current time zone data file path (from sym. link) */
         if (readlink(LOCALTIME, zoneinfo_path, MAX_ZONEINFO_PATH) == -1) {
-            asprintf(&error_msg, "readlink(): %s", strerror(errno));
+            SAFE_ASPRINTF(&error_msg, "readlink(): %s", strerror(errno));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -2153,7 +2154,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
             /* ENOENT is okay since its possible this file doesn't exist yet */
             if (errno != ENOENT) {
-                asprintf(&error_msg, "fopen(): %s", strerror(errno));
+                SAFE_ASPRINTF(&error_msg, "fopen(): %s", strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -2244,7 +2245,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             /* If the time zone setting was changed, create a new sym. link */
             if (temp_int != curr_tz_item) {
                 if (unlink(LOCALTIME) == -1) {
-                    asprintf(&error_msg, "unlink(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "unlink(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -2252,7 +2253,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                     snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s",
                             ZONEINFO, tz_files[temp_int]);
                     if (symlink(dir_name, LOCALTIME) == -1) {
-                        asprintf(&error_msg, "symlink(): %s", strerror(errno));
+                        SAFE_ASPRINTF(&error_msg, "symlink(): %s", strerror(errno));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
                         break;
@@ -2272,14 +2273,14 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             /* If the value has changed, write it to the file */
             if (strcmp(ntp_serv_val, new_ntp_serv_val) != 0) {
                 if ((ntp_server_file = fopen(NTP_SERVER, "w+")) == NULL) {
-                    asprintf(&error_msg, "fopen(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "fopen(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
                 } else {
                     fprintf(ntp_server_file, "%s", new_ntp_serv_val);
                     if (fclose(ntp_server_file) != 0) {
-                        asprintf(&error_msg, "fclose(): %s", strerror(errno));
+                        SAFE_ASPRINTF(&error_msg, "fclose(): %s", strerror(errno));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
                         break;
@@ -2321,7 +2322,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                 curr_date_info->tm_isdst = -1;
                 const struct timeval time_val = {mktime(curr_date_info), 0};
                 if (settimeofday(&time_val, 0) == -1) {
-                    asprintf(&error_msg, "settimeofday(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "settimeofday(): %s", strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;

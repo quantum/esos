@@ -375,6 +375,7 @@ image: $(build_targets)
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/pacemaker
 	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/heartbeat
 	$(CHOWN) 101:101 $(MOUNT_DIR)/var/run/crm
+	$(CHOWN) 65534:65534 $(MOUNT_DIR)/var/run/stunnel
 	$(CHOWN) 0:65534 $(MOUNT_DIR)/var/lib/stunnel
 	$(CHMOD) 1770 $(MOUNT_DIR)/var/lib/stunnel
 	$(FIND) $(MOUNT_DIR)/etc -path $(MOUNT_DIR)/etc/rc.d -prune -o \

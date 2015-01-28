@@ -279,7 +279,7 @@ char *prettyFormatBytes(uint64_t size) {
     int i = 0;
     char *result = (char *) malloc(sizeof (char) * 20);
 
-    for (i = 0; i < (sizeof (sizes) / sizeof (*(sizes)));
+    for (i = 0; i < (int)(sizeof (sizes) / sizeof (*(sizes)));
             i++, multiplier /= 1024) {
         if (size < multiplier)
             continue;

@@ -107,7 +107,7 @@ if test -d "${image_dir}"; then
         ${mkdir} -p ${image_dir}/var/lib/corosync || exit 1
         ${mkdir} -p ${image_dir}/var/lib/pacemaker/{cores,pengine,cib,blackbox} || exit 1
         ${mkdir} -p ${image_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
-        ${mkdir} -p ${image_dir}/var/run/{crm,mdadm} || exit 1
+        ${mkdir} -p ${image_dir}/var/run/{crm,mdadm,stunnel} || exit 1
         ${mkdir} -p ${image_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
         ${mkdir} -p ${image_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
         ${mkdir} -p ${image_dir}/var/lib/stunnel || exit 1

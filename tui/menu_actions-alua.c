@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cdk.h>
+#include <assert.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -48,7 +49,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                 "%s/device_groups", SYSFS_SCST_TGT);
         if ((dev_grp_dir_stream = opendir(dir_name)) == NULL) {
             if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-                asprintf(&swindow_info[line_pos], "opendir(): %s",
+                SAFE_ASPRINTF(&swindow_info[line_pos], "opendir(): %s",
                         strerror(errno));
                 line_pos++;
             }
@@ -60,7 +61,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                     (strcmp(dev_grp_dir_entry->d_name, ".") != 0) &&
                     (strcmp(dev_grp_dir_entry->d_name, "..") != 0)) {
                 if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-                    asprintf(&swindow_info[line_pos],
+                    SAFE_ASPRINTF(&swindow_info[line_pos],
                             "</B>Device Group:<!B> %s",
                             dev_grp_dir_entry->d_name);
                     line_pos++;
@@ -72,7 +73,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                         SYSFS_SCST_TGT, dev_grp_dir_entry->d_name);
                 if ((dev_dir_stream = opendir(dir_name)) == NULL) {
                     if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-                        asprintf(&swindow_info[line_pos],
+                        SAFE_ASPRINTF(&swindow_info[line_pos],
                                 "opendir(): %s", strerror(errno));
                         line_pos++;
                     }
@@ -82,7 +83,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                     /* The device names are links */
                     if (dev_dir_entry->d_type == DT_LNK) {
                         if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-                            asprintf(&swindow_info[line_pos],
+                            SAFE_ASPRINTF(&swindow_info[line_pos],
                                     "\t</B>Device:<!B> %s",
                                     dev_dir_entry->d_name);
                             line_pos++;
@@ -97,7 +98,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                         dev_grp_dir_entry->d_name);
                 if ((tgt_grp_dir_stream = opendir(dir_name)) == NULL) {
                     if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-                        asprintf(&swindow_info[line_pos], "opendir(): %s",
+                        SAFE_ASPRINTF(&swindow_info[line_pos], "opendir(): %s",
                                 strerror(errno));
                         line_pos++;
                     }
@@ -116,7 +117,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                             SYSFS_SCST_TGT, dev_grp_dir_entry->d_name,
                                     tgt_grp_dir_entry->d_name);
                             readAttribute(dir_name, tmp_buff);
-                            asprintf(&swindow_info[line_pos],
+                            SAFE_ASPRINTF(&swindow_info[line_pos],
                                     "\t</B>Target Group:<!B> %s (Group ID: %s)",
                                     tgt_grp_dir_entry->d_name, tmp_buff);
                             line_pos++;
@@ -130,7 +131,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                                 tgt_grp_dir_entry->d_name);
                         if ((tgt_dir_stream = opendir(dir_name)) == NULL) {
                             if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-                                asprintf(&swindow_info[line_pos],
+                                SAFE_ASPRINTF(&swindow_info[line_pos],
                                         "opendir(): %s", strerror(errno));
                                 line_pos++;
                             }
@@ -155,7 +156,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                                             tgt_grp_dir_entry->d_name,
                                             tgt_dir_entry->d_name);
                                     readAttribute(dir_name, tmp_buff);
-                                    asprintf(&swindow_info[line_pos],
+                                    SAFE_ASPRINTF(&swindow_info[line_pos],
                                             "\t\t</B>Target:<!B> %s "
                                             "(Rel Tgt ID: %s)",
                                             tgt_dir_entry->d_name, tmp_buff);
@@ -170,7 +171,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
 
                 /* Print a blank line to separate targets */
                 if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-                    asprintf(&swindow_info[line_pos], " ");
+                    SAFE_ASPRINTF(&swindow_info[line_pos], " ");
                     line_pos++;
                 }
             }
@@ -181,11 +182,11 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Add a message to the bottom explaining how to close the dialog */
     if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-        asprintf(&swindow_info[line_pos], " ");
+        SAFE_ASPRINTF(&swindow_info[line_pos], " ");
         line_pos++;
     }
     if (line_pos < MAX_ALUA_LAYOUT_LINES) {
-        asprintf(&swindow_info[line_pos], CONTINUE_MSG);
+        SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
         line_pos++;
     }
 
@@ -246,7 +247,7 @@ void addDevGrpDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                     "create %s", dev_grp_name);
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg,
+                SAFE_ASPRINTF(&error_msg,
                         "Couldn't add SCST (ALUA) device group: %s",
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
@@ -279,7 +280,7 @@ void remDevGrpDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg,
+    SAFE_ASPRINTF(&confirm_msg,
             "Are you sure you want to delete SCST device group '%s?'",
             dev_grp_name);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
@@ -290,7 +291,7 @@ void remDevGrpDialog(CDKSCREEN *main_cdk_screen) {
                 "%s/device_groups/mgmt", SYSFS_SCST_TGT);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", dev_grp_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't delete SCST (ALUA) device group: %s",
+            SAFE_ASPRINTF(&error_msg, "Couldn't delete SCST (ALUA) device group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -348,10 +349,10 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Information label */
-        asprintf(&tgt_grp_info_msg[0],
+        SAFE_ASPRINTF(&tgt_grp_info_msg[0],
                 "</31/B>Adding new SCST target group...");
-        asprintf(&tgt_grp_info_msg[1], " ");
-        asprintf(&tgt_grp_info_msg[2],
+        SAFE_ASPRINTF(&tgt_grp_info_msg[1], " ");
+        SAFE_ASPRINTF(&tgt_grp_info_msg[2],
                 "</B>Device group:<!B>\t%s", dev_grp_name);
         tgt_grp_info = newCDKLabel(tgt_grp_screen, (window_x + 1),
                 (window_y + 1), tgt_grp_info_msg, TGT_GRP_INFO_LINES,
@@ -421,7 +422,7 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "create %s",
                     getCDKEntryValue(grp_name));
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg,
+                SAFE_ASPRINTF(&error_msg,
                         "Couldn't add SCST (ALUA) target group: %s",
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
@@ -436,7 +437,7 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d",
                     getCDKScaleValue(group_id));
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg,
+                SAFE_ASPRINTF(&error_msg,
                         "Couldn't set SCST (ALUA) target group ID: %s",
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
@@ -483,7 +484,7 @@ void remTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg,
+    SAFE_ASPRINTF(&confirm_msg,
             "Are you sure you want to delete SCST target group '%s?'",
             tgt_grp_name);
     confirm = confirmDialog(main_cdk_screen, confirm_msg, NULL);
@@ -495,7 +496,7 @@ void remTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, dev_grp_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", tgt_grp_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg, "Couldn't delete SCST (ALUA) target group: %s",
+            SAFE_ASPRINTF(&error_msg, "Couldn't delete SCST (ALUA) target group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -535,7 +536,7 @@ void addDevToGrpDialog(CDKSCREEN *main_cdk_screen) {
             SYSFS_SCST_TGT, dev_grp_name);
     snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add %s", device_name);
     if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-        asprintf(&error_msg,
+        SAFE_ASPRINTF(&error_msg,
                 "Couldn't add SCST (ALUA) device to device group: %s",
                 strerror(temp_int));
         errorDialog(main_cdk_screen, error_msg, NULL);
@@ -571,7 +572,7 @@ void remDevFromGrpDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "device '%s' from group '%s?'",
+    SAFE_ASPRINTF(&confirm_msg, "device '%s' from group '%s?'",
             device_name, dev_grp_name);
     confirm = confirmDialog(main_cdk_screen,
             "Are you sure you want to remove SCST", confirm_msg);
@@ -583,7 +584,7 @@ void remDevFromGrpDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, dev_grp_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", device_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg,
+            SAFE_ASPRINTF(&error_msg,
                     "Couldn't delete SCST (ALUA) device from device group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
@@ -649,12 +650,12 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Information label */
-        asprintf(&add_tgt_info_msg[0],
+        SAFE_ASPRINTF(&add_tgt_info_msg[0],
                 "</31/B>Adding SCST target to target group...");
-        asprintf(&add_tgt_info_msg[1], " ");
-        asprintf(&add_tgt_info_msg[2],
+        SAFE_ASPRINTF(&add_tgt_info_msg[1], " ");
+        SAFE_ASPRINTF(&add_tgt_info_msg[2],
                 "</B>Device group:<!B>\t%s", dev_grp_name);
-        asprintf(&add_tgt_info_msg[3],
+        SAFE_ASPRINTF(&add_tgt_info_msg[3],
                 "</B>Target group:<!B>\t%s", tgt_grp_name);
         add_tgt_info = newCDKLabel(add_tgt_screen, (window_x + 1),
                 (window_y + 1), add_tgt_info_msg, ADD_TGT_INFO_LINES,
@@ -724,7 +725,7 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "add %s",
                     getCDKEntryValue(tgt_name));
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg,
+                SAFE_ASPRINTF(&error_msg,
                         "Couldn't add SCST (ALUA) target to target group: %s",
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
@@ -740,7 +741,7 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d",
                     getCDKScaleValue(rel_tgt_id));
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                asprintf(&error_msg, SET_REL_TGT_ID_ERR, strerror(temp_int));
+                SAFE_ASPRINTF(&error_msg, SET_REL_TGT_ID_ERR, strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -793,7 +794,7 @@ void remTgtFromGrpDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before we delete */
-    asprintf(&confirm_msg, "target '%s' from group '%s?'",
+    SAFE_ASPRINTF(&confirm_msg, "target '%s' from group '%s?'",
             target_name, tgt_grp_name);
     confirm = confirmDialog(main_cdk_screen,
             "Are you sure you want to remove SCST", confirm_msg);
@@ -805,7 +806,7 @@ void remTgtFromGrpDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, dev_grp_name, tgt_grp_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", target_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            asprintf(&error_msg,
+            SAFE_ASPRINTF(&error_msg,
                     "Couldn't delete SCST (ALUA) target from target group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);

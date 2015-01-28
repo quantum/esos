@@ -222,6 +222,7 @@ extern "C" {
 /* Other useful macros */
 #define FREE_NULL(p) if ((p) != 0) { free (p); p = 0; }
 #define DEBUG_LOG(...) syslog(TUI_LOG_PRIORITY, __VA_ARGS__)
+#define SAFE_ASPRINTF(...) assert(asprintf(__VA_ARGS__) != -1)
 
 #ifdef	__cplusplus
 }
