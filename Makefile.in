@@ -1103,7 +1103,8 @@ drbd: glibc
 
 mdadm: glibc
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" \
-	MAP_DIR="/var/run/mdadm" RUN_DIR="/var/run/mdadm"
+	MAP_DIR="/var/run/mdadm" RUN_DIR="/var/run/mdadm" \
+	CWFLAGS="-Wall -Wstrict-prototypes -Wextra -Wno-unused-parameter"
 	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdadm $(IMAGE_DIR)/sbin/mdadm
 	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdmon $(IMAGE_DIR)/sbin/mdmon
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-man
@@ -1579,6 +1580,8 @@ open-lldp: glibc libconfig libnl
 	$(tgt_src_dir)/configure.ac
 	$(SED) -i 's/^AC_FUNC_REALLOC/dnl AC_FUNC_REALLOC/' \
 	$(tgt_src_dir)/configure.ac
+	$(SED) -i 's/foreign/foreign subdir-objects/' \
+	$(tgt_src_dir)/configure.ac
 	$(SED) -i 's/-Werror//' $(tgt_src_dir)/Makefile.am
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && libtoolize; \
@@ -1817,8 +1820,10 @@ expat: glibc
 	$(call clean_la_files,libexpat)
 	$(TOUCH) $(@)
 
-boost: glibc
-	$(SED) -i 's/# using gcc ;/using gcc : : : <compileflags>"$(subst /,\/,$(CPPFLAGS))" <linkflags>"$(subst /,\/,$(LDFLAGS))" ;/' \
+boost: glibc gcc
+	$(SED) -i 's/# using gcc ;/using gcc : : $(subst /,\/,$(esos_cxx)) : \
+	<compileflags>"$(subst /,\/,$(CPPFLAGS))" \
+	<linkflags>"$(subst /,\/,$(LDFLAGS))" ;/' \
 	$(tgt_src_dir)/tools/build/v2/user-config.jam
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/b2" ]; then \
 	  cd $(tgt_src_dir) && CC="" CXX="" ./bootstrap.sh \
