@@ -1,3 +1,8 @@
+2015-01-30 16:24  msmith626@gmail.com
+
+	* Makefile.in, svn2cl.sh, svn2cl.xsl: several build fixes for
+	  platforms that use gcc 4.9.x
+
 2015-01-28 22:02  msmith626@gmail.com
 
 	* Makefile.in, configure.ac, tui/Makefile, tui/info_labels.c,
