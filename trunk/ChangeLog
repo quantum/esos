@@ -1,3 +1,9 @@
+2015-02-21 05:02  msmith626@gmail.com
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.drbd:
+	  added the 'sudo' package; updated the drbd rc script to suppress
+	  version mismatch warnings
+
 2015-01-30 16:24  msmith626@gmail.com
 
 	* Makefile.in, svn2cl.sh, svn2cl.xsl: several build fixes for
