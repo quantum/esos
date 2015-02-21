@@ -10,6 +10,9 @@ PROC_DRBD="/proc/drbd"
 
 check_args ${@}
 
+# Suppress version mismatch warnings
+export DRBD_DONT_WARN_ON_VERSION_MISMATCH=1
+
 start() {
     /bin/echo "Setting DRBD parameters..."
     ${DRBDADM} adjust all
