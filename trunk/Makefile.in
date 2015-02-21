@@ -197,6 +197,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		dmidecode-2.12.tar.gz \
 		xmlrpc-c-1.33.15.tar.gz \
 		stunnel-5.10.tar.gz \
+		sudo-1.8.12.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -219,7 +220,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst busybox \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
-		stunnel
+		stunnel sudo
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2171,5 +2172,15 @@ stunnel: glibc openssl
 	$(MAKE) --directory=$(tgt_src_dir)/src DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/doc DESTDIR=$(IMAGE_DIR) install-data
 	$(call clean_la_files,libstunnel)
+	$(TOUCH) $(@)
+
+sudo: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) INSTALL_OWNER="" \
+	DESTDIR=$(IMAGE_DIR) install SUBDIRS="lib/util plugins/group_file \
+	plugins/sudoers plugins/system_group src include doc"
+	$(FIND) $(IMAGE_DIR)/usr/libexec/sudo -type f -iname *.la \
+	-exec $(RM) {} \;
 	$(TOUCH) $(@)
 
