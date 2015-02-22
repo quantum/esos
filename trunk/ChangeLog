@@ -1,3 +1,10 @@
+2015-02-22 16:27  msmith626@gmail.com
+
+	* Makefile.in, etc/profile: install fixes for the new sudo package;
+	  updated the image recipe to zero out the esos_root FS so the
+	  package size is consistent; modified /etc/profile to handle
+	  ulimit for non-root users
+
 2015-02-21 05:02  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.drbd:
