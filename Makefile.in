@@ -307,7 +307,7 @@ image: $(build_targets)
 	# 4000 MB (not MiB)
 	# 4000000000 B
 	# 4000000000 B / 512 B = 7812500 sectors
-	$(DD) if=/dev/zero of=$(img_file) bs=512 count=7812500
+	$(DD) if=/dev/zero of=$(img_file) bs=512 count=0 seek=7812500
 	$(ECHO) -e "2048,204800,L,*\n206848,2048000,L\n2254848,204800,L\n\
 	2459648,4096000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
@@ -366,6 +366,7 @@ image: $(build_targets)
 	$(FIND) $(MOUNT_DIR)/etc/rc.d -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
 	$(CHMOD) 4750 $(MOUNT_DIR)/usr/local/bin/esos_tui
+	$(CHMOD) 4755 $(MOUNT_DIR)/usr/bin/sudo
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/shadow
 	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
 	$(CHMOD) 1777 $(MOUNT_DIR)/tmp
@@ -396,6 +397,8 @@ image: $(build_targets)
 	  $(FIND) $(MOUNT_DIR)/{,usr/}{lib,bin,sbin} -type f \
 	  -exec $(STRIP) --strip-debug '{}' ';'; \
 	fi
+	- $(DD) if=/dev/zero of=$(MOUNT_DIR)/zero_file bs=4M
+	$(RM) $(MOUNT_DIR)/zero_file
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
@@ -2175,7 +2178,8 @@ stunnel: glibc openssl
 	$(TOUCH) $(@)
 
 sudo: glibc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && VIPROG="/bin/vi" MVPROG="/bin/mv" \
+	./configure --prefix=/usr --with-editor="/bin/vi" --with-env-editor
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) INSTALL_OWNER="" \
 	DESTDIR=$(IMAGE_DIR) install SUBDIRS="lib/util plugins/group_file \

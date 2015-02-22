@@ -6,7 +6,9 @@ if [[ ${TERM} == xterm* ]] || [[ ${TERM} == vte* ]]; then
 fi
 
 # A few settings (include the "real" profile)
-ulimit -n 10240
+if [ "$(whoami)" = "root" ]; then
+    ulimit -n 10240
+fi
 ulimit -c unlimited
 source /etc/bashrc
 
