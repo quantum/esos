@@ -6,7 +6,7 @@ Enabling your target(s) is the final step to allow I/O (make target/volume visib
 <br>
 
 === Fibre Channel Targets ===
-Fibre Channel targets in ESOS are considered "hardware-based" targets. The FC HBA is put into "target" mode and will be automatically available to SCST (ESOS). No additional configuration is required. At the time of writing this, only QLogic Fibre Channel Host Bus Adapters (HBAs) are supported.
+Fibre Channel targets in ESOS are considered "hardware-based" targets. The FC HBA is put into "target" mode and will be automatically available to SCST (ESOS). No additional configuration is required. At the time of writing this, only QLogic Fibre Channel Host Bus Adapters (HBAs) are built-in (default). If you happen to have Emulex SLI-4 Fibre Channel HBAs, you can build ESOS with the "--with-ocs_sdk" option (requires the Emulex OCS SDK) to support these FC HBAs as hardware target interfaces.
 
 For Fibre Channel targets, you can use the Issue LIP function in the TUI (Targets -> Issue LIP) to issue a LIP (Loop Initialization Primitive) on all Fibre Channel HBAs.
 
@@ -26,8 +26,21 @@ Removing iSCSI targets is just as simple as creating them in the TUI (Targets ->
 
 <br>
 
-=== Fibre Channel over Ethernet (FCoE) Targets ===
-If you are using switches, ensure they are FCoE capable and VLANs, DCB, and DCBX and have been configured correctly. To configure the local interfaces on ESOS, you will first need to create the `/etc/fcoe/cfg-<ifname>` file (replacing `<ifname>` with your actual interface name). A default/example configuration file is included, simply copy this for each interface you'd like to setup; in this example our interface is 'eth2':
+=== Hardware FCoE Targets (QLogic/Emulex/Chelsio FCoE CNA) ===
+ESOS includes built-in support for QLogic FCoE CNAs via the QLogic/SCST qla2x00t target driver.
+
+Emulex FCoE CNAs (SLI-4) are supported via a build-time option (using "--with-ocs_sdk" with the autoconf script). This requires the Emulex OCS SDK (available from Emulex via registration).
+
+Chelsio FCoE CNAs are also supported using the "--with-uwire" option and requires the Chelsio Uwire driver package available from Chelsio's web site.
+
+All three of these driver types require no additional configuration on the ESOS side of things. They should appear as hardware target interfaces just like Fibre Channel and InfiniBand. You'll utilize the host/security groups for initiators like normal, and zone on your FCoE capable switches.
+
+<br>
+
+=== Software FCoE Targets (via DCB/DCBX capable NIC) ===
+DCB/DCBX capable NICs are supported via the "fcst" software FCoE target driver. Follow the configuration steps below. In addition, you'll need FCoE capable switches and other FC/FCoE supporting hardware/software. Simply having Ethernet switches that support DCB/DCBX and other FCoE technologies is not enough... FC name server, etc. are still required and not all "FCoE" switches/devices provide this -- check with your vendor.
+
+To configure the local interfaces on ESOS, you will first need to create the `/etc/fcoe/cfg-<ifname>` file (replacing `<ifname>` with your actual interface name). A default/example configuration file is included, simply copy this for each interface you'd like to setup; in this example our interface is 'eth2':
 {{{
 cp /etc/fcoe/cfg-ethx /etc/fcoe/cfg-eth2
 }}}
