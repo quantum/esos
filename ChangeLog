@@ -1,3 +1,9 @@
+2015-03-02 03:41  msmith626@gmail.com
+
+	* etc/rc.d/rc.btier: fixed issue with the rc.btier script... need
+	  to wait for btier module to be loaded before device setup
+	  (resolves issue # 94)
+
 2015-02-22 16:27  msmith626@gmail.com
 
 	* Makefile.in, etc/profile: install fixes for the new sudo package;
