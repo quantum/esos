@@ -13,6 +13,11 @@ start() {
     /bin/echo "Loading btier devices..."
     # Make sure the module is loaded
     /sbin/modprobe btier || exit 1
+    # Wait for load
+    while : ; do
+        /sbin/lsmod | /bin/grep btier >& /dev/null
+        [[ ${?} -eq 1 ]] || break
+    done
     # Loop over the bttab file and setup devices
     for i in `/bin/cat ${BTTAB} | /bin/grep -v "^#"`; do
         ${BTIER_SETUP} -f ${i}
