@@ -525,6 +525,8 @@ esos_kernels: kernel_headers
 	  -B $(linux_src)/put_page_callback.patch/ -p1 < \
 	  $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.14.patch; \
 	fi
+	- $(PATCH) -r - -N -d $(linux_src) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(linux_src)).patch
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
 	  $(MAKE) --directory=$(linux_src) clean; \
