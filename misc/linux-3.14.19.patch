@@ -1,0 +1,36 @@
+--- a/drivers/scsi/arcmsr/arcmsr_hba.c	2015-03-12 13:44:19.573890842 -0400
++++ b/drivers/scsi/arcmsr/arcmsr_hba.c	2015-03-12 13:51:11.868444434 -0400
+@@ -1521,21 +1521,18 @@
+ 	/* areca cdb command done */
+ 	/* Use correct offset and size for syncing */
+ 
+-	while (readl(&phbcmu->host_int_status) &
+-	ARCMSR_HBCMU_OUTBOUND_POSTQUEUE_ISR){
+-	/* check if command done with no error*/
+-	flag_ccb = readl(&phbcmu->outbound_queueport_low);
+-	ccb_cdb_phy = (flag_ccb & 0xFFFFFFF0);/*frame must be 32 bytes aligned*/
+-	arcmsr_cdb = (struct ARCMSR_CDB *)(acb->vir2phy_offset + ccb_cdb_phy);
+-	ccb = container_of(arcmsr_cdb, struct CommandControlBlock, arcmsr_cdb);
+-	error = (flag_ccb & ARCMSR_CCBREPLY_FLAG_ERROR_MODE1) ? true : false;
+-	/* check if command done with no error */
+-	arcmsr_drain_donequeue(acb, ccb, error);
+-	if (throttling == ARCMSR_HBC_ISR_THROTTLING_LEVEL) {
+-		writel(ARCMSR_HBCMU_DRV2IOP_POSTQUEUE_THROTTLING, &phbcmu->inbound_doorbell);
+-		break;
+-	}
+-	throttling++;
++	while ((flag_ccb = readl(&phbcmu->outbound_queueport_low)) != 0xFFFFFFFF) {
++		ccb_cdb_phy = (flag_ccb & 0xFFFFFFF0);/*frame must be 32 bytes aligned*/
++		arcmsr_cdb = (struct ARCMSR_CDB *)(acb->vir2phy_offset + ccb_cdb_phy);
++		ccb = container_of(arcmsr_cdb, struct CommandControlBlock, arcmsr_cdb);
++		error = (flag_ccb & ARCMSR_CCBREPLY_FLAG_ERROR_MODE1) ? true : false;
++		/* check if command done with no error */
++		arcmsr_drain_donequeue(acb, ccb, error);
++		throttling++;
++		if (throttling == ARCMSR_HBC_ISR_THROTTLING_LEVEL) {
++			writel(ARCMSR_HBCMU_DRV2IOP_POSTQUEUE_THROTTLING, &phbcmu->inbound_doorbell);
++			throttling = 0;
++		}
+ 	}
+ }
+ /*
