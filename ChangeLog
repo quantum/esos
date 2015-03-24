@@ -1,3 +1,14 @@
+2015-03-24 18:33  msmith626
+
+	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
+	  misc/linux-3.14.19.patch, scripts/db_compact.py: updated clean
+	  target to remove stray uncompressed image file; split QLogic
+	  driver out into separate package/target and updated to latest
+	  from QLogic's git repo; updated SCST/trunk to latest revision;
+	  patch for kernel to bring the Areca RAID driver (arcmsr) up to
+	  match the version in 3.19.2 to hopefully address stability issues
+	  for this hardware
+
 2015-03-12 18:13  msmith626@gmail.com
 
 	* Makefile.in, misc/linux-3.14.19.patch: added a patch to fix the
