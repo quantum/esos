@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-# $Id: db_compact.py 515 2013-08-08 21:06:01Z msmith626@gmail.com $
+# $Id$
 
 '''
 Created on Jul 27, 2013
