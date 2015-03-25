@@ -117,7 +117,6 @@ a61415312426e9c2212bd7dc7929abda  acl-2.2.52.tar.gz
 31668a6dfb8823dd0b7ac09d06fb902e  makedumpfile-1.5.7.tar.gz
 baa2deaf70fc9ffa4589a363416db5a7  bash-4.3_025.tar.xz
 12e8c6131a27c05422edcd2ae3e79dfb  qlogic_fw-20140928.tar.gz
-f8d708a47dedc2f4210dded1bb8ee6c9  linux-3.14.19.tar.xz
 8afdb925dba24a58b74fff74d7f3180e  lessfs-1.7.0.tar.gz
 ab02087f4296c16d14af53597e90e5f6  mdadm-3.3.2.tar.gz
 e768b9b55c033d9c1dffda72db3a6ac7  htop-1.0.3.tar.gz
@@ -128,3 +127,4 @@ a0edda805eb7d6ea600a230fb0979ea1  stunnel-5.10.tar.gz
 43bd6676f0b404326eee2d63be3cdcfe  rsync-3.1.1.tar.gz
 0f0c764c2c96202265b15ccfe8cfd22b  scst-trunk_r6146.tar.gz
 420a5b0c50327a1f15aebe6b2f9afb7d  scst_qla2xxx-20150323.tar.gz
+15e8df76375803c65c5c90ca06426e96  linux-3.14.36.tar.xz
