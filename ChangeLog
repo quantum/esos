@@ -1,3 +1,8 @@
+2015-03-28 13:17  msmith626
+
+	* tui/menu_actions-system.c: updated mail dialog so the auth user
+	  and auth password fields can be empty (resolves issue # 99)
+
 2015-03-25 20:03  msmith626@gmail.com
 
 	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
