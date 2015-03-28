@@ -690,7 +690,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                             SAFE_ASPRINTF(&temp_pstr, "%s,", poten_slaves[i]);
                             /* We add one extra for the null byte */
                             slave_val_size = strlen(temp_pstr) + 1;
-                            slaves_line_size = 
+                            slaves_line_size =
                                     slaves_line_size + slave_val_size;
                             if (slaves_line_size >= MAX_SLAVES_LIST_BUFF) {
                                 errorDialog(main_cdk_screen, "The maximum "
@@ -810,7 +810,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     delwin(net_window);
     curs_set(0);
     refreshCDKScreen(main_cdk_screen);
-    
+
     /* Ask user if they want to restart networking */
     if (traverse_ret == 1) {
         question = questionDialog(main_cdk_screen,
@@ -1196,17 +1196,21 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             }
 
             /* Check auth. user (field entry) */
-            if (!checkInputStr(main_cdk_screen, EMAIL_CHARS,
-                    getCDKEntryValue(auth_user))) {
-                traverse_ret = 0; /* Skip the prompt */
-                break;
+            if (strlen(getCDKEntryValue(auth_user)) != 0) {
+                if (!checkInputStr(main_cdk_screen, EMAIL_CHARS,
+                        getCDKEntryValue(auth_user))) {
+                    traverse_ret = 0; /* Skip the prompt */
+                    break;
+                }
             }
 
             /* Check auth. password (field entry) */
-            if (!checkInputStr(main_cdk_screen, ASCII_CHARS,
-                    getCDKEntryValue(auth_pass))) {
-                traverse_ret = 0; /* Skip the prompt */
-                break;
+            if (strlen(getCDKEntryValue(auth_pass)) != 0) {
+                if (!checkInputStr(main_cdk_screen, ASCII_CHARS,
+                        getCDKEntryValue(auth_pass))) {
+                    traverse_ret = 0; /* Skip the prompt */
+                    break;
+                }
             }
 
             /* Set config. file */
@@ -1300,7 +1304,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     delwin(mail_window);
     curs_set(0);
     refreshCDKScreen(main_cdk_screen);
-    
+
     /* Ask user if they want to send a test email message */
     if (traverse_ret == 1) {
         question = questionDialog(main_cdk_screen,
@@ -1577,12 +1581,12 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
     uid_t ruid = 0, euid = 0, suid = 0;
     struct passwd *passwd_entry = NULL;
     boolean confirm = FALSE;
-    
+
     /* Have the user choose a user account */
     getUserAcct(main_cdk_screen, user_acct);
     if (user_acct[0] == '\0')
         return;
-    
+
     /* Make sure we are not trying to delete the user that is
      * currently logged in */
     getresuid(&ruid, &euid, &suid);
@@ -1629,7 +1633,7 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
             return;
         }
     }
-    
+
     /* Done */
     return;
 }
@@ -1796,7 +1800,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     char *temp_pstr = NULL;
     FILE *sysfs_file = NULL;
     int i = 0;
-    
+
     /* Setup scrolling window widget */
     scst_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             SCST_INFO_ROWS+2, SCST_INFO_COLS+2,
@@ -1822,7 +1826,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(tmp_sysfs_path, MAX_SYSFS_PATH_SIZE,
             "%s/last_sysfs_mgmt_res", SYSFS_SCST_TGT);
     readAttribute(tmp_sysfs_path, scst_sysfs_res);
-    
+
     /* Add the attribute values collected above to our
      * scrolling window widget */
     SAFE_ASPRINTF(&swindow_info[0],
@@ -1922,7 +1926,7 @@ void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
             SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
             line_pos++;
         }
-        
+
         /* Close the process stream and check exit status */
         if ((status = pclose(crm_proc)) == -1) {
             ret_val = -1;
