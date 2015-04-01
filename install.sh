@@ -174,17 +174,20 @@ if [ ${dev_bytes} -lt 4000000000 ]; then
     exit 1
 fi
 
+if [ "${this_os}" = "${LINUX}" ]; then
+    suffix="M"
+    real_dev_node=${dev_node}
+elif [ "${this_os}" = "${MACOSX}" ]; then
+    suffix="m"
+    real_dev_node=${dev_node/\/dev\//\/dev\/r}
+fi
+
 # Get a final confirmation before writing the image
-echo "### Proceeding will completely wipe the '${dev_node}' device. Are you sure?" && read confirm
+echo "### Proceeding will completely wipe the '${real_dev_node}' device. Are you sure?" && read confirm
 echo
 if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
-    if [ "${this_os}" = "${LINUX}" ]; then
-        suffix="M"
-    elif [ "${this_os}" = "${MACOSX}" ]; then
-        suffix="m"
-    fi
-    echo "### Writing ${image_file} to ${dev_node}; this may take a while..."
-    bunzip2 -d -c ${image_file} | dd of=${dev_node} bs=1${suffix} || exit 1
+    echo "### Writing ${image_file} to ${real_dev_node}; this may take a while..."
+    bunzip2 -d -c ${image_file} | dd of=${real_dev_node} bs=1${suffix} || exit 1
     if [ "${this_os}" = "${LINUX}" ]; then
         blockdev --rereadpt ${dev_node} || exit 1
     fi
