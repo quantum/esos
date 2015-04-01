@@ -63,12 +63,18 @@ with_uwire	:= @with_uwire@
 uwire_dir	:= @uwire_dir@
 build_opts	:= @build_opts@
 
-svn_branch	:= trunk
-svn_rev		:= $(shell if rev="$$(svnversion $(SRC_DIR) 2>&1)"; \
-		then echo "$$rev"; else echo "UNKNOWN"; fi)
+git_branch	:= $(shell if branch="$$(git --git-dir=$(SRC_DIR)/.git rev-parse \
+		--symbolic-full-name --abbrev-ref HEAD 2>&1)"; \
+		then echo -n "$$branch"; else echo -n "UNKNOWN"; fi)
+git_hash	:= $(shell if hash="$$(git --git-dir=$(SRC_DIR)/.git rev-parse \
+		--short HEAD 2>&1)"; \
+		then echo -n "$$hash"; else echo -n "UNKNOWN"; fi)
+git_tag		:= $(shell if tag="$$(git --git-dir=$(SRC_DIR)/.git describe \
+		--exact-match --abbrev=0 2>&1)"; \
+		then echo -n "$$tag"; else echo -n ""; fi)
 opt_suffix	:= $(if $(build_opts),_$(shell for i in $(build_opts); \
 		do $(ECHO) -n "$${i:0:1}"; done),)
-esos_ver	:= $(svn_branch)_r$(svn_rev)$(opt_suffix)
+esos_ver	:= $(if $(git_tag),$(git_tag)$(opt_suffix),$(git_branch)_$(git_hash)$(opt_suffix))
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
@@ -119,7 +125,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		glue-1.0.11.tar.bz2 \
 		readline-6.2.tar.gz \
 		resource_agents-3.9.2.tar.gz \
-		mhvtl-1.4.tar.gz \
+		mhvtl-master_20150330.tar.gz \
 		lzo-2.06.tar.gz \
 		mhash-0.9.9.9.tar.bz2 \
 		lessfs-1.7.0.tar.gz \
@@ -337,7 +343,7 @@ image: $(build_targets)
 	$(INSTALL) -D $(wildcard $(IMAGE_DIR)/usr/include/python*/pyconfig.h) \
 	$(MOUNT_DIR)/usr/include/$(notdir \
 	$(wildcard $(IMAGE_DIR)/usr/include/python*))/pyconfig.h
-	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.svn*" | \
+	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
 	$(CPIO) -pmdvu $(MOUNT_DIR)/etc
 	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install \
 	--grub-setup=$(WORK_DIR)/grub-bios-setup \
@@ -420,6 +426,7 @@ image: $(build_targets)
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = esos-$(esos_ver)
 pkg_dist: $(bz2_img_file)
+	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
 	$(LN) $(BUILD_DIR) $(pkg_prefix)
 	$(ZIP) -9 $(pkg_prefix).zip $(pkg_prefix)/$(notdir $(bz2_img_file)) \
 	$(pkg_prefix)/dist_*.txt
@@ -448,6 +455,7 @@ clean: $(clean_targets)
 	$(RM) $(BUILD_DIR)/esos-*.zip
 	$(RM) $(BUILD_DIR)/esos-*.img
 	$(RM) $(BUILD_DIR)/esos-*.img.bz2
+	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 
 $(clean_targets):: target = $(subst clean-,,$(@))
 $(clean_targets)::
@@ -681,7 +689,8 @@ esos_tui: $(wildcard $(SRC_DIR)/tui/*.c) $(wildcard $(SRC_DIR)/tui/*.h)
 esos_tui: glibc ncurses cdk iniparser parted util-linux curl
 	$(MAKE) --directory=$(SRC_DIR)/tui CC="$(esos_cc)" \
 	CFLAGS="-DBUILD_OPTS=\"\\\"$(if $(build_opts),$(build_opts),N/A)\\\"\" \
-	-DESOS_VERSION=\"\\\"$(esos_ver)\\\"\" -DSVN_BRANCH=\"\\\"$(svn_branch)\\\"\""
+	-DESOS_VERSION=\"\\\"$(esos_ver)\\\"\" \
+	-DGIT_BRANCH=\"\\\"$(git_branch)\\\"\""
 	$(INSTALL) -m 755 $(SRC_DIR)/tui/esos_tui $(IMAGE_DIR)/usr/local/bin
 	$(TOUCH) $(@)
 
@@ -1410,7 +1419,8 @@ mhvtl: glibc lzo zlib
 	$(INSTALL) -m 755 $(tgt_src_dir)/usr/tapeexerciser $(IMAGE_DIR)/usr/bin/
 	$(INSTALL) -m 700 $(tgt_src_dir)/usr/build_library_config \
 	$(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 700 $(tgt_src_dir)/usr/make_vtl_media $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 700 $(tgt_src_dir)/usr/make_vtl_media \
+	$(IMAGE_DIR)/usr/bin/
 	$(TOUCH) $(@)
 
 lzo: glibc

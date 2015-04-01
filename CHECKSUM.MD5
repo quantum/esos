@@ -31,7 +31,6 @@ c57477edd6d18bd9eeca2f21add73919  Python-2.7.3.tar.bz2
 3b97f8da8444b9d4bfebefbecc5b6de0  glue-1.0.11.tar.bz2
 67948acb2ca081f23359d0256e9a271c  readline-6.2.tar.gz
 00affc915adfade29d8f0dadcc5951f6  resource_agents-3.9.2.tar.gz
-c556a13dce0276992a866f1819a4647e  mhvtl-1.4.tar.gz
 95380bd4081f85ef08c5209f4107e9f8  lzo-2.06.tar.gz
 f91c74f9ccab2b574a98be5bc31eb280  mhash-0.9.9.9.tar.bz2
 fd03df6965f8f56dd5b8518ca43b4f5e  tokyocabinet-1.4.48.tar.gz
@@ -128,3 +127,4 @@ a0edda805eb7d6ea600a230fb0979ea1  stunnel-5.10.tar.gz
 0f0c764c2c96202265b15ccfe8cfd22b  scst-trunk_r6146.tar.gz
 420a5b0c50327a1f15aebe6b2f9afb7d  scst_qla2xxx-20150323.tar.gz
 15e8df76375803c65c5c90ca06426e96  linux-3.14.36.tar.xz
+797e5469b65775153ba0462333fb311f  mhvtl-master_20150330.tar.gz

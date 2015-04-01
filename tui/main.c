@@ -981,7 +981,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                     /* Fill in our form fields */
                     curl_formadd(&form_post, &last_ptr, CURLFORM_COPYNAME,
                             "branch", CURLFORM_COPYCONTENTS,
-                            SVN_BRANCH, CURLFORM_END);
+                            GIT_BRANCH, CURLFORM_END);
                     curl_formadd(&form_post, &last_ptr, CURLFORM_COPYNAME,
                             "ver_string", CURLFORM_COPYCONTENTS,
                             ESOS_VERSION, CURLFORM_END);

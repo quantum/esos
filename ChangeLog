@@ -1,2385 +1,1255 @@
-2015-03-28 13:17  msmith626
+2015-03-31  Marc A. Smith  <marc@astersmith.com>
 
-	* tui/menu_actions-system.c: updated mail dialog so the auth user
-	  and auth password fields can be empty (resolves issue # 99)
+	removed SVN dev tools and setup for Git; updated README documents for GitHub project; updated mhVTL to latest from project git repo (resolves issue # 98); swapped out SVN version lines for Git in Makefile; new scripts for generating the ChangeLog
 
-2015-03-25 20:03  msmith626@gmail.com
+2015-03-28  Marc A. Smith  <marc@astersmith.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/linux-3.14.36-debug.patch, misc/linux-3.14.36.config,
-	  misc/linux-3.14.36.patch: updated Linux kernel to 3.14.36
+	./finishGoogleCodeGitHubWikiMigration: Moved ProjectHome.md from wiki branch to README.md in master branch.
 
-2015-03-24 18:33  msmith626
+2015-03-28  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/linux-3.14.19.patch, scripts/db_compact.py: updated clean
-	  target to remove stray uncompressed image file; split QLogic
-	  driver out into separate package/target and updated to latest
-	  from QLogic's git repo; updated SCST/trunk to latest revision;
-	  patch for kernel to bring the Areca RAID driver (arcmsr) up to
-	  match the version in 3.19.2 to hopefully address stability issues
-	  for this hardware
+	updated mail dialog so the auth user and auth password fields can be empty (resolves issue # 99)
 
-2015-03-12 18:13  msmith626@gmail.com
+2015-03-25  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in, misc/linux-3.14.19.patch: added a patch to fix the
-	  arcmsr_hbaC_postqueue_isr/flag_ccb bug in the Areca RAID driver
-	  (arcmsr)
+	updated Linux kernel to 3.14.36
 
-2015-03-08 03:40  msmith626@gmail.com
+2015-03-24  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added the rsync
-	  package
+	updated clean target to remove stray uncompressed image file; split QLogic driver out into separate package/target and updated to latest from QLogic's git repo; updated SCST/trunk to latest revision; patch for kernel to bring the Areca RAID driver (arcmsr) up to match the version in 3.19.2 to hopefully address stability issues for this hardware
 
-2015-03-02 03:41  msmith626@gmail.com
+2015-03-12  Marc A. Smith  <msmith626@gmail.com>
 
-	* etc/rc.d/rc.btier: fixed issue with the rc.btier script... need
-	  to wait for btier module to be loaded before device setup
-	  (resolves issue # 94)
+	added a patch to fix the arcmsr_hbaC_postqueue_isr/flag_ccb bug in the Areca RAID driver (arcmsr)
 
-2015-02-22 16:27  msmith626@gmail.com
+2015-03-07  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in, etc/profile: install fixes for the new sudo package;
-	  updated the image recipe to zero out the esos_root FS so the
-	  package size is consistent; modified /etc/profile to handle
-	  ulimit for non-root users
+	added the rsync package
 
-2015-02-21 05:02  msmith626@gmail.com
+2015-03-01  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.drbd:
-	  added the 'sudo' package; updated the drbd rc script to suppress
-	  version mismatch warnings
+	fixed issue with the rc.btier script... need to wait for btier module to be loaded before device setup (resolves issue # 94)
 
-2015-01-30 16:24  msmith626@gmail.com
+2015-02-22  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in, svn2cl.sh, svn2cl.xsl: several build fixes for
-	  platforms that use gcc 4.9.x
+	install fixes for the new sudo package; updated the image recipe to zero out the esos_root FS so the package size is consistent; modified /etc/profile to handle ulimit for non-root users
 
-2015-01-28 22:02  msmith626@gmail.com
-
-	* Makefile.in, configure.ac, tui/Makefile, tui/info_labels.c,
-	  tui/main.c, tui/megaraid.c, tui/menu_actions-alua.c,
-	  tui/menu_actions-back_storage.c, tui/menu_actions-devices.c,
-	  tui/menu_actions-hosts.c, tui/menu_actions-interface.c,
-	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
-	  tui/menu_actions.c, tui/system.h, tui/utility.c: swapped
-	  asprintf() for macro throughout TUI code; few minor fixes and
-	  clean up in TUI
-
-2015-01-28 15:36  msmith626@gmail.com
-
-	* Makefile.in, misc/glibc-2.12.2.patch: patch for glibc to fix the
-	  GHOST vulnerability
-
-2015-01-27 14:57  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.d/common, etc/rc.d/rc.btier,
-	  etc/rc.d/rc.clvmd, etc/rc.d/rc.corosync, etc/rc.d/rc.dlm,
-	  etc/rc.d/rc.dmcache, etc/rc.d/rc.drbd, etc/rc.d/rc.eio,
-	  etc/rc.d/rc.fsmount, etc/rc.d/rc.lvm2, etc/rc.d/rc.mdraid,
-	  etc/rc.d/rc.mhvtl, etc/rc.d/rc.nrpe, etc/rc.d/rc.nut,
-	  etc/rc.d/rc.openibd, etc/rc.d/rc.opensm, etc/rc.d/rc.pacemaker,
-	  etc/rc.d/rc.rbdmap, etc/rc.d/rc.scst, etc/rc.d/rc.smartd,
-	  etc/rc.d/rc.snmpd, etc/rc.d/rc.snmptrapd, etc/rc.d/rc.sshd,
-	  etc/rc.d/rc.stunnel: updated rc scripts to now handle a 'status'
-	  argument which simply returns an exit status code, no string
-	  message; additional rc script clean-up; fixed issue with ldd
-	  script from glibc (wrong bash location); more build tweaks/fixes
-	  for recent package adds
-
-2015-01-26 02:38  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.conf, etc/stunnel/stunnel.conf: fixed build
-	  dependency issue; updated default configuration for stunnel
-
-2015-01-24 05:29  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
-	  etc/rc.d/common, etc/rc.d/rc.2, etc/rc.d/rc.local,
-	  etc/rc.d/rc.stunnel, etc/rc.local, etc/stunnel,
-	  etc/stunnel/stunnel.conf, misc/ocf/btier,
-	  misc/sysvinit-2.88dsf.patch, scripts/health_chk.sh: updated
-	  health check script to use "MemAvailable" from /proc/meminfo
-	  instead of attempting to calculating available memory (new
-	  feature in 3.14.x); added xmlrpc-c libs and stunnel; moved
-	  rc.local script to /etc/; updated autoconf script and other rc.d
-	  components for stunnel; patched sysvinit so bootlogd handles log
-	  file lines that start with tabs; added the "btier" RA (thanks
-	  Riccardo)
-
-2015-01-06 02:36  msmith626@gmail.com
-
-	* install_common, scripts/health_chk.sh: updated health_chk script
-	  to handle yet another MR enclosure status; updated hpacucli and
-	  linuxcli tool download URLs
-
-2014-12-24 06:07  msmith626@gmail.com
-
-	* install.sh: updates for Linux installer script to handle an
-	  in-place ESOS upgrade... only write from start of MBR to end of
-	  esos_root partition which preserves esos_conf and esos_logs;
-	  other fixes for updated install.sh script
-
-2014-12-23 14:21  msmith626@gmail.com
-
-	* Makefile.in, configure.ac, install.sh, install.vbs, rpm2cpio.sh:
-	  updates to Makefile and installer scripts to compress the image
-	  file with bzip2 and handle it when installing, allowing hosts
-	  with < 4 GB of usable RAM to do an in-place upgrade; new local
-	  rpm2cpio.sh shell script which replaces the rpm2cpio bin function
-	  and eliminates the dependency; modified the Windows installer
-	  script to handle USB drives that appear as "fixed disk"
-	  appropriately; the install.sh script now supports Mac OS X as an
-	  install platform
-
-2014-12-09 21:21  msmith626@gmail.com
-
-	* Makefile.in, misc/glibc-2.12.2.patch, scripts/health_chk.sh:
-	  update for the health_chk script to handle another "normal"
-	  non-optimal condition for MR enclosure state; several build fixes
-	  for SUSE platforms
-
-2014-12-07 17:20  msmith626@gmail.com
-
-	* install.vbs, scripts/usb_sync.sh, tui/menu_actions-system.c:
-	  cleanup and several fixes for usb_sync script involving IFS;
-	  updated Windows installer script to now write CLI tools to the
-	  esos_conf FS; fixed TUI bug in Date/Time dialog for empty/blank
-	  NTP server and adjusted tab order
-
-2014-12-07 00:28  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.d/rc.2, install.sh,
-	  misc/linux-3.14.19.config, misc/ocf/scst, scripts/health_chk.sh,
-	  scripts/usb_sync.sh, tui/menu_actions-back_storage.c,
-	  tui/system.h: updated usb_sync script so it will now handle
-	  changes in permissions/mode, we do this by first checking mtime,
-	  and secondly ctime for file changes; enabled support for sync'ing
-	  /opt in the usb_sync script; updated Linux install script to
-	  write CLI tools to the esos_conf file system (Windows to follow);
-	  updated health_chk script to handle status 'Not Available' for MR
-	  enclosure check (resolves issue # 90); updates to scst RA to
-	  prevent clobbering scst.conf in the case of a bad conf; changed
-	  TUI log level to local4; enabled ATTO SAS driver and Emulex OC
-	  NIC driver in kernel config; TUI build fix for open(); several
-	  build fixes for Ubuntu
-
-2014-11-14 19:11  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, misc/initramfs_init,
-	  scripts/health_chk.sh: added support in health-check script for
-	  checking the status of attached enclosures for MegaRAID adapters;
-	  set minimum RAM required in the initramfs script to 3.5 GB; added
-	  the 'dmidecode' package
-
-2014-11-11 21:59  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, install.sh,
-	  install.vbs, misc/initramfs_init: updated hpacucli tool install
-	  recipe for Linux and Windows installer scripts so it also
-	  includes a missing library (thanks Chris); changes to the
-	  initramfs script so it now waits for devices to settle before
-	  continuing (USB mass storage devices can be delayed via
-	  delay_use) and handle findfs failures more gracefully; up'd SCST
-	  version to latest (r5854)
-
-2014-11-07 21:41  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  tui/menu_actions-system.c: added the 'htop' utility; fixed issue
-	  in network conf dialog where a empty default GW / name server
-	  field gave an error; updated image target to write zeros to loop
-	  device instead of seek'ing
-
-2014-10-31 21:06  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.d/rc.network, tui/dialogs.h,
-	  tui/menu_actions-system.c, tui/strings.c: added new "ethtool
-	  options" setting in the network dialog -- allows users to set
-	  autonegotation on/off and specify speed/duplex settings
-	  (satisfies issue/request #60); updated the rc.network script to
-	  handle new 'ethtoolopts' setting; fixed build issue for ceph
-	  package that affected some platforms (cryptopp vs. nss)
-
-2014-10-22 13:43  msmith626@gmail.com
-
-	* Makefile.in, configure.ac: build fix for mdadm and resolved
-	  mapfile lock error message with mdadm (missing /var/run/mdadm
-	  directory)
-
-2014-10-21 19:51  msmith626@gmail.com
-
-	* Makefile.in, configure.ac: changed distribution files repository
-	  to new 'download.esos-project.com' site
-
-2014-10-20 14:57  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
-	  tui/Makefile, tui/menu_actions.c: up'd mdadm to version 3.3.2;
-	  add optimization for TUI binary; add new 'debug' autoconf
-	  configure script option that control debug symbol stripping;
-	  remove use of STRIP variable in Makefile and strip all debug
-	  symbols by default in 'image' target; compress all man pages in
-	  'image' target
-
-2014-10-16 20:58  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, install.sh,
-	  install.vbs, misc/initramfs_init, tui/menu_actions-system.c:
-	  improvments for Windows installer script (install.vbs) to
-	  simplify picking a USB device and better handle disks with active
-	  volumes; updated both Linux/Windows installer scripts to use
-	  third-party tools from root of package directory; updated
-	  initramfs script to hide kernel console messages during root FS
-	  initialization; updated lessfs to 1.7.0; fix issue in network
-	  interface dialog (oversight during TUI code cleanup); a few misc.
-	  changes to Makefile targets for directory placement in image
-
-2014-10-14 17:28  msmith626@gmail.com
-
-	* tui/dialogs.h, tui/info_labels.c, tui/main.c, tui/megaraid.c,
-	  tui/megaraid.h, tui/menu_actions-alua.c,
-	  tui/menu_actions-back_storage.c, tui/menu_actions-devices.c,
-	  tui/menu_actions-hosts.c, tui/menu_actions-interface.c,
-	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
-	  tui/menu_actions.c, tui/prototypes.h, tui/strings.h,
-	  tui/system.h, tui/utility.c: lots of TUI code cleanup:
-	  consolidated common strings, broke out some dialog actions,
-	  refined new ALUA dialogs, code style formatting
-
-2014-10-06 16:06  msmith626@gmail.com
-
-	* tui/dialogs.h, tui/main.c, tui/menu_actions-alua.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
-	  tui/menu_actions-targets.c, tui/menu_actions.c, tui/prototypes.h,
-	  tui/strings.h, tui/system.h: new TUI "ALUA" menu for manipulating
-	  everything (mostly) w/ SCST ALUA (device groups, target groups,
-	  etc.); new setRelTgtIDDialog() function in the "Targets" menu for
-	  changing the relative target ID (of a target); started more TUI
-	  code clean-up (more to come)
-
-2014-09-30 00:57  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
-	  misc/linux-3.14.16.config, misc/linux-3.14.19-debug.patch,
-	  misc/linux-3.14.19.config: updated SCST to trunk/r5816 along with
-	  new QLogic qla2x00tgt FC (supports 10 Gb FCoE / 16 Gb FC
-	  CNAs/HBAs); updated QLogic FW package to latest; up'd kernel to
-	  3.14.19
-
-2014-09-27 03:37  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
-	  etc/profile, etc/sysctl.conf, misc/linux-3.14.16.config,
-	  misc/ocf/scst, tui/Makefile, tui/main.c,
-	  tui/menu_actions-back_storage.c, tui/menu_actions-interface.c,
-	  tui/prototypes.h, tui/strings.c, tui/strings.h, tui/system.h,
-	  tui/utility.c: re-work of ESOS version string: we now use SVN
-	  branch + revision + build options as the version; updated bash to
-	  4.3 patch 025; updated makedumpfile to 1.5.7; we now include (in
-	  dist package only) the full vmlinux kernel binaries (prod/debug)
-	  so we can fully debug kernel crash dumps offline; updated
-	  esos_tui target so we detect tui/ file changes correctly and
-	  define branch/version strings; fix build dep issue with ipmitool;
-	  minimized mysql target install (no test scripts); build dep fix
-	  for libmcrypt; added key/val pairs to sysctl.conf to panic on
-	  NMI; updated /etc/profile so we only try to set window title with
-	  xterm TERM types; major cleanup of ocf/scst RA... solidified use
-	  of 1 max master node so we can reliably set ALUA state; updated
-	  tui Makefile linker options; enabled additional watchdog support
-	  in kernel config; updated autoconf script to detect xz util; new
-	  TUI utility checkInetAccess() function for a simple "Internet"
-	  connectivity test; updated create-FS-dialog to make use of
-	  libparted's auto/optimize partition alignment feature; remove use
-	  of /etc/esos-release file in TUI code (new branch/version
-	  defines); added support for anonymously reporting ESOS usage
-	  statistics (prompt to participate); support for new
-	  /etc/esos.conf for system/TUI settings (eventually)
-
-2014-09-09 01:57  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  tui/menu_actions-back_storage.c, tui/strings.c: removed ext2 from
-	  list of file system choices and moved btrfs up the list; updated
-	  kexec-tools to version 2.0.7
-
-2014-09-06 02:17  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/linux-3.14.16.config, misc/ocf/scst, scripts/conf_sync.sh,
-	  tui/menu_actions-back_storage.c, tui/strings.c: resolved issue in
-	  esos::scst RA where the pre-scst-xtra conf file would not be
-	  executed; updated TUI code to handle btrfs file system; resolved
-	  issue # 87 (usb_sync.sh was not called if SCST wasn't loaded);
-	  added btrfs-progs and deps (attr, acl); enabled btrfs file system
-	  support in kernel config; updated Makefile to handle fine grain
-	  cleaning of .la files (fixes rare build issue)
-
-2014-09-02 21:16  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/ceph/ceph.conf,
-	  etc/send_nsca.cfg: added default etc/ceph/ceph.conf file; added
-	  the nsca package (and libmcrypt as a dependency)
-
-2014-08-29 18:33  msmith626@gmail.com
-
-	* Makefile.in, etc/ceph, etc/ceph/rbdmap, etc/rc.conf,
-	  etc/rc.d/common, etc/rc.d/rc.rbdmap, misc/linux-3.14.16.config:
-	  added new rc.rbdmap init script for mapping Ceph RBD images;
-	  enabled CONFIG_DM_RAID in kernel config (to support LVM RAID);
-	  set 'enable-command-args' configure script option for nrpe
-	  package; added default rbdmap example /etc file
-
-2014-08-26 20:59  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/EnhanceIO-master_20140810.patch, misc/drbd-8.4.4.patch,
-	  misc/linux-3.14.16.config: updated EnhanceIO patch file; fixed
-	  build issue with ceph (Python dep); enabled CONFIG_BLK_DEV_RBD in
-	  kernel config; updated DRBD (user-land) to version 8.4.4
-
-2014-08-25 21:15  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/linux-3.14.16.config: re-enabled BTIER (and updated
-	  version); initial support for ceph; added dependency packages
-	  (keyutils, libedit, and leveldb) for ceph; enabled
-	  CONFIG_CEPH_LIB in kernel config; enabled several libraries in
-	  boost package
-
-2014-08-20 13:15  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added the
-	  nagios-plugins package
-
-2014-08-11 21:00  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, install.sh,
-	  misc/linux-3.14.16-debug.patch, misc/linux-3.14.16.config:
-	  updated Linux kernel to 3.14.16; modified install.sh to unmount
-	  the esos_root file system if it happens to already be mounted
-	  (eg, an auto-mounter daemon); updated EnhanceIO to the latest
-	  version (dependency of new kernel); temporarily disabled BTIER
-	  module until patched (for 3.14.x kernels); modified bash target
-	  address build issue on Fedora
-
-2014-08-06 18:32  msmith626@gmail.com
-
-	* tui/menu_actions-system.c: set tm_isdst to -1 so the DST value is
-	  "guessed" (resolves issue # 84)
-
-2014-08-04 04:06  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: updated LVM2 to
-	  version 2.02.108 (includes lvmcache support)
-
-2014-07-24 04:37  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
-	  misc/busybox-1.20.2.config, misc/grub.cfg,
-	  misc/linux-3.12.20-debug.patch, tui/menu_actions-system.c:
-	  modified the Date & Time dialog so that we only actually change
-	  the date/time if the user changed it (eg, they set the TZ, but
-	  not the date); add the mtx and mt-st packages for use with
-	  tapes/VTL; Uwire (chfcoe) build issue resolved; global bashrc
-	  updated to force interactive cp command; disabled the mt program
-	  in busybox; enhanced debugging support and features (kgdb, kdb)
-	  for the .esos-debug kernel
-
-2014-07-14 20:45  msmith626@gmail.com
-
-	* install.sh, install.vbs, install_common, misc/ocf/scst: updated
-	  StorCLI to newest version and modified installer scripts to
-	  handle it (path change); added support for user-provided
-	  (parameter) master/slave ALUA target group states in the SCST RA
-
-2014-07-13 23:14  msmith626@gmail.com
-
-	* Makefile.in, configure.ac, etc/rc.d/rc.scst, misc/initramfs_init,
-	  misc/linux-3.12.20.config, misc/ocf/scst: added support for the
-	  Chelsio Uwire driver package (namely chfcoe); moved checksum file
-	  creation to the 'image' target (resolves issue # 82)
-
-2014-07-08 21:16  msmith626@gmail.com
-
-	* etc/rc.d/rc.2, etc/rc.d/rc.sysinit, install.sh, install.vbs:
-	  several fixes/tweaks to the new Windows installer script;
-	  run-level 2 init script will now fix /opt/sbin permissions by
-	  making binaries executable in that directory; added check for
-	  free space on boot device and if free space exists, expand the
-	  esos_logs file system to consume all of it; removed chmod +x
-	  lines from install.sh since we now take care of that in ESOS init
-
-2014-07-04 18:56  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
-	  install.vbs: added win_binaries package for Windows install
-	  script; modified pkg_dist target to now use zip instead of
-	  tar/xz; updated autoconf script to check for zip tool; path
-	  tweaks for install.vbs
-
-2014-07-03 20:55  msmith626@gmail.com
-
-	* Makefile.in, install.sh, install.vbs, install_common: initial
-	  commit of new Windows installer script (install.vbs); updated
-	  install.sh to use new shared common file for proprietary CLI tool
-	  information; Makefile variable name update; started modifications
-	  to pkg_dist target
-
-2014-06-17 03:34  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/modprobe.conf:
-	  enabled initiator mode for ocs_fc_scst module; rename
-	  libusb-compat package to libusb_compat (ambiguous); fixed several
-	  build issues for Fedora platform
-
-2014-06-16 03:55  msmith626@gmail.com
-
-	* Makefile.in: build fix for the util-linux package (resolves issue
-	  # 34)
-
-2014-06-08 01:18  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.d/rc.corosync, install.sh,
-	  misc/initramfs_init: updated Areca CLI tool version; increased
-	  root tmpfs size to 1.5 GB; removed (painfully) dbus build option
-	  from pacemaker; removed support for corosync-notifyd from
-	  rc.corosync
-
-2014-06-01 19:40  msmith626@gmail.com
-
-	* Makefile.in: fixed build issue w/ scst (patch prob)
-
-2014-06-01 19:24  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/inittab,
-	  misc/linux-3.12.20.config: commented out serial console lines in
-	  inittab to avoid log clutter if no serial ports exist; up'd linux
-	  kernel to 3.12.20 and scst to r5558
-
-2014-05-19 16:03  msmith626@gmail.com
-
-	* Makefile.in, tui/main.c: updated "no SCST" message; fixed build
-	  issue (ssl dep) with bcache-tools
-
-2014-05-16 18:46  msmith626@gmail.com
-
-	* etc/inittab, etc/mdev.conf, etc/profile, etc/rc.d/rc.sysinit,
-	  tui/dialogs.h, tui/main.c, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-devices.c, tui/menu_actions.c, tui/prototypes.h,
-	  tui/system.h, tui/utility.c: updated LUN Layout dialog name;
-	  fixed regex for /dev/sd* dev nodes in mdev.conf (resolves issue #
-	  75); updated Back-End Storage menu choice names (MegaRAID);
-	  updated getBlockDevChoice() func to not display devices that are
-	  "open" in list; added support for logging init/rc messages (via
-	  bootlogd); updated inittab to spawn getty on ttyS1; increased
-	  virtual disk file write size to 256K (add vdisk file dialog);
-	  added a new Virtual Disk File List dialog that displays virtual
-	  disk files (and sizes); modified /etc/profile so the TUI is not
-	  launched when connected via serial (only shell)
-
-2014-05-12 21:16  msmith626@gmail.com
-
-	* scripts/health_chk.sh, tui/menu_actions.c: updated health check
-	  script to handle CacheCade virtual drives (for MR); fixed string
-	  compare issue in getBlockDevChoice()
-
-2014-05-04 18:35  msmith626@gmail.com
-
-	* etc/rc.d/rc.scst: rework of rc.scst... if an error occurs while
-	  configuring SCST (eg, missing device) the rc script will stop
-	  daemons and unload modules to prevent clobbering /etc/scst.conf
-	  with an empty config
-
-2014-04-13 02:19  msmith626@gmail.com
-
-	* scripts/health_chk.sh: updated health check script to not mark
-	  "hot spare" MR PDs as failed (thanks Danilo)
-
-2014-04-11 00:55  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/fstab: up'd
-	  openssl to 1.0.1g; changed size of /dev/shm tmpfs to 128m
-
-2014-04-05 14:59  msmith626@gmail.com
-
-	* Makefile.in, etc/fstab: fixed /dev/shm permissions in fstab;
-	  updated pacemaker target for attrd
-
-2014-04-05 01:42  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, misc/initramfs_init:
-	  up'd version of pacemaker to 1.1.11
-
-2014-04-01 20:05  msmith626@gmail.com
-
-	* misc/linux-3.12.7.config: added additional crpto kernel options
-	  to support dm-crypt
-
-2014-04-01 19:55  msmith626@gmail.com
-
-	* scripts/startup.sh, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-interface.c,
-	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
-	  tui/menu_actions.c, tui/prototypes.h, tui/strings.c,
-	  tui/strings.h, tui/system.h: updated startup script for new dump
-	  file (vmcore) name format; more TUI code cleanup (formatting,
-	  combining strings, etc.)
-
-2014-03-31 20:11  msmith626@gmail.com
-
-	* configure.ac, misc/initramfs_init, tui/menu_actions-system.c,
-	  tui/strings.c, tui/strings.h: use ELF output with makedumpfile
-	  tool (initramfs init); started moving more exotic strings into
-	  new strings.c source file; updated autoconf script to make /tmp
-	  in initramfs stub (required by makedumpfile)
-
-2014-03-31 13:50  msmith626@gmail.com
-
-	* Makefile.in: fixed build issue with bzip2
-
-2014-03-31 04:55  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
-	  etc/rc.d/rc.mdraid, misc/grub.cfg, misc/initramfs_init,
-	  tui/menu_actions-system.c, tui/menu_actions.c: fixed broken
-	  kernel crash dump support (increased crashkernel to 128M, added
-	  makedumpfile to use instead of gzip with /proc/vmcore in
-	  initramfs script); don't hide output in rc.mdraid; fixed TUI bug
-	  when using block device select dialog; added a sleep to run-level
-	  2 to wait after loading qla2xxx (in the case of being used as an
-	  initiator, for targets to appear); updated mail settings dialog
-	  so there is now an option to disable user authentication for
-	  SMTP; disable use of python with gdb; added elfutils as a dep for
-	  makedumpfile; for bzip2 target, include static version of lib
-	  (dep for makedumpfile)
-
-2014-03-29 18:59  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/inittab,
-	  misc/grub.cfg: version bump for sg3_utils and kexec-tools;
-	  disabled use of CTRL-ALT-DEL; initial commit of support for
-	  serial console
-
-2014-03-28 20:04  msmith626@gmail.com
-
-	* misc/linux-3.12.7.config, tui/dialogs.h, tui/info_labels.c,
-	  tui/main.c, tui/megaraid.c, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
-	  tui/menu_actions-interface.c, tui/menu_actions-system.c,
-	  tui/menu_actions-targets.c, tui/menu_actions.c, tui/prototypes.h,
-	  tui/strings.h, tui/system.h, tui/utility.c: disabled USB_DEBUG
-	  option in kernel config; added new column to "sessions" info
-	  label for LUN count; changed all free/freeChar to new FREE_NULL
-	  macro in TUI code; lots of TUI code clean up (line/column
-	  formatting, consolidating like code, etc.)
-
-2014-03-25 17:04  msmith626@gmail.com
-
-	* Makefile.in: added esos_kernels as a dep for the scst target;
-	  fixed pkg_dist target to name checksums correctly
-
-2014-03-25 01:39  msmith626@gmail.com
-
-	* Makefile.in: resolved build issue with parallel make
-	  (kernel_headers vs. esos_kernels clobber issue)
-
-2014-03-24 23:06  msmith626@gmail.com
-
-	* Makefile.in: moved user-land SCST progs (iSCSI stuff) to a
-	  separate target; removed glibc dependency from esos_kernels
-	  target; other build fixes (target deps)
-
-2014-03-24 16:15  msmith626@gmail.com
-
-	* Makefile.in, configure.ac: fixed build issue with source
-	  directory variable; updated pkg_dist target to transform archive
-	  member paths correctly
-
-2014-03-24 04:54  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
-	  install.sh, misc/linux-3.12.7.config, tui/dialogs.h,
-	  tui/info_labels.c, tui/main.c, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
-	  tui/menu_actions-interface.c, tui/menu_actions-system.c,
-	  tui/menu_actions-targets.c, tui/prototypes.h, tui/strings.h:
-	  updated TUI components to include new strings.h; autoconf script
-	  now sets "src_dir" and "build_dir"; added cryptsetup and enabled
-	  kernel DM_CRYPT option (resolves issue # 71); updated install
-	  script with latest location on LSI's web site for the MegaCLI
-	  tool, and changed error strings in install.sh to be more
-	  informative; code formatting in main.c and fixed issue with
-	  labels when exiting to shell; tweaked size (rows) of device-info
-	  dialog; lots of updated to Makefile.in... many line/formatting
-	  changes, and make jobs > 1 is now supported
-
-2014-03-18 03:05  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
-	  tui/info_labels.c, tui/main.c, tui/menu_actions.c,
-	  tui/prototypes.h: updated new info labels to work correctly; add
-	  a blank line if no rows to match other pane; version bump for
-	  SCST (r5338); filter /tmp FS in FS-chooser dialog; adjusted
-	  ocs_sdk dir location; fixed sed one-liner in ocs_sdk target;
-	  added delay when creating image for partitions to be visible
-
-2014-03-17 16:35  msmith626@gmail.com
-
-	* Makefile.in, configure.ac, tui/Makefile: fixed issue with
-	  autoconf configure script and ocs_sdk option; resolved build
-	  issue with TUI (BUILD_OPTS definition)
-
-2014-03-17 15:54  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.conf,
-	  etc/rc.d/common, etc/rc.d/rc.smartd, etc/smartd.conf: fixed build
-	  issue with wget certificate check; added smartmontools package
-
-2014-03-17 03:21  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
-	  etc/rc.d/rc.scst, misc/linux-3.12.7.config, misc/ocf/scst,
-	  tui/dialogs.h, tui/menu_actions-interface.c: updated the rc.scst
-	  and scst RA scripts to check for the new optional ocs_fc_scst
-	  module; new optional user-land packages gdb and valgrind; update
-	  to the about dialog that will now display any additonal build
-	  options that were used; some renovations to the autoconf script:
-	  gdb, valgrind, and the Emulex OCS SCST driver (ocs_fc_scst)
-	  driver are now options that can be set, and we also set/create
-	  build/image directory structure with configure script; enabled
-	  additional kernel drivers for VMware VM hardware, including
-	  vmxnet3 and also enabled MS Hyper-V NIC driver; many updates for
-	  Makefile to accomodate new optional ocs_fc_scst target driver,
-	  gdb, and valgrind; distfiles repo is now on Google Drive
-
-2014-03-14 20:24  msmith626@gmail.com
-
-	* misc/linux-3.12.7.config, tui/info_labels.c, tui/label_data.c,
-	  tui/main.c, tui/menu_actions-hosts.c, tui/menu_actions.c,
-	  tui/prototypes.h, tui/strings.h, tui/system.h, tui/utility.c:
-	  split out some TUI functions (driver list, initiator-use count,
-	  etc.) into new utility.c file; started moving all strings into a
-	  separate strings.h header file; complete revamp/overhaul of main
-	  TUI information labels -- now we have 2 dynamic labels for
-	  targets and sessions that can expand in size; started converting
-	  to new FREE_NULL macro instead of freeChar(); enabled kernel
-	  support for MS Hyper-V drivers; major update to the "Add
-	  Initiator" dialog which will now allow the user to select
-	  initiators from a list that are visible; we now use a function to
-	  gather target driver types instead of a static list (TUI); many,
-	  many more code tweaks and clean-up in TUI
-
-2014-03-06 20:50  msmith626@gmail.com
-
-	* Makefile.in: updated log directory location for fence_agents
-	  package; fixed build issue with net-snmp
-
-2014-03-05 17:15  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/fstab,
-	  install.sh, tui/menu_actions.c: updated install script so it will
-	  run correctly on ESOS now; modified default fstab so we use a
-	  separate /tmp FS and restrict the size of /dev and /dev/shm;
-	  version bump for net-snmp; enabled embedded-perl option for
-	  net-snmp; added freeipmi package (for NUT) along with libgcrypt
-	  and libgpg-error as dependencies; updated nut build to use
-	  freeipmi; fixed display bug in getSCSTLUNChoice() (resolves issue
-	  # 67)
-
-2014-03-03 17:08  msmith626@gmail.com
-
-	* etc/rc.d/rc.nut, etc/snmp/snmpd.conf, scripts/archive_logs.sh,
-	  tui/main.c: handle returning from shell when we don't have a
-	  terminal attached (fixes issue # 61); fixed typo in rc.nut;
-	  updated default configuration for snmpd.conf; over-haul for
-	  archive_logs script (thank you Mahir) so it now checks for free
-	  disk space in esos_logs and removes old files if needed
-
-2014-02-28 21:53  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
-	  etc/group, etc/passwd, etc/rc.conf, etc/rc.d/common,
-	  etc/rc.d/rc.nut, etc/rc.d/rc.snmpd, etc/rc.d/rc.snmptrapd,
-	  etc/shadow, etc/snmp, etc/snmp/snmpd.conf, etc/ups.conf,
-	  etc/upsd.conf, etc/upsd.users, etc/upsmon.conf,
-	  etc/upssched.conf, misc/busybox-1.20.2.config,
-	  misc/linux-3.12.7.config, scripts/health_chk.sh,
-	  scripts/usb_sync.sh, tui/menu_actions-interface.c, tui/system.h:
-	  fixed bug in health check script where we assumed all LDs were
-	  sequential, we now use a real list (resolves issue # 49); we now
-	  include GNU tar which gives us the --transform option so we can
-	  make pretty tarballs (eg, About->Support Bundle); initial
-	  addition of NUT (Network UPS Tools) -- more work/tweaks will
-	  likely be needed for this package (issue # 54); initial addition
-	  of net-snmp package -- more work/tweaks will likely be needed for
-	  this package (issue # 55); enabled IPMI device drivers in kernel
-	  config (should resolve issue # 56); disabled support for tar in
-	  Busybox since we now use real tar; updated usb_sync.sh to handle
-	  dirs/files with spaces (issue # 59); new user/group added for
-	  NUT; added libusb (and compat-) as dependencies for NUT; use 644
-	  perms for kernel modules; added default/example config files for
-	  NUT and net-snmp packages
-
-2014-02-20 14:33  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/busybox-1.20.2.config: added the pciutils package (for the
-	  good lspci) and disabled lspci in busybox
-
-2014-02-16 18:57  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/ssmtp/ssmtp.conf,
-	  misc/busybox-1.20.2.config, tui/menu_actions-interface.c,
-	  tui/menu_actions-system.c, tui/menu_actions-targets.c: removed
-	  'rewritedomain' option in ssmtp.conf (not used by default);
-	  updated mail-settings dialog to get system hostname and set
-	  'hostname' key in ssmtp.conf (issue # 47); set size value used in
-	  gethostname() instances to one less; removed iostat and mpstat
-	  programs from busybox bin; new sysstat package (for advanced
-	  iostat features); catch errors properly while inside for loop in
-	  kernels target; fix build issue with util-linux (issue # 37)
-
-2014-02-06 02:10  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: updated btier to
-	  1.2.1; new target for Linux kernel builds (combined) so we can
-	  now attempt parallel execution with make (not tested yet)
-
-2014-01-23 19:44  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, install.sh,
-	  misc/Python-2.7.3.patch: updated the installer script to include
-	  the StorCLI tool from LSI (supports Syncro controllers); updated
-	  corosync to 2.3.3; Python fix for build platforms that have
-	  ncursesw installed (fixes issue # 43)
-
-2014-01-16 05:05  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/linux-3.12.7.config, scripts/health_chk.sh: version bump for
-	  SCST (trunk); updated Linux kernel to 3.12; updates/improvements
-	  to health-check script which now checks for "failed" physical
-	  drives (MegaRAID/AACRAID)
-
-2013-12-27 05:29  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: pulled new
-	  linux-firmware package from git, which fixes issue # 39; fixed
-	  man page placement for expat and cdk packages; added
-	  enable-xmlconf and enable-rdma to corosync; new package librdmacm
-	  as a dependency (for new corosync build option)
-
-2013-12-16 21:41  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bttab, etc/fstab,
-	  etc/mdev.conf, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.btier,
-	  etc/rc.d/rc.sysinit, misc/initramfs_init, scripts/dev_nodes.sh,
-	  tui/menu_actions-back_storage.c, tui/menu_actions.c: initial
-	  commit of BTIER (including new rc script, config file example,
-	  module, user-land tools, etc.); over-haul of mdev.conf to set
-	  permissions on /dev nodes and add sym links; removed un-needed
-	  lines from initramfs script; clean-up of rc.sysinit mounting
-	  special FS's (and addition to fstab); added support for cciss
-	  devices in the block-dev-choice dialog (in TUI); added new widget
-	  in create-FS dialog to give option of partitioning entire disk or
-	  not (enabled by default); fixed bug in create-FS dialog when
-	  non-existent FS is checked (from fstab); we now use
-	  ped_partition_get_path() to determine a device node partition
-	  path in create-FS dialog; updated dev_nodes script since we now
-	  make sym links for IB and dlm devs in the mdev config file
-	  instead
-
-2013-12-12 15:39  msmith626@gmail.com
-
-	* Makefile.in: fixed issue with python... it requires the use of a
-	  single include file (pyconfig.h); fixed build issue with libxslt;
-	  filter .svn directories in the find/cpio command instead of
-	  removing them after
-
-2013-12-08 03:48  msmith626@gmail.com
-
-	* Makefile.in: more build fixes... changed wildcard function to
-	  static path since this is not re-evaluated (for CXX, fixes
-	  thin-provisioning-tools build issue); resolved build issue with
-	  CDK that was causing ESOS TUI to not work properly when built on
-	  some hosts
-
-2013-12-06 03:41  msmith626@gmail.com
-
-	* Makefile.in: lots of build updates... we now set CC and CXX
-	  globally using export so the configure scripts guess options
-	  correctly; use the '-s' option with kpartx when creating the
-	  image so it waits (thanks Mauricio)
-
-2013-12-02 20:51  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/group,
-	  etc/passwd, etc/rc.d/rc.mhvtl, misc/linux-3.10.13.config,
-	  misc/thin-provisioning-tools-0.2.8.patch: added 'vtl' group for
-	  mhVTL and updated UID of 'vtl' user to match; enabled
-	  DM-thin-provisioning option kernel; updated LVM2 build to enable
-	  thin provisioning; added thin-provisioning-tools package and
-	  dependencies (boost + expat) -- thanks for the suggestion Morgan;
-	  the rc.mhvtl script now has a complete stop() function to
-	  un-configure VTLs (thanks for the contrib Philippe); we now
-	  filter static libs (*.a) and /usr/include when creating the image
-	  so they are not included; updated permissions on the mhVTL
-	  binaries
-
-2013-11-26 21:35  msmith626@gmail.com
-
-	* misc/linux-3.10.13.config: enabled the CONFIG_CHR_DEV_ST option
-	  (SCSI tape drives)
-
-2013-11-01 18:17  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/modprobe.conf,
-	  etc/rc.d/rc.network, etc/rc.d/rc.sysinit, tui/dialogs.h,
-	  tui/menu_actions-system.c: up'd SCST to latest trunk (resolves
-	  issue with unloading SCST when using bcache); move special FS
-	  mounts into rc.sysinit (/dev/pts, /dev/shm) so everything works
-	  correctly incase fsck bombs in rc.fsmount (resolves issue # 17);
-	  major overhaul on Linux bonding driver support: we now set
-	  modprobe options so no interfaces are created initially and all
-	  configuration is done via sysfs interface; updated TUI and rc
-	  network script to support new 'bonding options'
-
-2013-10-15 20:12  msmith626@gmail.com
-
-	* etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.dmcache: set pacemaker
-	  and corosync to disabled in rc.conf (new default); added new
-	  dm-cache rc script and now dm-cache devices can be persistent via
-	  dm-cache.start and dm-cache.stop files (see wiki documentation)
-
-2013-10-11 21:01  msmith626@gmail.com
-
-	* Makefile.in, TODO, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.2,
-	  etc/rc.d/rc.eio, misc/EnhanceIO-master_20130930.patch,
-	  scripts/dev_nodes.sh: created a patch for eio_cli so it doesn't
-	  need udev and lots of cleanup, still needs more love... someone
-	  owes me a beer for that one; new rc script for EnhanceIO (uses
-	  INI file created by new eio_cli); removed EIO stuff from rc.2
-	  (now in its own rc script); for mdev setup, use register_quiet
-	  with bcache
-
-2013-10-04 02:29  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/drbd-8.4.3.patch, scripts/dev_nodes.sh,
-	  tui/menu_actions-system.c: updated drbd user-land to 8.4.3 to
-	  match recent kernel version bump; updated nrpe to 2.15; TUI:
-	  don't scroll to the top of the network-restart dialog; updates to
-	  dev_nodes.sh to support /dev/bcacheX devices (registers
-	  cache/backing devices on boot)... more to come for dm-cache and
-	  EnhanceIO
-
-2013-10-02 01:09  msmith626@gmail.com
-
-	* Makefile.in: fixed a build issue with the new util-linux package
-	  (ncurses)
-
-2013-10-01 21:59  msmith626@gmail.com
-
-	* misc/linux-3.10.13.config: added the new config file for kernel
-	  3.10.13 (ya, we need this)
-
-2013-10-01 20:50  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
-	  tui/megaraid.c: updated the Linux kernel to 3.10.13 to support
-	  SSD caching options (bcache, dm-cache); enabled NETXEN_NIC in the
-	  kernel (resolves issue # 32); added bcache-tools and util-linux
-	  as a dependency (only using libuuid and libblkid); updated other
-	  packages to make use of libuuid/libblkid from util-linux instead
-	  of e2fsprogs; fixed a TUI bug that affected the display of
-	  available drives when adding a MegaRAID VD; added EnhanceIO SSD
-	  caching software (module build and Python tool install); updated
-	  rc runlevel 2 script to load EnhanceIO modules
-
-2013-09-06 15:18  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.0,
-	  etc/rc.d/rc.sysinit, scripts/conf_sync.sh, scripts/usb_sync.sh,
-	  tui/system.h: updated SCST to the latest trunk revision (4988) --
-	  this should resolve issue # 26 (soft lock-ups with SRP); change
-	  conf_sync.sh to now dump SCST config to file AND sync with the
-	  USB flash drive (conf_sync.sh contents moved to usb_sync.sh to
-	  maintain compatibility with USB-sync-only operation in TUI,
-	  etc.); disabled documentation install for the glue package to
-	  hopefully avoid a common build error; updated rc scripts and TUI
-	  to use usb_sync.sh tool
-
-2013-08-12 20:31  msmith626@gmail.com
-
-	* scripts/db_compact.py, tui/menu_actions-back_storage.c: fixed
-	  issue when attempting to create file systems on a SCSI disk block
-	  device (thanks for the heads-up Gooba)
-
-2013-08-08 21:18  martino87rm
-
-	* scripts/db_compact.py: Fixed support for MySQL
-
-2013-08-08 21:06  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, configure.ac,
-	  etc/crontab, etc/group, etc/nrpe.cfg, etc/passwd, etc/rc.conf,
-	  etc/rc.d/common, etc/rc.d/rc.nrpe, etc/shadow,
-	  misc/linux-3.8.5.config, scripts/db_compact.py: added DB
-	  compactor cron job (and script) for perfagent stats (thanks
-	  Marcin); enabled support for CCISS devices in kernel; added
-	  option to check for openssl in configured script (needed for the
-	  nrpe pacakage); added Nagios Remote Plugin Executor (nrpe)
-	  including new rc script and user/group
-
-2013-07-29 21:10  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/perf-agent.conf,
-	  etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.perfagent, perf-agent,
-	  perf-agent/perfagentmain.py, perf-agent/poller.py: added new
-	  perf-agent performance statistics collection agent/daemon; added
-	  python-daemon and lockfile modules (deps for perf-agent)
-
-2013-07-26 20:25  msmith626@gmail.com
-
-	* Makefile.in, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-devices.c, tui/menu_actions.c: fixed issue with
-	  missing library for opensm (libosmvendor); added new feature to
-	  the add-device dialog for SCST that allows a user to select a
-	  file on a file system OR a block device to use with vdisk_fileio
-
-2013-07-25 18:52  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added the
-	  infiniband-diags package and dependency libibmad; updates to the
-	  opensm package to support infiniband-diags
-
-2013-07-23 16:27  msmith626@gmail.com
-
-	* tui/menu_actions-back_storage.c: updated the add-vdisk function
-	  to use fallocate() (thanks for the idea Bruce) for file systems
-	  that support it (xfs and ext4), for the others we still use
-	  write()
-
-2013-07-16 15:57  msmith626@gmail.com
-
-	* etc/ld.so.conf, etc/rc.d/rc.network, tui/dialogs.h,
-	  tui/menu_actions-system.c, tui/system.h: fixed library path issue
-	  with Python MySQL module; updated network rc script and TUI to
-	  complete bridging and bonding support
-
-2013-07-05 13:05  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added psycopg2,
-	  MySQLdb, and SQLAlchemy packages (and required DB client tools /
-	  libs)
-
-2013-06-20 20:08  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, tui/Makefile: more
-	  updates/fixes for Fedora build; added ethtool
-
-2013-06-14 19:23  msmith626@gmail.com
-
-	* Makefile.in, etc/profile, etc/sysctl.conf,
-	  misc/Python-2.7.3.patch: a number of Makefile changes to resolve
-	  Fedora build issues; updated global profile to allow core dumps
-	  and be a bit more informative if the TUI exits non-zero;
-	  additions to sysctl.conf for core dumps
-
-2013-06-09 22:07  msmith626@gmail.com
-
-	* Makefile.in: more updates to Makefile build setup, too many to
-	  list -- should (mostly) fix building on non-RHEL-like distros
-
-2013-06-04 20:21  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
-	  misc/glibc-2.12.2.patch: added the irqbalance package; revamped
-	  fetch/checksum to now check checksums on downloaded files only
-	  once -- if a checksum fails, we simply delete the file; major
-	  overhaul on build system, we now use a spec file to disable all
-	  default system library locations and global gcc/g++ variables
-	  that disable built-in include search paths (we only use our own)
-
-2013-05-30 20:58  msmith626@gmail.com
-
-	* misc/linux-3.8.5.config: enabled support for Micron PCIe SSDs
-	  (CONFIG_BLK_DEV_PCIESSD_MTIP32XX)
-
-2013-05-24 21:26  msmith626@gmail.com
-
-	* etc/modprobe.conf, etc/rc.d/rc.fsmount, etc/rc.d/rc.network,
-	  tui/dialogs.h, tui/menu_actions-system.c: updated modprobe.conf
-	  to use two bonding interfaces by default; updated TUI system
-	  network dialog for inital bonding support; updated rc.network for
-	  bonding support -- needs further testing
-
-2013-05-20 19:39  msmith626@gmail.com
-
-	* etc/rc.d/rc.2, misc/linux-3.8.5.config,
-	  tui/menu_actions-system.c: the Linux Ethernet Bonding driver is
-	  now a module and loaded in run-level 2 so the behavior/options
-	  can be changed using modprobe.conf (thanks Tim); fixed TUI issue
-	  with bonding driver
-
-2013-05-14 19:47  msmith626@gmail.com
-
-	* etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.2, etc/rc.d/rc.fsmount,
-	  etc/rc.d/rc.mdraid, etc/rc.d/rc.sysinit, misc/linux-3.8.5.config:
-	  moved file system mounting and md RAID assemble into individual
-	  rc scripts -- ordering of software RAID, fsck, and mounting works
-	  correctly on boot; enabled Linux bonding driver in kernel and
-	  Fusion MPT
-
-2013-05-07 17:30  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/mdadm.conf,
-	  etc/rc.d/rc.2, etc/rc.d/rc.sysinit: updated libqb to 0.14.4
-	  (fixes
-	  http://permalink.gmane.org/gmane.linux.highavailability.pacemaker/15504);
-	  moved "mount other file systems" from rc.sysinit to run-level 2,
-	  right before late start services; added mdadm assemble line for
-	  md software RAID just before mounting other file systems
-
-2013-04-22 20:13  msmith626@gmail.com
-
-	* misc/linux-3.8.5.config, tui/menu_actions-devices.c: enabled
-	  bridging support in Linux kernel; fixed bug in the 'LUN Layout'
-	  dialog -- readlink() does not append a null byte
-
-2013-04-13 18:12  msmith626@gmail.com
-
-	* ChangeLog, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.0,
-	  etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.opensm,
-	  etc/rc.d/rc.scst, misc/ocf/scst, scripts/health_chk.sh,
-	  tui/menu_actions.c: we now have "early" and "late" user settable
-	  services, only IB-related services are classified as early so far
-	  since they need to be loaded before we run rc.network -- updated
-	  all rc scripts for this new change; OpenSM is sometimes noisey
-	  when starting so we hide it (stdout + stderr); in all areas we
-	  save the SCST configuration using scstadmin, we now use a
-	  '-force' when calling write_config since if the current running
-	  config is not koesher, scstadmin will exit with an error and not
-	  save (bad) -> updated RA, rc script, and TUI sync. config. call;
-	  updated the health_chk script to be a little more leanient with
-	  MegaCLI output; we now load qla2xxx in run-level 2 since even if
-	  SCST is not loaded, the TUI still displays FC HBA information
-
-2013-04-09 21:03  msmith626@gmail.com
-
-	* ChangeLog, etc/mdev.conf, etc/opensm, etc/opensm/partitions.conf,
-	  etc/rc.d/rc.network, etc/rc.d/rc.opensm, scripts/dev_nodes.sh:
-	  updated mdev.conf and dev_nodes script to handle InfiniBand
-	  device nodes (/etc/infiniband/); updated rc.network script to
-	  handle ibX devices; make opensm quiet when it starts; added
-	  /etc/opensm/partitions.conf default file
-
-2013-04-06 05:27  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.d/rc.network, etc/rc.d/rc.openibd,
-	  misc/linux-3.8.5.config, misc/ocf/scst, scripts/crm_mon_email.sh,
-	  tui/menu_actions-devices.c, tui/menu_actions-system.c,
-	  tui/system.h: added new crm_mon_email.sh script (helper /
-	  external agent for crm_mon, used with ClusterMon RA); updated
-	  network rc script to use the /bin/ip binary instead of ifconfig
-	  when setting MTU for dhcp-enabled interfaces; removed IBoIP MTU
-	  settings from the openibd script (now done through TUI); added
-	  misc. network interface (Ethernet) drivers to kernel config;
-	  updated SCST RA to use 'nonoptimized' instead of 'offline' for
-	  slave status; in TUI, for /dev/dm-* block devices, we look-up the
-	  (assumed) full LVM VG+LV device node path (more unique) and use
-	  this; first attempt (not tested) at supporting IPoIB interfaces
-	  in the TUI; updated TUI to use two different default MTUs based
-	  on interface name (Ethernet / IB)
-
-2013-03-31 22:26  msmith626@gmail.com
-
-	* ChangeLog, scripts/conf_sync.sh, scripts/health_chk.sh,
-	  tui/menu_actions-interface.c: conf_sync -> needed to check if the
-	  local/usb versions of localtime exist (fixed); updated
-	  health_check script to include hostname in file name for conf
-	  pkg. sent via email; updated TUI support package function to
-	  exclude some private content items
-
-2013-03-31 14:30  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in,
-	  etc/bashrc, etc/drbd.conf, etc/drbd.d,
-	  etc/drbd.d/global_common.conf, etc/rc.d/rc.sysinit,
-	  misc/drbd-8.4.2.patch, misc/linux-3.8.5.config: updated Linux
-	  kernel to 3.8.5 and DRBD user-land tools to 8.4.2 (matches
-	  kernels); updated PAGER variable show less displays color escape
-	  sequences correctly; the /etc/localtime sync issue should now be
-	  resolved; updated DRBD default config files
-
-2013-03-29 04:45  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in,
-	  etc/bashrc, etc/profile, etc/rc.d/rc.mhvtl, etc/rc.d/rc.openibd,
-	  etc/rc.d/rc.pacemaker, etc/rc.d/rc.scst, etc/sysctl.conf,
-	  misc/busybox-1.20.2.config, misc/ocf/scst, scripts/startup.sh,
-	  tui/dialogs.h, tui/label_data.c, tui/main.c,
-	  tui/menu_actions-system.c, tui/menu_actions.c, tui/prototypes.h:
-	  added the real GNU less and removed less from busybox config; we
-	  now set the PAGER var in global bashrc; in /etc/profile we
-	  provide a window bar title; updated rc scripts to use rmmod
-	  instead of `modprobe -r` (returns 1 when removing modules on
-	  success); rc.openibd -> ipath needs to be loaded first; pacemaker
-	  produces an error (warning?) msg even though it starts/runs fine,
-	  so we hide it; fixed typo in sysctl.conf; lots of updates/fixes
-	  to new RA; if SCST is not loaded, don't run the startup scstadmin
-	  commands; a few TUI dialog sizing tweaks; updated TUI to handle
-	  SCST not being loaded
-
-2013-03-27 02:20  msmith626@gmail.com
-
-	* ChangeLog, Makefile.in, etc/infiniband,
-	  etc/infiniband/openib.conf, etc/rc.conf, etc/rc.d/common,
-	  etc/rc.d/rc.network, etc/rc.d/rc.openibd, etc/rc.d/rc.opensm,
-	  etc/rc.d/rc.scst, etc/sysctl.conf, misc/linux-3.7.8.config,
-	  misc/ocf/SCST, misc/ocf/scst: rework of InfiniBand setup... new
-	  rc.openibd rc script for loading IB modules and rc.opensm for IB
-	  subnet manager; enabled IPoIB and switched all IB kernel options
-	  to modules (for use with new rc.openibd setup); added
-	  "performance tweaks" to sysctl.conf that are hopefully universal
-	  (from OFED package); more SCST RA tweaks; removed IB modules from
-	  RA and SCST rc script
-
-2013-03-25 00:11  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.d/common, etc/rc.d/rc.clvmd,
-	  etc/rc.d/rc.corosync, etc/rc.d/rc.dlm, etc/rc.d/rc.pacemaker,
-	  etc/rc.d/rc.scst, etc/rc.d/rc.sshd, misc/ocf, misc/ocf/SCST,
-	  scripts/conf_sync.sh: added new resource agent (RA) for SCST;
-	  updated rc scripts to use new wait_for_stop common function to
-	  wait after a -TERM is issued on stop(); updated conf_sync to omit
-	  /etc/rc.d and correctly sync the /etc/localtime sym link; added
-	  support for gawk (-> awk); adjust order in image target for
-	  setting time stamp
-
-2013-03-21 03:29  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  etc/corosync/corosync.conf, etc/rc.d/rc.2, etc/rc.d/rc.sysinit,
-	  etc/syslog.conf, misc/busybox-1.20.2.config,
-	  misc/linux-3.7.8.patch: resolved issue with DLM locking (via
-	  clvmd) -- issue in kernel, see:
-	  http://www.redhat.com/archives/cluster-devel/2013-February/msg00060.html;
-	  added ipmitools (to make fence_ipmilan work); added sysklogd to
-	  replace busybox implementation (syslogd + klogd) so we can
-	  actually log kern.* to kern.log; removed fsck and sysklogd
-	  components from busybox config; updated syslog.conf file so we
-	  don't sync when writing all log files; updated corosync.conf
-	  default file to not log to a flat file, only to syslog via local2
-	  (and removed log dir creation line from Makefile)
-
-2013-03-18 17:56  msmith626@gmail.com
-
-	* ChangeLog, Makefile.in: switched LVM locking type
-	  (cluster=internal instead of shared); recursively set old time
-	  stamp on /etc and /var/lib files
-
-2013-03-18 02:56  msmith626@gmail.com
-
-	* etc/corosync/corosync.conf, etc/mdev.conf, etc/rc.d/rc.clvmd,
-	  etc/rc.d/rc.dlm, scripts/conf_sync.sh: set default quorum votes
-	  to 1 in corosync.conf; updated dlm and clvd rc script settings;
-	  hide output for the 'cd -' command in conf_sync
-
-2013-03-17 16:31  msmith626@gmail.com
-
-	* Makefile.in, etc/corosync/corosync.conf, etc/mdev.conf,
-	  etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.clvmd, etc/rc.d/rc.dlm,
-	  scripts/dev_nodes.sh, scripts/sd_dev_node.sh: made dev_nodes.sh
-	  script generic, udev rule like script (called mdev); added rc
-	  script for DLM; corosync.conf needs the cluster_name setting;
-	  removed timeout setting from rc.clvmd script; updated mdev.conf
-	  to call rule script for dlm* device nodes
-
-2013-03-17 02:31  msmith626@gmail.com
-
-	* Makefile.in, misc/linux-3.7.8.config: fixed build issue (added
-	  zlib dependency for nss package); enabled DLM in Linux kernel
-	  config
-
-2013-03-16 17:16  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.conf,
-	  etc/rc.d/common, etc/rc.d/rc.clvmd: added support for clvmd (LVM2
-	  and rc script) including dlm dependency
-
-2013-03-11 14:44  msmith626@gmail.com
-
-	* ChangeLog, Makefile.in, etc/hba.conf: changed compression type
-	  for pkg dist file to xz; added default /etc/hba.conf for
-	  fcoe-utils (fixes fcoe tool issue)
-
-2013-03-09 02:58  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in,
-	  misc/busybox-1.20.2.config: updated busybox to 1.20.2 (needed for
-	  grep '-x' option for cluster stack); install contrib/debug tools
-	  for fcoe-utils package (open-fcoe)
-
-2013-03-06 21:40  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in: fixed
-	  build issue: the package name 'linux-firmware' is not compatible,
-	  renamed to 'linux_firmware'
-
-2013-03-06 21:01  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, ChangeLog, Makefile.in, TODO,
-	  etc/crontab, etc/fcoe, etc/fcoe/cfg-ethx, etc/fcoe/config,
-	  etc/rc.d/rc.scst, misc/linux-3.7.8.config, scripts/conf_sync.sh,
-	  tui/label_data.c, tui/main.c, tui/menu_actions.c: added new
-	  linux-firmware package -- it sounds like new firmware is not
-	  being added directly to the Linux kernel git repo, they now are
-	  trying to keep the firmware blobs separate from code; disabled
-	  inlining driver firmware in the kernel since we use the
-	  linux-firmware package and we only include the blobs needed for
-	  drivers we enable (including the license files); fixed
-	  archive_logs cron issue; updated rc.scst script for new userland
-	  daemons (FCoE) and stop() function; added default config files
-	  for fcoemon; re-work of conf_sync.sh -- we now sync entire
-	  directories (eg, /etc /var/lib) so we get everything including
-	  dynamically generated config. files; updated TUI main screen
-	  label to support FCoE adapters, and support the fcst driver for
-	  target functions
-
-2013-03-05 01:26  msmith626@gmail.com
-
-	* ChangeLog, Makefile.in: fixed build issue in open-lldp with
-	  AC_FUNC_MALLOC/REALLOC
-
-2013-03-04 22:00  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.scst,
-	  misc/linux-3.7.8.config, tui/menu_actions-back_storage.c: added
-	  Fibre Channel over Ethernet (FCoE) support (SCST -> fcst) and
-	  required dependencies (open-fcoe, libconfig, libnl, open-lldp,
-	  libpciaccess); updated rc.scst to load new fcst module; updated
-	  Linux kernel configuration file for FCoE dependency options (data
-	  center briding, etc.); fixed issue when creating file systems on
-	  devices that already have a partition table (label) and/or
-	  existing file system(s) -- we now use the '-f' option for
-	  mkfs.xfs and '-F' for the other mkfs.ext* tools
-
-2013-03-03 23:36  msmith626@gmail.com
-
-	* Makefile.in, etc/drbd.conf, etc/rc.conf, etc/rc.d/common,
-	  etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.lvm2,
-	  etc/rc.d/rc.mhvtl, etc/rc.d/rc.scst, misc/linux-3.7.8.config:
-	  added USB 3.0 support; set drbd and mhvtl to disabled on startup
-	  as default; fixed a syntax issue in default drbd.conf file;
-	  increased esos_root partition size to 1 GB; fixed issues with new
-	  rc system enhancements
-
-2013-03-03 03:28  msmith626@gmail.com
-
-	* etc/mdev.conf, etc/rc.conf, etc/rc.d/common, etc/rc.d/rc.0,
-	  etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.drbd,
-	  etc/rc.d/rc.kdump, etc/rc.d/rc.lvm2, etc/rc.d/rc.mhvtl,
-	  etc/rc.d/rc.pacemaker, etc/rc.d/rc.scst, etc/rc.d/rc.sshd,
-	  etc/rc.d/rc.sysinit, scripts/conf_sync.sh,
-	  scripts/sd_dev_node.sh, tui/menu_actions-devices.c,
-	  tui/menu_actions-hosts.c, tui/menu_actions-targets.c,
-	  tui/system.h: updated mdev unique SCSI disk ID process (new shell
-	  script used by mdev and TUI); fixed subtle TUI bug that affected
-	  several dialogs (strncat); updated conf_sync for new rc.conf /etc
-	  file; re-work of rc system... now uses /etc/rc.conf to
-	  enable/disable services
-
-2013-02-28 20:07  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/mdev.conf,
-	  etc/protocols, scripts/dev_nodes.sh, scripts/scsi_id.sh,
-	  scripts/sd_dev_node.sh, tui/menu_actions-devices.c, tui/system.h:
-	  updated sg3_utils to version 1.35 to get new '--exported' feature
-	  in sg_inq tool; renamed dev_nodes.sh to something more
-	  meaningful; added /etc/protocols file; added new scsi_id.sh
-	  script to produce a useful, consistent unique ID for SCSI devices
-	  (disks); updated TUI to use new scsi_id.sh script
-
-2013-02-22 14:49  msmith626@gmail.com
-
-	* TODO, etc/bashrc, install.sh, misc/busybox-1.19.0.config,
-	  scripts/conf_sync.sh, scripts/dev_nodes.sh,
-	  tui/menu_actions-devices.c, tui/system.h: a couple global bashrc
-	  tweaks; fixed an issue in the install script for the MegaCLI
-	  tool; updated busybox config to make use of mount helpers to
-	  support fuse/lessfs; updated conf_sync.sh to sync dynamically
-	  generated library contents files for mhVTL; fixed an issue in the
-	  dev_nodes.sh mdev helper script where devices had multiple
-	  identifiers (eg, EUI and NAA) and in the TUI code for adding
-	  devices (only take the first); changed syslog facility
-
-2013-02-21 03:51  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
-	  install.sh, misc/drbd-8.3.11.patch, misc/drbd-8.3.13.patch,
-	  scripts/health_chk.sh, tui/main.c, tui/menu_actions-system.c,
-	  tui/system.h: added real bash; upgraded DRBD to match new kernel
-	  version; fixed man page install paths for fio and ncurses;
-	  updated /etc/bashrc for real bash and added a few useful aliases;
-	  updated MegaRAID and Adaptec CLI tools in install script; fixed
-	  bug in health_chk script for Adaptec devices; updated
-	  exit-to-shell function in main for real bash
-
-2013-02-18 19:45  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/modprobe.conf,
-	  misc/initramfs_init, misc/linux-3.7.8.config, tui/dialogs.h:
-	  fixed spelling issue in initramfs script; added fio package;
-	  changed a few kernel options to built-in (instead of modules);
-	  fixed TUI add-initiator input issue (wildcards)
-
-2013-02-18 15:00  msmith626@gmail.com
-
-	* Makefile.in, misc/kernel_headers.patch: more build fixes for move
-	  to new kernel
-
-2013-02-18 03:15  msmith626@gmail.com
-
-	* misc/busybox-1.19.0.config: fixed busybox build issue (removed
-	  support for mkfs_ext2 since we install e2fsprogs)
-
-2013-02-17 23:49  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/linux-3.7.8.config: updated SCST and Linux kernel (3.7.8)
-
-2013-02-16 18:27  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/nsswitch.conf,
-	  etc/rc.d/rc.2, etc/rc.d/rc.network, etc/rc.d/rc.scst,
-	  etc/rc.d/rc.sysinit, misc/drbd-8.3.11.patch,
-	  misc/pycurl-7.19.0.patch, scripts/conf_sync.sh, tui/label_data.c,
-	  tui/main.c, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
-	  tui/menu_actions-interface.c, tui/menu_actions-system.c,
-	  tui/menu_actions-targets.c, tui/menu_actions.c, tui/prototypes.h,
-	  tui/system.h: added fence-agents package along with required
-	  dependencies; updated corosync to 2.3.0; moved klogd to
-	  rc.sysinit so it starts early so we don't see any kernel messages
-	  on the screen; added support for /etc/xtra_hosts (for additional
-	  static hosts entries and added nsswitch.conf to support this;
-	  updated rc.scst to load tape/changer modules; TUI screen/dialog
-	  title clean-up; added support for dev_changer, dev_tape, and
-	  dev_tape_perf handlers in TUI
-
-2013-02-11 03:02  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.d/rc.2, etc/rc.d/rc.pacemaker,
-	  etc/rc.d/rc.sysinit, install.sh, scripts/dev_nodes.sh: set
-	  --jobs=4 for Linux kernel and glibc packages to hopefully speed
-	  up build time; start system logger after network is up (after
-	  hostname has been set); move temp. directory creation to after
-	  image has been written in the install script; re-read the
-	  partition table after the disk has been written... should fix
-	  issue that some distros experience where FS by label doesn't
-	  work; fixed issue with mdev device node helper script where
-	  sg_vpd tool was not returning non-zero and giving bad results
-
-2013-02-10 00:03  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/drbd.conf,
-	  etc/group, etc/lessfs.cfg, etc/mhvtl, etc/mhvtl/mhvtl.conf,
-	  etc/passwd, etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2,
-	  etc/rc.d/rc.drbd, etc/rc.d/rc.mhvtl, etc/shadow, install.sh,
-	  misc/drbd-8.3.11.patch, scripts/conf_sync.sh, tui/main.c,
-	  tui/system.h: added resource agents package for pacemaker; added
-	  mhVTL Virtual Tape Library software (and dependencies: mhash,
-	  lzo); add lessfs/fuse support for data de-duplication (and
-	  required dependencies: tokyocabinet, fuse, berekekly DB, and
-	  google's snappy); user 'vtl' for mhVTL software; drbd.conf
-	  tweaks; removed rc.drbd init script... DRBD resources should be
-	  handled by cluster stack, not our init; added rc support for
-	  mhVTL; make install script exit if there is a problem with the
-	  checksums; updated drbd package to install additional shell
-	  script helpers (fencing, etc.); updated conf_sync.sh to sync new
-	  software's config. files; re-ordered the main menu so it flows
-	  correctly with the documentation (create host group THEN create
-	  devices and map them to the group)
-
-2013-01-28 16:52  msmith626@gmail.com
-
-	* Makefile.in: enabled pacemaker support for drbd
-
-2013-01-27 17:34  msmith626@gmail.com
-
-	* Makefile.in, tui/dialogs.h, tui/main.c,
-	  tui/menu_actions-system.c, tui/prototypes.h, tui/system.h: fixed
-	  another pacemaker issue... --without-python doesn't work? renamed
-	  Linux-HA dialog to 'CRM Status' -- updated dialog to use the 'crm
-	  status' command for cluster/HA information
-
-2013-01-27 02:24  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added readline,
-	  dependency for crmsh (interactive mode)
-
-2013-01-25 21:59  msmith626@gmail.com
-
-	* Makefile.in: make /var have an old time stamp (for conf_sync)
-
-2013-01-25 21:58  msmith626@gmail.com
-
-	* Makefile.in, install.sh, misc/initramfs_init,
-	  scripts/conf_sync.sh: more fixes/tweaks to conf_sync script (from
-	  recent updates); added a progress/working indicator to the
-	  initramfs script; install script should now fail if dd exits
-	  non-zero; added missing ocf resources for pacemaker
-
-2013-01-25 03:42  msmith626@gmail.com
-
-	* Makefile.in, etc/corosync/corosync.conf, etc/rc.d/rc.corosync,
-	  scripts/conf_sync.sh: fixed path issue for crmsh helper progs;
-	  updated conf_sync script to sync /var directories (scst,
-	  pacemaker, etc.); set corosync defaults and updated rc script
-
-2013-01-23 16:46  msmith626@gmail.com
-
-	* Makefile.in: More new build/dependency errors resolved....
-
-2013-01-23 04:26  msmith626@gmail.com
-
-	* Makefile.in: fixed a few dependency/build issues from r340
-
-2013-01-22 18:18  msmith626@gmail.com
-
-	* ., Makefile.in, etc/group, etc/passwd, etc/rc.d/rc.0,
-	  etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.corosync,
-	  etc/rc.d/rc.pacemaker, etc/shadow: new user/group for HA stuff;
-	  added/updated rc scripts for pacemaker and corosync; few tweaks
-	  to hopefully make all of the HA/cluster stuff work
-
-2013-01-16 22:04  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/corosync,
-	  etc/corosync/corosync.conf, etc/rc.d/rc.0, etc/rc.d/rc.1,
-	  etc/rc.d/rc.2, etc/rc.d/rc.3, etc/rc.d/rc.4, etc/rc.d/rc.5,
-	  etc/rc.d/rc.6, etc/rc.d/rc.corosync, etc/rc.d/rc.local,
-	  etc/rc.d/rc.pacemaker, etc/rc.d/rc.scst, etc/rc.d/rc.sshd,
-	  etc/rc.d/rc.sysinit, scripts/conf_sync.sh: added crmsh package,
-	  which requires glue, which requires a few other dependencies;
-	  started pacemaker/corosync rc scripts (needs more)
-
-2013-01-09 05:39  msmith626@gmail.com
-
-	* Makefile.in: fixed CentOS nss build issue
-
-2013-01-08 17:51  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/lvm,
-	  etc/lvm.conf, etc/lvm/lvm.conf, etc/rc.d/rc.sshd, etc/revaliases,
-	  etc/ssh, etc/ssh/ssh_config, etc/ssh/sshd_config, etc/ssh_config,
-	  etc/sshd_config, etc/ssmtp, etc/ssmtp.conf, etc/ssmtp/revaliases,
-	  etc/ssmtp/ssmtp.conf, scripts/conf_sync.sh,
-	  scripts/health_chk.sh, tui/system.h: added pacemaker and corosync
-	  along with the three dozen required depenencies to support them
-	  (libqb, nss, libxml2, libxslt, libtool, bzip2, glib); rearranged
-	  lots of default config. files into sub-directories of /etc;
-	  updated conf_sync.sh to handle /etc files in sub-directories;
-	  updated TUI defines for new config. files locations; the
-	  health_chk.sh script will now detect a failed USB flash drive and
-	  send a notification email including a config. file tar ball
-
-2012-12-30 04:15  msmith626@gmail.com
-
-	* Makefile.in, tui/dialogs.h, tui/main.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-interface.c,
-	  tui/menu_actions-targets.c, tui/prototypes.h, tui/system.h: get
-	  rid of .svn directories in image; copy QLogic FW license into
-	  image; fixed issue in CDK when compiling on Debian Wheezy
-	  (ncurses-config tool); added new LUN Layout dialog that will
-	  display overview of targets, groups, initators, and mapped LUNs;
-	  implemented new Support Bundle dialog for creating a support tar
-	  archive and new About dialog
-
-2012-12-22 03:06  msmith626@gmail.com
-
-	* tui/dialogs.h, tui/main.c, tui/megaraid.c,
-	  tui/menu_actions-back_storage.c, tui/menu_actions-devices.c,
-	  tui/menu_actions-interface.c, tui/menu_actions.c,
-	  tui/prototypes.h, tui/system.h: added menu options for Help,
-	  Support Bundle, and About; completed Help dialog; fixed issue # 2
-	  (TUI seg. fault when using Volume Properties dialog; new source
-	  file for Interface menu
-
-2012-12-19 03:11  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/bashrc,
-	  scripts/archive_logs.sh, scripts/conf_sync.sh,
-	  scripts/dev_nodes.sh, tui/dialogs.h, tui/prototypes.h,
-	  tui/system.h: added IB subnet manager opensm; updated conf_sync
-	  to include new config. files; fixed sysconfdir for e2fsprogs;
-	  fixed scripts to use more sensible directory perms; PATH update
-	  for profile/bashrc
-
-2012-12-17 20:47  msmith626@gmail.com
-
-	* Makefile.in, configure.ac, etc/bashrc, etc/passwd, etc/profile,
-	  etc/syslog.conf, misc/busybox-1.19.0.config, tui/dialogs.h,
-	  tui/main.c, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-hosts.c,
-	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
-	  tui/system.h: new GRUB installation that uses newly built
-	  binaries the correct way (should resolve Debian install/image
-	  issue); Makefile will now keep the permissions on
-	  directories/files consistent regardless of a user's umask on
-	  build host; LVM2 uses CLDFLAGS and not LDFLAGS?? (fixed, resolves
-	  Fedora build issue); updated configure.ac for xargs command;
-	  re-work of how TUI is launched; user now gets a normal shell
-	  (bash) and TUI is launched via /etc/profile (login shell)...
-	  updated root shell entry in passwd file; switched bash shell to
-	  use hush (instead of ash); updated syslog.conf file to be a bit
-	  simpler and less redundant; we now set umask in TUI just in case;
-	  re-work of how field entry widget values are checked -- much more
-	  consistent and clean now
-
-2012-12-10 15:54  msmith626@gmail.com
-
-	* etc/crontab, etc/rc.d/rc.sysinit, tui/menu_actions.c: updated
-	  ntpd cron job to redirect stderr too; re-work of rc.sysinit --
-	  conf. sync, fsck, and mounting file systems; fixed spacing issue
-	  in FS chooser dialog
-
-2012-12-09 17:47  msmith626@gmail.com
-
-	* Makefile.in, etc/rc.d/rc.network, misc/ncurses-5.7.patch, tui,
-	  tui/Makefile, tui/dialogs.h, tui/label_data.c, tui/main.c,
-	  tui/megaraid.c, tui/megaraid.h, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-system.c,
-	  tui/menu_actions-targets.c, tui/menu_actions.c, tui/system.h:
-	  lots of TUI code clean-up including megaraid functions; fixed
-	  xterm backspace issue -- terminfo for xterm and variants by
-	  default from ncurses is ^H but must distributions have BS set to
-	  \177, so we'll do the same thing to make it work like we think it
-	  should (terminfo.src patch); various TUI color/size tweaks; set
-	  add-device dialogs to use new chooser dialogs; made it so the
-	  ESOS boot drive is never an option for any disk dialog choosers;
-	  SCST iSCSI target/driver isn't enabled when adding/enabling new
-	  targets? (fixed); removed use of volume name from add dialog (not
-	  an option with MegaCLI; added MTU as a network option
-
-2012-12-05 19:25  msmith626@gmail.com
-
-	* Makefile.in, etc/crontab, tui/dialogs.h, tui/label_data.c,
-	  tui/label_data.h, tui/main.c, tui/main.h, tui/megaraid.c,
-	  tui/megaraid.h, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-back_storage.h, tui/menu_actions-devices.c,
-	  tui/menu_actions-devices.h, tui/menu_actions-hosts.c,
-	  tui/menu_actions-hosts.h, tui/menu_actions-system.c,
-	  tui/menu_actions-system.h, tui/menu_actions-targets.c,
-	  tui/menu_actions-targets.h, tui/menu_actions.c,
-	  tui/menu_actions.h, tui/prototypes.h, tui/system.h: fixed sym.
-	  link location for /etc/localtime in Makefile; redirect stdout to
-	  null for NTP cron; merged all header files into new shared,
-	  common header files and re-organized defines; fixed bug in
-	  restart net. scroll windows, and similar instances (other
-	  dialogs)
-
-2012-12-03 19:13  msmith626@gmail.com
-
-	* etc/crontab, scripts/health_chk.sh, tui,
-	  tui/menu_actions-back_storage.c, tui/menu_actions-back_storage.h,
-	  tui/menu_actions.c: fixed fsck command in crontab to not check
-	  mounted file systems; updated health check script to use
-	  /proc/meminfo and take into account page cache when calculating
-	  free memory; implemented 'add vdisk' and 'delete vdisk' in
-	  back-end storage menu
-
-2012-11-30 18:31  msmith626@gmail.com
-
-	* Makefile.in: missed a dependency for the new parted package
-	  (libdm)
-
-2012-11-30 16:38  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.sysinit,
-	  scripts/conf_sync.sh, tui, tui/Makefile, tui/main.h,
-	  tui/menu_actions-back_storage.c, tui/menu_actions-back_storage.h,
-	  tui/menu_actions-system.c, tui/menu_actions.c,
-	  tui/menu_actions.h: added parted package (for parted tool +
-	  libparted); updated rc.sysinit to create mount point directories
-	  if they don't exist; conf_sync to include fstab file; new TUI
-	  utility functions for getting FS and block dev. choice from user;
-	  implemented create FS & remove FS dialogs in TUI; additional TUI
-	  clean-up
-
-2012-11-21 20:03  msmith626@gmail.com
-
-	* etc/rc.d/rc.network, install.sh, misc/linux-3.2.6.config: fixed
-	  stderr redirect typo in network rc script; enabled MPT2SAS driver
-	  in Linux kernel; added chmod executable for new CLI binaries
-
-2012-11-20 03:28  msmith626@gmail.com
-
-	* install.sh, misc/linux-3.2.6.config: enabled 3ware SATA/SAS RAID
-	  support in kernel config; added remaining RAID controller CLI
-	  tool package information and setup in install script (needs
-	  testing)
-
-2012-11-19 18:18  msmith626@gmail.com
-
-	* etc/crontab, etc/rc.d/rc.2, install.sh, scripts/conf_sync.sh,
-	  tui, tui/main.c, tui/menu_actions-back_storage.c,
-	  tui/menu_actions-back_storage.h, tui/menu_actions-system.c,
-	  tui/menu_actions-system.h: updated system crontab to run ntpd to
-	  set time hourly; added to rc.2 init script to check for
-	  ntp_server file and if it exists, set the time via NTP on boot; a
-	  few install.sh enhancements; updated conf. sync script to sync
-	  ntp_server file and time zone link; implemented Date & Time, DRBD
-	  Status, Software RAID, and LVM2 Info dialogs
-
-2012-11-12 20:24  msmith626@gmail.com
-
-	* Makefile.in, install.sh, tui/main.c, tui/main.h,
-	  tui/menu_actions-back_storage.c, tui/menu_actions-back_storage.h,
-	  tui/menu_actions-controllers.c, tui/menu_actions-controllers.h,
-	  tui/menu_actions-system.c, tui/menu_actions-system.h: removed
-	  some extraneous commented-out lines from Makefile; switched
-	  install.sh script to use bash instead of sh -- Ubuntu sym links
-	  /bin/sh to dash which does not deal with the bashisms used, so
-	  we'll use this for now; started revamp of TUI -- changed
-	  Controllers menu name and added a number of stubs for new
-	  features
-
-2012-11-08 21:33  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/mdadm.conf,
-	  install.sh, misc/linux-3.2.6.config, scripts/conf_sync.sh: added
-	  support for software raid (md) and mdadm tool; fixed a issue in
-	  install.sh if the blockdev command failed
-
-2012-11-06 21:44  msmith626@gmail.com
-
-	* Makefile.in: the GRUB package needs device-mapper support, so
-	  LVM2 was a dep package before build; fixed a possible ambiguous
-	  situation that could occur with the image recipe when mounting
-
-2012-11-06 17:16  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, INSTALL, Makefile.in, README,
-	  THANKS, TODO, configure.ac, install.sh: replaced 'install' recipe
-	  with new 'image' recipe/target; instead of installing directly to
-	  a USB device, the 'image' target now creates a disk image; added
-	  'pkg_dist' target which will produce a tarball with checksum
-	  files, install script, and disk image suitable for distribution;
-	  lots of supporting tweaks for new 'image' target including but
-	  not limited to: up'd to grub-2.00, removed all proprietary tool
-	  references from configure.ac and Makefile.in (now installed via
-	  install.sh script), and updated in-tree documentation files
-
-2012-10-30 20:58  msmith626@gmail.com
-
-	* etc/rc.d/rc.2, etc/rc.d/rc.kdump, etc/rc.d/rc.lvm2: added rc.lvm2
-	  init script
-
-2012-10-26 21:07  msmith626@gmail.com
-
-	* Makefile.in, etc/lvm.conf: fixed LVM config path for package and
-	  added default lvm.conf file
-
-2012-10-25 20:14  msmith626@gmail.com
-
-	* etc/drbd.conf, etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2,
-	  etc/rc.d/rc.drbd, etc/rc.d/rc.kdump, etc/rc.d/rc.sshd,
-	  etc/rc.d/rc.sysinit, scripts/conf_sync.sh: implemented DRBD rc
-	  script; rc script formatting and tweaks; updated conf_sync to
-	  include drbd and lvm files
-
-2012-10-24 19:33  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: fixed a few issues
-	  with recently added features; xfsprogs install dir and build
-	  issue, DRBD version of userland tools was incorrect -- went to
-	  8.3.11 (matches kernel)
-
-2012-10-24 16:14  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in,
-	  misc/linux-3.2.6.config, tui: implemented LVM, DRBD, and
-	  xfsprogs: kernel options + userland tools; still needs rc
-	  scripts, config files, conf_sync mods, and testing
-
-2012-10-10 01:07  msmith626@gmail.com
-
-	* Makefile.in: this fixes issue #1; needed to include gcc
-	  (libstdc++) as a requirement for the ncurses package
-
-2012-10-06 19:07  msmith626@gmail.com
-
-	* misc/linux-3.2.6.config: added kernel support for Areca RAID
-	  controllers
-
-2012-08-02 19:33  msmith626@gmail.com
-
-	* tui/main.c: added a syncConfig when user quits
-
-2012-08-02 18:51  msmith626@gmail.com
-
-	* etc/rc.d/rc.network, tui/menu_actions-controllers.c,
-	  tui/menu_actions-system.c: fixed a few compiler warnings
-
-2012-08-02 13:35  msmith626@gmail.com
-
-	* etc/rc.d/rc.network: updated network rc script to redirect all
-	  stderr to stdout for all system calls; also modified start arg to
-	  bring up all interfaces (eth)
-
-2012-08-01 19:39  msmith626@gmail.com
-
-	* etc/rc.d/rc.network, scripts/startup.sh: a few script path
-	  changes and updates
-
-2012-08-01 17:55  msmith626@gmail.com
-
-	* scripts/conf_sync.sh, tui/menu_actions-devices.c,
-	  tui/menu_actions-system.c, tui/menu_actions-targets.c,
-	  tui/menu_actions.h: fixed delete user dialog to check for saved
-	  user ID, and not real user ID; updated various "information"
-	  dialogs to have a continue message at the bottom so users know
-	  how to close the dialog
-
-2012-07-31 21:11  msmith626@gmail.com
-
-	* tui/main.c: fixed suid business; modified statusBar to use the
-	  saved user ID -- still need to update the delete-user dialog...
-
-2012-07-31 14:05  msmith626@gmail.com
-
-	* tui/main.c, tui/menu_actions-system.c: fixed a few TUI usability
-	  items in the Systems menu; updated a couple error dialog messages
-	  to be more informative; added seteuid
-
-2012-07-31 13:15  msmith626@gmail.com
-
-	* etc/rc.d/rc.network: redirect stderr into stdout for the DHCP
-	  client program
-
-2012-07-31 13:11  msmith626@gmail.com
-
-	* etc/network.conf, etc/ssmtp.conf: ini files needed a new line at
-	  the end, otherwise they wouldn't parse
-
-2012-07-30 21:08  msmith626@gmail.com
-
-	* Makefile.in: chmod suid for the TUI binary
-
-2012-07-30 18:31  msmith626@gmail.com
-
-	* etc/hostname, etc/network: the hostname and network /etc files
-	  are no longer needed
-
-2012-07-30 18:26  msmith626@gmail.com
-
-	* etc/network.conf, etc/passwd, etc/rc.d/rc.1, etc/rc.d/rc.2,
-	  etc/rc.d/rc.network, etc/rc.d/rc.sysinit, etc/ssmtp.conf: rc
-	  scripts switched over for new network script; set TUI as shell
-	  for root account
-
-2012-07-30 15:41  msmith626@gmail.com
-
-	* tui/label_data.c, tui/label_data.h, tui/main.c, tui/main.h: fixed
-	  a few include issues
-
-2012-07-30 14:40  msmith626@gmail.com
-
-	* tui/Makefile, tui/label_data.c, tui/label_data.h, tui/main.c,
-	  tui/main.h, tui/megaraid.c, tui/megaraid.h,
-	  tui/menu_actions-controllers.c, tui/menu_actions-controllers.h,
-	  tui/menu_actions-devices.c, tui/menu_actions-devices.h,
-	  tui/menu_actions-hosts.c, tui/menu_actions-hosts.h,
-	  tui/menu_actions-system.c, tui/menu_actions-system.h,
-	  tui/menu_actions-targets.c, tui/menu_actions-targets.h,
-	  tui/menu_actions.c, tui/menu_actions.h: added Id tag keyword to
-	  TUI source
-
-2012-07-30 14:15  msmith626@gmail.com
-
-	* Makefile.in: fixed a typo
-
-2012-07-30 14:11  msmith626@gmail.com
-
-	* Makefile.in: new target for kernel headers; updated CPPFLAGS for
-	  new path
-
-2012-07-30 03:11  msmith626@gmail.com
-
-	* Makefile.in, tui/label_data.c, tui/main.c, tui/megaraid.c,
-	  tui/menu_actions-controllers.c, tui/menu_actions-devices.c,
-	  tui/menu_actions-hosts.c, tui/menu_actions-system.c,
-	  tui/menu_actions-targets.c, tui/menu_actions.c: cleaned up lots
-	  of warnings; updated main Makefile to actually clean the TUI
-	  directory when running 'clean-esos_tui' (helpful for development)
-
-2012-07-28 16:07  msmith626@gmail.com
-
-	* tui/Makefile, tui/label_data.c: set _GNU_SOURCE define in
-	  Makefile to TUI, and removed def from label_data
-
-2012-07-28 16:00  msmith626@gmail.com
-
-	* tui/megaraid.h, tui/menu_actions-controllers.c,
-	  tui/menu_actions-devices.c, tui/menu_actions-devices.h,
-	  tui/menu_actions-hosts.c, tui/menu_actions-system.c,
-	  tui/menu_actions-targets.c, tui/menu_actions.c: cdk/cdk.h is now
-	  just cdk.h, updated includes; typedef boolean is now defined in
-	  cdk.h, commented out in megaraid.h
-
-2012-07-28 15:22  msmith626@gmail.com
-
-	* Makefile.in: added build targets and proprietary tools as
-	  dependencies for the install target
-
-2012-07-28 04:36  msmith626@gmail.com
-
-	* Makefile.in: fixed issue with 'export CPPFLAGS' using the
-	  wildcard function and between the src_dir variable
-
-2012-07-27 21:06  msmith626@gmail.com
-
-	* .: ...
-
-2012-07-27 18:21  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: removed sysfsutils
-	  (libsysfs is no longer used); added iniparser (for TUI)
-
-2012-07-26 21:07  msmith626@gmail.com
-
-	* Makefile.in, tui/Makefile: updated main Makefile to include TUI
-
-2012-07-26 20:44  msmith626@gmail.com
-
-	* tui/Makefile: more updates for new Makefile
-
-2012-07-26 20:41  msmith626@gmail.com
-
-	* tui/Makefile: new Makefile for TUI
-
-2012-07-26 14:46  msmith626@gmail.com
-
-	* tui, tui/label_data.c, tui/label_data.h, tui/main.c, tui/main.h,
-	  tui/megaraid.c, tui/megaraid.h, tui/menu_actions-controllers.c,
-	  tui/menu_actions-controllers.h, tui/menu_actions-devices.c,
-	  tui/menu_actions-devices.h, tui/menu_actions-hosts.c,
-	  tui/menu_actions-hosts.h, tui/menu_actions-system.c,
-	  tui/menu_actions-system.h, tui/menu_actions-targets.c,
-	  tui/menu_actions-targets.h, tui/menu_actions.c,
-	  tui/menu_actions.h: import of TUI code
-
-2012-07-24 13:14  msmith626@gmail.com
-
-	* Makefile.in: some computers don't seem to like Unix epoch, so for
-	  /etc we'll use something a little more recent
-
-2012-07-22 19:29  msmith626@gmail.com
-
-	* etc/rc.d/rc.scst: new section for IB modules to load
-
-2012-07-22 16:43  msmith626@gmail.com
-
-	* Makefile.in: updated global CPPFLAGS to use Linux kernel include;
-	  disabled use of gpm for ncurses package
-
-2012-07-19 18:30  msmith626@gmail.com
-
-	* misc/linux-3.2.6.config: enabled additional IB kernel options
-
-2012-07-18 16:04  msmith626@gmail.com
-
-	* etc/rc.d/rc.network: more tweaks to new network rc script; tested
-	  and verified working
-
-2012-07-18 03:06  msmith626@gmail.com
-
-	* etc/rc.d/rc.network: new network script is ready for testing
-
-2012-07-17 19:02  msmith626@gmail.com
-
-	* etc/rc.d/rc.network: more work on new network rc script
-
-2012-07-16 20:59  msmith626@gmail.com
-
-	* etc/rc.d/rc.network: initial import of new rc network script
-
-2012-07-13 13:39  msmith626@gmail.com
-
-	* misc/busybox-1.19.0.patch: added a patch for busybox to fix a
-	  segfault when using chpasswd:
-	  https://bugs.busybox.net/show_bug.cgi?id=4105
-
-2012-06-29 19:15  msmith626@gmail.com
-
-	* Makefile.in: fixed /var/empty <-> sshd permissions issue;
-	  reported by Carl Swanberg
-
-2012-06-13 20:53  msmith626@gmail.com
-
-	* Makefile.in, etc/mdev.conf, scripts/dev_nodes.sh: implemented
-	  device node unique ID for SCSI disks in /dev (via mdev)
-
-2012-04-17 15:53  msmith626@gmail.com
-
-	* Makefile.in, misc/cdk-5.0-20120323.patch: added patch for CDK --
-	  this will make it use LDFLAGS with libtool
-
-2012-04-17 01:45  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: added cdk and
-	  sysfsutils pacakges
-
-2012-04-09 16:10  msmith626@gmail.com
-
-	* Makefile.in: using install.libs for ncurses was not enough --
-	  missing terminfo, etc., switched to full install target
-
-2012-03-30 20:44  msmith626@gmail.com
-
-	* Makefile.in, misc/busybox-1.19.0.patch: lots of fixes to make
-	  everything compile on Ubuntu -- added -fno-stack-protector to
-	  CFLAGS for glibc, a couple variables set for make for gcc (Ubuntu
-	  puts crt*.o files in /usr/lib/x86......), fixed up CFLAGS for
-	  ssmtp package, and finally added a patch
-	  (http://lists.busybox.net/pipermail/busybox/2011-October/076834.html)
-	  to make busybox compile on Ubuntu
-
-2012-03-27 20:56  msmith626@gmail.com
-
-	* Makefile.in: commented out check/test make targets for e2fsprogs
-	  and perl -- are these really needed? we don't run any other
-	  testing type targets for other included projects...
-
-2012-03-27 20:44  msmith626@gmail.com
-
-	* Makefile.in: set glibc as a requirement for the kernel since it
-	  also compiles the userland iscsi-scst tool/daemon; set LDFLAGS
-	  for iscsi-scst in kernel target and for cron
-
-2012-03-27 15:22  msmith626@gmail.com
-
-	* THANKS: added some words to the THANKS document
-
-2012-03-23 17:36  msmith626@gmail.com
-
-	* Makefile.in: set LD_LIBRARY_PATH for openssh configure script;
-	  remove reference to LD_LIBRARY_PATH in openssl target so gcc runs
-	  correctly (glibc differences)
-
-2012-03-23 13:08  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: lots of updates --
-	  included mpfr and gmp with gcc, this way it will build the
-	  required libs against new glibc and should avoid any glibc symbol
-	  problems; also setup the 'fake_lib' directory that includes ld
-	  scripts for libc.so, libpthread.so, etc. that should help force
-	  use of new glibc when linking
-
-2012-03-21 20:58  msmith626@gmail.com
-
-	* Makefile.in, misc/glibc-2.12.2.patch: implemented patch for glibc
-	  (see http://sourceware.org/bugzilla/show_bug.cgi?id=12343 and
-	  http://sourceware.org/git/?p=glibc.git;a=commit;h=4a531bb0b3b582cb693de9f76d2d97d970f9a5d5)
-	  that should resolve issues compiling on fedora and possibly
-	  ubuntu; set configure to disable selinux support in glibc
-
-2012-03-19 16:54  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: switched back to
-	  glibc 2.12.2
-
-2012-03-18 01:18  msmith626@gmail.com
-
-	* misc/busybox-1.19.0.config: removed several features
-	  (mount-NFS,CIFS, etc.) from busybox config -- these were
-	  preventing static busybox due to glibc 2.14.1
-
-2012-03-16 17:29  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256: removed glibc 2.13 line in
-	  checksum files
-
-2012-03-16 17:28  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: problems with glibc
-	  2.13 (memcpy-ssse3); up'd again to 2.14.1
-
-2012-03-16 14:57  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: up'd glibc to 2.13;
-	  set SHELL to bash -- using a bashism or two (still testing)
-
-2012-03-12 13:41  msmith626@gmail.com
-
-	* Makefile.in: updated URL for MegaCLI tool
-
-2012-03-12 13:23  msmith626@gmail.com
-
-	* Makefile.in: cleaned up some extra comments in Makefile.in; added
-	  prop_tools var to clean_targets
-
-2012-03-09 15:44  msmith626@gmail.com
-
-	* etc/rc.d/rc.2: added pre/post SCST extra config file check in
-	  rc.2 init script; if either file exists, run them with /bin/sh
-
-2012-03-09 15:18  msmith626@gmail.com
-
-	* scripts/conf_sync.sh: updated sync script to include modprobe
-	  config file and extra user config files
-
-2012-03-06 16:18  msmith626@gmail.com
-
-	* Makefile.in: removed MegaCLI and asm_linux targets from
-	  build_targets var
-
-2012-03-06 14:47  msmith626@gmail.com
-
-	* CHECKSUM.MD5, CHECKSUM.SHA256: removed Adaptec and LSI CLI
-	  packages from both checksum files
-
-2012-03-05 21:45  msmith626@gmail.com
-
-	* Makefile.in, configure.ac: updated configure.ac -- now has
-	  'disable' options for the current proprietary tools (MegaCLI,
-	  asm_linux); also revamped how proprietary tools are handled in
-	  the Makefile
-
-2012-03-05 03:23  msmith626@gmail.com
-
-	* Makefile.in, etc/crontab, scripts/health_chk.sh: fixed a few
-	  issues in health_chk, added health_chk to cron and Makefile.in
-
-2012-03-05 03:10  msmith626@gmail.com
-
-	* scripts/health_chk.sh: finished (hopefully) health check
-	  script...
-
-2012-03-04 19:40  msmith626@gmail.com
-
-	* scripts/health_chk.sh: implemented check for AACRAID logical
-	  drives
-
-2012-03-04 19:02  msmith626@gmail.com
-
-	* scripts/health_chk.sh: started work on system health check shell
-	  script
-
-2012-03-04 03:45  msmith626@gmail.com
+2015-02-21  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in, etc/rc.d/rc.local, scripts/startup.sh: added new
-	  system startup script; this script emails useful (hopefully)
-	  information and checks for kernel crash dumps
+	added the 'sudo' package; updated the drbd rc script to suppress version mismatch warnings
 
-2012-03-04 03:39  msmith626@gmail.com
+2015-01-30  Marc A. Smith  <msmith626@gmail.com>
 
-	* etc/crontab: updated system cron job schedules
+	several build fixes for platforms that use gcc 4.9.x
 
-2012-03-04 03:23  msmith626@gmail.com
+2015-01-28  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: doubled esos_logs partition size
+	swapped asprintf() for macro throughout TUI code; few minor fixes and clean up in TUI
 
-2012-02-24 19:23  msmith626@gmail.com
+2015-01-28  Marc A. Smith  <msmith626@gmail.com>
 
-	* scripts/conf_sync.sh: additional files to sync
+	patch for glibc to fix the GHOST vulnerability
 
-2012-02-22 19:09  msmith626@gmail.com
+2015-01-27  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, etc/rc.d/rc.2,
-	  etc/rc.d/rc.kdump, misc/grub.cfg, misc/initramfs_init: added
-	  kexec-tools package; implemented kdump/kexec to capture kernel
-	  crash dump: new rc script, added logic in initramfs image to save
-	  dump image
+	updated rc scripts to now handle a 'status' argument which simply returns an exit status code, no string message; additional rc script clean-up; fixed issue with ldd script from glibc (wrong bash location); more build tweaks/fixes for recent package adds
 
-2012-02-16 16:41  msmith626@gmail.com
+2015-01-25  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: removed echo lines used when debugging the
-	  scst_kernel targets
+	fixed build dependency issue; updated default configuration for stunnel
 
-2012-02-16 16:06  msmith626@gmail.com
+2015-01-24  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in, misc/grub.cfg,
-	  misc/linux-3.2.6.config: lots of changes: up'd SCST to trunk and
-	  Linux to 3.2.6; re-worked scst_kernel target to be much simpler
-	  for prod/debug
+	updated health check script to use "MemAvailable" from /proc/meminfo instead of attempting to calculating available memory (new feature in 3.14.x); added xmlrpc-c libs and stunnel; moved rc.local script to /etc/; updated autoconf script and other rc.d components for stunnel; patched sysvinit so bootlogd handles log file lines that start with tabs; added the "btier" RA (thanks Riccardo)
 
-2012-02-13 20:42  msmith626@gmail.com
+2015-01-05  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: switched applicable targets to use 'install' target
-	  instead of manually install'ing files
+	updated health_chk script to handle yet another MR enclosure status; updated hpacucli and linuxcli tool download URLs
 
-2012-02-13 15:19  msmith626@gmail.com
+2014-12-24  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: cleaned up un-needed comments
+	updates for Linux installer script to handle an in-place ESOS upgrade... only write from start of MBR to end of esos_root partition which preserves esos_conf and esos_logs; other fixes for updated install.sh script
 
-2012-02-13 15:16  msmith626@gmail.com
+2014-12-23  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: added a /etc/esos-release file that is generated by
-	  install target (contains version number)
+	updates to Makefile and installer scripts to compress the image file with bzip2 and handle it when installing, allowing hosts with < 4 GB of usable RAM to do an in-place upgrade; new local rpm2cpio.sh shell script which replaces the rpm2cpio bin function and eliminates the dependency; modified the Windows installer script to handle USB drives that appear as "fixed disk" appropriately; the install.sh script now supports Mac OS X as an install platform
 
-2012-02-13 15:05  msmith626@gmail.com
+2014-12-09  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in, etc/profile: set MANPATH for all users and needed
-	  gtbl for man pages (sym link -> tbl)
+	update for the health_chk script to handle another "normal" non-optimal condition for MR enclosure state; several build fixes for SUSE platforms
 
-2012-02-12 03:01  msmith626@gmail.com
+2014-12-07  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: implemented groff
-	  target
+	cleanup and several fixes for usb_sync script involving IFS; updated Windows installer script to now write CLI tools to the esos_conf FS; fixed TUI bug in Date/Time dialog for empty/blank NTP server and adjusted tab order
 
-2012-02-11 17:59  msmith626@gmail.com
+2014-12-06  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: version number will now include SVN revision
+	updated usb_sync script so it will now handle changes in permissions/mode, we do this by first checking mtime, and secondly ctime for file changes; enabled support for sync'ing /opt in the usb_sync script; updated Linux install script to write CLI tools to the esos_conf file system (Windows to follow); updated health_chk script to handle status 'Not Available' for MR enclosure check (resolves issue # 90); updates to scst RA to prevent clobbering scst.conf in the case of a bad conf; changed TUI log level to local4; enabled ATTO SAS driver and Emulex OC NIC driver in kernel config; TUI build fix for open(); several build fixes for Ubuntu
 
-2012-02-11 16:31  msmith626@gmail.com
+2014-11-14  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: fix permissions of shadow and crontab on install
+	added support in health-check script for checking the status of attached enclosures for MegaRAID adapters; set minimum RAM required in the initramfs script to 3.5 GB; added the 'dmidecode' package
 
-2012-02-07 13:12  msmith626@gmail.com
+2014-11-11  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: forgot touch lines for new targets (lsscsi,
-	  sg3_utils)
+	updated hpacucli tool install recipe for Linux and Windows installer scripts so it also includes a missing library (thanks Chris); changes to the initramfs script so it now waits for devices to settle before continuing (USB mass storage devices can be delayed via delay_use) and handle findfs failures more gracefully; up'd SCST version to latest (r5854)
 
-2012-02-07 02:55  msmith626@gmail.com
+2014-11-07  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: implemented lsscsi
-	  and sg3_utils packages
+	added the 'htop' utility; fixed issue in network conf dialog where a empty default GW / name server field gave an error; updated image target to write zeros to loop device instead of seek'ing
 
-2012-02-07 02:14  msmith626@gmail.com
+2014-10-31  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: MegaCli64 needs libsysfs.so.2.0.2 even though ldd
-	  doesn't report its required -- it also seems to only look in an
-	  absolute, static path for it; MegaCLI target now provides the
-	  library that comes with the package
+	added new "ethtool options" setting in the network dialog -- allows users to set autonegotation on/off and specify speed/duplex settings (satisfies issue/request #60); updated the rc.network script to handle new 'ethtoolopts' setting; fixed build issue for ceph package that affected some platforms (cryptopp vs. nss)
 
-2012-02-05 02:39  msmith626@gmail.com
+2014-10-22  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in, etc/rc.d/rc.sysinit: added -u flag for cpio in the
-	  install target (ld.so.conf wasn't being installed due to existing
-	  empty ld.so.conf); added a touch for /var/log/wtmp and lastlog in
-	  rc init script
+	build fix for mdadm and resolved mapfile lock error message with mdadm (missing /var/run/mdadm directory)
 
-2012-02-03 14:19  msmith626@gmail.com
+2014-10-21  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in, etc/network: CFLAGS should be CPPFLAGS for setting
-	  include search; typo in /etc/network
+	changed distribution files repository to new 'download.esos-project.com' site
 
-2012-02-02 15:21  msmith626@gmail.com
+2014-10-20  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: typo in CC variable
+	up'd mdadm to version 3.3.2; add optimization for TUI binary; add new 'debug' autoconf configure script option that control debug symbol stripping; remove use of STRIP variable in Makefile and strip all debug symbols by default in 'image' target; compress all man pages in 'image' target
 
-2012-02-02 14:18  msmith626@gmail.com
+2014-10-16  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: ssmtp target was not pulling in LDFLAGS, fixed using
-	  CC var via make
+	improvments for Windows installer script (install.vbs) to simplify picking a USB device and better handle disks with active volumes; updated both Linux/Windows installer scripts to use third-party tools from root of package directory; updated initramfs script to hide kernel console messages during root FS initialization; updated lessfs to 1.7.0; fix issue in network interface dialog (oversight during TUI code cleanup); a few misc. changes to Makefile targets for directory placement in image
 
-2012-02-02 02:38  msmith626@gmail.com
+2014-10-14  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: switched grub target to use CONFIG_STATIC in .config
-	  instead of LDFLAGS
+	lots of TUI code cleanup: consolidated common strings, broke out some dialog actions, refined new ALUA dialogs, code style formatting
 
-2012-01-31 20:43  msmith626@gmail.com
+2014-10-06  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: cleaned up gcc target -- should be less to compile
-	  now; tweaked a few other targets
+	new TUI "ALUA" menu for manipulating everything (mostly) w/ SCST ALUA (device groups, target groups, etc.); new setRelTgtIDDialog() function in the "Targets" menu for changing the relative target ID (of a target); started more TUI code clean-up (more to come)
 
-2012-01-31 13:59  msmith626@gmail.com
+2014-09-29  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: switched to using 'install' target for most projects
-	  instead of manually installing files
+	updated SCST to trunk/r5816 along with new QLogic qla2x00tgt FC (supports 10 Gb FCoE / 16 Gb FC CNAs/HBAs); updated QLogic FW package to latest; up'd kernel to 3.14.19
 
-2012-01-30 02:05  msmith626@gmail.com
+2014-09-26  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: when compiling perl, it fails -- seems related to
-	  gcc's -I and -ansi; it gets mad about C++ style comments in
-	  stdlib.h, etc. ignoring CFLAGS for now with configure.gnu
+	re-work of ESOS version string: we now use SVN branch + revision + build options as the version; updated bash to 4.3 patch 025; updated makedumpfile to 1.5.7; we now include (in dist package only) the full vmlinux kernel binaries (prod/debug) so we can fully debug kernel crash dumps offline; updated esos_tui target so we detect tui/ file changes correctly and define branch/version strings; fix build dep issue with ipmitool; minimized mysql target install (no test scripts); build dep fix for libmcrypt; added key/val pairs to sysctl.conf to panic on NMI; updated /etc/profile so we only try to set window title with xterm TERM types; major cleanup of ocf/scst RA... solidified use of 1 max master node so we can reliably set ALUA state; updated tui Makefile linker options; enabled additional watchdog support in kernel config; updated autoconf script to detect xz util; new TUI utility checkInetAccess() function for a simple "Internet" connectivity test; updated create-FS-dialog to make use of libparted's auto/optimize partition alignment feature; remove use of /etc/esos-release file in TUI code (new branch/version defines); added support for anonymously reporting ESOS usage statistics (prompt to participate); support for new /etc/esos.conf for system/TUI settings (eventually)
 
-2012-01-29 14:55  msmith626@gmail.com
+2014-09-08  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: added LDFLAGS and CFLAGS environment variables;
-	  added pre-reqs for packages
+	removed ext2 from list of file system choices and moved btrfs up the list; updated kexec-tools to version 2.0.7
 
-2012-01-26 22:05  msmith626@gmail.com
+2014-09-05  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in, configure.ac, misc/grub.cfg: tweaked install target:
-	  removed un-needed blockdev command to re-read PT, fixed grub.cfg
-	  for grub2
+	resolved issue in esos::scst RA where the pre-scst-xtra conf file would not be executed; updated TUI code to handle btrfs file system; resolved issue # 87 (usb_sync.sh was not called if SCST wasn't loaded); added btrfs-progs and deps (attr, acl); enabled btrfs file system support in kernel config; updated Makefile to handle fine grain cleaning of .la files (fixes rare build issue)
 
-2012-01-26 14:26  msmith626@gmail.com
+2014-09-02  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: more grub tweaks
+	added default etc/ceph/ceph.conf file; added the nsca package (and libmcrypt as a dependency)
 
-2012-01-24 18:13  msmith626@gmail.com
+2014-08-29  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: fixed shell string equality tests
+	added new rc.rbdmap init script for mapping Ceph RBD images; enabled CONFIG_DM_RAID in kernel config (to support LVM RAID); set 'enable-command-args' configure script option for nrpe package; added default rbdmap example /etc file
 
-2012-01-24 14:22  msmith626@gmail.com
+2014-08-26  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: more grub2 changes
+	updated EnhanceIO patch file; fixed build issue with ceph (Python dep); enabled CONFIG_BLK_DEV_RBD in kernel config; updated DRBD (user-land) to version 8.4.4
 
-2012-01-24 14:21  msmith626@gmail.com
+2014-08-25  Marc A. Smith  <msmith626@gmail.com>
 
-	* misc/grub.cfg: updates for grub2
+	re-enabled BTIER (and updated version); initial support for ceph; added dependency packages (keyutils, libedit, and leveldb) for ceph; enabled CONFIG_CEPH_LIB in kernel config; enabled several libraries in boost package
 
-2012-01-24 14:16  msmith626@gmail.com
+2014-08-20  Marc A. Smith  <msmith626@gmail.com>
 
-	* misc/grub.cfg, misc/grub.conf: for grub2 switch
+	added the nagios-plugins package
 
-2012-01-23 22:15  msmith626@gmail.com
+2014-08-11  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: updated scstadmin perl mod target -- needs more work
+	updated Linux kernel to 3.14.16; modified install.sh to unmount the esos_root file system if it happens to already be mounted (eg, an auto-mounter daemon); updated EnhanceIO to the latest version (dependency of new kernel); temporarily disabled BTIER module until patched (for 3.14.x kernels); modified bash target address build issue on Fedora
 
-2012-01-23 21:56  msmith626@gmail.com
+2014-08-06  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile.in: up'd grub to 1.99
+	set tm_isdst to -1 so the DST value is "guessed" (resolves issue # 84)
 
-2012-01-20 16:58  msmith626@gmail.com
+2014-08-04  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: needed KDIR var for a couple make targets
+	updated LVM2 to version 2.02.108 (includes lvmcache support)
 
-2012-01-19 15:42  msmith626@gmail.com
+2014-07-24  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile.in: updated distclean target and updated variables for
-	  configure script
+	modified the Date & Time dialog so that we only actually change the date/time if the user changed it (eg, they set the TZ, but not the date); add the mtx and mt-st packages for use with tapes/VTL; Uwire (chfcoe) build issue resolved; global bashrc updated to force interactive cp command; disabled the mt program in busybox; enhanced debugging support and features (kgdb, kdb) for the .esos-debug kernel
 
-2012-01-19 15:27  msmith626@gmail.com
+2014-07-14  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile, Makefile.in: moved Makefile to Makefile.in to prep for
-	  config script
+	updated StorCLI to newest version and modified installer scripts to handle it (path change); added support for user-provided (parameter) master/slave ALUA target group states in the SCST RA
 
-2012-01-19 15:25  msmith626@gmail.com
+2014-07-13  Marc A. Smith  <msmith626@gmail.com>
 
-	* configure.ac: finishing touches on configure.ac
+	added support for the Chelsio Uwire driver package (namely chfcoe); moved checksum file creation to the 'image' target (resolves issue # 82)
 
-2012-01-19 14:52  msmith626@gmail.com
+2014-07-08  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile: removed variables for shell built-ins
+	several fixes/tweaks to the new Windows installer script; run-level 2 init script will now fix /opt/sbin permissions by making binaries executable in that directory; added check for free space on boot device and if free space exists, expand the esos_logs file system to consume all of it; removed chmod +x lines from install.sh since we now take care of that in ESOS init
 
-2012-01-19 14:40  msmith626@gmail.com
+2014-07-04  Marc A. Smith  <msmith626@gmail.com>
 
-	* configure.ac: working autoconf configure.ac
+	added win_binaries package for Windows install script; modified pkg_dist target to now use zip instead of tar/xz; updated autoconf script to check for zip tool; path tweaks for install.vbs
 
-2012-01-19 05:03  msmith626@gmail.com
+2014-07-03  Marc A. Smith  <msmith626@gmail.com>
 
-	* configure.ac: started work on autoconf
+	initial commit of new Windows installer script (install.vbs); updated install.sh to use new shared common file for proprietary CLI tool information; Makefile variable name update; started modifications to pkg_dist target
 
-2012-01-18 15:45  msmith626@gmail.com
+2014-06-16  Marc A. Smith  <msmith626@gmail.com>
 
-	* etc/rc.d/rc.0: fixed /dev umount busy message on halt
+	enabled initiator mode for ocs_fc_scst module; rename libusb-compat package to libusb_compat (ambiguous); fixed several build issues for Fedora platform
 
-2012-01-18 14:53  msmith626@gmail.com
+2014-06-15  Marc A. Smith  <msmith626@gmail.com>
 
-	* etc/rc.d/rc.sysinit: run ldconfig on boot
+	build fix for the util-linux package (resolves issue # 34)
 
-2012-01-18 14:37  msmith626@gmail.com
+2014-06-07  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile, etc/ld.so.conf, etc/profile: updated asm_linux and
-	  MegaCLI targets to use /opt for 3rd party binaries; updated PATH
-	  and ld.so.conf
+	updated Areca CLI tool version; increased root tmpfs size to 1.5 GB; removed (painfully) dbus build option from pacemaker; removed support for corosync-notifyd from rc.corosync
 
-2012-01-17 21:40  msmith626@gmail.com
+2014-06-01  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile, etc/ld.so.conf: added support for libstdc++.so.5 (for
-	  arcconf) from asm_linux package
+	fixed build issue w/ scst (patch prob)
 
-2012-01-17 20:43  msmith626@gmail.com
+2014-06-01  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile: updated Makefile to
-	  provide Adaptec Storage Manager CLI
+	commented out serial console lines in inittab to avoid log clutter if no serial ports exist; up'd linux kernel to 3.12.20 and scst to r5558
 
-2012-01-17 19:55  msmith626@gmail.com
+2014-05-19  Marc A. Smith  <msmith626@gmail.com>
 
-	* etc/rc.d/rc.scst: fixed up SCST rc script now that module deps
-	  should work correctly
+	updated "no SCST" message; fixed build issue (ssl dep) with bcache-tools
 
-2012-01-17 19:50  msmith626@gmail.com
+2014-05-16  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile, misc/initramfs_init: tweaked initramfs script a bit and
-	  modified install target to accept slightly less than 4 GB drives
+	updated LUN Layout dialog name; fixed regex for /dev/sd* dev nodes in mdev.conf (resolves issue # 75); updated Back-End Storage menu choice names (MegaRAID); updated getBlockDevChoice() func to not display devices that are "open" in list; added support for logging init/rc messages (via bootlogd); updated inittab to spawn getty on ttyS1; increased virtual disk file write size to 256K (add vdisk file dialog); added a new Virtual Disk File List dialog that displays virtual disk files (and sizes); modified /etc/profile so the TUI is not launched when connected via serial (only shell)
 
-2012-01-16 02:49  msmith626@gmail.com
+2014-05-12  Marc A. Smith  <msmith626@gmail.com>
 
-	* misc/linux-2.6.39.4.config: renovated kernel config
+	updated health check script to handle CacheCade virtual drives (for MR); fixed string compare issue in getBlockDevChoice()
 
-2012-01-13 22:07  msmith626@gmail.com
+2014-05-04  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile, misc/initramfs_init: implemented USB flash drive size
-	  check and initramfs RAM check
+	rework of rc.scst... if an error occurs while configuring SCST (eg, missing device) the rc script will stop daemons and unload modules to prevent clobbering /etc/scst.conf with an empty config
 
-2012-01-13 20:39  msmith626@gmail.com
+2014-04-12  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile, etc/rc.d/rc.scst, misc/busybox-1.19.0.config: new
-	  busybox .config file; more Makefile clean-up; tweaked SCST rc
-	  script
+	updated health check script to not mark "hot spare" MR PDs as failed (thanks Danilo)
 
-2012-01-10 02:30  msmith626@gmail.com
+2014-04-10  Marc A. Smith  <msmith626@gmail.com>
 
-	* INSTALL, README, configure.ac: updated documentation and initial
-	  import of configure.ac
+	up'd openssl to 1.0.1g; changed size of /dev/shm tmpfs to 128m
 
-2012-01-09 22:00  msmith626@gmail.com
+2014-04-05  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile, README: cleaned up several targets that were also
-	  install man pages
+	fixed /dev/shm permissions in fstab; updated pacemaker target for attrd
 
-2012-01-08 04:15  msmith626@gmail.com
+2014-04-04  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile: lots of Makefile cleanup
+	up'd version of pacemaker to 1.1.11
 
-2012-01-06 21:56  msmith626@gmail.com
+2014-04-01  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile: added srpt
+	added additional crpto kernel options to support dm-crypt
 
-2012-01-06 01:55  msmith626@gmail.com
+2014-04-01  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, Makefile: implemented checksum
-	  target
+	updated startup script for new dump file (vmcore) name format; more TUI code cleanup (formatting, combining strings, etc.)
 
-2012-01-05 03:58  msmith626@gmail.com
+2014-03-31  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile, TODO: more Makefile clean-up
+	use ELF output with makedumpfile tool (initramfs init); started moving more exotic strings into new strings.c source file; updated autoconf script to make /tmp in initramfs stub (required by makedumpfile)
 
-2012-01-04 22:12  msmith626@gmail.com
+2014-03-31  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile: more Makefile updates
+	fixed build issue with bzip2
 
-2012-01-03 21:06  msmith626@gmail.com
+2014-03-31  Marc A. Smith  <msmith626@gmail.com>
 
-	* Makefile: updated fetch target and pre-reqs
+	fixed broken kernel crash dump support (increased crashkernel to 128M, added makedumpfile to use instead of gzip with /proc/vmcore in initramfs script); don't hide output in rc.mdraid; fixed TUI bug when using block device select dialog; added a sleep to run-level 2 to wait after loading qla2xxx (in the case of being used as an initiator, for targets to appear); updated mail settings dialog so there is now an option to disable user authentication for SMTP; disable use of python with gdb; added elfutils as a dep for makedumpfile; for bzip2 target, include static version of lib (dep for makedumpfile)
 
-2012-01-02 04:13  msmith626@gmail.com
+2014-03-29  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, COPYING, ChangeLog, INSTALL,
-	  Makefile, README, THANKS, TODO, etc/crontab, etc/fstab,
-	  etc/group, etc/hostname, etc/hosts, etc/inittab, etc/issue,
-	  etc/ld.so.conf, etc/network, etc/passwd, etc/profile,
-	  etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.3,
-	  etc/rc.d/rc.4, etc/rc.d/rc.5, etc/rc.d/rc.6, etc/rc.d/rc.local,
-	  etc/rc.d/rc.scst, etc/rc.d/rc.sshd, etc/rc.d/rc.sysinit,
-	  etc/revaliases, etc/services, etc/shadow, etc/ssh_config,
-	  etc/sshd_config, etc/ssmtp.conf, etc/sysctl.conf,
-	  etc/syslog.conf: added Id svn keyword
+	version bump for sg3_utils and kexec-tools; disabled use of CTRL-ALT-DEL; initial commit of support for serial console
 
-2012-01-02 03:48  msmith626@gmail.com
+2014-03-28  Marc A. Smith  <msmith626@gmail.com>
 
-	* CHECKSUM.MD5, CHECKSUM.SHA256, COPYING, ChangeLog, INSTALL,
-	  Makefile, README, THANKS, TODO, etc, etc/crontab, etc/fstab,
-	  etc/group, etc/hostname, etc/hosts, etc/inittab, etc/issue,
-	  etc/ld.so.conf, etc/network, etc/passwd, etc/profile, etc/rc.d,
-	  etc/rc.d/rc.0, etc/rc.d/rc.1, etc/rc.d/rc.2, etc/rc.d/rc.3,
-	  etc/rc.d/rc.4, etc/rc.d/rc.5, etc/rc.d/rc.6, etc/rc.d/rc.local,
-	  etc/rc.d/rc.scst, etc/rc.d/rc.sshd, etc/rc.d/rc.sysinit,
-	  etc/revaliases, etc/services, etc/shadow, etc/ssh_config,
-	  etc/sshd_config, etc/ssmtp.conf, etc/sysctl.conf,
-	  etc/syslog.conf, misc, misc/grub.conf, misc/initramfs_init,
-	  misc/linux-2.6.39.4.config, scripts, scripts/archive_logs.sh,
-	  scripts/conf_sync.sh: initial import
+	disabled USB_DEBUG option in kernel config; added new column to "sessions" info label for LUN count; changed all free/freeChar to new FREE_NULL macro in TUI code; lots of TUI code clean up (line/column formatting, consolidating like code, etc.)
 
-2011-12-21 03:11  
+2014-03-25  Marc A. Smith  <msmith626@gmail.com>
 
-	* .: Initial directory structure.
+	added esos_kernels as a dep for the scst target; fixed pkg_dist target to name checksums correctly
 
+2014-03-24  Marc A. Smith  <msmith626@gmail.com>
+
+	resolved build issue with parallel make (kernel_headers vs. esos_kernels clobber issue)
+
+2014-03-24  Marc A. Smith  <msmith626@gmail.com>
+
+	moved user-land SCST progs (iSCSI stuff) to a separate target; removed glibc dependency from esos_kernels target; other build fixes (target deps)
+
+2014-03-24  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed build issue with source directory variable; updated pkg_dist target to transform archive member paths correctly
+
+2014-03-24  Marc A. Smith  <msmith626@gmail.com>
+
+	updated TUI components to include new strings.h; autoconf script now sets "src_dir" and "build_dir"; added cryptsetup and enabled kernel DM_CRYPT option (resolves issue # 71); updated install script with latest location on LSI's web site for the MegaCLI tool, and changed error strings in install.sh to be more informative; code formatting in main.c and fixed issue with labels when exiting to shell; tweaked size (rows) of device-info dialog; lots of updated to Makefile.in... many line/formatting changes, and make jobs > 1 is now supported
+
+2014-03-17  Marc A. Smith  <msmith626@gmail.com>
+
+	updated new info labels to work correctly; add a blank line if no rows to match other pane; version bump for SCST (r5338); filter /tmp FS in FS-chooser dialog; adjusted ocs_sdk dir location; fixed sed one-liner in ocs_sdk target; added delay when creating image for partitions to be visible
+
+2014-03-17  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed issue with autoconf configure script and ocs_sdk option; resolved build issue with TUI (BUILD_OPTS definition)
+
+2014-03-17  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed build issue with wget certificate check; added smartmontools package
+
+2014-03-16  Marc A. Smith  <msmith626@gmail.com>
+
+	updated the rc.scst and scst RA scripts to check for the new optional ocs_fc_scst module; new optional user-land packages gdb and valgrind; update to the about dialog that will now display any additonal build options that were used; some renovations to the autoconf script: gdb, valgrind, and the Emulex OCS SCST driver (ocs_fc_scst) driver are now options that can be set, and we also set/create build/image directory structure with configure script; enabled additional kernel drivers for VMware VM hardware, including vmxnet3 and also enabled MS Hyper-V NIC driver; many updates for Makefile to accomodate new optional ocs_fc_scst target driver, gdb, and valgrind; distfiles repo is now on Google Drive
+
+2014-03-14  Marc A. Smith  <msmith626@gmail.com>
+
+	split out some TUI functions (driver list, initiator-use count, etc.) into new utility.c file; started moving all strings into a separate strings.h header file; complete revamp/overhaul of main TUI information labels -- now we have 2 dynamic labels for targets and sessions that can expand in size; started converting to new FREE_NULL macro instead of freeChar(); enabled kernel support for MS Hyper-V drivers; major update to the "Add Initiator" dialog which will now allow the user to select initiators from a list that are visible; we now use a function to gather target driver types instead of a static list (TUI); many, many more code tweaks and clean-up in TUI
+
+2014-03-06  Marc A. Smith  <msmith626@gmail.com>
+
+	updated log directory location for fence_agents package; fixed build issue with net-snmp
+
+2014-03-05  Marc A. Smith  <msmith626@gmail.com>
+
+	updated install script so it will run correctly on ESOS now; modified default fstab so we use a separate /tmp FS and restrict the size of /dev and /dev/shm; version bump for net-snmp; enabled embedded-perl option for net-snmp; added freeipmi package (for NUT) along with libgcrypt and libgpg-error as dependencies; updated nut build to use freeipmi; fixed display bug in getSCSTLUNChoice() (resolves issue # 67)
+
+2014-03-03  Marc A. Smith  <msmith626@gmail.com>
+
+	handle returning from shell when we don't have a terminal attached (fixes issue # 61); fixed typo in rc.nut; updated default configuration for snmpd.conf; over-haul for archive_logs script (thank you Mahir) so it now checks for free disk space in esos_logs and removes old files if needed
+
+2014-02-28  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed bug in health check script where we assumed all LDs were sequential, we now use a real list (resolves issue # 49); we now include GNU tar which gives us the --transform option so we can make pretty tarballs (eg, About->Support Bundle); initial addition of NUT (Network UPS Tools) -- more work/tweaks will likely be needed for this package (issue # 54); initial addition of net-snmp package -- more work/tweaks will likely be needed for this package (issue # 55); enabled IPMI device drivers in kernel config (should resolve issue # 56); disabled support for tar in Busybox since we now use real tar; updated usb_sync.sh to handle dirs/files with spaces (issue # 59); new user/group added for NUT; added libusb (and compat-) as dependencies for NUT; use 644 perms for kernel modules; added default/example config files for NUT and net-snmp packages
+
+2014-02-20  Marc A. Smith  <msmith626@gmail.com>
+
+	added the pciutils package (for the good lspci) and disabled lspci in busybox
+
+2014-02-16  Marc A. Smith  <msmith626@gmail.com>
+
+	removed 'rewritedomain' option in ssmtp.conf (not used by default); updated mail-settings dialog to get system hostname and set 'hostname' key in ssmtp.conf (issue # 47); set size value used in gethostname() instances to one less; removed iostat and mpstat programs from busybox bin; new sysstat package (for advanced iostat features); catch errors properly while inside for loop in kernels target; fix build issue with util-linux (issue # 37)
+
+2014-02-05  Marc A. Smith  <msmith626@gmail.com>
+
+	updated btier to 1.2.1; new target for Linux kernel builds (combined) so we can now attempt parallel execution with make (not tested yet)
+
+2014-01-23  Marc A. Smith  <msmith626@gmail.com>
+
+	updated the installer script to include the StorCLI tool from LSI (supports Syncro controllers); updated corosync to 2.3.3; Python fix for build platforms that have ncursesw installed (fixes issue # 43)
+
+2014-01-16  Marc A. Smith  <msmith626@gmail.com>
+
+	version bump for SCST (trunk); updated Linux kernel to 3.12; updates/improvements to health-check script which now checks for "failed" physical drives (MegaRAID/AACRAID)
+
+2013-12-27  Marc A. Smith  <msmith626@gmail.com>
+
+	pulled new linux-firmware package from git, which fixes issue # 39; fixed man page placement for expat and cdk packages; added enable-xmlconf and enable-rdma to corosync; new package librdmacm as a dependency (for new corosync build option)
+
+2013-12-16  Marc A. Smith  <msmith626@gmail.com>
+
+	initial commit of BTIER (including new rc script, config file example, module, user-land tools, etc.); over-haul of mdev.conf to set permissions on /dev nodes and add sym links; removed un-needed lines from initramfs script; clean-up of rc.sysinit mounting special FS's (and addition to fstab); added support for cciss devices in the block-dev-choice dialog (in TUI); added new widget in create-FS dialog to give option of partitioning entire disk or not (enabled by default); fixed bug in create-FS dialog when non-existent FS is checked (from fstab); we now use ped_partition_get_path() to determine a device node partition path in create-FS dialog; updated dev_nodes script since we now make sym links for IB and dlm devs in the mdev config file instead
+
+2013-12-12  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed issue with python... it requires the use of a single include file (pyconfig.h); fixed build issue with libxslt; filter .svn directories in the find/cpio command instead of removing them after
+
+2013-12-07  Marc A. Smith  <msmith626@gmail.com>
+
+	more build fixes... changed wildcard function to  static path since this is not re-evaluated (for CXX, fixes thin-provisioning-tools build issue); resolved build issue with CDK that was causing ESOS TUI to not work properly when built on some hosts
+
+2013-12-05  Marc A. Smith  <msmith626@gmail.com>
+
+	lots of build updates... we now set CC and CXX globally using export so the configure scripts guess options correctly; use the '-s' option with kpartx when creating the image so it waits (thanks Mauricio)
+
+2013-12-02  Marc A. Smith  <msmith626@gmail.com>
+
+	added 'vtl' group for mhVTL and updated UID of 'vtl' user to match; enabled DM-thin-provisioning option kernel; updated LVM2 build to enable thin provisioning; added thin-provisioning-tools package and dependencies (boost + expat) -- thanks for the suggestion Morgan; the rc.mhvtl script now has a complete stop() function to un-configure VTLs (thanks for the contrib Philippe); we now filter static libs (*.a) and /usr/include when creating the image so they are not included; updated permissions on the mhVTL binaries
+
+2013-11-26  Marc A. Smith  <msmith626@gmail.com>
+
+	enabled the CONFIG_CHR_DEV_ST option (SCSI tape drives)
+
+2013-11-01  Marc A. Smith  <msmith626@gmail.com>
+
+	up'd SCST to latest trunk (resolves issue with unloading SCST when using bcache); move special FS mounts into rc.sysinit (/dev/pts, /dev/shm) so everything works correctly incase fsck bombs in rc.fsmount (resolves issue # 17); major overhaul on Linux bonding driver support: we now set modprobe options so no interfaces are created initially and all configuration is done via sysfs interface; updated TUI and rc network script to support new 'bonding options'
+
+2013-10-15  Marc A. Smith  <msmith626@gmail.com>
+
+	set pacemaker and corosync to disabled in rc.conf (new default); added new dm-cache rc script and now dm-cache devices can be persistent via dm-cache.start and dm-cache.stop files (see wiki documentation)
+
+2013-10-11  Marc A. Smith  <msmith626@gmail.com>
+
+	created a patch for eio_cli so it doesn't need udev and lots of cleanup, still needs more love... someone owes me a beer for that one; new rc script for EnhanceIO (uses INI file created by new eio_cli); removed EIO stuff from rc.2 (now in its own rc script); for mdev setup, use register_quiet with bcache
+
+2013-10-03  Marc A. Smith  <msmith626@gmail.com>
+
+	updated drbd user-land to 8.4.3 to match recent kernel version bump; updated nrpe to 2.15; TUI: don't scroll to the top of the network-restart dialog; updates to dev_nodes.sh to support /dev/bcacheX devices (registers cache/backing devices on boot)... more to come for dm-cache and EnhanceIO
+
+2013-10-01  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed a build issue with the new util-linux package (ncurses)
+
+2013-10-01  Marc A. Smith  <msmith626@gmail.com>
+
+	added the new config file for kernel 3.10.13 (ya, we need this)
+
+2013-10-01  Marc A. Smith  <msmith626@gmail.com>
+
+	updated the Linux kernel to 3.10.13 to support SSD caching options (bcache, dm-cache); enabled NETXEN_NIC in the kernel (resolves issue # 32); added bcache-tools and util-linux as a dependency (only using libuuid and libblkid); updated other packages to make use of libuuid/libblkid from util-linux instead of e2fsprogs; fixed a TUI bug that affected the display of available drives when adding a MegaRAID VD; added EnhanceIO SSD caching software (module build and Python tool install); updated rc runlevel 2 script to load EnhanceIO modules
+
+2013-09-06  Marc A. Smith  <msmith626@gmail.com>
+
+	updated SCST to the latest trunk revision (4988) -- this should resolve issue # 26 (soft lock-ups with SRP); change conf_sync.sh to now dump SCST config to file AND sync with the USB flash drive (conf_sync.sh contents moved to usb_sync.sh to maintain compatibility with USB-sync-only operation in TUI, etc.); disabled documentation install for the glue package to hopefully avoid a common build error; updated rc scripts and TUI to use usb_sync.sh tool
+
+2013-08-12  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed issue when attempting to create file systems on a SCSI disk block device (thanks for the heads-up Gooba)
+
+2013-08-08  Marcin Czupryniak  <martino87rm@gmail.com>
+
+	Fixed support for MySQL
+
+2013-08-08  Marc A. Smith  <msmith626@gmail.com>
+
+	added DB compactor cron job (and script) for perfagent stats (thanks Marcin); enabled support for CCISS devices in kernel; added option to check for openssl in configured script (needed for the nrpe pacakage); added Nagios Remote Plugin Executor (nrpe) including new rc script and user/group
+
+2013-07-29  Marc A. Smith  <msmith626@gmail.com>
+
+	added new perf-agent performance statistics collection agent/daemon; added python-daemon and lockfile modules (deps for perf-agent)
+
+2013-07-26  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed issue with missing library for opensm (libosmvendor); added new feature to the add-device dialog for SCST that allows a user to select a file on a file system OR a block device to use with vdisk_fileio
+
+2013-07-25  Marc A. Smith  <msmith626@gmail.com>
+
+	added the infiniband-diags package and dependency libibmad; updates to the opensm package to support infiniband-diags
+
+2013-07-23  Marc A. Smith  <msmith626@gmail.com>
+
+	updated the add-vdisk function to use fallocate() (thanks for the idea Bruce) for file systems that support it (xfs and ext4), for the others we still use write()
+
+2013-07-16  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed library path issue with Python MySQL module; updated network rc script and TUI to complete bridging and bonding support
+
+2013-07-05  Marc A. Smith  <msmith626@gmail.com>
+
+	added psycopg2, MySQLdb, and SQLAlchemy packages (and required DB client tools / libs)
+
+2013-06-20  Marc A. Smith  <msmith626@gmail.com>
+
+	more updates/fixes for Fedora build; added ethtool
+
+2013-06-14  Marc A. Smith  <msmith626@gmail.com>
+
+	a number of Makefile changes to resolve Fedora build issues; updated global profile to allow core dumps and be a bit more informative if the TUI exits non-zero; additions to sysctl.conf for core dumps
+
+2013-06-09  Marc A. Smith  <msmith626@gmail.com>
+
+	more updates to Makefile build setup, too many to list -- should (mostly) fix building on non-RHEL-like distros
+
+2013-06-04  Marc A. Smith  <msmith626@gmail.com>
+
+	added the irqbalance package; revamped fetch/checksum to now check checksums on downloaded files only once -- if a checksum fails, we simply delete the file; major overhaul on build system, we now use a spec file to disable all default system library locations and global gcc/g++ variables that disable built-in include search paths (we only use our own)
+
+2013-05-30  Marc A. Smith  <msmith626@gmail.com>
+
+	enabled support for Micron PCIe SSDs (CONFIG_BLK_DEV_PCIESSD_MTIP32XX)
+
+2013-05-24  Marc A. Smith  <msmith626@gmail.com>
+
+	updated modprobe.conf to use two bonding interfaces by default; updated TUI system network dialog for inital bonding support; updated rc.network for bonding support -- needs further testing
+
+2013-05-20  Marc A. Smith  <msmith626@gmail.com>
+
+	the Linux Ethernet Bonding driver is now a module and loaded in run-level 2 so the behavior/options can be changed using modprobe.conf (thanks Tim); fixed TUI issue with bonding driver
+
+2013-05-14  Marc A. Smith  <msmith626@gmail.com>
+
+	moved file system mounting and md RAID assemble into individual rc scripts -- ordering of software RAID, fsck, and mounting works correctly on boot; enabled Linux bonding driver in kernel and Fusion MPT
+
+2013-05-07  Marc A. Smith  <msmith626@gmail.com>
+
+	updated libqb to 0.14.4 (fixes http://permalink.gmane.org/gmane.linux.highavailability.pacemaker/15504); moved "mount other file systems" from rc.sysinit to run-level 2, right before late start services; added mdadm assemble line for md software RAID just before mounting other file systems
+
+2013-04-22  Marc A. Smith  <msmith626@gmail.com>
+
+	enabled bridging support in Linux kernel; fixed bug in the 'LUN Layout' dialog -- readlink() does not append a null byte
+
+2013-04-13  Marc A. Smith  <msmith626@gmail.com>
+
+	we now have "early" and "late" user settable services, only IB-related services are classified as early so far since they need to be loaded before we run rc.network -- updated all rc scripts for this new change; OpenSM is sometimes noisey when starting so we hide it (stdout + stderr); in all areas we save the SCST configuration using scstadmin, we now use a '-force' when calling write_config since if the current running config is not koesher, scstadmin will exit with an error and not save (bad) -> updated RA, rc script, and TUI sync. config. call; updated the health_chk script to be a little more leanient with MegaCLI output; we now load qla2xxx in run-level 2 since even if SCST is not loaded, the TUI still displays FC HBA information
+
+2013-04-09  Marc A. Smith  <msmith626@gmail.com>
+
+	updated mdev.conf and dev_nodes script to handle InfiniBand device nodes (/etc/infiniband/); updated rc.network script to handle ibX devices; make opensm quiet when it starts; added /etc/opensm/partitions.conf default file
+
+2013-04-06  Marc A. Smith  <msmith626@gmail.com>
+
+	added new crm_mon_email.sh script (helper / external agent for crm_mon,    used with ClusterMon RA); updated network rc script to use the /bin/ip binary instead of ifconfig when setting MTU for dhcp-enabled interfaces; removed IBoIP MTU settings from the openibd script (now done through TUI); added misc. network interface (Ethernet) drivers to kernel config; updated SCST RA to use 'nonoptimized' instead of 'offline' for slave status; in TUI, for /dev/dm-* block devices, we look-up the (assumed) full LVM VG+LV device node path (more unique) and use this; first attempt (not tested) at supporting IPoIB interfaces in the TUI; updated TUI to use two different default MTUs based on interface name (Ethernet / IB)
+
+2013-03-31  Marc A. Smith  <msmith626@gmail.com>
+
+	conf_sync -> needed to check if the local/usb versions of localtime exist (fixed); updated health_check script to include hostname in file name for conf pkg. sent via email; updated TUI support package function to exclude some private content items
+
+2013-03-31  Marc A. Smith  <msmith626@gmail.com>
+
+	updated Linux kernel to 3.8.5 and DRBD user-land tools to 8.4.2 (matches kernels); updated PAGER variable show less displays color escape sequences correctly; the /etc/localtime sync issue should now be resolved; updated DRBD default config files
+
+2013-03-29  Marc A. Smith  <msmith626@gmail.com>
+
+	added the real GNU less and removed less from busybox config; we now set the PAGER var in global bashrc; in /etc/profile we provide a window bar title; updated rc scripts to use rmmod instead of `modprobe -r` (returns 1 when removing modules on success); rc.openibd -> ipath needs to be loaded first; pacemaker produces an error (warning?) msg even though it starts/runs fine, so we hide it; fixed typo in sysctl.conf; lots of updates/fixes to new RA; if SCST is not loaded, don't run the startup scstadmin commands; a few TUI dialog sizing tweaks; updated TUI to handle SCST not being loaded
+
+2013-03-26  Marc A. Smith  <msmith626@gmail.com>
+
+	rework of InfiniBand setup... new rc.openibd rc script for loading IB modules and rc.opensm for IB subnet manager; enabled IPoIB and switched all IB kernel options to modules (for use with new rc.openibd setup); added "performance tweaks" to sysctl.conf that are hopefully universal (from OFED package); more SCST RA tweaks; removed IB modules from RA and SCST rc script
+
+2013-03-24  Marc A. Smith  <msmith626@gmail.com>
+
+	added new resource agent (RA) for SCST; updated rc scripts to use new wait_for_stop common function to wait after a -TERM is issued on stop(); updated conf_sync to omit /etc/rc.d and correctly sync the /etc/localtime sym link; added support for gawk (-> awk); adjust order in image target for setting time stamp
+
+2013-03-20  Marc A. Smith  <msmith626@gmail.com>
+
+	resolved issue with DLM locking (via clvmd) -- issue in kernel, see: http://www.redhat.com/archives/cluster-devel/2013-February/msg00060.html; added ipmitools (to make fence_ipmilan work); added sysklogd to replace busybox implementation (syslogd + klogd) so we can actually log kern.* to kern.log; removed fsck and sysklogd components from busybox config; updated syslog.conf file so we don't sync when writing all log files; updated corosync.conf default file to not log to a flat file, only to syslog via local2 (and removed log dir creation line from Makefile)
+
+2013-03-18  Marc A. Smith  <msmith626@gmail.com>
+
+	switched LVM locking type (cluster=internal instead of shared); recursively set old time stamp on /etc and /var/lib files
+
+2013-03-17  Marc A. Smith  <msmith626@gmail.com>
+
+	set default quorum votes to 1 in corosync.conf; updated dlm and clvd rc script settings; hide output for the 'cd -' command in conf_sync
+
+2013-03-17  Marc A. Smith  <msmith626@gmail.com>
+
+	made dev_nodes.sh script generic, udev rule like script (called mdev); added rc script for DLM; corosync.conf needs the cluster_name setting; removed timeout setting from rc.clvmd script; updated mdev.conf to call rule script for dlm* device nodes
+
+2013-03-16  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed build issue (added zlib dependency for nss package); enabled DLM in Linux kernel config
+
+2013-03-16  Marc A. Smith  <msmith626@gmail.com>
+
+	added support for clvmd (LVM2 and rc script) including dlm dependency
+
+2013-03-11  Marc A. Smith  <msmith626@gmail.com>
+
+	changed compression type for pkg dist file to xz; added default /etc/hba.conf for fcoe-utils (fixes fcoe tool issue)
+
+2013-03-08  Marc A. Smith  <msmith626@gmail.com>
+
+	updated busybox to 1.20.2 (needed for grep '-x' option for cluster stack); install contrib/debug tools for fcoe-utils package (open-fcoe)
+
+2013-03-06  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed build issue: the package name 'linux-firmware' is not compatible, renamed to 'linux_firmware'
+
+2013-03-06  Marc A. Smith  <msmith626@gmail.com>
+
+	added new linux-firmware package -- it sounds like new firmware is not being added directly to the Linux kernel git repo, they now are trying to keep the firmware blobs separate from code; disabled inlining driver firmware in the kernel since we use the linux-firmware package and we only include the blobs needed for drivers we enable (including the license files); fixed archive_logs cron issue; updated rc.scst script for new userland daemons (FCoE) and stop() function; added default config files for fcoemon; re-work of conf_sync.sh -- we now sync entire directories (eg, /etc /var/lib) so we get everything including dynamically generated config. files; updated TUI main screen label to support FCoE adapters, and support the fcst driver for target functions
+
+2013-03-04  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed build issue in open-lldp with AC_FUNC_MALLOC/REALLOC
+
+2013-03-04  Marc A. Smith  <msmith626@gmail.com>
+
+	added Fibre Channel over Ethernet (FCoE) support (SCST -> fcst) and required dependencies (open-fcoe, libconfig, libnl, open-lldp, libpciaccess); updated rc.scst to load new fcst module; updated Linux kernel configuration file for FCoE dependency options (data center briding, etc.); fixed issue when creating file systems on devices that already have a partition table (label) and/or existing file system(s) -- we now use the '-f' option for mkfs.xfs and '-F' for the other mkfs.ext* tools
+
+2013-03-03  Marc A. Smith  <msmith626@gmail.com>
+
+	added USB 3.0 support; set drbd and mhvtl to disabled on startup as default; fixed a syntax issue in default drbd.conf file; increased esos_root partition size to 1 GB; fixed issues with new rc system enhancements
+
+2013-03-02  Marc A. Smith  <msmith626@gmail.com>
+
+	updated mdev unique SCSI disk ID process (new shell script used by mdev and TUI); fixed subtle TUI bug that affected several dialogs (strncat); updated conf_sync for new rc.conf /etc file; re-work of rc system... now uses /etc/rc.conf to enable/disable services
+
+2013-02-28  Marc A. Smith  <msmith626@gmail.com>
+
+	updated sg3_utils to version 1.35 to get new '--exported' feature in sg_inq tool; renamed dev_nodes.sh to something more meaningful; added /etc/protocols file; added new scsi_id.sh script to produce a useful, consistent unique ID for SCSI devices (disks); updated TUI to use new scsi_id.sh script
+
+2013-02-22  Marc A. Smith  <msmith626@gmail.com>
+
+	a couple global bashrc tweaks; fixed an issue in the install script for the MegaCLI tool; updated busybox config to make use of mount helpers to support fuse/lessfs; updated conf_sync.sh to sync dynamically generated library contents files for mhVTL; fixed an issue in the dev_nodes.sh mdev helper script where devices had multiple identifiers (eg, EUI and NAA) and in the TUI code for adding devices (only take the first); changed syslog facility
+
+2013-02-20  Marc A. Smith  <msmith626@gmail.com>
+
+	added real bash; upgraded DRBD to match new kernel version; fixed man page install paths for fio and ncurses; updated /etc/bashrc for real bash and added a few useful aliases; updated MegaRAID and Adaptec CLI tools in install script; fixed bug in health_chk script for Adaptec devices; updated exit-to-shell function in main for real bash
+
+2013-02-18  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed spelling issue in initramfs script; added fio package; changed a few kernel options to built-in (instead of modules); fixed TUI add-initiator input issue (wildcards)
+
+2013-02-18  Marc A. Smith  <msmith626@gmail.com>
+
+	more build fixes for move to new kernel
+
+2013-02-17  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed busybox build issue (removed support for mkfs_ext2 since we install e2fsprogs)
+
+2013-02-17  Marc A. Smith  <msmith626@gmail.com>
+
+	updated SCST and Linux kernel (3.7.8)
+
+2013-02-16  Marc A. Smith  <msmith626@gmail.com>
+
+	added fence-agents package along with required dependencies; updated corosync to 2.3.0; moved klogd to rc.sysinit so it starts early so we don't see any kernel messages on the screen; added support for /etc/xtra_hosts (for additional static hosts entries and added nsswitch.conf to support this; updated rc.scst to load tape/changer modules; TUI screen/dialog title clean-up; added support for dev_changer, dev_tape, and dev_tape_perf handlers in TUI
+
+2013-02-10  Marc A. Smith  <msmith626@gmail.com>
+
+	set --jobs=4 for Linux kernel and glibc packages to hopefully speed up build time; start system logger after network is up (after hostname has been set); move temp. directory creation to after image has been written in the install script; re-read the partition table after the disk has been written... should fix issue that some distros experience where FS by label doesn't work; fixed issue with mdev device node helper script where sg_vpd tool was not returning non-zero and giving bad results
+
+2013-02-09  Marc A. Smith  <msmith626@gmail.com>
+
+	added resource agents package for pacemaker; added mhVTL Virtual Tape Library software (and dependencies: mhash, lzo); add lessfs/fuse support for data de-duplication (and required dependencies: tokyocabinet, fuse, berekekly DB, and google's snappy); user 'vtl' for mhVTL software; drbd.conf tweaks; removed rc.drbd init script... DRBD resources should be handled by cluster stack, not our init; added rc support for mhVTL; make install script exit if there is a problem with the checksums; updated drbd package to install additional shell script helpers (fencing, etc.); updated conf_sync.sh to sync new software's config. files; re-ordered the main menu so it flows correctly with the documentation (create host group THEN create devices and map them to the group)
+
+2013-01-28  Marc A. Smith  <msmith626@gmail.com>
+
+	enabled pacemaker support for drbd
+
+2013-01-27  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed another pacemaker issue... --without-python doesn't work? renamed Linux-HA dialog to 'CRM Status' -- updated dialog to use the 'crm status' command for cluster/HA information
+
+2013-01-26  Marc A. Smith  <msmith626@gmail.com>
+
+	added readline, dependency for crmsh (interactive mode)
+
+2013-01-25  Marc A. Smith  <msmith626@gmail.com>
+
+	make /var have an old time stamp (for conf_sync)
+
+2013-01-25  Marc A. Smith  <msmith626@gmail.com>
+
+	more fixes/tweaks to conf_sync script (from recent updates); added a progress/working indicator to the initramfs script; install script should now fail if dd exits non-zero; added missing ocf resources for pacemaker
+
+2013-01-24  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed path issue for crmsh helper progs; updated conf_sync script to sync /var directories (scst, pacemaker, etc.); set corosync defaults and updated rc script
+
+2013-01-23  Marc A. Smith  <msmith626@gmail.com>
+
+	More new build/dependency errors resolved....
+
+2013-01-22  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed a few dependency/build issues from r340
+
+2013-01-22  Marc A. Smith  <msmith626@gmail.com>
+
+	new user/group for HA stuff; added/updated rc scripts for pacemaker and corosync; few tweaks to hopefully make all of the HA/cluster stuff work
+
+2013-01-16  Marc A. Smith  <msmith626@gmail.com>
+
+	added crmsh package, which requires glue, which requires a few other dependencies; started pacemaker/corosync rc scripts (needs more)
+
+2013-01-09  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed CentOS nss build issue
+
+2013-01-08  Marc A. Smith  <msmith626@gmail.com>
+
+	added pacemaker and corosync along with the three dozen required depenencies to support them (libqb, nss, libxml2, libxslt, libtool, bzip2, glib); rearranged lots of default config. files into sub-directories of /etc; updated conf_sync.sh to handle /etc files in sub-directories; updated TUI defines for new config. files locations; the health_chk.sh script will now detect a failed USB flash drive and send a notification email including a config. file tar ball
+
+2012-12-29  Marc A. Smith  <msmith626@gmail.com>
+
+	get rid of .svn directories in image; copy QLogic FW license into image; fixed issue in CDK when compiling on Debian Wheezy (ncurses-config tool); added new LUN Layout dialog that will display overview of targets, groups, initators, and mapped LUNs; implemented new Support Bundle dialog for creating a support tar archive and new About dialog
+
+2012-12-21  Marc A. Smith  <msmith626@gmail.com>
+
+	added menu options for Help, Support Bundle, and About; completed Help dialog; fixed issue # 2 (TUI seg. fault when using Volume Properties dialog; new source file for Interface menu
+
+2012-12-18  Marc A. Smith  <msmith626@gmail.com>
+
+	added IB subnet manager opensm; updated conf_sync to include new config. files; fixed sysconfdir for e2fsprogs; fixed scripts to use more sensible directory perms; PATH update for profile/bashrc
+
+2012-12-17  Marc A. Smith  <msmith626@gmail.com>
+
+	new GRUB installation that uses newly built binaries the correct way (should resolve Debian install/image issue); Makefile will now keep the permissions on directories/files consistent regardless of a user's umask on build host; LVM2 uses CLDFLAGS and not LDFLAGS?? (fixed, resolves Fedora build issue); updated configure.ac for xargs command; re-work of how TUI is launched; user now gets a normal shell (bash) and TUI is launched via /etc/profile (login shell)... updated root shell entry in passwd file; switched bash shell to use hush (instead of ash); updated syslog.conf file to be a bit simpler and less redundant; we now set umask in TUI just in case; re-work of how field entry widget values are checked -- much more consistent and clean now
+
+2012-12-10  Marc A. Smith  <msmith626@gmail.com>
+
+	updated ntpd cron job to redirect stderr too; re-work of rc.sysinit -- conf. sync, fsck, and mounting file systems; fixed spacing issue in FS chooser dialog
+
+2012-12-09  Marc A. Smith  <msmith626@gmail.com>
+
+	lots of TUI code clean-up including megaraid functions; fixed xterm backspace issue -- terminfo for xterm and variants by default from ncurses is ^H but must distributions have BS set to \177, so we'll do the same thing to make it work like we think it should (terminfo.src patch); various TUI color/size tweaks; set add-device dialogs to use new chooser dialogs; made it so the ESOS boot drive is never an option for any disk dialog choosers; SCST iSCSI target/driver isn't enabled  when adding/enabling new targets? (fixed); removed use of volume name from add dialog (not an option with MegaCLI; added MTU as a network option
+
+2012-12-05  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed sym. link location for /etc/localtime in Makefile; redirect stdout to null for NTP cron; merged all header files into new shared, common header files and re-organized defines; fixed bug in restart net. scroll windows, and similar instances (other dialogs)
+
+2012-12-03  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed fsck command in crontab to not check mounted file systems; updated health check script to use /proc/meminfo and take into account page cache when calculating free memory; implemented 'add vdisk' and 'delete vdisk' in back-end storage menu
+
+2012-11-30  Marc A. Smith  <msmith626@gmail.com>
+
+	missed a dependency for the new parted package (libdm)
+
+2012-11-30  Marc A. Smith  <msmith626@gmail.com>
+
+	added parted package (for parted tool + libparted); updated rc.sysinit to create mount point directories if they don't exist; conf_sync to include fstab file; new TUI utility functions for getting FS and block dev. choice from user; implemented create FS & remove FS dialogs in TUI; additional TUI clean-up
+
+2012-11-21  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed stderr redirect typo in network rc script; enabled MPT2SAS driver in Linux kernel; added chmod executable for new CLI binaries
+
+2012-11-19  Marc A. Smith  <msmith626@gmail.com>
+
+	enabled 3ware SATA/SAS RAID support in kernel config; added remaining RAID controller CLI tool package information and setup in install script (needs testing)
+
+2012-11-19  Marc A. Smith  <msmith626@gmail.com>
+
+	updated system crontab to run ntpd to set time hourly; added to rc.2 init script to check for ntp_server file and if it exists, set the time via NTP on boot; a few install.sh enhancements; updated conf. sync script to sync ntp_server file and time zone link; implemented  Date & Time, DRBD Status, Software RAID, and LVM2 Info dialogs
+
+2012-11-12  Marc A. Smith  <msmith626@gmail.com>
+
+	removed some extraneous commented-out lines from Makefile; switched install.sh script to use bash instead of sh -- Ubuntu sym links /bin/sh to dash which does not deal with the bashisms used, so we'll use this for now; started revamp of TUI -- changed Controllers menu name and added a number of stubs for new features
+
+2012-11-08  Marc A. Smith  <msmith626@gmail.com>
+
+	added support for software raid (md) and mdadm tool; fixed a issue in install.sh if the blockdev command failed
+
+2012-11-06  Marc A. Smith  <msmith626@gmail.com>
+
+	the GRUB package needs device-mapper support, so LVM2 was a dep package before build; fixed a possible ambiguous situation that could occur with the image recipe when mounting
+
+2012-11-06  Marc A. Smith  <msmith626@gmail.com>
+
+	replaced 'install' recipe with new 'image' recipe/target; instead of installing directly to a USB device, the 'image' target now creates a disk image; added 'pkg_dist' target which will produce a tarball with checksum files, install script, and disk image suitable for distribution; lots of supporting tweaks for new 'image' target including but not limited to: up'd to grub-2.00, removed all proprietary tool references from configure.ac and Makefile.in (now installed via install.sh script), and updated in-tree documentation files
+
+2012-10-30  Marc A. Smith  <msmith626@gmail.com>
+
+	added rc.lvm2 init script
+
+2012-10-26  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed LVM config path for package and added default lvm.conf file
+
+2012-10-25  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented DRBD rc script; rc script formatting and tweaks; updated conf_sync to include drbd and lvm files
+
+2012-10-24  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed a few issues with recently added features; xfsprogs install dir and build issue, DRBD version of userland tools was incorrect -- went to 8.3.11 (matches kernel)
+
+2012-10-24  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented LVM, DRBD, and xfsprogs: kernel options + userland tools; still needs rc scripts, config files, conf_sync mods, and testing
+
+2012-10-09  Marc A. Smith  <msmith626@gmail.com>
+
+	this fixes issue #1; needed to include gcc (libstdc++) as a requirement for the ncurses package
+
+2012-10-06  Marc A. Smith  <msmith626@gmail.com>
+
+	added kernel support for Areca RAID controllers
+
+2012-08-02  Marc A. Smith  <msmith626@gmail.com>
+
+	added a syncConfig when user quits
+
+2012-08-02  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed a few compiler warnings
+
+2012-08-02  Marc A. Smith  <msmith626@gmail.com>
+
+	updated network rc script to redirect all stderr to stdout for all system calls; also modified start arg to bring up all interfaces (eth)
+
+2012-08-01  Marc A. Smith  <msmith626@gmail.com>
+
+	a few script path changes and updates
+
+2012-08-01  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed delete user dialog to check for saved user ID, and not real user ID; updated various "information" dialogs to have a continue message at the bottom so users know how to close the dialog
+
+2012-07-31  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed suid business; modified statusBar to use the saved user ID -- still need to update the delete-user dialog...
+
+2012-07-31  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed a few TUI usability items in the Systems menu; updated a couple error dialog messages to be more informative; added seteuid
+
+2012-07-31  Marc A. Smith  <msmith626@gmail.com>
+
+	redirect stderr into stdout for the DHCP client program
+
+2012-07-31  Marc A. Smith  <msmith626@gmail.com>
+
+	ini files needed a new line at the end, otherwise they wouldn't parse
+
+2012-07-30  Marc A. Smith  <msmith626@gmail.com>
+
+	chmod suid for the TUI binary
+
+2012-07-30  Marc A. Smith  <msmith626@gmail.com>
+
+	the hostname and network /etc files are no longer needed
+
+2012-07-30  Marc A. Smith  <msmith626@gmail.com>
+
+	rc scripts switched over for new network script; set TUI as shell for root account
+
+2012-07-30  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed a few include issues
+
+2012-07-30  Marc A. Smith  <msmith626@gmail.com>
+
+	added Id tag keyword to TUI source
+
+2012-07-30  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed a typo
+
+2012-07-30  Marc A. Smith  <msmith626@gmail.com>
+
+	new target for kernel headers; updated CPPFLAGS for new path
+
+2012-07-29  Marc A. Smith  <msmith626@gmail.com>
+
+	cleaned up lots of warnings; updated main Makefile to actually clean the TUI directory when running 'clean-esos_tui' (helpful for development)
+
+2012-07-28  Marc A. Smith  <msmith626@gmail.com>
+
+	set _GNU_SOURCE define in Makefile to TUI, and removed def from label_data
+
+2012-07-28  Marc A. Smith  <msmith626@gmail.com>
+
+	cdk/cdk.h is now just cdk.h, updated includes; typedef boolean is now defined in cdk.h, commented out in megaraid.h
+
+2012-07-28  Marc A. Smith  <msmith626@gmail.com>
+
+	added build targets and proprietary tools as dependencies for the install target
+
+2012-07-28  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed issue with 'export CPPFLAGS' using the wildcard function and between the src_dir variable
+
+2012-07-27  Marc A. Smith  <msmith626@gmail.com>
+
+	removed sysfsutils (libsysfs is no longer used); added iniparser (for TUI)
+
+2012-07-26  Marc A. Smith  <msmith626@gmail.com>
+
+	updated main Makefile to include TUI
+
+2012-07-26  Marc A. Smith  <msmith626@gmail.com>
+
+	more updates for new Makefile
+
+2012-07-26  Marc A. Smith  <msmith626@gmail.com>
+
+	new Makefile for TUI
+
+2012-07-26  Marc A. Smith  <msmith626@gmail.com>
+
+	import of TUI code
+
+2012-07-24  Marc A. Smith  <msmith626@gmail.com>
+
+	some computers don't seem to like Unix epoch, so for /etc we'll use something a little more recent
+
+2012-07-22  Marc A. Smith  <msmith626@gmail.com>
+
+	new section for IB modules to load
+
+2012-07-22  Marc A. Smith  <msmith626@gmail.com>
+
+	updated global CPPFLAGS to use Linux kernel include; disabled use of gpm for ncurses package
+
+2012-07-19  Marc A. Smith  <msmith626@gmail.com>
+
+	enabled additional IB kernel options
+
+2012-07-18  Marc A. Smith  <msmith626@gmail.com>
+
+	more tweaks to new network rc script; tested and verified working
+
+2012-07-17  Marc A. Smith  <msmith626@gmail.com>
+
+	new network script is ready for testing
+
+2012-07-17  Marc A. Smith  <msmith626@gmail.com>
+
+	more work on new network rc script
+
+2012-07-16  Marc A. Smith  <msmith626@gmail.com>
+
+	initial import of new rc network script
+
+2012-07-13  Marc A. Smith  <msmith626@gmail.com>
+
+	added a patch for busybox to fix a segfault when using chpasswd: https://bugs.busybox.net/show_bug.cgi?id=4105
+
+2012-06-29  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed /var/empty <-> sshd permissions issue; reported by Carl Swanberg
+
+2012-06-13  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented device node unique ID for SCSI disks in /dev (via mdev)
+
+2012-04-17  Marc A. Smith  <msmith626@gmail.com>
+
+	added patch for CDK -- this will make it use LDFLAGS with libtool
+
+2012-04-16  Marc A. Smith  <msmith626@gmail.com>
+
+	added cdk and sysfsutils pacakges
+
+2012-04-09  Marc A. Smith  <msmith626@gmail.com>
+
+	using install.libs for ncurses was not enough -- missing terminfo, etc., switched to full install target
+
+2012-03-30  Marc A. Smith  <msmith626@gmail.com>
+
+	lots of fixes to make everything compile on Ubuntu -- added -fno-stack-protector to CFLAGS for glibc, a couple variables set for make for gcc (Ubuntu puts crt*.o files in /usr/lib/x86......), fixed up CFLAGS for ssmtp package, and finally added a patch (http://lists.busybox.net/pipermail/busybox/2011-October/076834.html) to make busybox compile on Ubuntu
+
+2012-03-27  Marc A. Smith  <msmith626@gmail.com>
+
+	commented out check/test make targets for e2fsprogs and perl -- are these really needed? we don't run any other testing type targets for other included projects...
+
+2012-03-27  Marc A. Smith  <msmith626@gmail.com>
+
+	set glibc as a requirement for the kernel since it also compiles the userland iscsi-scst tool/daemon; set LDFLAGS for iscsi-scst in kernel target and for cron
+
+2012-03-27  Marc A. Smith  <msmith626@gmail.com>
+
+	added some words to the THANKS document
+
+2012-03-23  Marc A. Smith  <msmith626@gmail.com>
+
+	set LD_LIBRARY_PATH for openssh configure script; remove reference to LD_LIBRARY_PATH in openssl target so gcc runs correctly (glibc differences)
+
+2012-03-23  Marc A. Smith  <msmith626@gmail.com>
+
+	lots of updates -- included mpfr and gmp with gcc, this way it will build the required libs against new glibc and should avoid any glibc symbol problems; also setup the 'fake_lib' directory that includes ld scripts for libc.so, libpthread.so, etc. that should help force use of new glibc when linking
+
+2012-03-21  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented patch for glibc (see http://sourceware.org/bugzilla/show_bug.cgi?id=12343 and http://sourceware.org/git/?p=glibc.git;a=commit;h=4a531bb0b3b582cb693de9f76d2d97d970f9a5d5) that should resolve issues compiling on fedora and possibly ubuntu; set configure to disable selinux support in glibc
+
+2012-03-19  Marc A. Smith  <msmith626@gmail.com>
+
+	switched back to glibc 2.12.2
+
+2012-03-17  Marc A. Smith  <msmith626@gmail.com>
+
+	removed several features (mount-NFS,CIFS, etc.) from busybox config -- these were preventing static busybox due to glibc 2.14.1
+
+2012-03-16  Marc A. Smith  <msmith626@gmail.com>
+
+	removed glibc 2.13 line in checksum files
+
+2012-03-16  Marc A. Smith  <msmith626@gmail.com>
+
+	problems with glibc 2.13 (memcpy-ssse3); up'd again to 2.14.1
+
+2012-03-16  Marc A. Smith  <msmith626@gmail.com>
+
+	up'd glibc to 2.13; set SHELL to bash -- using a bashism or two (still testing)
+
+2012-03-12  Marc A. Smith  <msmith626@gmail.com>
+
+	updated URL for MegaCLI tool
+
+2012-03-12  Marc A. Smith  <msmith626@gmail.com>
+
+	cleaned up some extra comments in Makefile.in; added prop_tools var to clean_targets
+
+2012-03-09  Marc A. Smith  <msmith626@gmail.com>
+
+	added pre/post SCST extra config file check in rc.2 init script; if either file exists, run them with /bin/sh
+
+2012-03-09  Marc A. Smith  <msmith626@gmail.com>
+
+	updated sync script to include modprobe config file and extra user config files
+
+2012-03-06  Marc A. Smith  <msmith626@gmail.com>
+
+	removed MegaCLI and asm_linux targets from build_targets var
+
+2012-03-06  Marc A. Smith  <msmith626@gmail.com>
+
+	removed Adaptec and LSI CLI packages from both checksum files
+
+2012-03-05  Marc A. Smith  <msmith626@gmail.com>
+
+	updated configure.ac -- now has 'disable' options for the current proprietary tools (MegaCLI, asm_linux); also revamped how proprietary tools are handled in the Makefile
+
+2012-03-04  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed a few issues in health_chk, added health_chk to cron and Makefile.in
+
+2012-03-04  Marc A. Smith  <msmith626@gmail.com>
+
+	finished (hopefully) health check script...
+
+2012-03-04  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented check for AACRAID logical drives
+
+2012-03-04  Marc A. Smith  <msmith626@gmail.com>
+
+	started work on system health check shell script
+
+2012-03-03  Marc A. Smith  <msmith626@gmail.com>
+
+	added new system startup script; this script emails useful (hopefully) information and checks for kernel crash dumps
+
+2012-03-03  Marc A. Smith  <msmith626@gmail.com>
+
+	updated system cron job schedules
+
+2012-03-03  Marc A. Smith  <msmith626@gmail.com>
+
+	doubled esos_logs partition size
+
+2012-02-24  Marc A. Smith  <msmith626@gmail.com>
+
+	additional files to sync
+
+2012-02-22  Marc A. Smith  <msmith626@gmail.com>
+
+	added kexec-tools package; implemented kdump/kexec to capture kernel crash dump: new rc script, added logic in initramfs image to save dump image
+
+2012-02-16  Marc A. Smith  <msmith626@gmail.com>
+
+	removed echo lines used when debugging the scst_kernel targets
+
+2012-02-16  Marc A. Smith  <msmith626@gmail.com>
+
+	lots of changes: up'd SCST to trunk and Linux to 3.2.6; re-worked scst_kernel target to be much simpler for prod/debug
+
+2012-02-13  Marc A. Smith  <msmith626@gmail.com>
+
+	switched applicable targets to use 'install' target instead of manually install'ing files
+
+2012-02-13  Marc A. Smith  <msmith626@gmail.com>
+
+	cleaned up un-needed comments
+
+2012-02-13  Marc A. Smith  <msmith626@gmail.com>
+
+	added a /etc/esos-release file that is generated by install target (contains version number)
+
+2012-02-13  Marc A. Smith  <msmith626@gmail.com>
+
+	set MANPATH for all users and needed gtbl for man pages (sym link -> tbl)
+
+2012-02-11  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented groff target
+
+2012-02-11  Marc A. Smith  <msmith626@gmail.com>
+
+	version number will now include SVN revision
+
+2012-02-11  Marc A. Smith  <msmith626@gmail.com>
+
+	fix permissions of shadow and crontab on install
+
+2012-02-07  Marc A. Smith  <msmith626@gmail.com>
+
+	forgot touch lines for new targets (lsscsi, sg3_utils)
+
+2012-02-06  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented lsscsi and sg3_utils packages
+
+2012-02-06  Marc A. Smith  <msmith626@gmail.com>
+
+	MegaCli64 needs libsysfs.so.2.0.2 even though ldd doesn't report its required -- it also seems to only look in an absolute, static path for it; MegaCLI target now provides the library that comes with the package
+
+2012-02-04  Marc A. Smith  <msmith626@gmail.com>
+
+	added -u flag for cpio in the install target (ld.so.conf wasn't being installed due to existing empty ld.so.conf); added a touch for /var/log/wtmp and lastlog in rc init script
+
+2012-02-03  Marc A. Smith  <msmith626@gmail.com>
+
+	CFLAGS should be CPPFLAGS for setting include search; typo in /etc/network
+
+2012-02-02  Marc A. Smith  <msmith626@gmail.com>
+
+	typo in CC variable
+
+2012-02-02  Marc A. Smith  <msmith626@gmail.com>
+
+	ssmtp target was not pulling in LDFLAGS, fixed using CC var via make
+
+2012-02-01  Marc A. Smith  <msmith626@gmail.com>
+
+	switched grub target to use CONFIG_STATIC in .config instead of LDFLAGS
+
+2012-01-31  Marc A. Smith  <msmith626@gmail.com>
+
+	cleaned up gcc target -- should be less to compile now; tweaked a few other targets
+
+2012-01-31  Marc A. Smith  <msmith626@gmail.com>
+
+	switched to using 'install' target for most projects instead of manually installing files
+
+2012-01-29  Marc A. Smith  <msmith626@gmail.com>
+
+	when compiling perl, it fails -- seems related to gcc's -I and -ansi; it gets mad about C++ style comments in stdlib.h, etc. ignoring CFLAGS for now with configure.gnu
+
+2012-01-29  Marc A. Smith  <msmith626@gmail.com>
+
+	added LDFLAGS and CFLAGS environment variables; added pre-reqs for packages
+
+2012-01-26  Marc A. Smith  <msmith626@gmail.com>
+
+	tweaked install target: removed un-needed blockdev command to re-read PT, fixed grub.cfg for grub2
+
+2012-01-26  Marc A. Smith  <msmith626@gmail.com>
+
+	more grub tweaks
+
+2012-01-24  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed shell string equality tests
+
+2012-01-24  Marc A. Smith  <msmith626@gmail.com>
+
+	more grub2 changes
+
+2012-01-24  Marc A. Smith  <msmith626@gmail.com>
+
+	updates for grub2
+
+2012-01-24  Marc A. Smith  <msmith626@gmail.com>
+
+	for grub2 switch
+
+2012-01-23  Marc A. Smith  <msmith626@gmail.com>
+
+	updated scstadmin perl mod target -- needs more work
+
+2012-01-23  Marc A. Smith  <msmith626@gmail.com>
+
+	up'd grub to 1.99
+
+2012-01-20  Marc A. Smith  <msmith626@gmail.com>
+
+	needed KDIR var for a couple make targets
+
+2012-01-19  Marc A. Smith  <msmith626@gmail.com>
+
+	updated distclean target and updated variables for configure script
+
+2012-01-19  Marc A. Smith  <msmith626@gmail.com>
+
+	moved Makefile to Makefile.in to prep for config script
+
+2012-01-19  Marc A. Smith  <msmith626@gmail.com>
+
+	finishing touches on configure.ac
+
+2012-01-19  Marc A. Smith  <msmith626@gmail.com>
+
+	removed variables for shell built-ins
+
+2012-01-19  Marc A. Smith  <msmith626@gmail.com>
+
+	working autoconf configure.ac
+
+2012-01-19  Marc A. Smith  <msmith626@gmail.com>
+
+	started work on autoconf
+
+2012-01-18  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed /dev umount busy message on halt
+
+2012-01-18  Marc A. Smith  <msmith626@gmail.com>
+
+	run ldconfig on boot
+
+2012-01-18  Marc A. Smith  <msmith626@gmail.com>
+
+	updated asm_linux and MegaCLI targets to use /opt for 3rd party binaries; updated PATH and ld.so.conf
+
+2012-01-17  Marc A. Smith  <msmith626@gmail.com>
+
+	added support for libstdc++.so.5 (for arcconf) from asm_linux package
+
+2012-01-17  Marc A. Smith  <msmith626@gmail.com>
+
+	updated Makefile to provide Adaptec Storage Manager CLI
+
+2012-01-17  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed up SCST rc script now that module deps should work correctly
+
+2012-01-17  Marc A. Smith  <msmith626@gmail.com>
+
+	tweaked initramfs script a bit and modified install target to accept slightly less than 4 GB drives
+
+2012-01-15  Marc A. Smith  <msmith626@gmail.com>
+
+	renovated kernel config
+
+2012-01-13  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented USB flash drive size check and initramfs RAM check
+
+2012-01-13  Marc A. Smith  <msmith626@gmail.com>
+
+	new busybox .config file; more Makefile clean-up; tweaked SCST rc script
+
+2012-01-09  Marc A. Smith  <msmith626@gmail.com>
+
+	updated documentation and initial import of configure.ac
+
+2012-01-09  Marc A. Smith  <msmith626@gmail.com>
+
+	cleaned up several targets that were also install man pages
+
+2012-01-07  Marc A. Smith  <msmith626@gmail.com>
+
+	lots of Makefile cleanup
+
+2012-01-06  Marc A. Smith  <msmith626@gmail.com>
+
+	added srpt
+
+2012-01-05  Marc A. Smith  <msmith626@gmail.com>
+
+	implemented checksum target
+
+2012-01-04  Marc A. Smith  <msmith626@gmail.com>
+
+	more Makefile clean-up
+
+2012-01-04  Marc A. Smith  <msmith626@gmail.com>
+
+	more Makefile updates
+
+2012-01-03  Marc A. Smith  <msmith626@gmail.com>
+
+	updated fetch target and pre-reqs
+
+2012-01-01  Marc A. Smith  <msmith626@gmail.com>
+
+	initial import
