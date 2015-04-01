@@ -154,7 +154,7 @@ btier_start() {
 	l_load_module btier
 	
 	# Assemble Tier Device
-	/sbin/btier_setup -f ${OCF_RESKEY_tier_devices} -B
+	btier_setup -f ${OCF_RESKEY_tier_devices} -B
 	if [ $? = 0 ]; then
 		set_tier_dev
 		get_tier_dev
@@ -200,7 +200,7 @@ btier_validate() {
 	    required_vars="tier_devices"
     for var in ${required_vars}; do
 	param="OCF_RESKEY_${var}"
-	if [ -z "${!param}" ]; then
+	if [ -z "${param}" ]; then
 	    ocf_log error "Missing resource parameter \"$var\"!"
 	    exit $OCF_ERR_CONFIGURED
 	fi
