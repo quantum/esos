@@ -138,15 +138,21 @@ btier_start() {
 	ocf_log info "BTIER: Starting..."
 	l_load_module btier
 	
-	# Assemble Tier Device
+	ocf_log info "BTIER: Wait for kernel module loaded..."
+    while : ; do
+        lsmod | grep btier >& /dev/null
+        [[ ${?} -eq 1 ]] || break
+    done
+	
+	ocf_log info "BTIER: Assembling Tier Device..."
 	btier_setup -f ${OCF_RESKEY_tier_devices} -B
 	if [ $? = 0 ]; then
 		set_tier_dev
 		get_tier_dev
-		ocf_log info "started device ${TIER_DEV}"
+		ocf_log info "BTIER: Started device ${TIER_DEV}"
 		return $OCF_SUCCESS
 	else
-		ocf-log warn "unable to start btier device"
+		ocf-log warn "BTIER: Unable to start device ${TIER_DEV}"
 		return $OCF_ERROR_GENERIC
 	fi
 		
