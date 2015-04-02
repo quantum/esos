@@ -170,6 +170,10 @@ btier_stop() {
 		if [ "${OCF_RESKEY_device_name}" != "" ]; then
 			rm /dev/${OCF_RESKEY_device_name}		
 		fi
+		ocf_log info "BTIER: Stopped device ${TIER_DEV}"
+	else
+		ocf-log warn "BTIER: Unable to stop device ${TIER_DEV}"
+		return $OCF_ERROR_GENERIC
 	fi
     fi
     return $OCF_SUCCESS
