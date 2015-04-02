@@ -1,6 +1,4 @@
 #! /bin/bash
-#
-# $Id$
 
 PKG_DIR="${PWD}"
 TEMP_DIR="${PKG_DIR}/temp"

@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 # This script is called by mdev and performs different actions
 # based on the device node name/type -- similar to udev rules.
 

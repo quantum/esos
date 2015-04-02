@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file dialogs.h
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _DIALOGS_H
@@ -86,7 +88,7 @@ extern "C" {
 #define HELP_MSG_SIZE                   17
 #define SUPPORT_PKG_MSG_SIZE            7
 #define ABOUT_MSG_SIZE                  12
-    
+
 /* Field/entry/name/value sizing limits */
 #define MAX_EMAIL_LEN           32
 #define MAX_SMTP_LEN            32

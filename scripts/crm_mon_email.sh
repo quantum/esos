@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 # This is a helper script intended to be used with the ClusterMon RA. It
 # uses environment variables from the crm_mon binary; the original script is
 # based on this SNMP helper script from Florian Crouzat:

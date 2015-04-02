@@ -1,6 +1,4 @@
 #! /bin/sh
-#
-# $Id$
 
 #
 #   Resource Agent for managing the Generic SCSI Target Subsystem

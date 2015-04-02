@@ -1,7 +1,5 @@
 #! /usr/bin/python
 
-# $Id$
-
 # The ESOS performance agent, written by Marcin Czupryniak; this daemon
 # will dump various performance statistics/metrics into the configured
 # database. Use the '/etc/perf-agent.conf' file for configuration.

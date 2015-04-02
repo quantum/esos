@@ -1,7 +1,5 @@
 #! /usr/bin/perl
 
-# $Id$
-
 # This is the ESOS network rc script; it parses the network configuration
 # file and configures general network settings and interfaces accordingly.
 # Original INI parsing sample code came from here:

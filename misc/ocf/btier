@@ -1,6 +1,4 @@
 # !/bin/bash
-#
-# $Id$
 
 #
 # 	BTIER OCF RA. Exports and manages iSCSI SCST targets.

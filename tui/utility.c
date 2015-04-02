@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file utility.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -304,19 +306,19 @@ boolean checkInetAccess() {
     struct gaicb **requests = NULL;
     struct timespec timeout = {0};
     int ret_val = 0, loop_cnt = 0;
-    
+
     /* Setup our request */
     requests = realloc(requests, (1 * sizeof requests[0]));
     requests[0] = calloc(1, sizeof *requests[0]);
     requests[0]->ar_name = INET_TEST_HOST;
-    
+
     /* Queue the request */
     ret_val = getaddrinfo_a(GAI_NOWAIT, &requests[0], 1, NULL);
     if (ret_val != 0) {
         DEBUG_LOG("getaddrinfo_a(): %s", gai_strerror(ret_val));
         return FALSE;
     }
-    
+
     /* Wait for the request to complete, or hit the timeout */
     timeout.tv_nsec = 250000000;
     loop_cnt = 1;

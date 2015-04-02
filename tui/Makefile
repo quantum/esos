@@ -1,5 +1,3 @@
-# $Id$
-
 CC		?= gcc
 RM		?= rm
 CPPFLAGS	:= $(CPPFLAGS)

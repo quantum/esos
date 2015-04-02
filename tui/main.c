@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file main.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -49,7 +51,7 @@ int main(int argc, char** argv) {
     /* Setup logging for debug messages */
     openlog(TUI_LOG_PREFIX, TUI_LOG_OPTIONS, TUI_LOG_FACILITY);
     DEBUG_LOG("TUI start-up...");
-    
+
     /* Check if there is Internet access */
     inet_works = checkInetAccess();
 
@@ -343,7 +345,7 @@ start:
                     curs_set(1);
                     echo();
                     system(CLEAR_BIN);
-                    /* Execute the shell; if we fail, print something 
+                    /* Execute the shell; if we fail, print something
                      * useful to syslog for debugging */
                     if ((execl(SHELL_BIN, SHELL_BIN, "--rcfile", GLOBAL_BASHRC,
                             "-i", (char *) NULL)) == -1) {
@@ -404,7 +406,7 @@ start:
                     submenu_choice == SYSTEM_SYNC_CONF - 1) {
                 /* Sync. Configuration dialog */
                 syncConfig(cdk_screen);
-                
+
             } else if (menu_choice == SYSTEM_MENU &&
                     submenu_choice == SYSTEM_NETWORK - 1) {
                 /* Networking dialog */
@@ -429,12 +431,12 @@ start:
                     submenu_choice == SYSTEM_ADD_USER - 1) {
                 /* Add User dialog */
                 addUserDialog(cdk_screen);
-                
+
             } else if (menu_choice == SYSTEM_MENU &&
                     submenu_choice == SYSTEM_DEL_USER - 1) {
                 /* Delete User dialog */
                 delUserDialog(cdk_screen);
-                
+
             } else if (menu_choice == SYSTEM_MENU &&
                     submenu_choice == SYSTEM_CHG_PASSWD - 1) {
                 /* Change Password dialog */
@@ -479,37 +481,37 @@ start:
                     submenu_choice == BACK_STORAGE_VOL_PROP - 1) {
                 /* Volume Properties dialog */
                 volPropsDialog(cdk_screen);
-                
+
             } else if (menu_choice == BACK_STORAGE_MENU &&
                     submenu_choice == BACK_STORAGE_DRBD_STAT - 1) {
                 /* DRBD Status dialog */
                 drbdStatDialog(cdk_screen);
-                
+
             } else if (menu_choice == BACK_STORAGE_MENU &&
                     submenu_choice == BACK_STORAGE_SOFT_RAID_STAT - 1) {
                 /* Software RAID Status dialog */
                 softRAIDStatDialog(cdk_screen);
-                
+
             } else if (menu_choice == BACK_STORAGE_MENU &&
                     submenu_choice == BACK_STORAGE_LVM2_INFO - 1) {
                 /* LVM2 LV Information dialog */
                 lvm2InfoDialog(cdk_screen);
-                
+
             } else if (menu_choice == BACK_STORAGE_MENU &&
                     submenu_choice == BACK_STORAGE_CREATE_FS - 1) {
                 /* Add Create File System dialog */
                 createFSDialog(cdk_screen);
-                
+
             } else if (menu_choice == BACK_STORAGE_MENU &&
                     submenu_choice == BACK_STORAGE_REMOVE_FS - 1) {
                 /* Remove File System dialog */
                 removeFSDialog(cdk_screen);
-                
+
             } else if (menu_choice == BACK_STORAGE_MENU &&
                     submenu_choice == BACK_STORAGE_ADD_VDISK_FILE - 1) {
                 /* Add Virtual Disk File dialog */
                 addVDiskFileDialog(cdk_screen);
-                
+
             } else if (menu_choice == BACK_STORAGE_MENU &&
                     submenu_choice == BACK_STORAGE_DEL_VDISK_FILE - 1) {
                 /* Delete Virtual Disk File dialog */
@@ -639,7 +641,7 @@ start:
                     submenu_choice == TARGETS_TOGGLE - 1) {
                 /* Enable/Disable Target dialog */
                 enblDsblTgtDialog(cdk_screen);
-            
+
             } else if (menu_choice == TARGETS_MENU &&
                     submenu_choice == TARGETS_SET_REL_TGT_ID - 1) {
                 /* Set Relative Target ID dialog */
@@ -903,7 +905,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
             break;
         }
-        
+
         /* Parse INI file values (if any) */
         conf_participate = iniparser_getstring(ini_dict,
                 "usage:participate", "");
@@ -933,7 +935,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
             iniparser_dump_ini(ini_dict, ini_file);
             fclose(ini_file);
         }
-        
+
         if (strcmp(conf_participate, "no") == 0) {
             /* Nothing to do */
             break;
@@ -1009,7 +1011,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                     curl_easy_cleanup(curl);
                     curl_formfree(form_post);
                 }
-                
+
                 /* Success if we made it this far, set the last version */
                 if (iniparser_set(ini_dict, "usage:last_ver",
                         ESOS_VERSION) == -1) {
@@ -1027,11 +1029,11 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                 fclose(ini_file);
             }
         }
-        
+
         /* We got this far successfully, exit the loop */
         break;
     }
-            
+
     /* Done */
     if (ini_dict != NULL)
         iniparser_freedict(ini_dict);

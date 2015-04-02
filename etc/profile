@@ -1,5 +1,3 @@
-# $Id$
-
 # Set the title bar
 if [[ ${TERM} == xterm* ]] || [[ ${TERM} == vte* ]]; then
     echo -ne "\033]0;`hostname` - Enterprise Storage OS\007"

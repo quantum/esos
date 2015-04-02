@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file menu_actions.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -856,7 +858,7 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
         }
         break;
     }
-    
+
     /* Done */
     destroyCDKLabel(sync_msg);
     return;
@@ -874,14 +876,14 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
     char *esos_grp_members[MAX_USERS] = {NULL},
             *scroll_list[MAX_USERS] = {NULL};
     int i = 0, user_cnt = 0, user_choice = 0;
-    
+
     /* Get the specified ESOS group */
     group_info = getgrnam(ESOS_GROUP);
     if (!group_info) {
         errorDialog(cdk_screen, "Couldn't get ESOS group information!", NULL);
         return;
     }
-    
+
     /* Add group members for scroll widget */
     for (grp_member = group_info->gr_mem; *grp_member; grp_member++) {
         if (user_cnt < MAX_USERS) {
@@ -1015,7 +1017,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
         }
     }
     endmntent(mtab_file);
-    
+
     /* Open the file system tab file */
     if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
         SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
@@ -1023,7 +1025,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
         FREE_NULL(error_msg);
         return;
     }
-    
+
     /* Loop over fstab entries */
     fs_cnt = 0;
     while ((fstab_entry = getmntent(fstab_file)) != NULL) {
@@ -1792,7 +1794,7 @@ void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
 }
 
 
-/* 
+/*
  * Check that the given char pointer string contains "valid characters" based
  * on the valid-character-type parameter. If the string is good, return TRUE,
  * and FALSE if its bad (doesn't pass test). If the string does not pass
@@ -1911,7 +1913,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
     /* We set the counter ahead since the first row is for general settings */
     j = 1;
     SAFE_ASPRINTF(&net_scroll_msg[0], "<C>General Network Settings");
-    
+
     while ((if_name[i].if_index != 0) && (if_name[i].if_name != NULL) &&
             (j < MAX_NET_IFACE)) {
         /* Put the interface name into the ifreq struct */
@@ -2104,7 +2106,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
         }
         break;
     }
-    
+
     /* Done */
     destroyCDKScroll(net_conf_list);
     refreshCDKScreen(cdk_screen);

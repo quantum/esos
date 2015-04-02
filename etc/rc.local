@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 # Send a system startup email
 /usr/local/sbin/startup.sh
 

@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file menu_actions-hosts.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -28,7 +30,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
         attr_value[MAX_SYSFS_ATTR_SIZE] = {0};
     char *entry_title = NULL, *group_name = NULL, *error_msg = NULL;
     int temp_int = 0;
-    
+
     /* Have the user choose a SCST target */
     getSCSTTgtChoice(main_cdk_screen, scst_tgt, tgt_driver);
     if (scst_tgt[0] == '\0' || tgt_driver[0] == '\0')

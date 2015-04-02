@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file menu_actions-targets.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -29,12 +31,12 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
     int i = 0, line_pos = 0;
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
-    
+
     /* Have the user choose a SCST target */
     getSCSTTgtChoice(main_cdk_screen, scst_tgt, tgt_driver);
     if (scst_tgt[0] == '\0' || tgt_driver[0] == '\0')
         return;
-    
+
     /* Setup scrolling window widget */
     tgt_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (TGT_INFO_ROWS + 2), (TGT_INFO_COLS + 2),
@@ -95,10 +97,10 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
         SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
         line_pos++;
     }
-    
+
     /* Set the scrolling window content */
     setCDKSwindowContents(tgt_info, swindow_info, line_pos);
-    
+
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(tgt_info, 'g');
     activateCDKSwindow(tgt_info, 0);
@@ -296,7 +298,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
         /* Close the directory stream */
         closedir(dir_stream);
     }
-        
+
     /* Done */
     destroyCDKSwindow(lip_info);
     for (i = 0; i < MAX_LIP_INFO_LINES; i++) {
@@ -327,7 +329,7 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     int tgt_window_lines = 0, tgt_window_cols = 0, window_y = 0, window_x = 0,
             temp_int = 0, i = 0, traverse_ret = 0, curr_state = 0,
             new_state = 0;
-    
+
     /* Have the user choose a SCST target */
     getSCSTTgtChoice(main_cdk_screen, scst_tgt, tgt_driver);
     if (scst_tgt[0] == '\0' || tgt_driver[0] == '\0')
@@ -486,15 +488,15 @@ void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
     getSCSTTgtChoice(main_cdk_screen, scst_tgt, tgt_driver);
     if (scst_tgt[0] == '\0' || tgt_driver[0] == '\0')
         return;
-    
+
     /* Get the current relative target ID */
     snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/rel_tgt_id",
             SYSFS_SCST_TGT, tgt_driver, scst_tgt);
     readAttribute(attr_path, attr_value);
     curr_rel_tgt_id = atoi(attr_value);
-    /* Since readAttribute() doesn't provide a failure indication, 
+    /* Since readAttribute() doesn't provide a failure indication,
      * we'll use this as a lame validation check */
-    if (curr_rel_tgt_id < MIN_SCST_REL_TGT_ID || 
+    if (curr_rel_tgt_id < MIN_SCST_REL_TGT_ID ||
             curr_rel_tgt_id > MAX_SCST_REL_TGT_ID) {
         errorDialog(main_cdk_screen,
                 "Unable to read the relative target ID attribute!", NULL);

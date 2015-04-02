@@ -1,6 +1,4 @@
 #! /bin/busybox sh
-#
-# $Id$
 
 rescue_shell() {
 	echo "Something bad happened; attempting to drop into a shell..."

@@ -1,7 +1,5 @@
 #! /usr/bin/python
 
-# $Id$
-
 '''
 Created on Jul 27, 2013
 

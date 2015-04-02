@@ -1,6 +1,4 @@
 #! /bin/sh
-#
-# $Id$
 
 # Script courtesy of Jeff Johnson:
 # http://stackoverflow.com/questions/18787375/how-do-i-extract-the-contents-of-an-rpm

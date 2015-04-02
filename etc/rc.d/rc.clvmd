@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 source /etc/rc.d/common
 
 CLVMD="/usr/sbin/clvmd"

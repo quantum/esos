@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file megaraid.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -1017,7 +1019,7 @@ int addMRLogicalDrive(MRLDPROPS *ld_props, int num_disks, MRDISK *disks[],
     char *command = NULL, *temp_pstr = NULL;
     int status = 0, i = 0, ret_val = 0, pd_val_size = 0, pd_line_size = 0;
     char pd_list_line_buffer[MAX_MR_PD_LIST_BUFF] = {0};
-    
+
     /* Build the new LD command */
     for (i = 0; i < num_disks; i++) {
         if (i == (num_disks - 1))

@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file strings.h
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef STRINGS_H
@@ -98,7 +100,7 @@ extern char *g_choice_char[], *g_bonding_map[], *g_scst_dev_types[],
 extern char *g_ok_msg[], *g_ok_cancel_msg[], *g_yes_no_msg[];
 
 /* Other string stuff */
-extern char *g_transports[], *g_scst_handlers[];    
+extern char *g_transports[], *g_scst_handlers[];
 
 #ifdef	__cplusplus
 }

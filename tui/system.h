@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file system.h
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _SYSTEM_H

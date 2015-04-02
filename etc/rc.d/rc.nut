@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 source /etc/rc.d/common
 
 UPSD="/usr/sbin/upsd"

@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file menu_actions-alua.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -91,7 +93,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
                     }
                 }
                 closedir(dev_dir_stream);
-                
+
                 /* Now get all of the target groups for this device group */
                 snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
                         "%s/device_groups/%s/target_groups", SYSFS_SCST_TGT,

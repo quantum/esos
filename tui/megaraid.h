@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file megaraid.h
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _MEGARAID_H
@@ -96,7 +98,7 @@ struct megaraid_logical_drive {
     /* Strip Size */
     char strip_size[MAX_MR_ATTR_SIZE];
     /* Number Of Drives */
-    int drive_cnt;                      
+    int drive_cnt;
 };
 
 /* Structure to hold MegaRAID enclosure data */

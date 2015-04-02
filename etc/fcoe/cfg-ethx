@@ -1,5 +1,3 @@
-# $Id$
-
 ## Type:       yes/no
 ## Default:    no
 # Enable/Disable FCoE service at the Ethernet port

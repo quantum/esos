@@ -1,7 +1,5 @@
 #! /usr/bin/perl
 
-# $Id$
-
 # An rc script for the EnhanceIO driver; this will parse the EIO INI
 # configuration file and create cache devices.
 # Original INI parsing sample code came from here:

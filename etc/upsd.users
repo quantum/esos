@@ -1,5 +1,3 @@
-# $Id$
-
 # Network UPS Tools: Example upsd.users
 #
 # This file sets the permissions for upsd - the UPS network daemon.

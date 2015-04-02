@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file menu_actions-back_storage.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -479,7 +481,7 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
         FREE_NULL(error_msg);
         break;
     }
-    
+
     /* Selection widget for disks */
     SAFE_ASPRINTF(&dsk_select_title,
             "<C></31/B>Select Disks for New LD (MegaRAID Adapter # %d)\n",
@@ -1354,7 +1356,7 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
             SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
             line_pos++;
         }
-        
+
         /* Close the process stream and check exit status */
         if ((status = pclose(lvdisplay_proc)) == -1) {
             ret_val = -1;
@@ -1959,7 +1961,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
             return;
         }
     }
-    
+
     /* Get confirmation before removing the file system */
     SAFE_ASPRINTF(&confirm_msg, "'%s' file system?", fs_name);
     confirm = confirmDialog(main_cdk_screen,
@@ -1998,7 +2000,7 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
             FREE_NULL(error_msg);
             return;
         }
-        
+
         /* Remove the mount point directory */
         if ((rmdir(fs_path)) == -1) {
             SAFE_ASPRINTF(&error_msg, "rmdir(): %s", strerror(errno));
@@ -2006,10 +2008,10 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
             FREE_NULL(error_msg);
             return;
         }
-        
+
         // TODO: Should we also remove/erase the file system label from disk?
     }
-    
+
     /* Done */
     return;
 }
@@ -2044,7 +2046,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             new_vdisk_mib = 0ll;
     off_t position = 0;
     ssize_t bytes_written = 0, write_length = 0;
-    
+
     /* Have the user select a file system to remove */
     getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type, &mounted);
     if (fs_name[0] == '\0')
@@ -2353,7 +2355,7 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     char *error_msg = NULL, *selected_file = NULL, *confirm_msg = NULL;
     boolean mounted = FALSE, question = FALSE, confirm = FALSE;
     int exit_stat = 0, ret_val = 0;
-    
+
     /* Have the user select a file system to remove */
     getFSChoice(main_cdk_screen, fs_name, fs_path, fs_type, &mounted);
     if (fs_name[0] == '\0')

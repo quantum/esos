@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file menu_actions-system.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE

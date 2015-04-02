@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file strings.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #include <stddef.h>

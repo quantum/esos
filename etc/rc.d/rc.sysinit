@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 /bin/echo "Mounting special file systems..."
 /bin/mount /dev
 /bin/mount /proc

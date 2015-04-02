@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file menu_actions-interface.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -112,7 +114,7 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
         FREE_NULL(error_msg);
         return;
     }
-    
+
     /* Set a message for the dialog */
     SAFE_ASPRINTF(&message[0], "<C></31/B>ESOS Support Bundle");
     SAFE_ASPRINTF(&message[1], " ");

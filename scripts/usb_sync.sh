@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 # This script will synchronize configuration files between the ESOS USB
 # device (esos_conf) and the root tmpfs filesystem.
 

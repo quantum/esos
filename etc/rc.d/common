@@ -1,5 +1,3 @@
-# $Id$
-
 RC_D_PREFIX="/etc/rc.d"
 STOP_TIMEOUT=120
 

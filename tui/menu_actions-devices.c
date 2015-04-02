@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file menu_actions-devices.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -28,12 +30,12 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char *swindow_info[MAX_DEV_INFO_LINES] = {NULL};
     int i = 0, line_cnt = 0;
-    
+
     /* Have the user choose a SCST device */
     getSCSTDevChoice(main_cdk_screen, scst_dev, scst_hndlr);
     if (scst_dev[0] == '\0' || scst_hndlr[0] == '\0')
         return;
-    
+
     /* Setup scrolling window widget */
     dev_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (DEV_INFO_ROWS + 2), (DEV_INFO_COLS + 2),
@@ -72,7 +74,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
         readAttribute(dir_name, tmp_buff);
         SAFE_ASPRINTF(&swindow_info[6], "</B>Filename:<!B>\t%s", tmp_buff);
         line_cnt = 7;
-        
+
     } else if (strcmp(scst_hndlr, "vdisk_blockio") == 0) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/filename",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
@@ -104,7 +106,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
         readAttribute(dir_name, tmp_buff);
         SAFE_ASPRINTF(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
         line_cnt = 13;
-        
+
     } else if (strcmp(scst_hndlr, "vdisk_fileio") == 0) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/filename",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
@@ -136,7 +138,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
         readAttribute(dir_name, tmp_buff);
         SAFE_ASPRINTF(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
         line_cnt = 13;
-        
+
     } else if (strcmp(scst_hndlr, "vdisk_nullio") == 0) {
         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/blocksize",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
@@ -169,7 +171,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Set the scrolling window content */
     setCDKSwindowContents(dev_info, swindow_info, line_cnt);
-    
+
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(dev_info, 'g');
     activateCDKSwindow(dev_info, 0);
@@ -781,7 +783,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 break;
             }
             setCDKLabelBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
-            
+
             /* Device name widget (entry) */
             dev_name_field = newCDKEntry(dev_screen, (window_x + 1),
                     (window_y + 3), NULL, "</B>SCST Device Name (no spaces): ",
@@ -826,7 +828,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKRadioBackgroundAttrib(removable, COLOR_DIALOG_TEXT);
             setCDKRadioCurrentItem(removable, 0);
-            
+
             /* Rotational widget (radio) */
             rotational = newCDKRadio(dev_screen, (window_x + 18),
                     (window_y + 9), NONE, 3, 10, "</B>Rotational",
@@ -986,7 +988,7 @@ void remDeviceDialog(CDKSCREEN *main_cdk_screen) {
     getSCSTDevChoice(main_cdk_screen, scst_dev, scst_hndlr);
     if (scst_dev[0] == '\0' || scst_hndlr[0] == '\0')
         return;
-    
+
     /* Get a final confirmation from user before we delete */
     SAFE_ASPRINTF(&confirm_msg, "SCST device '%s' (%s)?", scst_dev, scst_hndlr);
     confirm = confirmDialog(main_cdk_screen, "Are you sure you want to delete",
@@ -1228,13 +1230,13 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
             *init_dir_stream = NULL, *lun_dir_stream = NULL;
     struct dirent *tgt_dir_entry = NULL, *group_dir_entry = NULL,
             *init_dir_entry = NULL, *lun_dir_entry = NULL;
-    
+
     /* Fill the array with current SCST target drivers */
     if (!listSCSTTgtDrivers(tgt_drivers, &driver_cnt)) {
         errorDialog(main_cdk_screen, TGT_DRIVERS_ERR, NULL);
         return;
     }
-    
+
     /* Setup scrolling window widget */
     lun_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (LUN_LAYOUT_ROWS + 2), (LUN_LAYOUT_COLS + 2),
@@ -1393,10 +1395,10 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
         SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
         line_pos++;
     }
-    
+
     /* Set the scrolling window content */
     setCDKSwindowContents(lun_info, swindow_info, line_pos);
-    
+
     /* The 'g' makes the swindow widget scroll to the top, then activate */
     injectCDKSwindow(lun_info, 'g');
     activateCDKSwindow(lun_info, 0);

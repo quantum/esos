@@ -1,5 +1,3 @@
-# $Id$
-
 id:2:initdefault:
 
 si:S:sysinit:/etc/rc.d/rc.sysinit

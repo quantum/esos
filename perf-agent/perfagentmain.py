@@ -1,5 +1,3 @@
-# $Id$
-
 '''
 Created on Jun 14, 2013
 

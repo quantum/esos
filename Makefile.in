@@ -1,5 +1,3 @@
-# $Id$
-
 # Enterprise Storage OS (ESOS) Makefile[.in]
 # Makefile is generated from Makefile.in via the configure script.
 # Please see the README/INSTALL documents for help.
@@ -388,6 +386,10 @@ image: $(build_targets)
 	$(CHOWN) 65534:65534 $(MOUNT_DIR)/var/run/stunnel
 	$(CHOWN) 0:65534 $(MOUNT_DIR)/var/lib/stunnel
 	$(CHMOD) 1770 $(MOUNT_DIR)/var/lib/stunnel
+	$(LN) rc.0 $(MOUNT_DIR)/etc/rc.d/rc.6
+	$(LN) rc.2 $(MOUNT_DIR)/etc/rc.d/rc.5
+	$(LN) rc.2 $(MOUNT_DIR)/etc/rc.d/rc.4
+	$(LN) rc.2 $(MOUNT_DIR)/etc/rc.d/rc.3
 	$(FIND) $(MOUNT_DIR)/etc -path $(MOUNT_DIR)/etc/rc.d -prune -o \
 	-print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
 	$(FIND) $(MOUNT_DIR)/var/lib -print0 | \

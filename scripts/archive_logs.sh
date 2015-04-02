@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 # Dump logs files to the ESOS USB device (esos_logs). Check for free space on
 # the esos_logs file system, and if needed, delete log archives starting with
 # oldest until we have enough free space.

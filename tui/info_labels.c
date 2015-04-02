@@ -1,5 +1,7 @@
-/*
- * $Id$
+/**
+ * @file info_labels.c
+ * @author Copyright (c) 2012-2015 Astersmith, LLC
+ * @author Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -35,7 +37,7 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
             tgt_y_start = 0, sess_y_start = 0,
             smallest_val = 0, largest_val = 0;
     boolean success = TRUE;
- 
+
     /* Fill the label messages and get sizes */
     tgt_want_rows = readTargetData(tgt_info_msg);
     sess_want_rows = readSessionData(sess_info_msg);
@@ -73,7 +75,7 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
             /* Find out what variable is the bigger one */
             if (tgt_want_rows == largest_val) {
                 sess_lbl_height = smallest_val + 2;
-                tgt_lbl_height = usable_height - sess_lbl_height; 
+                tgt_lbl_height = usable_height - sess_lbl_height;
             } else {
                 tgt_lbl_height = smallest_val + 2;
                 sess_lbl_height = usable_height - tgt_lbl_height;
@@ -87,7 +89,7 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
     tgt_y_start = 2;
     sess_y_start = tgt_y_start + tgt_lbl_height;
 
-    /* If the screen size has changed, or either label row count has changed 
+    /* If the screen size has changed, or either label row count has changed
      * then we need to delete the labels and start fresh */
     if ((window_y != *last_scr_y) || (window_x != *last_scr_x) ||
             (tgt_lbl_rows != *last_tgt_rows) ||
@@ -133,7 +135,7 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
         }
         break;
     }
-    
+
     /* Refresh information label messages */
     if (success) {
         setCDKLabelMessage(*tgt_info, tgt_info_msg, tgt_lbl_rows);
@@ -170,7 +172,7 @@ int readTargetData(char *label_msg[]) {
             ib_port_speed[MAX_IB_ADAPTERS][MAX_SYSFS_ATTR_SIZE] = {{0}, {0}},
             tgt_speed_str[MAX_SCST_SESSNS][MAX_SYSFS_ATTR_SIZE] = {{0}, {0}};
     char *temp_pstr = NULL;
-    
+
     /* Clear the label message */
     for (i = 0; i < MAX_INFO_LABEL_ROWS; i++)
         FREE_NULL(label_msg[i]);
@@ -182,7 +184,7 @@ int readTargetData(char *label_msg[]) {
             "</21/B/U>Driver<!21><!B><!U>     "
             "</21/B/U>State<!21><!B><!U>      "
             "</21/B/U>Link Speed<!21><!B><!U>          ");
-    
+
     /* We start our row 1 down (skip title) */
     row_cnt = 1;
 
@@ -240,7 +242,7 @@ int readTargetData(char *label_msg[]) {
         /* Close the target directory stream */
         closedir(dir_stream);
     }
-    
+
     /* Fibre Channel / FCoE adapter information */
     if ((dir_stream = opendir(SYSFS_FC_HOST)) == NULL) {
         if (row_cnt < MAX_INFO_LABEL_ROWS) {
@@ -349,7 +351,7 @@ int readTargetData(char *label_msg[]) {
             row_cnt++;
         }
     }
-    
+
     /* Done */
     if (row_cnt == 1) {
         /* Add a blank line if there are no rows of data */
@@ -383,7 +385,7 @@ int readSessionData(char *label_msg[]) {
             tmp_init_name[MAX_SYSFS_ATTR_SIZE] = {0};
     char tgt_drivers[MAX_SCST_DRIVERS][MISC_STRING_LEN] = {{0}, {0}},
             init_names[MAX_SCST_SESSNS][MAX_SYSFS_ATTR_SIZE] = {{0}, {0}};
-    
+
     /* Clear the label message */
     for (i = 0; i < MAX_INFO_LABEL_ROWS; i++)
         FREE_NULL(label_msg[i]);

@@ -1,5 +1,3 @@
-# $Id$
-
 # sSMTP aliases
 # 
 # Format:	local_account:outgoing_address:mailhub

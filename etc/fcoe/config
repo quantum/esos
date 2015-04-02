@@ -1,5 +1,3 @@
-# $Id$
-
 ## Type:       yes/no
 ## Default:    no
 # Switch on/off debug messages (script & C code)

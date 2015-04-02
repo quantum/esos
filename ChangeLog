@@ -1,3 +1,30 @@
+2015-04-02  Marc A. Smith  <marc@astersmith.com>
+
+	removed SVN $Id$ keyword tag from everything; fixed issue with missing sym links in /etc/rc.d
+
+2015-04-01  Marc A. Smith  <msmith626@gmail.com>
+
+	Merge pull request #105 from feldsam/btier-ra-fix
+	Fixed ocf:esos:btier resource agent
+
+2015-04-01  Marc A. Smith  <msmith626@gmail.com>
+
+	Merge pull request #103 from feldsam/master
+	Optimised install script uses /dev/rdisk# device on mac osx
+
+2015-04-01  Kristián Feldsam  <feldsam@gmail.com>
+
+	Fixed ocf:esos:btier meta_data + some markup tidy
+
+2015-04-01  Kristián Feldsam  <feldsam@gmail.com>
+
+	Fixed ocf:esos:btier resource agent
+
+2015-04-01  Kristián Feldsam  <feldsam@gmail.com>
+
+	Optimised install script uses /dev/rdisk# device on mac osx
+	/dev/rdisk# is a raw path, which is much faster, and perfectly OK when using the dd program
+
 2015-03-31  Marc A. Smith  <marc@astersmith.com>
 
 	removed SVN dev tools and setup for Git; updated README documents for GitHub project; updated mhVTL to latest from project git repo (resolves issue # 98); swapped out SVN version lines for Git in Makefile; new scripts for generating the ChangeLog

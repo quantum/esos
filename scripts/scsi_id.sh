@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 # Return a unique identifier for the SCSI device argument. We first try
 # the device identification page (0x83) and if there isn't one for the given
 # device, we use the unit serial number page (0x80).

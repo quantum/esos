@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 # This script should be run as a cron job on a regular interval. It will
 # perform several system checks such as available disk space, free physical
 # RAM check, and check logical drives' status/state.

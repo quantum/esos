@@ -1,5 +1,3 @@
-dnl $Id$
-
 dnl Wrapper for AC_PATH_PROG that kills configure script if program is missing
 AC_DEFUN([MY_PATH_PROG],
 	[AC_PATH_PROG([$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)

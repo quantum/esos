@@ -1,5 +1,3 @@
-# $Id$
-
 # Environment settings
 export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:/opt/bin:/opt/sbin"
 export EDITOR="/bin/vi"

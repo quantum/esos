@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-
 # System startup script; this script will check for crash dump files, grab some
 # information from the ESOS system, and then emails the root user everything.
 
