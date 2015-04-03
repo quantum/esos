@@ -1,3 +1,23 @@
+2015-04-03  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'feldsam-btier-fix'
+
+2015-04-03  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'btier-fix' of https://github.com/feldsam/esos into feldsam-btier-fix
+
+2015-04-03  Marc A. Smith  <marc@astersmith.com>
+
+	updated .gitignore file to exclude ChangeLog sym link
+
+2015-04-02  Kristián Feldsam  <feldsam@gmail.com>
+
+	ocf:esos:btier fixed stop - handle stop device error
+
+2015-04-02  Kristián Feldsam  <feldsam@gmail.com>
+
+	ocf:esos:btier fixed start - need wait for kernel module load
+
 2015-04-02  Marc A. Smith  <marc@astersmith.com>
 
 	removed SVN $Id$ keyword tag from everything; fixed issue with missing sym links in /etc/rc.d
