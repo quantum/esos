@@ -11,6 +11,7 @@ config.status
 work/
 tui/esos_tui
 tui/*.o
+ChangeLog-*.txt
 esos_kernels
 kernel_headers
 esos_tui
