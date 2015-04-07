@@ -1,20 +1,18 @@
+2015-04-06  Marc A. Smith  <marc@astersmith.com>
+
+	added line to rc.sysinit so we keep /etc/esos-release consistent and up-to-date, always
+
 2015-04-03  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'feldsam-btier-fix'
 
-2015-04-03  Marc A. Smith  <marc@astersmith.com>
-
 	Merge branch 'btier-fix' of https://github.com/feldsam/esos into feldsam-btier-fix
-
-2015-04-03  Marc A. Smith  <marc@astersmith.com>
 
 	updated .gitignore file to exclude ChangeLog sym link
 
 2015-04-02  Kristián Feldsam  <feldsam@gmail.com>
 
 	ocf:esos:btier fixed stop - handle stop device error
-
-2015-04-02  Kristián Feldsam  <feldsam@gmail.com>
 
 	ocf:esos:btier fixed start - need wait for kernel module load
 
@@ -27,8 +25,6 @@
 	Merge pull request #105 from feldsam/btier-ra-fix
 	Fixed ocf:esos:btier resource agent
 
-2015-04-01  Marc A. Smith  <msmith626@gmail.com>
-
 	Merge pull request #103 from feldsam/master
 	Optimised install script uses /dev/rdisk# device on mac osx
 
@@ -36,11 +32,7 @@
 
 	Fixed ocf:esos:btier meta_data + some markup tidy
 
-2015-04-01  Kristián Feldsam  <feldsam@gmail.com>
-
 	Fixed ocf:esos:btier resource agent
-
-2015-04-01  Kristián Feldsam  <feldsam@gmail.com>
 
 	Optimised install script uses /dev/rdisk# device on mac osx
 	/dev/rdisk# is a raw path, which is much faster, and perfectly OK when using the dd program
@@ -92,8 +84,6 @@
 2015-01-28  Marc A. Smith  <msmith626@gmail.com>
 
 	swapped asprintf() for macro throughout TUI code; few minor fixes and clean up in TUI
-
-2015-01-28  Marc A. Smith  <msmith626@gmail.com>
 
 	patch for glibc to fix the GHOST vulnerability
 
@@ -261,8 +251,6 @@
 
 	fixed build issue w/ scst (patch prob)
 
-2014-06-01  Marc A. Smith  <msmith626@gmail.com>
-
 	commented out serial console lines in inittab to avoid log clutter if no serial ports exist; up'd linux kernel to 3.12.20 and scst to r5558
 
 2014-05-19  Marc A. Smith  <msmith626@gmail.com>
@@ -301,19 +289,13 @@
 
 	added additional crpto kernel options to support dm-crypt
 
-2014-04-01  Marc A. Smith  <msmith626@gmail.com>
-
 	updated startup script for new dump file (vmcore) name format; more TUI code cleanup (formatting, combining strings, etc.)
 
 2014-03-31  Marc A. Smith  <msmith626@gmail.com>
 
 	use ELF output with makedumpfile tool (initramfs init); started moving more exotic strings into new strings.c source file; updated autoconf script to make /tmp in initramfs stub (required by makedumpfile)
 
-2014-03-31  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed build issue with bzip2
-
-2014-03-31  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed broken kernel crash dump support (increased crashkernel to 128M, added makedumpfile to use instead of gzip with /proc/vmcore in initramfs script); don't hide output in rc.mdraid; fixed TUI bug when using block device select dialog; added a sleep to run-level 2 to wait after loading qla2xxx (in the case of being used as an initiator, for targets to appear); updated mail settings dialog so there is now an option to disable user authentication for SMTP; disable use of python with gdb; added elfutils as a dep for makedumpfile; for bzip2 target, include static version of lib (dep for makedumpfile)
 
@@ -333,15 +315,9 @@
 
 	resolved build issue with parallel make (kernel_headers vs. esos_kernels clobber issue)
 
-2014-03-24  Marc A. Smith  <msmith626@gmail.com>
-
 	moved user-land SCST progs (iSCSI stuff) to a separate target; removed glibc dependency from esos_kernels target; other build fixes (target deps)
 
-2014-03-24  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed build issue with source directory variable; updated pkg_dist target to transform archive member paths correctly
-
-2014-03-24  Marc A. Smith  <msmith626@gmail.com>
 
 	updated TUI components to include new strings.h; autoconf script now sets "src_dir" and "build_dir"; added cryptsetup and enabled kernel DM_CRYPT option (resolves issue # 71); updated install script with latest location on LSI's web site for the MegaCLI tool, and changed error strings in install.sh to be more informative; code formatting in main.c and fixed issue with labels when exiting to shell; tweaked size (rows) of device-info dialog; lots of updated to Makefile.in... many line/formatting changes, and make jobs > 1 is now supported
 
@@ -349,11 +325,7 @@
 
 	updated new info labels to work correctly; add a blank line if no rows to match other pane; version bump for SCST (r5338); filter /tmp FS in FS-chooser dialog; adjusted ocs_sdk dir location; fixed sed one-liner in ocs_sdk target; added delay when creating image for partitions to be visible
 
-2014-03-17  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed issue with autoconf configure script and ocs_sdk option; resolved build issue with TUI (BUILD_OPTS definition)
-
-2014-03-17  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed build issue with wget certificate check; added smartmontools package
 
@@ -449,11 +421,7 @@
 
 	fixed a build issue with the new util-linux package (ncurses)
 
-2013-10-01  Marc A. Smith  <msmith626@gmail.com>
-
 	added the new config file for kernel 3.10.13 (ya, we need this)
-
-2013-10-01  Marc A. Smith  <msmith626@gmail.com>
 
 	updated the Linux kernel to 3.10.13 to support SSD caching options (bcache, dm-cache); enabled NETXEN_NIC in the kernel (resolves issue # 32); added bcache-tools and util-linux as a dependency (only using libuuid and libblkid); updated other packages to make use of libuuid/libblkid from util-linux instead of e2fsprogs; fixed a TUI bug that affected the display of available drives when adding a MegaRAID VD; added EnhanceIO SSD caching software (module build and Python tool install); updated rc runlevel 2 script to load EnhanceIO modules
 
@@ -553,8 +521,6 @@
 
 	conf_sync -> needed to check if the local/usb versions of localtime exist (fixed); updated health_check script to include hostname in file name for conf pkg. sent via email; updated TUI support package function to exclude some private content items
 
-2013-03-31  Marc A. Smith  <msmith626@gmail.com>
-
 	updated Linux kernel to 3.8.5 and DRBD user-land tools to 8.4.2 (matches kernels); updated PAGER variable show less displays color escape sequences correctly; the /etc/localtime sync issue should now be resolved; updated DRBD default config files
 
 2013-03-29  Marc A. Smith  <msmith626@gmail.com>
@@ -581,15 +547,11 @@
 
 	set default quorum votes to 1 in corosync.conf; updated dlm and clvd rc script settings; hide output for the 'cd -' command in conf_sync
 
-2013-03-17  Marc A. Smith  <msmith626@gmail.com>
-
 	made dev_nodes.sh script generic, udev rule like script (called mdev); added rc script for DLM; corosync.conf needs the cluster_name setting; removed timeout setting from rc.clvmd script; updated mdev.conf to call rule script for dlm* device nodes
 
 2013-03-16  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed build issue (added zlib dependency for nss package); enabled DLM in Linux kernel config
-
-2013-03-16  Marc A. Smith  <msmith626@gmail.com>
 
 	added support for clvmd (LVM2 and rc script) including dlm dependency
 
@@ -605,15 +567,11 @@
 
 	fixed build issue: the package name 'linux-firmware' is not compatible, renamed to 'linux_firmware'
 
-2013-03-06  Marc A. Smith  <msmith626@gmail.com>
-
 	added new linux-firmware package -- it sounds like new firmware is not being added directly to the Linux kernel git repo, they now are trying to keep the firmware blobs separate from code; disabled inlining driver firmware in the kernel since we use the linux-firmware package and we only include the blobs needed for drivers we enable (including the license files); fixed archive_logs cron issue; updated rc.scst script for new userland daemons (FCoE) and stop() function; added default config files for fcoemon; re-work of conf_sync.sh -- we now sync entire directories (eg, /etc /var/lib) so we get everything including dynamically generated config. files; updated TUI main screen label to support FCoE adapters, and support the fcst driver for target functions
 
 2013-03-04  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed build issue in open-lldp with AC_FUNC_MALLOC/REALLOC
-
-2013-03-04  Marc A. Smith  <msmith626@gmail.com>
 
 	added Fibre Channel over Ethernet (FCoE) support (SCST -> fcst) and required dependencies (open-fcoe, libconfig, libnl, open-lldp, libpciaccess); updated rc.scst to load new fcst module; updated Linux kernel configuration file for FCoE dependency options (data center briding, etc.); fixed issue when creating file systems on devices that already have a partition table (label) and/or existing file system(s) -- we now use the '-f' option for mkfs.xfs and '-F' for the other mkfs.ext* tools
 
@@ -641,15 +599,11 @@
 
 	fixed spelling issue in initramfs script; added fio package; changed a few kernel options to built-in (instead of modules); fixed TUI add-initiator input issue (wildcards)
 
-2013-02-18  Marc A. Smith  <msmith626@gmail.com>
-
 	more build fixes for move to new kernel
 
 2013-02-17  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed busybox build issue (removed support for mkfs_ext2 since we install e2fsprogs)
-
-2013-02-17  Marc A. Smith  <msmith626@gmail.com>
 
 	updated SCST and Linux kernel (3.7.8)
 
@@ -681,8 +635,6 @@
 
 	make /var have an old time stamp (for conf_sync)
 
-2013-01-25  Marc A. Smith  <msmith626@gmail.com>
-
 	more fixes/tweaks to conf_sync script (from recent updates); added a progress/working indicator to the initramfs script; install script should now fail if dd exits non-zero; added missing ocf resources for pacemaker
 
 2013-01-24  Marc A. Smith  <msmith626@gmail.com>
@@ -696,8 +648,6 @@
 2013-01-22  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed a few dependency/build issues from r340
-
-2013-01-22  Marc A. Smith  <msmith626@gmail.com>
 
 	new user/group for HA stuff; added/updated rc scripts for pacemaker and corosync; few tweaks to hopefully make all of the HA/cluster stuff work
 
@@ -749,8 +699,6 @@
 
 	missed a dependency for the new parted package (libdm)
 
-2012-11-30  Marc A. Smith  <msmith626@gmail.com>
-
 	added parted package (for parted tool + libparted); updated rc.sysinit to create mount point directories if they don't exist; conf_sync to include fstab file; new TUI utility functions for getting FS and block dev. choice from user; implemented create FS & remove FS dialogs in TUI; additional TUI clean-up
 
 2012-11-21  Marc A. Smith  <msmith626@gmail.com>
@@ -760,8 +708,6 @@
 2012-11-19  Marc A. Smith  <msmith626@gmail.com>
 
 	enabled 3ware SATA/SAS RAID support in kernel config; added remaining RAID controller CLI tool package information and setup in install script (needs testing)
-
-2012-11-19  Marc A. Smith  <msmith626@gmail.com>
 
 	updated system crontab to run ntpd to set time hourly; added to rc.2 init script to check for ntp_server file and if it exists, set the time via NTP on boot; a few install.sh enhancements; updated conf. sync script to sync ntp_server file and time zone link; implemented  Date & Time, DRBD Status, Software RAID, and LVM2 Info dialogs
 
@@ -776,8 +722,6 @@
 2012-11-06  Marc A. Smith  <msmith626@gmail.com>
 
 	the GRUB package needs device-mapper support, so LVM2 was a dep package before build; fixed a possible ambiguous situation that could occur with the image recipe when mounting
-
-2012-11-06  Marc A. Smith  <msmith626@gmail.com>
 
 	replaced 'install' recipe with new 'image' recipe/target; instead of installing directly to a USB device, the 'image' target now creates a disk image; added 'pkg_dist' target which will produce a tarball with checksum files, install script, and disk image suitable for distribution; lots of supporting tweaks for new 'image' target including but not limited to: up'd to grub-2.00, removed all proprietary tool references from configure.ac and Makefile.in (now installed via install.sh script), and updated in-tree documentation files
 
@@ -797,8 +741,6 @@
 
 	fixed a few issues with recently added features; xfsprogs install dir and build issue, DRBD version of userland tools was incorrect -- went to 8.3.11 (matches kernel)
 
-2012-10-24  Marc A. Smith  <msmith626@gmail.com>
-
 	implemented LVM, DRBD, and xfsprogs: kernel options + userland tools; still needs rc scripts, config files, conf_sync mods, and testing
 
 2012-10-09  Marc A. Smith  <msmith626@gmail.com>
@@ -813,11 +755,7 @@
 
 	added a syncConfig when user quits
 
-2012-08-02  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed a few compiler warnings
-
-2012-08-02  Marc A. Smith  <msmith626@gmail.com>
 
 	updated network rc script to redirect all stderr to stdout for all system calls; also modified start arg to bring up all interfaces (eth)
 
@@ -825,23 +763,15 @@
 
 	a few script path changes and updates
 
-2012-08-01  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed delete user dialog to check for saved user ID, and not real user ID; updated various "information" dialogs to have a continue message at the bottom so users know how to close the dialog
 
 2012-07-31  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed suid business; modified statusBar to use the saved user ID -- still need to update the delete-user dialog...
 
-2012-07-31  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed a few TUI usability items in the Systems menu; updated a couple error dialog messages to be more informative; added seteuid
 
-2012-07-31  Marc A. Smith  <msmith626@gmail.com>
-
 	redirect stderr into stdout for the DHCP client program
-
-2012-07-31  Marc A. Smith  <msmith626@gmail.com>
 
 	ini files needed a new line at the end, otherwise they wouldn't parse
 
@@ -849,27 +779,15 @@
 
 	chmod suid for the TUI binary
 
-2012-07-30  Marc A. Smith  <msmith626@gmail.com>
-
 	the hostname and network /etc files are no longer needed
-
-2012-07-30  Marc A. Smith  <msmith626@gmail.com>
 
 	rc scripts switched over for new network script; set TUI as shell for root account
 
-2012-07-30  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed a few include issues
-
-2012-07-30  Marc A. Smith  <msmith626@gmail.com>
 
 	added Id tag keyword to TUI source
 
-2012-07-30  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed a typo
-
-2012-07-30  Marc A. Smith  <msmith626@gmail.com>
 
 	new target for kernel headers; updated CPPFLAGS for new path
 
@@ -881,15 +799,9 @@
 
 	set _GNU_SOURCE define in Makefile to TUI, and removed def from label_data
 
-2012-07-28  Marc A. Smith  <msmith626@gmail.com>
-
 	cdk/cdk.h is now just cdk.h, updated includes; typedef boolean is now defined in cdk.h, commented out in megaraid.h
 
-2012-07-28  Marc A. Smith  <msmith626@gmail.com>
-
 	added build targets and proprietary tools as dependencies for the install target
-
-2012-07-28  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed issue with 'export CPPFLAGS' using the wildcard function and between the src_dir variable
 
@@ -901,15 +813,9 @@
 
 	updated main Makefile to include TUI
 
-2012-07-26  Marc A. Smith  <msmith626@gmail.com>
-
 	more updates for new Makefile
 
-2012-07-26  Marc A. Smith  <msmith626@gmail.com>
-
 	new Makefile for TUI
-
-2012-07-26  Marc A. Smith  <msmith626@gmail.com>
 
 	import of TUI code
 
@@ -920,8 +826,6 @@
 2012-07-22  Marc A. Smith  <msmith626@gmail.com>
 
 	new section for IB modules to load
-
-2012-07-22  Marc A. Smith  <msmith626@gmail.com>
 
 	updated global CPPFLAGS to use Linux kernel include; disabled use of gpm for ncurses package
 
@@ -936,8 +840,6 @@
 2012-07-17  Marc A. Smith  <msmith626@gmail.com>
 
 	new network script is ready for testing
-
-2012-07-17  Marc A. Smith  <msmith626@gmail.com>
 
 	more work on new network rc script
 
@@ -977,19 +879,13 @@
 
 	commented out check/test make targets for e2fsprogs and perl -- are these really needed? we don't run any other testing type targets for other included projects...
 
-2012-03-27  Marc A. Smith  <msmith626@gmail.com>
-
 	set glibc as a requirement for the kernel since it also compiles the userland iscsi-scst tool/daemon; set LDFLAGS for iscsi-scst in kernel target and for cron
-
-2012-03-27  Marc A. Smith  <msmith626@gmail.com>
 
 	added some words to the THANKS document
 
 2012-03-23  Marc A. Smith  <msmith626@gmail.com>
 
 	set LD_LIBRARY_PATH for openssh configure script; remove reference to LD_LIBRARY_PATH in openssl target so gcc runs correctly (glibc differences)
-
-2012-03-23  Marc A. Smith  <msmith626@gmail.com>
 
 	lots of updates -- included mpfr and gmp with gcc, this way it will build the required libs against new glibc and should avoid any glibc symbol problems; also setup the 'fake_lib' directory that includes ld scripts for libc.so, libpthread.so, etc. that should help force use of new glibc when linking
 
@@ -1009,11 +905,7 @@
 
 	removed glibc 2.13 line in checksum files
 
-2012-03-16  Marc A. Smith  <msmith626@gmail.com>
-
 	problems with glibc 2.13 (memcpy-ssse3); up'd again to 2.14.1
-
-2012-03-16  Marc A. Smith  <msmith626@gmail.com>
 
 	up'd glibc to 2.13; set SHELL to bash -- using a bashism or two (still testing)
 
@@ -1021,23 +913,17 @@
 
 	updated URL for MegaCLI tool
 
-2012-03-12  Marc A. Smith  <msmith626@gmail.com>
-
 	cleaned up some extra comments in Makefile.in; added prop_tools var to clean_targets
 
 2012-03-09  Marc A. Smith  <msmith626@gmail.com>
 
 	added pre/post SCST extra config file check in rc.2 init script; if either file exists, run them with /bin/sh
 
-2012-03-09  Marc A. Smith  <msmith626@gmail.com>
-
 	updated sync script to include modprobe config file and extra user config files
 
 2012-03-06  Marc A. Smith  <msmith626@gmail.com>
 
 	removed MegaCLI and asm_linux targets from build_targets var
-
-2012-03-06  Marc A. Smith  <msmith626@gmail.com>
 
 	removed Adaptec and LSI CLI packages from both checksum files
 
@@ -1049,15 +935,9 @@
 
 	fixed a few issues in health_chk, added health_chk to cron and Makefile.in
 
-2012-03-04  Marc A. Smith  <msmith626@gmail.com>
-
 	finished (hopefully) health check script...
 
-2012-03-04  Marc A. Smith  <msmith626@gmail.com>
-
 	implemented check for AACRAID logical drives
-
-2012-03-04  Marc A. Smith  <msmith626@gmail.com>
 
 	started work on system health check shell script
 
@@ -1065,11 +945,7 @@
 
 	added new system startup script; this script emails useful (hopefully) information and checks for kernel crash dumps
 
-2012-03-03  Marc A. Smith  <msmith626@gmail.com>
-
 	updated system cron job schedules
-
-2012-03-03  Marc A. Smith  <msmith626@gmail.com>
 
 	doubled esos_logs partition size
 
@@ -1085,23 +961,15 @@
 
 	removed echo lines used when debugging the scst_kernel targets
 
-2012-02-16  Marc A. Smith  <msmith626@gmail.com>
-
 	lots of changes: up'd SCST to trunk and Linux to 3.2.6; re-worked scst_kernel target to be much simpler for prod/debug
 
 2012-02-13  Marc A. Smith  <msmith626@gmail.com>
 
 	switched applicable targets to use 'install' target instead of manually install'ing files
 
-2012-02-13  Marc A. Smith  <msmith626@gmail.com>
-
 	cleaned up un-needed comments
 
-2012-02-13  Marc A. Smith  <msmith626@gmail.com>
-
 	added a /etc/esos-release file that is generated by install target (contains version number)
-
-2012-02-13  Marc A. Smith  <msmith626@gmail.com>
 
 	set MANPATH for all users and needed gtbl for man pages (sym link -> tbl)
 
@@ -1109,11 +977,7 @@
 
 	implemented groff target
 
-2012-02-11  Marc A. Smith  <msmith626@gmail.com>
-
 	version number will now include SVN revision
-
-2012-02-11  Marc A. Smith  <msmith626@gmail.com>
 
 	fix permissions of shadow and crontab on install
 
@@ -1124,8 +988,6 @@
 2012-02-06  Marc A. Smith  <msmith626@gmail.com>
 
 	implemented lsscsi and sg3_utils packages
-
-2012-02-06  Marc A. Smith  <msmith626@gmail.com>
 
 	MegaCli64 needs libsysfs.so.2.0.2 even though ldd doesn't report its required -- it also seems to only look in an absolute, static path for it; MegaCLI target now provides the library that comes with the package
 
@@ -1141,8 +1003,6 @@
 
 	typo in CC variable
 
-2012-02-02  Marc A. Smith  <msmith626@gmail.com>
-
 	ssmtp target was not pulling in LDFLAGS, fixed using CC var via make
 
 2012-02-01  Marc A. Smith  <msmith626@gmail.com>
@@ -1153,15 +1013,11 @@
 
 	cleaned up gcc target -- should be less to compile now; tweaked a few other targets
 
-2012-01-31  Marc A. Smith  <msmith626@gmail.com>
-
 	switched to using 'install' target for most projects instead of manually installing files
 
 2012-01-29  Marc A. Smith  <msmith626@gmail.com>
 
 	when compiling perl, it fails -- seems related to gcc's -I and -ansi; it gets mad about C++ style comments in stdlib.h, etc. ignoring CFLAGS for now with configure.gnu
-
-2012-01-29  Marc A. Smith  <msmith626@gmail.com>
 
 	added LDFLAGS and CFLAGS environment variables; added pre-reqs for packages
 
@@ -1169,31 +1025,21 @@
 
 	tweaked install target: removed un-needed blockdev command to re-read PT, fixed grub.cfg for grub2
 
-2012-01-26  Marc A. Smith  <msmith626@gmail.com>
-
 	more grub tweaks
 
 2012-01-24  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed shell string equality tests
 
-2012-01-24  Marc A. Smith  <msmith626@gmail.com>
-
 	more grub2 changes
 
-2012-01-24  Marc A. Smith  <msmith626@gmail.com>
-
 	updates for grub2
-
-2012-01-24  Marc A. Smith  <msmith626@gmail.com>
 
 	for grub2 switch
 
 2012-01-23  Marc A. Smith  <msmith626@gmail.com>
 
 	updated scstadmin perl mod target -- needs more work
-
-2012-01-23  Marc A. Smith  <msmith626@gmail.com>
 
 	up'd grub to 1.99
 
@@ -1205,23 +1051,13 @@
 
 	updated distclean target and updated variables for configure script
 
-2012-01-19  Marc A. Smith  <msmith626@gmail.com>
-
 	moved Makefile to Makefile.in to prep for config script
-
-2012-01-19  Marc A. Smith  <msmith626@gmail.com>
 
 	finishing touches on configure.ac
 
-2012-01-19  Marc A. Smith  <msmith626@gmail.com>
-
 	removed variables for shell built-ins
 
-2012-01-19  Marc A. Smith  <msmith626@gmail.com>
-
 	working autoconf configure.ac
-
-2012-01-19  Marc A. Smith  <msmith626@gmail.com>
 
 	started work on autoconf
 
@@ -1229,11 +1065,7 @@
 
 	fixed /dev umount busy message on halt
 
-2012-01-18  Marc A. Smith  <msmith626@gmail.com>
-
 	run ldconfig on boot
-
-2012-01-18  Marc A. Smith  <msmith626@gmail.com>
 
 	updated asm_linux and MegaCLI targets to use /opt for 3rd party binaries; updated PATH and ld.so.conf
 
@@ -1241,15 +1073,9 @@
 
 	added support for libstdc++.so.5 (for arcconf) from asm_linux package
 
-2012-01-17  Marc A. Smith  <msmith626@gmail.com>
-
 	updated Makefile to provide Adaptec Storage Manager CLI
 
-2012-01-17  Marc A. Smith  <msmith626@gmail.com>
-
 	fixed up SCST rc script now that module deps should work correctly
-
-2012-01-17  Marc A. Smith  <msmith626@gmail.com>
 
 	tweaked initramfs script a bit and modified install target to accept slightly less than 4 GB drives
 
@@ -1261,15 +1087,11 @@
 
 	implemented USB flash drive size check and initramfs RAM check
 
-2012-01-13  Marc A. Smith  <msmith626@gmail.com>
-
 	new busybox .config file; more Makefile clean-up; tweaked SCST rc script
 
 2012-01-09  Marc A. Smith  <msmith626@gmail.com>
 
 	updated documentation and initial import of configure.ac
-
-2012-01-09  Marc A. Smith  <msmith626@gmail.com>
 
 	cleaned up several targets that were also install man pages
 
@@ -1288,8 +1110,6 @@
 2012-01-04  Marc A. Smith  <msmith626@gmail.com>
 
 	more Makefile clean-up
-
-2012-01-04  Marc A. Smith  <msmith626@gmail.com>
 
 	more Makefile updates
 

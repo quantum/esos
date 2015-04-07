@@ -6,8 +6,7 @@ if ! msg="$(git log -1 --pretty=%B)"; then
 fi
 
 # Generate the new ChangeLog file
-./gitlog-to-changelog --ignore-matching="updated changelog" \
---no-cluster > ChangeLog
+./gitlog-to-changelog --ignore-matching="updated changelog" > ChangeLog
 
 # Stage the new file and commit it
 git add ChangeLog || exit 1

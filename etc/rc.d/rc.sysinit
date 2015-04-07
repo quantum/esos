@@ -16,6 +16,7 @@
 /sbin/bootlogd -c
 
 /bin/echo "Performing initial configuration sync..."
+/bin/touch /etc/esos-release
 /usr/local/sbin/usb_sync.sh
 
 /bin/grep -v rootfs /proc/mounts > /etc/mtab
