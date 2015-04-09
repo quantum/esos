@@ -46,6 +46,10 @@ mv -f ${file_path} ${LOGS_MNT}/ || exit 1
 # Make syslogd happy again
 killall -q -SIGHUP syslogd
 
+# Re-create some files
+touch /var/log/wtmp
+touch /var/log/lastlog
+
 # Done
 rm -rf ${TMP_DIR}/${archive_prefix}
 umount ${LOGS_MNT} || exit 1

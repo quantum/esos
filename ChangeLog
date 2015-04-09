@@ -1,3 +1,7 @@
+2015-04-09  Marc A. Smith  <marc@astersmith.com>
+
+	updated archive_logs script so it re-creates the /var/log/lastlog and /var/log/wtmp files when the log files get rotated
+
 2015-04-06  Marc A. Smith  <marc@astersmith.com>
 
 	added line to rc.sysinit so we keep /etc/esos-release consistent and up-to-date, always
