@@ -72,7 +72,7 @@ git_tag		:= $(shell if tag="$$(git --git-dir=$(SRC_DIR)/.git describe \
 		then echo -n "$$tag"; else echo -n ""; fi)
 opt_suffix	:= $(if $(build_opts),_$(shell for i in $(build_opts); \
 		do $(ECHO) -n "$${i:0:1}"; done),)
-esos_ver	:= $(if $(findstring master,$(git_branch)),$(git_branch)_$(git_hash)$(opt_suffix),$(if $(git_tag),$(git_tag)$(opt_suffix),$(git_branch)_$(git_hash)$(opt_suffix)))
+esos_ver	:= $(if $(filter %.%.x,$(git_branch)),$(git_tag)$(opt_suffix),$(git_branch)_$(git_hash)$(opt_suffix))
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
