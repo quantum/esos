@@ -53,6 +53,11 @@ for i in $(/bin/ls /opt/sbin); do
     fi
 done
 
+if [ -f "/lib/modules/$(/bin/uname -r)/extra/zfs/zfs.ko" ]; then
+    /bin/echo "Loading ZFS..."
+    /sbin/modprobe zfs
+fi
+
 # Start the LATE user settable services
 for i in ${LATE_SERVICES}; do
     if check_enabled "${i}"; then

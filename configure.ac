@@ -145,6 +145,15 @@ AS_IF([test "x$enable_valgrind" = "xyes"], [build_opts="${build_opts} valgrind"]
 AC_SUBST(enable_valgrind, ${enable_valgrind})
 AC_MSG_NOTICE([valgrind: ${enable_valgrind}])
 
+dnl Optional feature zfs
+AC_ARG_ENABLE(zfs,
+	AS_HELP_STRING([--enable-zfs], [build and include zfs]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_zfs="${enableval}"], [enable_zfs="no"]), enable_zfs="no")
+AS_IF([test "x$enable_zfs" = "xyes"], [build_opts="${build_opts} zfs"])
+AC_SUBST(enable_zfs, ${enable_zfs})
+AC_MSG_NOTICE([zfs: ${enable_zfs}])
+
 dnl Optional package ocs_sdk (user provides package file)
 AC_ARG_WITH(ocs_sdk,
 	AS_HELP_STRING([--with-ocs_sdk=PATH],
