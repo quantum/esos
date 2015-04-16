@@ -160,7 +160,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		infiniband-diags-1.5.13.tar.gz \
 		libibmad-1.3.8.tar.gz \
 		lockfile-0.9.1.tar.gz \
-		python-daemon-1.5.5.tar.gz \
+		python-daemon-2.0.5.tar.gz \
 		bcache-tools-master_20130930.tar.gz \
 		EnhanceIO-master_20140810.tar.gz \
 		util-linux-2.23.2.tar.bz2 \

@@ -1,3 +1,7 @@
+2015-04-15  Marc A. Smith  <marc@astersmith.com>
+
+	updated python-daemon package to version 2.0.5
+
 2015-04-09  Marc A. Smith  <marc@astersmith.com>
 
 	updated archive_logs script so it re-creates the /var/log/lastlog and /var/log/wtmp files when the log files get rotated
