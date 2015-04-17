@@ -1,3 +1,7 @@
+2015-04-17  Marc A. Smith  <marc@astersmith.com>
+
+	added deps to Python modules/packages to serialize package installs so when using make -jX it doesn't clobber the easy-install file
+
 2015-04-15  Marc A. Smith  <marc@astersmith.com>
 
 	updated python-daemon package to version 2.0.5
