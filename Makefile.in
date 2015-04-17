@@ -1508,12 +1508,12 @@ fence_agents: glibc nss Python pexpect pycurl python-suds Net-Telnet
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-pexpect: Python
+pexpect: Python setuptools python-suds
 	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
 	--prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
-pycurl: Python curl
+pycurl: Python curl setuptools pexpect
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/pycurl-7.19.0.patch
 	cd $(tgt_src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python \
@@ -1714,7 +1714,7 @@ postgresql: glibc
 	DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-psycopg2: glibc Python postgresql
+psycopg2: glibc Python postgresql setuptools pycurl
 	cd $(tgt_src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python ./setup.py \
 	build_ext --pg-config=$(IMAGE_DIR)/usr/bin/pg_config install \
 	--prefix=$(IMAGE_DIR)/usr
@@ -1735,7 +1735,7 @@ mysql: glibc ncurses
 	$(call clean_la_files,libmysqlclient)
 	$(TOUCH) $(@)
 
-MySQLdb: glibc Python mysql
+MySQLdb: glibc Python mysql setuptools psycopg2
 	$(SED) -i "s/^#mysql_config.*/mysql_config=\
 	$(subst /,\/,$(IMAGE_DIR)/usr/bin/mysql_config)/" $(tgt_src_dir)/site.cfg
 	$(SED) -i "s/sys.executable/'$(subst /,\/,$(WORK_DIR))\/python'/g" \
@@ -1748,7 +1748,7 @@ MySQLdb: glibc Python mysql
 	--prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
-SQLAlchemy: glibc Python psycopg2 MySQLdb
+SQLAlchemy: glibc Python psycopg2 MySQLdb setuptools
 	cd $(tgt_src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python ./setup.py \
 	install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
@@ -1769,7 +1769,7 @@ libibmad: glibc libibumad libibverbs
 	$(call clean_la_files,libibmad)
 	$(TOUCH) $(@)
 
-lockfile: glibc Python
+lockfile: glibc Python setuptools SQLAlchemy
 	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py \
 	install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)

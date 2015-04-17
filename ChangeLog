@@ -1,10 +1,24 @@
-2015-04-11  Marc A. Smith  <marc@astersmith.com>
+2015-04-17  Marc A. Smith  <marc@astersmith.com>
 
-	modified version variable to only use tag name if the branch is not "master"
+	Merge branch 'perfagent_fix'
+
+	added deps to Python modules/packages to serialize package installs so when using make -jX it doesn't clobber the easy-install file
 
 2015-04-15  Marc A. Smith  <marc@astersmith.com>
 
+	Merge branch 'perfagent_fix'
+	Conflicts:
+		ChangeLog
+
 	updated python-daemon package to version 2.0.5
+
+2015-04-12  Marc A. Smith  <marc@astersmith.com>
+
+	yet another version string modification... this time, if the Git branch matches a release branch name pattern (eg, 0.1.x) then use the nearest tag, otherwise use the branch_hash naming convention
+
+2015-04-11  Marc A. Smith  <marc@astersmith.com>
+
+	modified version variable to only use tag name if the branch is not "master"
 
 2015-04-09  Marc A. Smith  <marc@astersmith.com>
 
