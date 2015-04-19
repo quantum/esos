@@ -534,7 +534,7 @@ esos_kernels: eio_src = $(wildcard $(PKG_SRC_DIR)/EnhanceIO-*)
 esos_kernels: btier_src = $(wildcard $(PKG_SRC_DIR)/btier-*)
 esos_kernels: spl_src = $(wildcard $(PKG_SRC_DIR)/spl-*)
 esos_kernels: zfs_src = $(wildcard $(PKG_SRC_DIR)/zfs-*)
-esos_kernels: kernel_headers
+esos_kernels: kernel_headers glibc
 	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b \
@@ -768,7 +768,7 @@ valgrind: glibc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-spl: esos_kernels glibc
+spl: glibc esos_kernels
 	$(MAKE) --directory=$(tgt_src_dir)/lib
 	$(MAKE) --directory=$(tgt_src_dir)/cmd
 	$(MAKE) --directory=$(tgt_src_dir)/man
@@ -776,7 +776,7 @@ spl: esos_kernels glibc
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-zfs: esos_kernels glibc
+zfs: glibc esos_kernels
 	$(MAKE) --directory=$(tgt_src_dir)/lib
 	$(MAKE) --directory=$(tgt_src_dir)/cmd
 	$(MAKE) --directory=$(tgt_src_dir)/man

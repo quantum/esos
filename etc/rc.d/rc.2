@@ -56,6 +56,10 @@ done
 if [ -f "/lib/modules/$(/bin/uname -r)/extra/zfs/zfs.ko" ]; then
     /bin/echo "Loading ZFS..."
     /sbin/modprobe zfs
+    /bin/echo "Starting the ZFS Event Daemon..."
+    /usr/sbin/zed -p /var/run/zed.pid
+    /bin/echo "Importing ZFS pools..."
+    /usr/sbin/zpool import -d /dev -aN
 fi
 
 # Start the LATE user settable services
