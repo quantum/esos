@@ -534,7 +534,7 @@ esos_kernels: eio_src = $(wildcard $(PKG_SRC_DIR)/EnhanceIO-*)
 esos_kernels: btier_src = $(wildcard $(PKG_SRC_DIR)/btier-*)
 esos_kernels: spl_src = $(wildcard $(PKG_SRC_DIR)/spl-*)
 esos_kernels: zfs_src = $(wildcard $(PKG_SRC_DIR)/zfs-*)
-esos_kernels: kernel_headers glibc
+esos_kernels: kernel_headers $(if $(enable_zfs),glibc gcc util-linux,)
 	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b \
@@ -768,7 +768,7 @@ valgrind: glibc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-spl: glibc esos_kernels
+spl: esos_kernels
 	$(MAKE) --directory=$(tgt_src_dir)/lib
 	$(MAKE) --directory=$(tgt_src_dir)/cmd
 	$(MAKE) --directory=$(tgt_src_dir)/man
@@ -776,13 +776,18 @@ spl: glibc esos_kernels
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-zfs: glibc esos_kernels
+zfs: esos_kernels
 	$(MAKE) --directory=$(tgt_src_dir)/lib
 	$(MAKE) --directory=$(tgt_src_dir)/cmd
 	$(MAKE) --directory=$(tgt_src_dir)/man
 	$(MAKE) --directory=$(tgt_src_dir)/lib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/cmd DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libuutil)
+	$(call clean_la_files,libnvpair)
+	$(call clean_la_files,libzpool)
+	$(call clean_la_files,libzfs_core)
+	$(call clean_la_files,libzfs)
 	$(TOUCH) $(@)
 
 ocs_sdk: glibc
