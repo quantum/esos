@@ -55,6 +55,7 @@ BZIP2		:= @bzip2@
 enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
 enable_valgrind	:= @enable_valgrind@
+enable_zfs	:= @enable_zfs@
 with_ocs_sdk	:= @with_ocs_sdk@
 ocs_sdk_dir	:= @ocs_sdk_dir@
 with_uwire	:= @with_uwire@
@@ -236,6 +237,12 @@ endif
 ifeq ($(enable_valgrind),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.9.0.tar.bz2)
 	build_targets += valgrind
+endif
+ifeq ($(enable_zfs),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.6.4.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.6.4.tar.gz)
+	build_targets += spl
+	build_targets += zfs
 endif
 ifeq ($(with_ocs_sdk),yes)
 	build_targets += ocs_sdk
@@ -525,7 +532,9 @@ esos_kernels: qla2xxx_src = $(wildcard $(PKG_SRC_DIR)/scst_qla2xxx-*)
 esos_kernels: mhvtl_src = $(wildcard $(PKG_SRC_DIR)/mhvtl-*)
 esos_kernels: eio_src = $(wildcard $(PKG_SRC_DIR)/EnhanceIO-*)
 esos_kernels: btier_src = $(wildcard $(PKG_SRC_DIR)/btier-*)
-esos_kernels: kernel_headers
+esos_kernels: spl_src = $(wildcard $(PKG_SRC_DIR)/spl-*)
+esos_kernels: zfs_src = $(wildcard $(PKG_SRC_DIR)/zfs-*)
+esos_kernels: kernel_headers $(if $(enable_zfs),glibc gcc util-linux,)
 	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
 	then \
 	  $(PATCH) -F 3 -d $(linux_src) -b \
@@ -557,6 +566,14 @@ esos_kernels: kernel_headers
 	    CSIOSTOR_SRC_PATH="$(uwire_dir)/src/network/csiostor/include" \
 	    FIRMWARE_PATH="$(uwire_dir)/src/network/firmware" \
 	    KDIR=$(linux_src) clean; \
+	  fi; \
+	  if [ "$(enable_zfs)" = "yes" ]; then \
+	    if [ -f "$(spl_src)/Makefile" ]; then \
+	      $(MAKE) --directory=$(spl_src) distclean; \
+	    fi; \
+            if [ -f "$(zfs_src)/Makefile" ]; then \
+	      $(MAKE) --directory=$(zfs_src) distclean; \
+	    fi; \
 	  fi; \
 	  if [ "$$i" = "$(prod_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
@@ -676,6 +693,20 @@ esos_kernels: kernel_headers
 	    INSTALL_MOD_PATH="$(IMAGE_DIR)" KVER=$(kernel_ver)$$i \
 	    modules_install; \
 	  fi; \
+	  if [ "$(enable_zfs)" = "yes" ]; then \
+	    $(ECHO) "### Building the SPL and ZFS modules..."; \
+	    cd $(spl_src) && ./configure --prefix=/usr \
+	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src); \
+	    $(MAKE) --directory=$(spl_src)/module modules; \
+	    $(MAKE) --directory=$(spl_src)/module modules_install \
+	    DESTDIR=$(IMAGE_DIR); \
+	    cd $(zfs_src) && ./configure --prefix=/usr \
+	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src) \
+	    --with-spl=$(spl_src) --with-spl-obj=$(spl_src); \
+	    $(MAKE) --directory=$(zfs_src)/module modules; \
+	    $(MAKE) --directory=$(zfs_src)/module modules_install \
+	    DESTDIR=$(IMAGE_DIR); \
+	  fi; \
 	done
 	$(TOUCH) $(@)
 
@@ -735,6 +766,28 @@ valgrind: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+spl: esos_kernels
+	$(MAKE) --directory=$(tgt_src_dir)/lib
+	$(MAKE) --directory=$(tgt_src_dir)/cmd
+	$(MAKE) --directory=$(tgt_src_dir)/man
+	$(MAKE) --directory=$(tgt_src_dir)/cmd DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+zfs: esos_kernels
+	$(MAKE) --directory=$(tgt_src_dir)/lib
+	$(MAKE) --directory=$(tgt_src_dir)/cmd
+	$(MAKE) --directory=$(tgt_src_dir)/man
+	$(MAKE) --directory=$(tgt_src_dir)/lib DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/cmd DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libuutil)
+	$(call clean_la_files,libnvpair)
+	$(call clean_la_files,libzpool)
+	$(call clean_la_files,libzfs_core)
+	$(call clean_la_files,libzfs)
 	$(TOUCH) $(@)
 
 ocs_sdk: glibc

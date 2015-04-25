@@ -17,6 +17,12 @@ kernel_headers
 esos_tui
 scst
 scst_qla2xxx
+gdb
+valgrind
+spl
+zfs
+ocs_sdk
+uwire
 busybox
 makedumpfile
 elfutils
