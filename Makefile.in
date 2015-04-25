@@ -591,6 +591,14 @@ esos_kernels: kernel_headers $(if $(enable_zfs),glibc gcc util-linux,)
 	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2debug; \
 	    $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2debug; \
 	  fi; \
+	  if [ "$(with_uwire)" = "yes" ]; then \
+	    $(SED) -i 's/CONFIG_CHELSIO_T4\=m/# CONFIG_CHELSIO_T4 is not set/' \
+	    $(linux_src)/.config; \
+	    $(SED) -i 's/CONFIG_CHELSIO_T4VF\=m/# CONFIG_CHELSIO_T4VF is not set/' \
+	    $(linux_src)/.config; \
+	    $(SED) -i 's/# CONFIG_FRAME_POINTER is not set/CONFIG_FRAME_POINTER=y/' \
+	    $(linux_src)/.config; \
+	  fi; \
 	  $(ECHO) "### Building the Linux kernel..."; \
 	  $(MAKE) --directory=$(linux_src); \
 	  $(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage \
@@ -655,12 +663,15 @@ esos_kernels: kernel_headers $(if $(enable_zfs),glibc gcc util-linux,)
 	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(ECHO) "### Building the Chelsio Uwire SCST module..."; \
-	    if [ ! -d $(uwire_dir)/cxgb4_pofcoe.patch ]; \
-	    then \
+	    if [ ! -d $(uwire_dir)/cxgb4_pofcoe.patch ]; then \
 	      $(PATCH) -F 3 -d $(uwire_dir)/src/network/cxgb4 -b \
 	      -B $(uwire_dir)/cxgb4_pofcoe.patch/ -p1 < \
 	      $(uwire_dir)/src/chfcoe/patch/cxgb4_pofcoe.patch; \
 	    fi; \
+	    $(SED) -i 's/CXGB_FCOE_DBG(adapter/CXGB_FCOE_DBG(adap/g' \
+	    $(uwire_dir)/src/network/cxgb4/cxgb4_fcoe.c; \
+	    $(SED) -i 's/inline unsigned int/unsigned int/g' \
+	    $(uwire_dir)/src/network/cxgb4/l2t.h; \
 	    $(MAKE) --directory=$(uwire_dir)/src/network \
 	    KERNELRELEASE=$(kernel_ver)$$i DEBUG=1 KDIR=$(linux_src) \
 	    disable_bonding=1 po_fcoe=1 toe; \

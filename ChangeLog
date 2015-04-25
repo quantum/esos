@@ -1,3 +1,28 @@
+2015-04-25  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'chfcoe_fix'
+	Conflicts:
+		ChangeLog
+
+	Merge branch 'zfs'
+	Conflicts:
+		CHECKSUM.MD5
+		CHECKSUM.SHA256
+
+	updates to make Chelsio Uwire 2.11.0.0 build correctly
+
+2015-04-21  Marc A. Smith  <marc@astersmith.com>
+
+	added deps to Python modules/packages to serialize package installs so when using make -jX it doesn't clobber the easy-install file
+
+	updated default module params for zfs in modprobe.conf
+
+2015-04-19  Marc A. Smith  <marc@astersmith.com>
+
+	fixed dependency issues for zfs/spl/esos_kernels targets
+
+	updated rc run-level 2 script to load ZFS module, start ZED, and scan /dev for ZFS pools; updated getBlockDevChoice() in TUI to include ZFS block devices (zd[0-n])
+
 2015-04-17  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'perfagent_fix'
@@ -11,6 +36,10 @@
 		ChangeLog
 
 	updated python-daemon package to version 2.0.5
+
+2015-04-13  Marc A. Smith  <marc@astersmith.com>
+
+	added support for ZFS [on Linux] as a build-time option (--enable-zfs)
 
 2015-04-12  Marc A. Smith  <marc@astersmith.com>
 
