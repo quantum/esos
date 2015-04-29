@@ -17,7 +17,7 @@
 
 /bin/echo "Performing initial configuration sync..."
 /bin/touch /etc/esos-release
-/usr/local/sbin/usb_sync.sh
+/usr/local/sbin/usb_sync.sh --initial
 
 /bin/grep -v rootfs /proc/mounts > /etc/mtab
 /bin/touch /var/log/wtmp

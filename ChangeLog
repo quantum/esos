@@ -1,3 +1,7 @@
+2015-04-29  Marc A. Smith  <marc@astersmith.com>
+
+	swapped out home-grown USB sync script for rsync; fixed build dep issue for esos_kernels recipe
+
 2015-04-25  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'chfcoe_fix'
