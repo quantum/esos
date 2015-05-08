@@ -164,7 +164,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		python-daemon-2.0.5.tar.gz \
 		bcache-tools-master_20130930.tar.gz \
 		EnhanceIO-master_20140810.tar.gz \
-		util-linux-2.23.2.tar.bz2 \
+		util-linux-2.26.1.tar.gz \
 		nrpe-2.15.tar.gz \
 		thin-provisioning-tools-0.2.8.tar.gz \
 		expat-1.95.8.tar.gz \
@@ -205,6 +205,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		stunnel-5.10.tar.gz \
 		sudo-1.8.12.tar.gz \
 		rsync-3.1.1.tar.gz \
+		eudev-3.0.tar.gz \
+		gperf-3.0.4.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -227,7 +229,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst scst_qla2xxx \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
-		stunnel sudo rsync
+		stunnel sudo rsync eudev gperf
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -363,8 +365,6 @@ image: $(build_targets)
 	$(INSTALL) $(SRC_DIR)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/startup.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/health_chk.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/dev_nodes.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/scsi_id.sh $(MOUNT_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/crm_mon_email.sh $(MOUNT_DIR)/usr/local/bin/
 	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py $(MOUNT_DIR)/usr/local/bin/
 	$(MKDIR) $(MOUNT_DIR)/usr/lib/ocf/resource.d/esos
@@ -1874,12 +1874,13 @@ EnhanceIO: glibc
 	$(TOUCH) $(@)
 
 util-linux: glibc ncurses zlib
-	$(SED) -i 's/cfdisk_LDADD += @NCURSES_LIBS@/\
-	cfdisk_LDADD += -ltinfo @NCURSES_LIBS@/' $(tgt_src_dir)/fdisks/Makemodule.am
-	cd $(tgt_src_dir) && ./autogen.sh
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-most-builds \
+	cd $(tgt_src_dir) && \
+	PKG_CONFIG_LIBDIR="$(IMAGE_DIR)/usr/lib/pkgconfig" \
+	NCURSES_LIBS="-ltinfo -lncurses" \
+	NCURSES_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	./configure --prefix=/usr --disable-most-builds \
 	--disable-bash-completion --with-ncurses --disable-silent-rules \
-	--without-udev --disable-setpriv
+	--without-udev --disable-setpriv --without-python
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-usrlib_execLTLIBRARIES \
 	DESTDIR=$(IMAGE_DIR)
@@ -2277,6 +2278,21 @@ sudo: glibc
 
 rsync: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+eudev: glibc util-linux gperf
+	cd $(tgt_src_dir) && PATH=$$PATH:$(IMAGE_DIR)/usr/bin \
+	BLKID_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	BLKID_LIBS="-lblkid" ./configure --prefix=/usr \
+	--disable-selinux --disable-gudev --disable-kmod --disable-silent-rules
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+gperf: glibc gcc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)

@@ -132,7 +132,7 @@ extern "C" {
 #define MOUNT_BIN       "/bin/mount"
 #define UMOUNT_BIN      "/bin/umount"
 #define LVDISPLAY_BIN   "/usr/sbin/lvdisplay"
-#define SCSI_ID_TOOL    "/usr/local/sbin/scsi_id.sh"
+#define UDEVADM_BIN     "/usr/sbin/udevadm"
 #define SCSTADMIN_TOOL  "/usr/sbin/scstadmin"
 #define SYNC_CONF_TOOL  "/usr/local/sbin/usb_sync.sh"
 #define MEGACLI_BIN     "/opt/sbin/MegaCli64"

@@ -148,3 +148,5 @@ xmlrpc-c
 stunnel
 sudo
 rsync
+eudev
+gperf
