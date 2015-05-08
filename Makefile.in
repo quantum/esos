@@ -123,7 +123,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libaio-0.3.109.tar.bz2 \
 		glue-1.0.11.tar.bz2 \
 		readline-6.2.tar.gz \
-		resource_agents-3.9.2.tar.gz \
+		resource-agents-3.9.6.tar.gz \
 		mhvtl-master_20150330.tar.gz \
 		lzo-2.06.tar.gz \
 		mhash-0.9.9.9.tar.bz2 \
@@ -169,7 +169,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		thin-provisioning-tools-0.2.8.tar.gz \
 		expat-1.95.8.tar.gz \
 		boost-1_55_0.tar.xz \
-		btier-tip_c3e46b.tar.gz \
+		btier-1.3.11.tar.gz \
 		librdmacm-1.0.15.tar.gz \
 		sysstat-10.2.1.tar.gz \
 		pciutils-3.2.1.tar.gz \
@@ -215,7 +215,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst scst_qla2xxx \
 		srptools lsscsi sg3_utils groff python-suds kexec-tools \
 		iniparser cdk LVM2 xfsprogs drbd mdadm parted opensm libqb \
 		pacemaker corosync nss glib libxml2 libxslt libtool bzip2 \
-		crmsh libaio glue readline resource_agents mhvtl lzo mhash \
+		crmsh libaio glue readline resource-agents mhvtl lzo mhash \
 		lessfs tokyocabinet fuse db snappy fence_agents pexpect \
 		pycurl curl Net-Telnet fio bash open-fcoe open-lldp \
 		libconfig libnl libpciaccess linux_firmware dlm ipmitool \
@@ -1448,7 +1448,7 @@ readline: glibc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-resource_agents: glib glue
+resource-agents: glib glue
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
@@ -1463,10 +1463,14 @@ resource_agents: glib glue
 	$(MAKE) --directory=$(tgt_src_dir)/include
 	$(MAKE) --directory=$(tgt_src_dir)/heartbeat
 	$(MAKE) --directory=$(tgt_src_dir)/tools
-	$(MAKE) --directory=$(tgt_src_dir)/rgmanager DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/include DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/heartbeat DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/rgmanager \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/include \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/heartbeat \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/tools \
+	DESTDIR=$(IMAGE_DIR) install
 	$(LN) /usr/lib/ocf/lib/heartbeat/ocf-shellfuncs \
 	$(IMAGE_DIR)/usr/lib/ocf/resource.d/heartbeat/.ocf-shellfuncs
 	$(TOUCH) $(@)
