@@ -71,7 +71,7 @@ crmsh
 libaio
 glue
 readline
-resource_agents
+resource-agents
 mhvtl
 lzo
 mhash
