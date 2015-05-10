@@ -9,15 +9,15 @@
 /bin/mkdir /dev/shm
 /bin/mount /dev/shm
 
-/bin/echo "Populating /dev with device nodes..."
-/bin/echo /sbin/mdev > /proc/sys/kernel/hotplug
-/sbin/mdev -s
-
 /sbin/bootlogd -c
 
 /bin/echo "Performing initial configuration sync..."
 /bin/touch /etc/esos-release
 /usr/local/sbin/usb_sync.sh --initial
+
+if [ -x /etc/rc.d/rc.udev ]; then
+    /etc/rc.d/rc.udev
+fi
 
 /bin/grep -v rootfs /proc/mounts > /etc/mtab
 /bin/touch /var/log/wtmp

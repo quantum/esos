@@ -1,6 +1,21 @@
+2015-05-10  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'udev'
+	Conflicts:
+		CHECKSUM.MD5
+		CHECKSUM.SHA256
+
+	enabled udev rules/installs for the zfs, drbd, dlm, and cryptsetup packages; updated zpool import line in rc script to scan /dev/disk/by-id for pools; updated rc.network to use udev Ethernet interface naming (enpNsN); updated getBlockDevChoice() to handle sym link list correctly
+
 2015-05-08  Marc A. Smith  <marc@astersmith.com>
 
+	Merge branch 'master' of github.com:astersmith/esos
+
 	updated resource_agents package to version 3.9.6 (now "resource-agents"); updated btier to version 1.3.11
+
+	updated resource_agents package to version 3.9.6 (now "resource-agents"); updated btier to version 1.3.11
+
+	added new package 'eudev' for implementing udev support (replacing mdev); added gperf package as a dep for eudev; updated util-linux package version to support eudev; enabled CONFIG_DEVTMPFS in kernel to support udev; updated the TUI's getBlockDevChoice() to use udevadm to get a unique sym link for SCSI disks; updated rc/init scripts and fstab for udev; removed extraneous mdev.conf and scripts used for mdev setup
 
 2015-04-29  Marc A. Smith  <marc@astersmith.com>
 

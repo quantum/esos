@@ -89,31 +89,31 @@ fi
 dnl Create directory structure for the image
 if test -d "${image_dir}"; then
 	AC_MSG_NOTICE([creating image directory structure...])
-	${mkdir} -p ${image_dir}/{etc,bin,sbin,dev,proc,sys,root,home} || exit 1
-        ${mkdir} -p ${image_dir}/boot/grub || exit 1
-        ${mkdir} -p ${image_dir}/mnt/{root,conf,logs,vdisks,mhvtl} || exit 1
-        ${mkdir} -p ${image_dir}/lib/firmware || exit 1
-        ${mkdir} -p ${image_dir}/usr/{bin,sbin,libexec,lib} || exit 1
-        ${mkdir} -p ${image_dir}/usr/local/{bin,sbin} || exit 1
-        ${mkdir} -p ${image_dir}/opt/{bin,sbin,lib} || exit 1
-        ${mkdir} -p -m 1777 ${image_dir}/tmp || exit 1
-        ${mkdir} -p ${image_dir}/var/{spool,lock,run,state,cache,log} || exit 1
-        ${mkdir} -p -m 755 ${image_dir}/var/empty || exit 1
-        ${mkdir} -p -m 1777 ${image_dir}/var/tmp || exit 1
-        ${mkdir} -p -m 710 ${image_dir}/var/cron || exit 1
-        ${mkdir} -p -m 700 ${image_dir}/var/cron/tabs || exit 1
-        ${mkdir} -p ${image_dir}/var/lib/corosync || exit 1
-        ${mkdir} -p ${image_dir}/var/lib/pacemaker/{cores,pengine,cib,blackbox} || exit 1
-        ${mkdir} -p ${image_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
-        ${mkdir} -p ${image_dir}/var/run/{crm,mdadm,stunnel} || exit 1
-        ${mkdir} -p ${image_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
-        ${mkdir} -p ${image_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
-        ${mkdir} -p ${image_dir}/var/lib/stunnel || exit 1
-        ${ln} -sf lib ${image_dir}/lib64 || exit 1
-        ${ln} -sf lib ${image_dir}/usr/lib64 || exit 1
-        ${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
-        ${mkdir} -p ${initramfs_dir}/mnt/{root,tmp} || exit 1
-        ${mkdir} -p ${initramfs_dir}/usr/{bin,sbin} || exit 1
+	${mkdir} -p ${image_dir}/{etc,bin,sbin,dev,proc,sys,root,home,run} || exit 1
+	${mkdir} -p ${image_dir}/boot/grub || exit 1
+	${mkdir} -p ${image_dir}/mnt/{root,conf,logs,vdisks,mhvtl} || exit 1
+	${mkdir} -p ${image_dir}/lib/firmware || exit 1
+	${mkdir} -p ${image_dir}/usr/{bin,sbin,libexec,lib} || exit 1
+	${mkdir} -p ${image_dir}/usr/local/{bin,sbin} || exit 1
+	${mkdir} -p ${image_dir}/opt/{bin,sbin,lib} || exit 1
+	${mkdir} -p -m 1777 ${image_dir}/tmp || exit 1
+	${mkdir} -p ${image_dir}/var/{spool,lock,run,state,cache,log} || exit 1
+	${mkdir} -p -m 755 ${image_dir}/var/empty || exit 1
+	${mkdir} -p -m 1777 ${image_dir}/var/tmp || exit 1
+	${mkdir} -p -m 710 ${image_dir}/var/cron || exit 1
+	${mkdir} -p -m 700 ${image_dir}/var/cron/tabs || exit 1
+	${mkdir} -p ${image_dir}/var/lib/corosync || exit 1
+	${mkdir} -p ${image_dir}/var/lib/pacemaker/{cores,pengine,cib,blackbox} || exit 1
+	${mkdir} -p ${image_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
+	${mkdir} -p ${image_dir}/var/run/{crm,mdadm,stunnel} || exit 1
+	${mkdir} -p ${image_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
+	${mkdir} -p ${image_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
+	${mkdir} -p ${image_dir}/var/lib/stunnel || exit 1
+	${ln} -sf lib ${image_dir}/lib64 || exit 1
+	${ln} -sf lib ${image_dir}/usr/lib64 || exit 1
+	${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
+	${mkdir} -p ${initramfs_dir}/mnt/{root,tmp} || exit 1
+	${mkdir} -p ${initramfs_dir}/usr/{bin,sbin} || exit 1
 else
 	AC_MSG_ERROR([the image directory does not exist])
 fi

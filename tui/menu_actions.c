@@ -1106,18 +1106,18 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
             *blk_dev_info[MAX_BLOCK_DEVS] = {NULL},
             *blk_dev_size[MAX_BLOCK_DEVS] = {NULL},
             *blk_dev_scroll_lines[MAX_BLOCK_DEVS] = {NULL};
-    char *error_msg = NULL, *boot_dev_node = NULL, *dev_id_ptr = NULL,
+    char *error_msg = NULL, *boot_dev_node = NULL, *dev_node_ptr = NULL,
             *cmd_str = NULL, *block_dev = NULL;
     static char ret_buff[MAX_SYSFS_PATH_SIZE] = {0};
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0},
             attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
-            device_id[MAX_SYSFS_ATTR_SIZE] = {0},
+            sym_links[MAX_SYSFS_ATTR_SIZE] = {0},
             dev_node_test[MISC_STRING_LEN] = {0};
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
-    FILE *scsi_id_cmd = NULL;
+    FILE *udevadm_cmd = NULL;
     boolean finished = FALSE;
 
     /* Since ret_buff is re-used between calls, we reset the first character */
@@ -1152,7 +1152,8 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                     continue;
                 } else {
                     if (close(blk_dev_fd) == -1) {
-                        SAFE_ASPRINTF(&error_msg, "close(): %s", strerror(errno));
+                        SAFE_ASPRINTF(&error_msg, "close(): %s",
+                                strerror(errno));
                         errorDialog(cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
                         finished = TRUE;
@@ -1160,14 +1161,15 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                     }
                 }
 
-                /* We don't want to show the ESOS boot block
-                 * device (USB drive) */
                 if (strcmp(boot_dev_node, dev_node_test) == 0) {
+                    /* We don't want to show the ESOS boot block
+                     * device (USB drive) */
                     continue;
+
+                } else if ((strstr(dev_node_test, "/dev/drbd")) != NULL) {
                     /* For DRBD block devices (not sure if the /dev/drbdX
                      * format is forced when using drbdadm, so this may
                      * be a problem */
-                } else if ((strstr(dev_node_test, "/dev/drbd")) != NULL) {
                     if (dev_cnt < MAX_BLOCK_DEVS) {
                         SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
@@ -1179,9 +1181,10 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                         SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "DRBD Device");
                         dev_cnt++;
                     }
+
+                } else if ((strstr(dev_node_test, "/dev/md")) != NULL) {
                     /* For software RAID (md) devices; it appears the mdadm
                      * tool forces the /dev/mdX device node name format */
-                } else if ((strstr(dev_node_test, "/dev/md")) != NULL) {
                     if (dev_cnt < MAX_BLOCK_DEVS) {
                         SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
@@ -1193,11 +1196,13 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                                 "%s/%s/md/level", SYSFS_BLOCK,
                                 blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Level: %s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Level: %s",
+                                tmp_buff);
                         dev_cnt++;
                     }
-                    /* For normal SCSI block devices */
+
                 } else if ((strstr(dev_node_test, "/dev/sd")) != NULL) {
+                    /* For normal SCSI block devices */
                     if (dev_cnt < MAX_BLOCK_DEVS) {
                         SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
@@ -1209,11 +1214,13 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                                 "%s/%s/device/model",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Model: %s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Model: %s",
+                                tmp_buff);
                         dev_cnt++;
                     }
-                    /* For device mapper (eg, LVM2) block devices */
+
                 } else if ((strstr(dev_node_test, "/dev/dm-")) != NULL) {
+                    /* For device mapper (eg, LVM2) block devices */
                     if (dev_cnt < MAX_BLOCK_DEVS) {
                         SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
@@ -1224,11 +1231,13 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/dm/name",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Name: %s", tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt], "Name: %s",
+                                tmp_buff);
                         dev_cnt++;
                     }
-                    /* For Compaq SMART array controllers */
+
                 } else if ((strstr(dev_node_test, "/dev/cciss")) != NULL) {
+                    /* For Compaq SMART array controllers */
                     if (dev_cnt < MAX_BLOCK_DEVS) {
                         SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
@@ -1244,8 +1253,9 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                                 "RAID Level: %s", tmp_buff);
                         dev_cnt++;
                     }
-                    /* For ZFS block devices */
+
                 } else if ((strstr(dev_node_test, "/dev/zd")) != NULL) {
+                    /* For ZFS block devices */
                     if (dev_cnt < MAX_BLOCK_DEVS) {
                         SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
                                 dir_entry->d_name);
@@ -1304,14 +1314,13 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
             /* Return a unique block device node */
             SAFE_ASPRINTF(&block_dev, "/dev/%s", blk_dev_name[blk_dev_choice]);
             if ((strstr(block_dev, "/dev/sd")) != NULL) {
-                /* Get a unique ID for the device using the scsi_id.sh script; this
-                 * is then used for the device node link that exists in /dev */
-                SAFE_ASPRINTF(&cmd_str, "%s %s 2>&1", SCSI_ID_TOOL, block_dev);
-                scsi_id_cmd = popen(cmd_str, "r");
-                fgets(device_id, sizeof (device_id), scsi_id_cmd);
-                dev_id_ptr = strStrip(device_id);
-
-                if ((exit_stat = pclose(scsi_id_cmd)) == -1) {
+                /* Get a unique symbolic link to the SCSI disk */
+                SAFE_ASPRINTF(&cmd_str,
+                        "%s info --root --query symlink --name %s 2>&1",
+                        UDEVADM_BIN, block_dev);
+                udevadm_cmd = popen(cmd_str, "r");
+                fgets(sym_links, sizeof (sym_links), udevadm_cmd);
+                if ((exit_stat = pclose(udevadm_cmd)) == -1) {
                     ret_val = -1;
                 } else {
                     if (WIFEXITED(exit_stat))
@@ -1322,27 +1331,29 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 FREE_NULL(cmd_str);
                 if (ret_val != 0) {
                     SAFE_ASPRINTF(&error_msg, "The %s command exited with %d.",
-                            SCSI_ID_TOOL, ret_val);
+                            UDEVADM_BIN, ret_val);
                     errorDialog(cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
                 }
-                snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "/dev/disk-by-id/%s",
-                        dev_id_ptr);
+                /* We only want the first sym link */
+                dev_node_ptr = strtok(sym_links, " ");
+                assert(dev_node_ptr != NULL);
+                snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "%s", dev_node_ptr);
 
             } else if ((strstr(block_dev, "/dev/dm-")) != NULL) {
                 /* A /dev/dm-* device, we're assuming its
                  * an LVM logical volume */
-                if ((dev_id_ptr = strstr(block_dev, "dm-")) != NULL) {
+                if ((dev_node_ptr = strstr(block_dev, "dm-")) != NULL) {
                     snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/%s/dm/name",
-                            SYSFS_BLOCK, dev_id_ptr);
+                            SYSFS_BLOCK, dev_node_ptr);
                     readAttribute(attr_path, attr_value);
                     snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "/dev/mapper/%s",
                             attr_value);
                 }
 
             } else {
-                /* Not a normal SCSI disk block device (md, drbd, etc.) */
+                /* Not a normal SCSI disk or block device (md, drbd, etc.) */
                 snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "%s", block_dev);
             }
         }

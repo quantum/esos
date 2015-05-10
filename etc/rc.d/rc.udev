@@ -1,0 +1,22 @@
+#! /bin/sh
+
+UDEV_CONF="/etc/udev/udev.conf"
+UDEVD="/usr/sbin/udevd"
+UDEVADM="/usr/sbin/udevadm"
+
+# Load the udev configuration file
+if [ -e "${UDEV_CONF}" ]; then
+    source ${UDEV_CONF}
+fi
+
+# Start the udev daemon and populate /dev
+/bin/echo "Starting udevd..."
+${UDEVD} --daemon
+/bin/echo "Populating /dev with existing devices..."
+${UDEVADM} trigger --type=subsystems --action=add
+${UDEVADM} trigger --type=devices --action=add
+#${UDEVADM} control --property=STARTUP=1
+/bin/echo "Waiting for uevents to be processed..."
+${UDEVADM} settle --timeout=${udev_settle_timeout:-60}
+#${UDEVADM} control --property=STARTUP=
+
