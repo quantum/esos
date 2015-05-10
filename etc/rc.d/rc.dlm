@@ -19,7 +19,7 @@ start() {
 stop() {
     /bin/echo "Stopping dlm_controld..."
     /bin/kill -TERM $(/bin/pidof ${DLM_CONTROLD}) || exit 1
-    wait_for_stop ${DLM_CONTROLD} && /bin/rm -f ${DLM_CONTROLD_LOCK}
+    wait_for_stop ${DLM_CONTROLD} && /bin/rm -f ${DLM_CONTROLD_LOCK} && /bin/umount /sys/kernel/config
 }
 
 status() {
