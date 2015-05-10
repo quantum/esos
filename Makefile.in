@@ -713,7 +713,8 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	    DESTDIR=$(IMAGE_DIR); \
 	    cd $(zfs_src) && ./configure --prefix=/usr \
 	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src) \
-	    --with-spl=$(spl_src) --with-spl-obj=$(spl_src); \
+	    --with-spl=$(spl_src) --with-spl-obj=$(spl_src) \
+	    --with-udevdir="/usr/lib/udev"; \
 	    $(MAKE) --directory=$(zfs_src)/module modules; \
 	    $(MAKE) --directory=$(zfs_src)/module modules_install \
 	    DESTDIR=$(IMAGE_DIR); \
@@ -787,13 +788,15 @@ spl: esos_kernels
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-zfs: esos_kernels
+zfs: esos_kernels eudev
 	$(MAKE) --directory=$(tgt_src_dir)/lib
 	$(MAKE) --directory=$(tgt_src_dir)/cmd
 	$(MAKE) --directory=$(tgt_src_dir)/man
+	$(MAKE) --directory=$(tgt_src_dir)/udev
 	$(MAKE) --directory=$(tgt_src_dir)/lib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/cmd DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/udev DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libuutil)
 	$(call clean_la_files,libnvpair)
 	$(call clean_la_files,libzpool)
@@ -1177,11 +1180,11 @@ xfsprogs: glibc util-linux
 	$(MAKE) --directory=$(tgt_src_dir) DIST_ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-drbd: glibc
+drbd: glibc eudev
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-km \
-	--without-udev --without-xen --with-pacemaker --without-heartbeat \
+	--with-udev --without-xen --with-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic \
 	--sysconfdir=/etc --localstatedir=/var --with-utils
 	$(MAKE) --directory=$(tgt_src_dir) tools doc
@@ -1725,8 +1728,8 @@ linux_firmware:
 
 dlm: glibc corosync
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" USE_SD_NOTIFY=no
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
-	$(RM) $(IMAGE_DIR)/lib/udev
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	UDEVDIR="/usr/lib/udev/rules.d" install
 	$(TOUCH) $(@)
 
 ipmitool: glibc openssl ncurses readline libedit
@@ -2104,10 +2107,9 @@ smartmontools: glibc gcc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-data
 	$(TOUCH) $(@)
 
-cryptsetup: glibc libgcrypt LVM2 util-linux popt
+cryptsetup: glibc libgcrypt LVM2 util-linux popt eudev
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-selinux \
-	--disable-udev --with-crypto_backend=gcrypt \
-	--with-libgcrypt-prefix=$(IMAGE_DIR)/usr
+	--with-crypto_backend=gcrypt --with-libgcrypt-prefix=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libtcrypt)

@@ -1336,8 +1336,9 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                     FREE_NULL(error_msg);
                     break;
                 }
-                /* TODO: This should only give us the first entry -- test! */
-                dev_node_ptr = strStrip(sym_links);
+                /* We only want the first sym link */
+                dev_node_ptr = strtok(sym_links, " ");
+                assert(dev_node_ptr != NULL);
                 snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "%s", dev_node_ptr);
 
             } else if ((strstr(block_dev, "/dev/dm-")) != NULL) {
