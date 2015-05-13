@@ -9,7 +9,7 @@ check_args ${@}
 
 start() {
     /bin/echo "Setting up for DLM..."
-    /bin/mount -t configfs none /sys/kernel/config
+    /bin/mount -t configfs none /sys/kernel/config > /dev/null 2>&1
     /bin/echo "Starting dlm_controld..."
     ${DLM_CONTROLD} || exit 1
     /bin/touch ${DLM_CONTROLD_LOCK}
