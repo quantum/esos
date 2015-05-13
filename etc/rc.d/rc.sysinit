@@ -11,6 +11,8 @@
 
 /sbin/bootlogd -c
 
+/bin/ln -sf bash /bin/sh
+
 /bin/echo "Performing initial configuration sync..."
 /bin/touch /etc/esos-release
 /usr/local/sbin/usb_sync.sh --initial

@@ -26,7 +26,6 @@ ad4c179c119bbb78be740e33b59746ad  opensm-3.3.15.tar.gz
 00b516f4704d4a7cb50a1d97e6e8e15b  bzip2-1.0.6.tar.gz
 664e59093c31896a3a46b7cd93fdd3dd  glib-2.16.6.tar.bz2
 c57477edd6d18bd9eeca2f21add73919  Python-2.7.3.tar.bz2
-5dfcd0e989af57defe60eb794c5b9e2a  crmsh-1.2.4.tar.bz2
 14f3a22fc14118a48be80ab5ea974f49  libaio-0.3.109.tar.bz2
 3b97f8da8444b9d4bfebefbecc5b6de0  glue-1.0.11.tar.bz2
 67948acb2ca081f23359d0256e9a271c  readline-6.2.tar.gz
@@ -50,7 +49,6 @@ b6ee0ce2b3ef844bad7cac2803a90634  libconfig-1.4.9.tar.gz
 5f6f65bdd17a3c9f0a5f00f62126e593  open-lldp-0.9.45.tar.gz
 399a419ac6a54f0fc07c69c9bdf452dc  libpciaccess-0.13.1.tar.bz2
 e025414bc6cd79579cc7a32a45d3ae1c  busybox-1.20.2.tar.bz2
-3cd0b0830b1f5fcfdc58c83c5c2ca37b  dlm-4.0.1.tar.bz2
 cfdfd15b6ee471c19a7a7e6b47233963  ipmitool-1.8.12.tar.bz2
 e053094e8103165f98ddafe828f6ae4b  sysklogd-1.5.tar.gz
 765f082658002b2b46b86af4a0da1842  less-451.tar.gz
@@ -72,7 +70,6 @@ aff487543845a82fe262e6e2922b4c8e  expat-1.95.8.tar.gz
 df544913242f925a2bc6fc255d7e7067  boost-1_55_0.tar.xz
 4ac2db0bee3632c8089a39131047b75b  linux_firmware-20131226.tar.xz
 0053fd9a7368f04e72287923eb58ea36  librdmacm-1.0.15.tar.gz
-e68e97bff74fc56c86493dc7def5f1bc  corosync-2.3.3.tar.gz
 039dcd235dfcfb3d4acc0a05730f9512  sysstat-10.2.1.tar.gz
 fdc92c4665bb169022ffe730b3c08313  pciutils-3.2.1.tar.gz
 9d4bc655d103b871248281db179eb0f5  tar-1.27.tar.gz
@@ -89,7 +86,6 @@ f68ce7b7f4be08449f3c8b114ed5accb  cryptsetup-1.6.4.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
 9d557e8db4d1ff306a1f9415b7a57c22  sg3_utils-1.37.tar.gz
 050a4909e452d01ab4747fd69d4036e0  elfutils-0.158.tar.bz2
-22a90e3956bb790cd8acff6b7999f562  pacemaker-1.1.11.tar.gz
 de62b43dfcd858e66a74bee1c834e959  openssl-1.0.1g.tar.gz
 5fe03554c40a8b9114d579a8d9ada8ef  libusb_compat-0.1.4.tar.bz2
 4f981c3fdbbb7184b2718afaa21f974b  win_binaries-20140704.tar.xz
@@ -132,3 +128,7 @@ a0edda805eb7d6ea600a230fb0979ea1  stunnel-5.10.tar.gz
 a2706a1413723b6b82eecb7d6982763c  eudev-3.0.tar.gz
 c1f1db32fb6598d6a93e6e88796a8632  gperf-3.0.4.tar.gz
 e47d177f4106fc05998ede680e2780c3  util-linux-2.26.1.tar.gz
+efc2ee6093aa6aa0a88aaad83e998a3f  dlm-4.0.2.tar.xz
+4b0f36a1dc014527e5b192265dbd7e70  corosync-2.3.4.tar.gz
+64f12ce2004bf80a0ea5eea37771582b  pacemaker-1.1.12.tar.gz
+2b7c39a561f59d146882f4c020fa9060  crmsh-2.1.0.tar.gz

@@ -1,3 +1,7 @@
+2015-05-12  Marc A. Smith  <marc@astersmith.com>
+
+	updated cluster stack (dlm to 4.0.2, corosync to 2.3.4, pacemaker to 1.1.12, crmsh to 2.1.0) (solves issue # 120); switched /bin/sh to sym link to /bin/bash like all the other big boys... and to satisfy all those lovely shell scripts that claim /bin/sh yet employ bashisms (fixes issue # 118); fixed build issues in esos_kernels and open-lldp for CentOS 7
+
 2015-05-10  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'udev'

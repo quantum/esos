@@ -110,8 +110,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		parted-2.3.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2 \
 		libqb-0.14.4.tar.xz \
-		pacemaker-1.1.11.tar.gz \
-		corosync-2.3.3.tar.gz \
+		pacemaker-1.1.12.tar.gz \
+		corosync-2.3.4.tar.gz \
 		nss-3.14.1.tar.gz \
 		glib-2.16.6.tar.bz2 \
 		libxml2-2.9.0.tar.gz \
@@ -119,7 +119,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libtool-2.4.2.tar.xz \
 		bzip2-1.0.6.tar.gz \
 		Python-2.7.3.tar.bz2 \
-		crmsh-1.2.4.tar.bz2 \
+		crmsh-2.1.0.tar.gz \
 		libaio-0.3.109.tar.bz2 \
 		glue-1.0.11.tar.bz2 \
 		readline-6.2.tar.gz \
@@ -147,7 +147,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libnl-1.1.2.tar.gz \
 		libpciaccess-0.13.1.tar.bz2 \
 		linux_firmware-20131226.tar.xz \
-		dlm-4.0.1.tar.bz2 \
+		dlm-4.0.2.tar.xz \
 		sysklogd-1.5.tar.gz \
 		ipmitool-1.8.12.tar.bz2 \
 		less-451.tar.gz \
@@ -640,7 +640,7 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	  $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/; \
 	  $(ECHO) "### Building the EnhanceIO driver..."; \
 	  $(MAKE) --directory=$(eio_src)/Driver/enhanceio \
-	  KERNEL_SOURCE_VERSION=$(kernel_ver)$$i \
+	  RHEL5_VER="" KERNEL_SOURCE_VERSION=$(kernel_ver)$$i \
 	  KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio; \
 	  $(MKDIR) $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio; \
 	  $(INSTALL) -m 0644 $(eio_src)/Driver/enhanceio/*.ko \
@@ -1398,6 +1398,9 @@ bzip2: glibc
 	$(TOUCH) $(@)
 
 crmsh: glibc Python glue pacemaker
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
 	cd $(tgt_src_dir) && \
 	CFLAGS="-I$(IMAGE_DIR)/usr/include/pacemaker \
 	-I$(IMAGE_DIR)/usr/include/heartbeat $(CPPFLAGS)" \
@@ -1681,8 +1684,8 @@ open-lldp: glibc libconfig libnl
 	$(SED) -i 's/foreign/foreign subdir-objects/' \
 	$(tgt_src_dir)/configure.ac
 	$(SED) -i 's/-Werror//' $(tgt_src_dir)/Makefile.am
+	$(SED) -i 's/-Werror//' $(tgt_src_dir)/configure.ac
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
-	  cd $(tgt_src_dir) && libtoolize; \
 	  cd $(tgt_src_dir) && ./bootstrap.sh; \
 	fi
 	cd $(tgt_src_dir) && LIBCONFIG_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
@@ -1897,6 +1900,8 @@ util-linux: glibc ncurses zlib
 	$(call clean_la_files,libuuid)
 	$(call clean_la_files,libmount)
 	$(call clean_la_files,libblkid)
+	$(call clean_la_files,libfdisk)
+	$(call clean_la_files,libsmartcols)
 	$(TOUCH) $(@)
 
 thin-provisioning-tools: glibc gcc expat boost
@@ -2295,6 +2300,7 @@ eudev: glibc util-linux gperf
 	--disable-selinux --disable-gudev --disable-kmod --disable-silent-rules
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files,libudev)
 	$(TOUCH) $(@)
 
 gperf: glibc gcc
