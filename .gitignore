@@ -68,6 +68,7 @@ libxslt
 libtool
 bzip2
 crmsh
+lxml
 libaio
 glue
 readline

@@ -120,6 +120,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		bzip2-1.0.6.tar.gz \
 		Python-2.7.3.tar.bz2 \
 		crmsh-2.1.0.tar.gz \
+		lxml-3.4.4.tar.gz \
 		libaio-0.3.109.tar.bz2 \
 		glue-1.0.11.tar.bz2 \
 		readline-6.2.tar.gz \
@@ -217,8 +218,8 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst scst_qla2xxx \
 		srptools lsscsi sg3_utils groff python-suds kexec-tools \
 		iniparser cdk LVM2 xfsprogs drbd mdadm parted opensm libqb \
 		pacemaker corosync nss glib libxml2 libxslt libtool bzip2 \
-		crmsh libaio glue readline resource-agents mhvtl lzo mhash \
-		lessfs tokyocabinet fuse db snappy fence_agents pexpect \
+		crmsh lxml libaio glue readline resource-agents mhvtl lzo \
+		mhash lessfs tokyocabinet fuse db snappy fence_agents pexpect \
 		pycurl curl Net-Telnet fio bash open-fcoe open-lldp \
 		libconfig libnl libpciaccess linux_firmware dlm ipmitool \
 		sysklogd less irqbalance ethtool postgresql psycopg2 mysql \
@@ -947,7 +948,7 @@ perl: glibc
 	DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
 	$(TOUCH) $(@)
 
-Python: glibc gcc bzip2 readline openssl
+Python: glibc gcc bzip2 readline openssl zlib
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/Python-2.7.3.patch
 	cd $(tgt_src_dir) && LDFLAGS="$(LDFLAGS)" \
@@ -1397,7 +1398,7 @@ bzip2: glibc
 	$(INSTALL) -v -m644 $(tgt_src_dir)/bzlib.h $(IMAGE_DIR)/usr/include
 	$(TOUCH) $(@)
 
-crmsh: glibc Python glue pacemaker
+crmsh: glibc Python glue pacemaker lxml
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
@@ -1409,6 +1410,14 @@ crmsh: glibc Python glue pacemaker
 	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+lxml: glibc libxml2 libxslt Python setuptools python-daemon
+	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
+	--with-xml2-config="$(IMAGE_DIR)/usr/bin/xml2-config \
+	--prefix=$(IMAGE_DIR)/usr" \
+	--with-xslt-config="$(IMAGE_DIR)/usr/bin/xslt-config \
+	--prefix=$(IMAGE_DIR)/usr" --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 libaio: glibc
@@ -1779,7 +1788,7 @@ ethtool: glibc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-postgresql: glibc
+postgresql: glibc zlib
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-readline
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/src/bin DESTDIR=$(IMAGE_DIR) install

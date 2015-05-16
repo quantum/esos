@@ -1,6 +1,20 @@
+2015-05-16  Marc A. Smith  <marc@astersmith.com>
+
+	added package lxml (Python) for crmsh; updated deps for the Python recipe to require zlib; added fix for missing /var/lib/lldpad directory; updated ZFS rc/init chunk to first import pools via zpool.cache and lastly by scanning /dev/disk/by-id
+
+2015-05-13  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'feldsam-dlm-rcd-fix'
+
+	Merge branch 'dlm-rcd-fix' of https://github.com/feldsam/esos into feldsam-dlm-rcd-fix
+
 2015-05-12  Marc A. Smith  <marc@astersmith.com>
 
 	updated cluster stack (dlm to 4.0.2, corosync to 2.3.4, pacemaker to 1.1.12, crmsh to 2.1.0) (solves issue # 120); switched /bin/sh to sym link to /bin/bash like all the other big boys... and to satisfy all those lovely shell scripts that claim /bin/sh yet employ bashisms (fixes issue # 118); fixed build issues in esos_kernels and open-lldp for CentOS 7
+
+2015-05-11  Kristián Feldsam  <feldsam@gmail.com>
+
+	rc.d rc.dlm script fixed issue with mounting point
 
 2015-05-10  Marc A. Smith  <marc@astersmith.com>
 
@@ -10,6 +24,11 @@
 		CHECKSUM.SHA256
 
 	enabled udev rules/installs for the zfs, drbd, dlm, and cryptsetup packages; updated zpool import line in rc script to scan /dev/disk/by-id for pools; updated rc.network to use udev Ethernet interface naming (enpNsN); updated getBlockDevChoice() to handle sym link list correctly
+
+2015-05-10  Kristián Feldsam  <feldsam@gmail.com>
+
+	Fixed rc.d dlm script stop action
+	Added missing unmout
 
 2015-05-08  Marc A. Smith  <marc@astersmith.com>
 
