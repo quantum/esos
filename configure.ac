@@ -98,6 +98,7 @@ if test -d "${image_dir}"; then
         ${mkdir} -p ${image_dir}/opt/{bin,sbin,lib} || exit 1
         ${mkdir} -p -m 1777 ${image_dir}/tmp || exit 1
         ${mkdir} -p ${image_dir}/var/{spool,lock,run,state,cache,log} || exit 1
+	${mkdir} -p ${image_dir}/var/lock/subsys || exit 1
         ${mkdir} -p -m 755 ${image_dir}/var/empty || exit 1
         ${mkdir} -p -m 1777 ${image_dir}/var/tmp || exit 1
         ${mkdir} -p -m 710 ${image_dir}/var/cron || exit 1

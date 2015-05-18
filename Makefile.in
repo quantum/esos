@@ -1690,9 +1690,12 @@ linux_firmware:
 	$(CP) -r $(tgt_src_dir)/ct2fw* $(IMAGE_DIR)/lib/firmware/
 	$(TOUCH) $(@)
 
-dlm: glibc corosync
+dlm: glibc corosync libxml2 pacemaker
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" USE_SD_NOTIFY=no
+	$(SED) -i 's/`xml2-config/`$(subst /,\/,$(WORK_DIR))\/xml2-config --prefix=$(subst /,\/,$(IMAGE_DIR))\/usr/g' $(tgt_src_dir)/fence/Makefile
+	$(MAKE) --directory=$(tgt_src_dir)/fence CC="$(esos_cc)"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/fence DESTDIR=$(IMAGE_DIR) install
 	$(RM) $(IMAGE_DIR)/lib/udev
 	$(TOUCH) $(@)
 

@@ -1,3 +1,7 @@
+2015-05-17  Marc A. Smith  <marc@astersmith.com>
+
+	updated dlm package/recipe to include the dlm_stonith binary (resolves issue # 124); updated autoconf script to create the /var/lock/subsys directory (resolves issue # 123)
+
 2015-07-31  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'bna_fw_fix' into 0.1.x
