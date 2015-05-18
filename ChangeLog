@@ -1,3 +1,7 @@
+2015-05-17  Marc A. Smith  <marc@astersmith.com>
+
+	updated dlm package/recipe to include the dlm_stonith binary (resolves issue # 124); updated autoconf script to create the /var/lock/subsys directory (resolves issue # 123)
+
 2015-05-16  Marc A. Smith  <marc@astersmith.com>
 
 	added package lxml (Python) for crmsh; updated deps for the Python recipe to require zlib; added fix for missing /var/lib/lldpad directory; updated ZFS rc/init chunk to first import pools via zpool.cache and lastly by scanning /dev/disk/by-id
