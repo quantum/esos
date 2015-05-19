@@ -91,7 +91,6 @@ de62b43dfcd858e66a74bee1c834e959  openssl-1.0.1g.tar.gz
 4f981c3fdbbb7184b2718afaa21f974b  win_binaries-20140704.tar.xz
 ce8f0e44671fb0c7d9ec30bb0bfa8b5c  mtx-1.3.12.tar.gz
 fdd5f5ec673c9f630a102ceff7612774  mt-st-1.1.tar.gz
-c2e90f9d6b47c4b4f7a3e85e01bbaa0a  LVM2-2.02.108.tar.gz
 c6d30facf18ff825e2721d0aa9c3add8  EnhanceIO-master_20140810.tar.gz
 6755765bab88b506181268ef7982595e  nagios-plugins-2.0.3.tar.gz
 80e243e1a1379230403345821bcc72f8  ceph-0.80.5.tar.gz
@@ -133,3 +132,4 @@ efc2ee6093aa6aa0a88aaad83e998a3f  dlm-4.0.2.tar.xz
 64f12ce2004bf80a0ea5eea37771582b  pacemaker-1.1.12.tar.gz
 2b7c39a561f59d146882f4c020fa9060  crmsh-2.1.0.tar.gz
 a9a65972afc173ec7a39c585f4eea69c  lxml-3.4.4.tar.gz
+46ef603de23704658003782b5eae7bab  lvm2-2_02_120.tar.xz

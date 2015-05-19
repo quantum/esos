@@ -52,7 +52,7 @@ python-suds
 kexec-tools
 iniparser
 cdk
-LVM2
+lvm2
 xfsprogs
 drbd
 mdadm

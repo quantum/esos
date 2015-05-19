@@ -104,7 +104,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		scst_qla2xxx-20150323.tar.gz \
 		kexec-tools-2.0.7.tar.gz \
 		drbd-8.4.4.tar.gz \
-		LVM2-2.02.108.tar.gz \
+		lvm2-2_02_120.tar.xz \
 		xfsprogs-3.1.8.tar.gz \
 		mdadm-3.3.2.tar.gz \
 		parted-2.3.tar.gz \
@@ -216,7 +216,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst scst_qla2xxx \
 		qlogic_fw scstadmin openssh vixie-cron gcc setuptools \
 		openssl zlib ncurses e2fsprogs ssmtp libibumad libibverbs \
 		srptools lsscsi sg3_utils groff python-suds kexec-tools \
-		iniparser cdk LVM2 xfsprogs drbd mdadm parted opensm libqb \
+		iniparser cdk lvm2 xfsprogs drbd mdadm parted opensm libqb \
 		pacemaker corosync nss glib libxml2 libxslt libtool bzip2 \
 		crmsh lxml libaio glue readline resource-agents mhvtl lzo \
 		mhash lessfs tokyocabinet fuse db snappy fence_agents pexpect \
@@ -881,7 +881,7 @@ sysvinit: glibc
 	$(MAKE) --directory=$(tgt_src_dir)/src ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-grub: glibc LVM2
+grub: glibc lvm2
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-grub-mkfont \
 	--enable-device-mapper --disable-werror
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)"
@@ -1150,8 +1150,9 @@ cdk: glibc ncurses
 	$(call clean_la_files,libcdk)
 	$(TOUCH) $(@)
 
-LVM2: glibc corosync dlm thin-provisioning-tools
-	cd $(tgt_src_dir) && COROSYNC_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
+lvm2: glibc corosync dlm thin-provisioning-tools
+	cd $(tgt_src_dir) && \
+	COROSYNC_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
 	COROSYNC_LIBS="$(LDFLAGS)" \
 	QUORUM_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
         QUORUM_LIBS="$(LDFLAGS) -lquorum -lrt" \
@@ -1165,13 +1166,14 @@ LVM2: glibc corosync dlm thin-provisioning-tools
 	--enable-cmirrord --disable-readline --with-thin=internal \
 	--with-thin-check=$(IMAGE_DIR)/usr/sbin/thin_check \
 	--with-cache=internal
-	$(MAKE) --directory=$(tgt_src_dir) CLDFLAGS+="$(LDFLAGS)"
+	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/libdm DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/lib DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/scripts DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/daemons DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/udev DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 xfsprogs: glibc util-linux
@@ -1204,7 +1206,7 @@ mdadm: glibc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-man
 	$(TOUCH) $(@)
 
-parted: glibc util-linux LVM2
+parted: glibc util-linux lvm2
 	cd $(tgt_src_dir) && CFLAGS="-D_BLKID_TYPES_H" ./configure --prefix=/usr \
 	--without-readline
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)"
@@ -2128,7 +2130,7 @@ smartmontools: glibc gcc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-data
 	$(TOUCH) $(@)
 
-cryptsetup: glibc libgcrypt LVM2 util-linux popt eudev
+cryptsetup: glibc libgcrypt lvm2 util-linux popt eudev
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-selinux \
 	--with-crypto_backend=gcrypt --with-libgcrypt-prefix=$(IMAGE_DIR)/usr
 	$(MAKE) --directory=$(tgt_src_dir)
