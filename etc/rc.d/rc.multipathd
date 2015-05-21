@@ -1,0 +1,28 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+MULTIPATHD="/usr/sbin/multipathd"
+MULTIPATHD_LOCK="/var/lock/multipathd"
+
+check_args ${@}
+
+start() {
+    /bin/echo "Starting multipathd..."
+    ${MULTIPATHD} || exit 1
+    /bin/touch ${MULTIPATHD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping multipathd..."
+    /bin/kill -TERM $(/bin/pidof ${MULTIPATHD}) || exit 1
+    wait_for_stop ${MULTIPATHD} && /bin/rm -f ${MULTIPATHD_LOCK}
+}
+
+status() {
+    /bin/pidof ${MULTIPATHD} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

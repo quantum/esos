@@ -1,3 +1,7 @@
+2015-05-20  Marc A. Smith  <marc@astersmith.com>
+
+	added the multipath-tools package; enabled the DM multipath kernel option; added a multipathd rc script (rc.multipathd) and updated required config files / settings
+
 2015-05-19  Marc A. Smith  <marc@astersmith.com>
 
 	updated LVM to version 2.02.120 (LVM2 -> lvm2); enabled udev rules.d install for lvm2 package

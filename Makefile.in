@@ -208,6 +208,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		rsync-3.1.1.tar.gz \
 		eudev-3.0.tar.gz \
 		gperf-3.0.4.tar.gz \
+		multipath-tools-0.5.0.tar.bz2 \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -230,7 +231,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst scst_qla2xxx \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
-		stunnel sudo rsync eudev gperf
+		stunnel sudo rsync eudev gperf multipath-tools
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2321,5 +2322,20 @@ gperf: glibc gcc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+multipath-tools: glibc lvm2 readline eudev
+	$(SED) -i '24,28 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
+	$(SED) -i 's/-lreadline/-lreadline -ltinfo/' \
+	$(tgt_src_dir)/multipathd/Makefile
+	$(SED) -i '/rcdir/ s/^#*/#/' $(tgt_src_dir)/multipathd/Makefile
+	$(SED) -i 's/ln -sf $$(DESTDIR)/ln -sf /' \
+	$(tgt_src_dir)/libmpathpersist/Makefile
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(tgt_src_dir) exec_prefix=/usr \
+	libudevdir=/usr/lib/udev syslibdir=/usr/lib libdir=/usr/lib/multipath \
+	DESTDIR=$(IMAGE_DIR) install
+	$(INSTALL) -D -m 0644 $(tgt_src_dir)/multipath.conf.annotated \
+	$(IMAGE_DIR)/etc/multipath.conf
 	$(TOUCH) $(@)
 
