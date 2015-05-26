@@ -4,6 +4,7 @@
 # perform several system checks such as available disk space, free physical
 # RAM check, and check logical drives' status/state.
 
+ZPOOL="/usr/sbin/zpool"
 MEGACLI="/opt/sbin/MegaCli64"
 ARCCONF="/opt/sbin/arcconf"
 MEM_PRCT_THRESH=0.90
@@ -173,6 +174,19 @@ if expr ${prct_disk_used} '>' ${DISK_PRCT_THRESH} > /dev/null; then
     echo "** Warning! Maximum disk space used threshold (${DISK_PRCT_THRESH}) has been exceeded..." 1>&2
     echo "Total Disk Space: ${disk_total} MB" 1>&2
     echo "Avail. Disk Space: ${disk_avail} MB" 1>&2
+fi
+
+if [ -x "${ZPOOL}" ]; then
+"${ZPOOL}" get -H health | while read line
+do
+tokens=( $line )
+if [ "${tokens[2]}" != "ONLINE" ]; then
+echo pool ${tokens[0]} is offline or degraded! 1>&2
+fi
+done
+else
+    echo "It appears that the '${ZPOOL}' command is not installed, or at least"
+    echo "is not executable. Skipping ZFS pool checks..."
 fi
 
 # Check if the USB drive is available/working via one of the FS labels (no indentation for if statement)
