@@ -4,9 +4,9 @@
 # perform several system checks such as available disk space, free physical
 # RAM check, and check logical drives' status/state.
 
-ZPOOL="/usr/sbin/zpool"
 MEGACLI="/opt/sbin/MegaCli64"
 ARCCONF="/opt/sbin/arcconf"
+ZPOOL="/usr/sbin/zpool"
 MEM_PRCT_THRESH=0.90
 DISK_PRCT_THRESH=0.80
 CHK_FS_LABEL="esos_root"
@@ -148,6 +148,24 @@ else
     echo "is not executable. Skipping AACRAID logical drive checks..."
 fi
 
+# Check ZFS pools
+if [ -x "${ZPOOL}" ]; then
+    echo "Checking ZFS pool health..."
+    SAVED_IFS=${IFS}
+    IFS=$(echo -en "\n\b")
+    for line in `${ZPOOL} get -H health`; do
+        pool_name=`echo "${line}" | awk '{print $1}'`
+        pool_state=`echo "${line}" | awk '{print $3}'`
+        if [ "${pool_state}" != "ONLINE" ]; then
+            echo "ZFS pool '${pool_name}' is offline or degraded!" 1>&2
+        fi
+    done
+    IFS=${SAVED_IFS}
+else
+    echo "It appears the '${ZPOOL}' tool is not installed, or at least"
+    echo "is not executable. Skipping ZFS pool checks..."
+fi
+
 # Check physical RAM
 mem_total=`cat /proc/meminfo | grep "^MemTotal:" | awk '{print $2}'`
 mem_avail=`cat /proc/meminfo | grep "^MemAvailable:" | awk '{print $2}'`
@@ -174,19 +192,6 @@ if expr ${prct_disk_used} '>' ${DISK_PRCT_THRESH} > /dev/null; then
     echo "** Warning! Maximum disk space used threshold (${DISK_PRCT_THRESH}) has been exceeded..." 1>&2
     echo "Total Disk Space: ${disk_total} MB" 1>&2
     echo "Avail. Disk Space: ${disk_avail} MB" 1>&2
-fi
-
-if [ -x "${ZPOOL}" ]; then
-"${ZPOOL}" get -H health | while read line
-do
-tokens=( $line )
-if [ "${tokens[2]}" != "ONLINE" ]; then
-echo pool ${tokens[0]} is offline or degraded! 1>&2
-fi
-done
-else
-    echo "It appears that the '${ZPOOL}' command is not installed, or at least"
-    echo "is not executable. Skipping ZFS pool checks..."
 fi
 
 # Check if the USB drive is available/working via one of the FS labels (no indentation for if statement)
