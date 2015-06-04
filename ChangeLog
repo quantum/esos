@@ -1,3 +1,13 @@
+2015-06-03  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'dswartz-issue-117'
+
+	tweaked the new ZFS pool check a bit, in the health_chk script (and tested)
+
+2015-05-26  Dan Swartzendruber  <dswartz@druber.com>
+
+	Add ZFS support to health check script.
+
 2015-05-20  Marc A. Smith  <marc@astersmith.com>
 
 	added the multipath-tools package; enabled the DM multipath kernel option; added a multipathd rc script (rc.multipathd) and updated required config files / settings
