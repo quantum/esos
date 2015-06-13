@@ -1,3 +1,13 @@
+2015-06-13  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'dswartz-issue-134'
+
+	minor cleanup and variable name fix to rc.network ethX name changes
+
+2015-06-11  Dan Swartzendruber  <dswartz@druber.com>
+
+	Enhance rc.network to support old-style (eth*) interfaces.
+
 2015-06-03  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'dswartz-issue-117'
