@@ -100,7 +100,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r6146.tar.gz \
-		scst_qla2xxx-20150323.tar.gz \
+		scst_qla2xxx-20150625.tar.gz \
 		kexec-tools-2.0.7.tar.gz \
 		drbd-8.4.4.tar.gz \
 		LVM2-2.02.108.tar.gz \
@@ -605,7 +605,8 @@ esos_kernels: kernel_headers
 	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) fcst_install; \
 	  $(ECHO) "### Building the QLogic SCST target driver..."; \
 	  $(MAKE) --directory=$(qla2xxx_src) SCST_DIR=$(scst_src)/scst/src \
-	  SCST_INC_DIR=$(scst_src)/scst/include KDIR=$(linux_src) \
+	  SCST_INC_DIR=$(scst_src)/scst/include \
+	  SCST_INC=$(scst_src)/scst/include KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) all; \
 	  $(ECHO) "### Building the mhVTL module..."; \
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) \
