@@ -1,4 +1,28 @@
-2015-04-17  Marc A. Smith  <marc@astersmith.com>
+2015-07-01  Marc A. Smith  <marc@astersmith.com>
+
+	finished fixing conflicts in esos_kernels...
+
+	Merge branch 'qla2xxx_update' into 0.1.x
+
+	Merge branch 'qlogic_opt' into 0.1.x
+
+2015-06-26  Marc A. Smith  <marc@astersmith.com>
+
+	updated build options to handle the QLogic provided qla2xxx as a autoconf option -- the SCST in-tree qla2x00t driver is now the default; updated run-level 2 script to handle the two different qla2xxx versions
+
+2015-06-25  Marc A. Smith  <marc@astersmith.com>
+
+	updated scst-qla2xxx to version 8.07.00.24.Trunk-SCST.16-k
+
+2015-06-12  Marc A. Smith  <marc@astersmith.com>
+
+	enabled CONFIG_PROVE_LOCKING in -debug.patch
+
+2015-06-08  Marc A. Smith  <marc@astersmith.com>
+
+	updated the -prod kernel config so we actually get a vmlinux file with debug symbols; enabled additional debug options in the -debug kernel config for detecting lockups + hung tasks
+
+2015-04-21  Marc A. Smith  <marc@astersmith.com>
 
 	added deps to Python modules/packages to serialize package installs so when using make -jX it doesn't clobber the easy-install file
 
