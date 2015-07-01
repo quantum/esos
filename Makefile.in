@@ -238,7 +238,7 @@ ifeq ($(enable_valgrind),yes)
 	build_targets += valgrind
 endif
 ifeq ($(enable_qla),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,scst_qla2xxx-20150323.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,scst_qla2xxx-20150625.tar.gz)
 	build_targets += scst_qla2xxx
 endif
 ifeq ($(with_ocs_sdk),yes)
@@ -627,12 +627,20 @@ esos_kernels: kernel_headers
 	  KVER=$(kernel_ver)$$i fcst; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) fcst_install; \
+<<<<<<< HEAD
 	  if [ "$(enable_qla)" = "yes" ]; then \
 	    $(ECHO) "### Building the QLogic provided target driver..."; \
 	    $(MAKE) --directory=$(qla2xxx_src) SCST_DIR=$(scst_src)/scst/src \
 	    SCST_INC_DIR=$(scst_src)/scst/include KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) all; \
 	  fi; \
+=======
+	  $(ECHO) "### Building the QLogic SCST target driver..."; \
+	  $(MAKE) --directory=$(qla2xxx_src) SCST_DIR=$(scst_src)/scst/src \
+	  SCST_INC_DIR=$(scst_src)/scst/include \
+	  SCST_INC=$(scst_src)/scst/include KDIR=$(linux_src) \
+	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) all; \
+>>>>>>> qla2xxx_update
 	  $(ECHO) "### Building the mhVTL module..."; \
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i; \
