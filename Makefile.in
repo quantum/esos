@@ -55,6 +55,7 @@ BZIP2		:= @bzip2@
 enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
 enable_valgrind	:= @enable_valgrind@
+enable_qla	:= @enable_qla@
 with_ocs_sdk	:= @with_ocs_sdk@
 ocs_sdk_dir	:= @ocs_sdk_dir@
 with_uwire	:= @with_uwire@
@@ -100,7 +101,6 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r6146.tar.gz \
-		scst_qla2xxx-20150323.tar.gz \
 		kexec-tools-2.0.7.tar.gz \
 		drbd-8.4.4.tar.gz \
 		LVM2-2.02.108.tar.gz \
@@ -207,7 +207,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
-build_targets	:= esos_kernels kernel_headers esos_tui scst scst_qla2xxx \
+build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		busybox makedumpfile elfutils sysvinit grub glibc perl Python \
 		qlogic_fw scstadmin openssh vixie-cron gcc setuptools \
 		openssl zlib ncurses e2fsprogs ssmtp libibumad libibverbs \
@@ -236,6 +236,10 @@ endif
 ifeq ($(enable_valgrind),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.9.0.tar.bz2)
 	build_targets += valgrind
+endif
+ifeq ($(enable_qla),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,scst_qla2xxx-20150323.tar.gz)
+	build_targets += scst_qla2xxx
 endif
 ifeq ($(with_ocs_sdk),yes)
 	build_targets += ocs_sdk
@@ -534,13 +538,19 @@ esos_kernels: kernel_headers
 	fi
 	- $(PATCH) -r - -N -d $(linux_src) -p1 < \
 	$(SRC_DIR)/misc/$(notdir $(linux_src)).patch
+	if [ "$(enable_qla)" != "yes" ]; then \
+	  $(RM) $(linux_src)/drivers/scsi/qla2xxx; \
+	  $(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx; \
+	fi
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
 	  $(MAKE) --directory=$(linux_src) clean; \
 	  $(MAKE) --directory=$(linux_src) distclean; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) clean; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) extraclean; \
-	  $(MAKE) --directory=$(qla2xxx_src) KDIR=$(linux_src) clean; \
+	  if [ "$(enable_qla)" = "yes" ]; then \
+	    $(MAKE) --directory=$(qla2xxx_src) KDIR=$(linux_src) clean; \
+	  fi; \
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean; \
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) distclean; \
 	  $(MAKE) --directory=$(eio_src)/Driver/enhanceio \
@@ -563,7 +573,9 @@ esos_kernels: kernel_headers
 	    $(SRC_DIR)/misc/$(notdir $(linux_src)).config > \
 	    $(linux_src)/.config; \
 	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2perf; \
-	    $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2perf; \
+	    if [ "$(enable_qla)" = "yes" ]; then \
+	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2perf; \
+	    fi; \
 	  fi; \
 	  if [ "$$i" = "$(debug_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
@@ -572,7 +584,12 @@ esos_kernels: kernel_headers
 	    $(PATCH) -r - -N -d $(linux_src) -p1 < \
 	    $(SRC_DIR)/misc/$(notdir $(linux_src))-debug.patch; \
 	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) 2debug; \
-	    $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2debug; \
+	    if [ "$(enable_qla)" = "yes" ]; then \
+	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2debug; \
+	    fi; \
+	  fi; \
+	  if [ "$(enable_qla)" != "yes" ]; then \
+	    $(SED) -i 's/# CONFIG_SCSI_QLA_FC is not set/CONFIG_SCSI_QLA_FC=m\nCONFIG_SCSI_QLA2XXX_TARGET=y/' $(linux_src)/.config; \
 	  fi; \
 	  $(ECHO) "### Building the Linux kernel..."; \
 	  $(MAKE) --directory=$(linux_src); \
@@ -587,6 +604,13 @@ esos_kernels: kernel_headers
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i DESTDIR=$(IMAGE_DIR) \
 	  INSTALL_DIR_H=$(IMAGE_DIR)/usr/include/scst scst_install; \
+	  if [ "$(enable_qla)" != "yes" ]; then \
+	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i qla_old; \
+	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) \
+	    qla_old_install; \
+	  fi; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
 	  include/iscsi_scst_itf_ver.h; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
@@ -603,10 +627,12 @@ esos_kernels: kernel_headers
 	  KVER=$(kernel_ver)$$i fcst; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) fcst_install; \
-	  $(ECHO) "### Building the QLogic SCST target driver..."; \
-	  $(MAKE) --directory=$(qla2xxx_src) SCST_DIR=$(scst_src)/scst/src \
-	  SCST_INC_DIR=$(scst_src)/scst/include KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) all; \
+	  if [ "$(enable_qla)" = "yes" ]; then \
+	    $(ECHO) "### Building the QLogic provided target driver..."; \
+	    $(MAKE) --directory=$(qla2xxx_src) SCST_DIR=$(scst_src)/scst/src \
+	    SCST_INC_DIR=$(scst_src)/scst/include KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) all; \
+	  fi; \
 	  $(ECHO) "### Building the mhVTL module..."; \
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i; \
