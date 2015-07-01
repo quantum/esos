@@ -116,7 +116,6 @@ a0edda805eb7d6ea600a230fb0979ea1  stunnel-5.10.tar.gz
 87558f3a55c62bc9244b19594f103ffa  sudo-1.8.12.tar.gz
 43bd6676f0b404326eee2d63be3cdcfe  rsync-3.1.1.tar.gz
 0f0c764c2c96202265b15ccfe8cfd22b  scst-trunk_r6146.tar.gz
-420a5b0c50327a1f15aebe6b2f9afb7d  scst_qla2xxx-20150323.tar.gz
 15e8df76375803c65c5c90ca06426e96  linux-3.14.36.tar.xz
 797e5469b65775153ba0462333fb311f  mhvtl-master_20150330.tar.gz
 73e7f49f525c51fa4a995aea4d80de41  python-daemon-2.0.5.tar.gz
@@ -134,3 +133,4 @@ efc2ee6093aa6aa0a88aaad83e998a3f  dlm-4.0.2.tar.xz
 a9a65972afc173ec7a39c585f4eea69c  lxml-3.4.4.tar.gz
 46ef603de23704658003782b5eae7bab  lvm2-2_02_120.tar.xz
 faf261d4cc717bf4c979557dc7bf5f52  multipath-tools-0.5.0.tar.bz2
+f95928e6a21681feb768132e23064815  scst_qla2xxx-20150625.tar.gz
