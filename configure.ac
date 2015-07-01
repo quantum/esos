@@ -147,6 +147,15 @@ AS_IF([test "x$enable_valgrind" = "xyes"], [build_opts="${build_opts} valgrind"]
 AC_SUBST(enable_valgrind, ${enable_valgrind})
 AC_MSG_NOTICE([valgrind: ${enable_valgrind}])
 
+dnl Optional feature qla
+AC_ARG_ENABLE(qla,
+	AS_HELP_STRING([--enable-qla], [use the QLogic provided qla2xxx driver instead of the SCST in-tree driver]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_qla="${enableval}"], [enable_qla="no"]), enable_qla="no")
+AS_IF([test "x$enable_qla" = "xyes"], [build_opts="${build_opts} qla"])
+AC_SUBST(enable_qla, ${enable_qla})
+AC_MSG_NOTICE([qla: ${enable_qla}])
+
 dnl Optional feature zfs
 AC_ARG_ENABLE(zfs,
 	AS_HELP_STRING([--enable-zfs], [build and include zfs]),
