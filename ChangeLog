@@ -1,3 +1,9 @@
+2015-07-02  Marc A. Smith  <marc@astersmith.com>
+
+	create missing /var/lib/lldpad directory
+
+	build fixes for CentOS/RHEL (in EnhanceIO driver and open-lldp)
+
 2015-07-01  Marc A. Smith  <marc@astersmith.com>
 
 	finished fixing conflicts in esos_kernels...
