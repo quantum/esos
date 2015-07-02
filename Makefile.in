@@ -642,7 +642,7 @@ esos_kernels: kernel_headers
 	  $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/; \
 	  $(ECHO) "### Building the EnhanceIO driver..."; \
 	  $(MAKE) --directory=$(eio_src)/Driver/enhanceio \
-	  KERNEL_SOURCE_VERSION=$(kernel_ver)$$i \
+	  RHEL5_VER="" KERNEL_SOURCE_VERSION=$(kernel_ver)$$i \
 	  KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio; \
 	  $(MKDIR) $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio; \
 	  $(INSTALL) -m 0644 $(eio_src)/Driver/enhanceio/*.ko \
@@ -1637,6 +1637,7 @@ open-lldp: glibc libconfig libnl
 	$(SED) -i 's/foreign/foreign subdir-objects/' \
 	$(tgt_src_dir)/configure.ac
 	$(SED) -i 's/-Werror//' $(tgt_src_dir)/Makefile.am
+	$(SED) -i 's/-Werror//' $(tgt_src_dir)/configure.ac
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && libtoolize; \
 	  cd $(tgt_src_dir) && ./bootstrap.sh; \
