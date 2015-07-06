@@ -1,12 +1,40 @@
+2015-07-06  Marc A. Smith  <marc@astersmith.com>
+
+	use the real blkid program (disable Busybox option, install from util-linux) to fix some udev rules that rely on it
+
+2015-07-01  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'qla2xxx_update'
+
+	Merge branch 'qlogic_opt'
+
+	Merge branch 'debug_fix'
+
+2015-06-26  Marc A. Smith  <marc@astersmith.com>
+
+	updated build options to handle the QLogic provided qla2xxx as a autoconf option -- the SCST in-tree qla2x00t driver is now the default; updated run-level 2 script to handle the two different qla2xxx versions
+
+2015-06-25  Marc A. Smith  <marc@astersmith.com>
+
+	updated scst-qla2xxx to version 8.07.00.24.Trunk-SCST.16-k
+
 2015-06-13  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'dswartz-issue-134'
 
 	minor cleanup and variable name fix to rc.network ethX name changes
 
+2015-06-12  Marc A. Smith  <marc@astersmith.com>
+
+	enabled CONFIG_PROVE_LOCKING in -debug.patch
+
 2015-06-11  Dan Swartzendruber  <dswartz@druber.com>
 
 	Enhance rc.network to support old-style (eth*) interfaces.
+
+2015-06-08  Marc A. Smith  <marc@astersmith.com>
+
+	updated the -prod kernel config so we actually get a vmlinux file with debug symbols; enabled additional debug options in the -debug kernel config for detecting lockups + hung tasks
 
 2015-06-03  Marc A. Smith  <marc@astersmith.com>
 
