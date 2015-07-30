@@ -1,9 +1,19 @@
 #! /bin/busybox sh
 
+# Just in case
 rescue_shell() {
 	echo "Something bad happened; attempting to drop into a shell..."
 	/bin/busybox --install -s
 	exec setsid sh -c 'exec sh </dev/tty1 >/dev/tty1 2>&1'
+}
+
+# From: https://wiki.gentoo.org/wiki/Custom_Initramfs
+cmdline() {
+	local value
+	value=" $(cat /proc/cmdline) "
+	value="${value##* $1=}"
+	value="${value%% *}"
+	[ "$value" != "" ] && echo "$value"
 }
 
 # Install BusyBox
@@ -47,12 +57,27 @@ root_fs_dev="$(findfs LABEL=esos_root)" || \
 mount -t tmpfs -o size=1536m tmpfs /mnt/root || rescue_shell
 mount -o ro ${root_fs_dev} /mnt/tmp || rescue_shell
 
+# Get the slot kernel parameter
+slot_name="$(cmdline slot)"
+if [ -z "${slot_name}" ]; then
+	echo "Is the slot= kernel parameter missing?"
+	rescue_shell
+fi
+
+# Make sure the archive exists
+cpio_arch="/mnt/tmp/${slot_name}-root.cpio.bz2"
+if [ ! -e "${cpio_arch}" ]; then
+	echo "The '${cpio_arch}' file doesn't exist!"
+	rescue_shell
+fi
+
 # Setup the root file system
 echo "Initializing root file system..."
-cd /mnt/tmp
+cd /mnt/root
 spinner="/-\|"
 spin_pos=0
-find . -depth | cpio -pmdv --quiet /mnt/root | while read i; do
+bunzip2 -c ${cpio_arch} | \
+	cpio -imdv --quiet | while read i; do
 	printf "\b"${spinner:$spin_pos:1}
 	spin_pos=$(( ( ${spin_pos} + 1 ) % 4 ))
 done
@@ -69,3 +94,4 @@ umount /sys
 
 # Boot the real thing
 exec switch_root /mnt/root /sbin/init
+

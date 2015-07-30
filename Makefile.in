@@ -10,6 +10,7 @@ PKG_SRC_DIR	:= @pkg_src_dir@
 IMAGE_DIR	:= @image_dir@
 INITRAMFS_DIR	:= @initramfs_dir@
 MOUNT_DIR	:= @mount_dir@
+STAGING_DIR	:= @staging_dir@
 
 QUIET		:= @
 SHELL		:= @bash@
@@ -209,6 +210,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		eudev-3.0.tar.gz \
 		gperf-3.0.4.tar.gz \
 		multipath-tools-0.5.0.tar.bz2 \
+		archivemount-0.8.5.tar.gz \
+		libarchive-3.1.2.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -231,7 +234,8 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
-		stunnel sudo rsync eudev gperf multipath-tools
+		stunnel sudo rsync eudev gperf multipath-tools archivemount \
+		libarchive
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -324,13 +328,13 @@ image: $(build_targets)
 	$(CPIO) --null -ov --format=newc | \
 	$(GZIP) > $(IMAGE_DIR)/boot/initramfs.cpio.gz
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Setting up ESOS image file ($(img_file))..."
+	$(QUIET) $(ECHO) "### Setting up the ESOS image file ($(img_file))..."
 	# 4000 MB (not MiB)
 	# 4000000000 B
 	# 4000000000 B / 512 B = 7812500 sectors
 	$(DD) if=/dev/zero of=$(img_file) bs=512 count=0 seek=7812500
-	$(ECHO) -e "2048,204800,L,*\n206848,2048000,L\n2254848,204800,L\n\
-	2459648,4096000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
+	$(ECHO) -e "2048,409600,L,*\n411648,4096000,L\n4507648,409600,L\n\
+	4917248,2048000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
 	$(KPARTX) -a -s $(loop_dev)
 	$(SLEEP) 1
@@ -343,85 +347,91 @@ image: $(build_targets)
 	$(MKE2FS) -L esos_logs $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p4
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Installing image..."
-	$(MKDIR) $(MOUNT_DIR)
+	$(QUIET) $(ECHO) "### Installing image (staging)..."
 	$(MOUNT) $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p2 $(MOUNT_DIR) 
 	$(MKDIR) $(MOUNT_DIR)/boot
 	$(MOUNT) $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p1 $(MOUNT_DIR)/boot
+	cd $(IMAGE_DIR) && $(FIND) ./boot -depth | \
+	$(CPIO) -pmdvu $(MOUNT_DIR)
 	cd $(IMAGE_DIR) && \
 	$(FIND) . -depth ! -path "./usr/include*" ! -path "*.a" \
-	! -path "./usr/share/doc*" | $(CPIO) -pmdvu $(MOUNT_DIR)
+	! -path "./usr/share/doc*" ! -path "./boot*" | \
+	$(CPIO) -pmdvu $(STAGING_DIR)
 	$(INSTALL) -D $(wildcard $(IMAGE_DIR)/usr/include/python*/pyconfig.h) \
-	$(MOUNT_DIR)/usr/include/$(notdir \
+	$(STAGING_DIR)/usr/include/$(notdir \
 	$(wildcard $(IMAGE_DIR)/usr/include/python*))/pyconfig.h
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
-	$(CPIO) -pmdvu $(MOUNT_DIR)/etc
+	$(CPIO) -pmdvu $(STAGING_DIR)/etc
 	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install \
 	--grub-setup=$(WORK_DIR)/grub-bios-setup \
 	--grub-mkimage=$(WORK_DIR)/grub-mkimage \
 	--grub-mkrelpath=$(WORK_DIR)/grub-mkrelpath \
 	--grub-probe=$(WORK_DIR)/grub-probe \
 	--root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
-	$(SED) 's/@@esos_ver@@/$(esos_ver)/' $(SRC_DIR)/misc/grub.cfg > \
-	$(MOUNT_DIR)/boot/grub/grub.cfg
-	$(INSTALL) $(SRC_DIR)/scripts/conf_sync.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/usb_sync.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/archive_logs.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/startup.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/health_chk.sh $(MOUNT_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/crm_mon_email.sh $(MOUNT_DIR)/usr/local/bin/
-	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py $(MOUNT_DIR)/usr/local/bin/
-	$(MKDIR) $(MOUNT_DIR)/usr/lib/ocf/resource.d/esos
-	$(INSTALL) $(SRC_DIR)/misc/ocf/* $(MOUNT_DIR)/usr/lib/ocf/resource.d/esos/
-	$(MKDIR) $(MOUNT_DIR)/usr/local/perf-agent
-	$(INSTALL) $(SRC_DIR)/perf-agent/* $(MOUNT_DIR)/usr/local/perf-agent/
+	$(INSTALL) $(SRC_DIR)/misc/grub.cfg $(MOUNT_DIR)/boot/grub/
+	$(ECHO) "set slot_ver=$(esos_ver)" > $(MOUNT_DIR)/boot/PRIMARY-version
+	$(INSTALL) $(SRC_DIR)/scripts/conf_sync.sh $(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/usb_sync.sh $(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/archive_logs.sh $(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/startup.sh $(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/health_chk.sh $(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/crm_mon_email.sh $(STAGING_DIR)/usr/local/bin/
+	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py $(STAGING_DIR)/usr/local/bin/
+	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d/esos
+	$(INSTALL) $(SRC_DIR)/misc/ocf/* $(STAGING_DIR)/usr/lib/ocf/resource.d/esos/
+	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
+	$(INSTALL) $(SRC_DIR)/perf-agent/* $(STAGING_DIR)/usr/local/perf-agent/
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > \
-	$(MOUNT_DIR)/etc/esos-release
-	$(CHOWN) -R root:root $(MOUNT_DIR)/*
-	$(FIND) $(MOUNT_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
-	$(FIND) $(MOUNT_DIR)/etc -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
-	$(FIND) $(MOUNT_DIR)/etc/rc.d -type f -print0 | \
+	$(STAGING_DIR)/etc/esos-release
+	$(CHOWN) -R root:root $(STAGING_DIR)/*
+	$(FIND) $(STAGING_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
+	$(FIND) $(STAGING_DIR)/etc -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(STAGING_DIR)/etc/rc.d -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
-	$(CHMOD) 4750 $(MOUNT_DIR)/usr/local/bin/esos_tui
-	$(CHMOD) 4755 $(MOUNT_DIR)/usr/bin/sudo
-	$(CHMOD) 600 $(MOUNT_DIR)/etc/shadow
-	$(CHMOD) 600 $(MOUNT_DIR)/etc/crontab
-	$(CHMOD) 1777 $(MOUNT_DIR)/tmp
-	$(CHMOD) 1777 $(MOUNT_DIR)/var/tmp
-	$(CHMOD) 4750 $(MOUNT_DIR)/usr/bin/vtltape
-	$(CHMOD) 4750 $(MOUNT_DIR)/usr/bin/vtllibrary
-	$(CHOWN) 101:101 $(MOUNT_DIR)/var/lib/corosync
-	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/pacemaker
-	$(CHOWN) -R 101:101 $(MOUNT_DIR)/var/lib/heartbeat
-	$(CHOWN) 101:101 $(MOUNT_DIR)/var/run/crm
-	$(CHOWN) 65534:65534 $(MOUNT_DIR)/var/run/stunnel
-	$(CHOWN) 0:65534 $(MOUNT_DIR)/var/lib/stunnel
-	$(CHMOD) 1770 $(MOUNT_DIR)/var/lib/stunnel
-	$(LN) rc.0 $(MOUNT_DIR)/etc/rc.d/rc.6
-	$(LN) rc.2 $(MOUNT_DIR)/etc/rc.d/rc.5
-	$(LN) rc.2 $(MOUNT_DIR)/etc/rc.d/rc.4
-	$(LN) rc.2 $(MOUNT_DIR)/etc/rc.d/rc.3
-	$(FIND) $(MOUNT_DIR)/etc -path $(MOUNT_DIR)/etc/rc.d -prune -o \
+	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
+	$(CHMOD) 4755 $(STAGING_DIR)/usr/bin/sudo
+	$(CHMOD) 600 $(STAGING_DIR)/etc/shadow
+	$(CHMOD) 600 $(STAGING_DIR)/etc/crontab
+	$(CHMOD) 1777 $(STAGING_DIR)/tmp
+	$(CHMOD) 1777 $(STAGING_DIR)/var/tmp
+	$(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtltape
+	$(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtllibrary
+	$(CHOWN) 101:101 $(STAGING_DIR)/var/lib/corosync
+	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/pacemaker
+	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/heartbeat
+	$(CHOWN) 101:101 $(STAGING_DIR)/var/run/crm
+	$(CHOWN) 65534:65534 $(STAGING_DIR)/var/run/stunnel
+	$(CHOWN) 0:65534 $(STAGING_DIR)/var/lib/stunnel
+	$(CHMOD) 1770 $(STAGING_DIR)/var/lib/stunnel
+	$(LN) rc.0 $(STAGING_DIR)/etc/rc.d/rc.6
+	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.5
+	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.4
+	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.3
+	$(FIND) $(STAGING_DIR)/etc -path $(STAGING_DIR)/etc/rc.d -prune -o \
 	-print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
-	$(FIND) $(MOUNT_DIR)/var/lib -print0 | \
+	$(FIND) $(STAGING_DIR)/var/lib -print0 | \
 	$(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
 	$(SED) -i 's/ $(subst /,\/,$(IMAGE_DIR))\// \//g' \
-	$(MOUNT_DIR)/usr/lib/libc.so
+	$(STAGING_DIR)/usr/lib/libc.so
 	$(SED) -i 's/ $(subst /,\/,$(IMAGE_DIR))\// \//g' \
-	$(MOUNT_DIR)/usr/lib/libpthread.so
-	cd $(MOUNT_DIR)/usr/share/man && \
+	$(STAGING_DIR)/usr/lib/libpthread.so
+	cd $(STAGING_DIR)/usr/share/man && \
 	$(FIND) . -type l ! -path "*.gz" -exec \
 	sh -c '$(LN) `$(READLINK) $$1`.gz $$1.gz && $(RM) $$1' _ {} \;
-	cd $(MOUNT_DIR)/usr/share/man && \
+	cd $(STAGING_DIR)/usr/share/man && \
 	$(FIND) . -type f ! -path "*.gz" -exec $(GZIP) {} \;
 	$(QUIET) if [ "x$(enable_debug)" != "xyes" ]; then \
-	  $(FIND) $(MOUNT_DIR)/{,usr/}{lib,bin,sbin} -type f \
+	  $(FIND) $(STAGING_DIR)/{,usr/}{lib,bin,sbin} -type f \
 	  -exec $(STRIP) --strip-debug '{}' ';'; \
 	fi
-	- $(DD) if=/dev/zero of=$(MOUNT_DIR)/zero_file bs=4M
-	$(RM) $(MOUNT_DIR)/zero_file
+	$(QUIET) $(ECHO) && $(ECHO)
+	$(QUIET) $(ECHO) "### Creating the root archive file..."
+	cd $(STAGING_DIR) && \
+	$(FIND) . -depth | $(CPIO) -ov --format=newc | $(BZIP2) -c > \
+	$(MOUNT_DIR)/PRIMARY-root.cpio.bz2
+	$(CHOWN) -R root:root $(MOUNT_DIR)/boot/*
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
@@ -433,6 +443,9 @@ image: $(build_targets)
 	$(BUILD_DIR)/dist_md5sum.txt
 	cd $(dir $(bz2_img_file)) && $(SHA256SUM) -b $(notdir $(bz2_img_file)) > \
 	$(BUILD_DIR)/dist_sha256sum.txt
+	$(QUIET) $(ECHO) && $(ECHO)
+	$(QUIET) $(ECHO) "### Clearing the staging directory..."
+	$(RM) $(STAGING_DIR)/*
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### All done; your ESOS disk image file is ready!"
 
@@ -464,8 +477,8 @@ pkg_dist: $(bz2_img_file)
 # clean - Remove temporary files, any image/package files, and target files.
 .PHONY: clean
 clean: $(clean_targets)
-	$(RM) $(INITRAMFS_DIR)
-	$(RM) $(IMAGE_DIR)
+	$(RM) $(INITRAMFS_DIR)/*
+	$(RM) $(IMAGE_DIR)/*
 	$(RM) $(BUILD_DIR)/dist_*.txt
 	$(RM) $(BUILD_DIR)/esos-*.zip
 	$(RM) $(BUILD_DIR)/esos-*.img
@@ -621,7 +634,7 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	  $(ECHO) "### Building the Linux kernel..."; \
 	  $(MAKE) --directory=$(linux_src); \
 	  $(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage \
-	  $(IMAGE_DIR)/boot/bzImage$$i; \
+	  $(IMAGE_DIR)/boot/PRIMARY-bzImage$$i; \
 	  $(XZ) -z -c $(linux_src)/vmlinux > $(WORK_DIR)/vmlinux$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) \
 	  INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install; \
@@ -1939,6 +1952,7 @@ util-linux: glibc ncurses zlib
 	$(MAKE) --directory=$(tgt_src_dir) install-data-recursive \
 	DESTDIR=$(IMAGE_DIR)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/blkid $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/wipefs $(IMAGE_DIR)/usr/sbin/
 	$(call clean_la_files,libcommon)
 	$(call clean_la_files,libuuid)
 	$(call clean_la_files,libmount)
@@ -2365,5 +2379,21 @@ multipath-tools: glibc lvm2 readline eudev
 	DESTDIR=$(IMAGE_DIR) install
 	$(INSTALL) -D -m 0644 $(tgt_src_dir)/multipath.conf.annotated \
 	$(IMAGE_DIR)/etc/multipath.conf
+	$(TOUCH) $(@)
+
+archivemount: glibc libarchive fuse
+	cd $(tgt_src_dir) && FUSE_CFLAGS="-I$(IMAGE_DIR)/usr/include/fuse" \
+	FUSE_LIBS="-lfuse" ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+libarchive: glibc bzip2 lzo zlib
+	cd $(tgt_src_dir) && LD_LIBRARY_PATH=$(IMAGE_DIR)/usr/lib: \
+	./configure --prefix=/usr --without-iconv --without-lzma \
+	--without-nettle --without-openssl --without-xml2 --without-expat
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files,libarchive)
 	$(TOUCH) $(@)
 

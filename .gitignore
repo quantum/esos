@@ -152,3 +152,5 @@ rsync
 eudev
 gperf
 multipath-tools
+archivemount
+libarchive

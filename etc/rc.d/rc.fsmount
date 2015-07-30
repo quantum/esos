@@ -10,7 +10,7 @@ start() {
     /usr/sbin/fsck -A -M -T -p
     if [ $? -gt 1 ]; then
         /bin/echo "ERROR (fsck): Your file system appears to be severely damaged."
-        /bin/echo "ERROR (fsck): You can probably correct this problem by running e2fsck manually."
+        /bin/echo "ERROR (fsck): You can probably correct this problem by running fsck.FSTYPE manually."
         exit 1
     fi
 

@@ -36,7 +36,8 @@ echo "### Checking for required tools..."
 reqd_tools=${this_os}_REQD_TOOLS
 for i in ${!reqd_tools}; do
     if ! which ${i} > /dev/null 2>&1; then
-        echo "ERROR: The '${i}' utility is required to use this installation script."
+        echo "ERROR: The '${i}' utility is required to use this" \
+            "installation script."
         exit 1
     fi
 done
@@ -56,7 +57,8 @@ if [ "${this_os}" = "${LINUX}" ]; then
     sha256sum -w -c ${SHA256_CHECKSUM} || exit 1
 elif [ "${this_os}" = "${MACOSX}" ]; then
     chksum_img_file="$(cat ${MD5_CHECKSUM} | cut -d' ' -f2 | sed -e 's/\*//')"
-    if md5 -r ${chksum_img_file} | sed 's/ / */' | diff ${MD5_CHECKSUM} - > /dev/null 2>&1; then
+    if md5 -r ${chksum_img_file} | sed 's/ / */' | \
+        diff ${MD5_CHECKSUM} - > /dev/null 2>&1; then
         echo "${chksum_img_file}: OK"
     else
         echo "${chksum_img_file}: The MD5 checksum doesn't match!"
@@ -82,14 +84,15 @@ if [ -f "/etc/esos-release" ]; then
         image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
         disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
         image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
-        bunzip2 -d -c ${image_file} | dd of=${image_mbr} bs=512 count=1 > /dev/null 2>&1 || exit 1
-        fdisk -u -l ${esos_blk_dev} | egrep "^${esos_blk_dev}" | sed -e 's/\*//' | \
-            awk '{ print $2 }' > ${disk_parts}
+        bunzip2 -d -c ${image_file} | dd of=${image_mbr} bs=512 count=1 > \
+        /dev/null 2>&1 || exit 1
+        fdisk -u -l ${esos_blk_dev} | egrep "^${esos_blk_dev}" | \
+            sed -e 's/\*//' | awk '{ print $2 }' > ${disk_parts}
         fdisk -u -l ${image_mbr} | egrep "^${image_mbr}" | sed -e 's/\*//' | \
             awk '{ print $2 }' > ${image_parts}
         if ! diff ${disk_parts} ${image_parts} > /dev/null 2>&1; then
-            echo "### The image file and current ESOS disk labels do not match!" \
-                "An in-place upgrade is not supported, continuing..."
+            echo "### The image file and current ESOS disk labels do not" \
+                "match! An in-place upgrade is not supported, continuing..."
             echo
             rm -f ${image_mbr} ${disk_parts} ${image_parts}
             break
@@ -101,36 +104,66 @@ if [ -f "/etc/esos-release" ]; then
             "CLI tools." && read confirm
             echo
         if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
-            echo "### We believe '${esos_blk_dev}' is the correct ESOS boot" \
-                "device to upgrade. Here is what it looks like:"
-            fdisk -l ${esos_blk_dev} || exit 1
+            echo "### Mounting the ESOS USB flash drive file systems..."
+            usb_esos_mnt="${TEMP_DIR}/old_esos"
+            mkdir -p ${usb_esos_mnt} || exit 1
+            mount ${esos_blk_dev}2 ${usb_esos_mnt} || exit 1
+            mount ${esos_blk_dev}1 ${usb_esos_mnt}/boot || exit 1
             echo
-            echo "### Is this the correct ESOS device? All data on" \
-                "'${esos_blk_dev}' will be destroyed! Please double-check!" \
-                "Okay to continue (type 'YES' to confirm)?" && read confirm
-                echo
-            if [ "${confirm}" = "YES" ]; then
-                # Get the device sector size and ending sector of esos_root (2)
-                dev_sector_size=$(blockdev --getss ${esos_blk_dev}) || exit 1
-                esos_root_end=$(fdisk -u -l ${esos_blk_dev} | \
-                    egrep "^${esos_blk_dev}2" | awk '{ print $3 }') || exit 1
-                # A simple sanity check
-                if [ ${dev_sector_size} -gt 0 ] && [ ${esos_root_end} -gt 0 ]; then
-                    echo "### Writing ${image_file} to ${esos_blk_dev}" \
-                        "(bs=${dev_sector_size} count=${esos_root_end});" \
-                        "this may take a while..."
-                    bunzip2 -d -c ${image_file} | dd of=${esos_blk_dev} \
-                        bs=${dev_sector_size} count=${esos_root_end} || exit 1
-                    echo
-                    echo "### Your ESOS USB flash drive has been upgraded!" \
-                        "Please run conf_sync.sh to check file system" \
-                        "integrity before rebooting."
-                        exit 0
-                fi
-                exit 1
-            else
-                exit 0
-            fi
+            echo "### Increasing the /tmp file system..."
+            mount -o remount,size=5G /tmp || exit 1
+            echo
+            echo "### Extracting the image file..."
+            mkdir -p ${TEMP_DIR} || exit 1
+            extracted_img="${TEMP_DIR}/$(basename ${image_file} .bz2)"
+            bunzip2 -d -c ${image_file} > ${extracted_img} || exit 1
+            echo
+            echo "### Mounting the image file partitions..."
+            img_esos_mnt="${TEMP_DIR}/new_esos"
+            mkdir -p ${img_esos_mnt} || exit 1
+            loop_dev="$(losetup -f)"
+            losetup ${loop_dev} ${extracted_img} || exit 1
+            kpartx -a -s ${loop_dev} || exit 1
+            boot_dev="$(echo ${loop_dev} | sed 's/^\/dev/\/dev\/mapper/')p1"
+            root_dev="$(echo ${loop_dev} | sed 's/^\/dev/\/dev\/mapper/')p2"
+            mount ${root_dev} ${img_esos_mnt} || exit 1
+            mount ${boot_dev} ${img_esos_mnt}/boot || exit 1
+            echo
+            echo "### Moving the current primary image to the secondary slot..."
+            usb_ver="$(cat ${usb_esos_mnt}/boot/PRIMARY-version | cut -d= -f2)"
+            mv -f ${usb_esos_mnt}/boot/PRIMARY-version \
+                ${usb_esos_mnt}/boot/SECONDARY-version || exit 1
+            mv -f ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.prod \
+                ${usb_esos_mnt}/boot/SECONDARY-bzImage-esos.prod || exit 1
+            mv -f ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.debug \
+                ${usb_esos_mnt}/boot/SECONDARY-bzImage-esos.debug || exit 1
+            mv -f ${usb_esos_mnt}/PRIMARY-root.cpio.bz2 \
+                ${usb_esos_mnt}/SECONDARY-root.cpio.bz2 || exit 1
+            echo
+            echo "### Copying the new image to the primary slot..."
+            img_ver="$(cat ${img_esos_mnt}/boot/PRIMARY-version | cut -d= -f2)"
+            cp -fp ${img_esos_mnt}/boot/PRIMARY-version \
+                ${usb_esos_mnt}/boot/PRIMARY-version || exit 1
+            cp -fp ${img_esos_mnt}/boot/PRIMARY-bzImage-esos.prod \
+                ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.prod || exit 1
+            cp -fp ${img_esos_mnt}/boot/PRIMARY-bzImage-esos.debug \
+                ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.debug || exit 1
+            cp -fp ${img_esos_mnt}/PRIMARY-root.cpio.bz2 \
+                ${usb_esos_mnt}/PRIMARY-root.cpio.bz2 || exit 1
+            echo
+            echo "### Cleaning up..."
+            umount ${img_esos_mnt}/boot || exit 1
+            umount ${img_esos_mnt} || exit 1
+            umount ${usb_esos_mnt}/boot || exit 1
+            umount ${usb_esos_mnt} || exit 1
+            kpartx -d ${loop_dev} || exit 1
+            losetup -d ${loop_dev} || exit 1
+            rm -rf ${TEMP_DIR}
+            echo
+            echo "### The ESOS upgrade succeeded! Here are the details:"
+            echo "Primary slot version: ${img_ver}"
+            echo "Secondary slot version: ${usb_ver}"
+            exit 0
         else
             break
         fi

@@ -82,6 +82,9 @@ if test x"${PWD}" != x; then
 	mount_dir="${work_dir}/mnt"
 	${mkdir} -p ${mount_dir} || exit 1
 	AC_SUBST(mount_dir, ${mount_dir})
+	staging_dir="${work_dir}/staging"
+	${mkdir} -p ${staging_dir} || exit 1
+	AC_SUBST(staging_dir, ${staging_dir})
 else
 	AC_MSG_ERROR([invalid current working directory])
 fi
