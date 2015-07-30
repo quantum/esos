@@ -133,6 +133,8 @@ if [ -f "/etc/esos-release" ]; then
             usb_ver="$(cat ${usb_esos_mnt}/boot/PRIMARY-version | cut -d= -f2)"
             mv -f ${usb_esos_mnt}/boot/PRIMARY-version \
                 ${usb_esos_mnt}/boot/SECONDARY-version || exit 1
+            mv -f ${usb_esos_mnt}/boot/PRIMARY-initramfs.cpio.gz \
+                ${usb_esos_mnt}/boot/SECONDARY-initramfs.cpio.gz || exit 1
             mv -f ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.prod \
                 ${usb_esos_mnt}/boot/SECONDARY-bzImage-esos.prod || exit 1
             mv -f ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.debug \
@@ -144,6 +146,8 @@ if [ -f "/etc/esos-release" ]; then
             img_ver="$(cat ${img_esos_mnt}/boot/PRIMARY-version | cut -d= -f2)"
             cp -fp ${img_esos_mnt}/boot/PRIMARY-version \
                 ${usb_esos_mnt}/boot/PRIMARY-version || exit 1
+            cp -fp ${img_esos_mnt}/boot/PRIMARY-initramfs.cpio.gz \
+                ${usb_esos_mnt}/boot/PRIMARY-initramfs.cpio.gz || exit 1
             cp -fp ${img_esos_mnt}/boot/PRIMARY-bzImage-esos.prod \
                 ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.prod || exit 1
             cp -fp ${img_esos_mnt}/boot/PRIMARY-bzImage-esos.debug \

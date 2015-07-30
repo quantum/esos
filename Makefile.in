@@ -326,7 +326,7 @@ image: $(build_targets)
 	$(LN) busybox $(INITRAMFS_DIR)/bin/sh
 	cd $(INITRAMFS_DIR) && $(FIND) . -print0 | \
 	$(CPIO) --null -ov --format=newc | \
-	$(GZIP) > $(IMAGE_DIR)/boot/initramfs.cpio.gz
+	$(GZIP) > $(IMAGE_DIR)/boot/PRIMARY-initramfs.cpio.gz
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Setting up the ESOS image file ($(img_file))..."
 	# 4000 MB (not MiB)
