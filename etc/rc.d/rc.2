@@ -16,6 +16,9 @@ for i in ${EARLY_SERVICES}; do
     fi
 done
 
+/bin/echo "Loading the Brocade 10G Ethernet driver..."
+/sbin/modprobe bna
+
 /bin/echo "Loading the Linux Ethernet Bonding driver..."
 /sbin/modprobe bonding
 
