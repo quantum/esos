@@ -207,11 +207,14 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		stunnel-5.10.tar.gz \
 		sudo-1.8.12.tar.gz \
 		rsync-3.1.1.tar.gz \
-		eudev-3.0.tar.gz \
+		eudev-3.1.2.tar.gz \
 		gperf-3.0.4.tar.gz \
 		multipath-tools-0.5.0.tar.bz2 \
 		archivemount-0.8.5.tar.gz \
 		libarchive-3.1.2.tar.gz \
+		mcelog-master_20150731.tar.gz \
+		edac-utils-0.16.tar.bz2 \
+		sysfsutils-2.1.0.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -235,7 +238,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
 		stunnel sudo rsync eudev gperf multipath-tools archivemount \
-		libarchive
+		libarchive mcelog edac-utils sysfsutils
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2354,6 +2357,9 @@ rsync: glibc
 	$(TOUCH) $(@)
 
 eudev: glibc util-linux gperf
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
 	cd $(tgt_src_dir) && PATH=$$PATH:$(IMAGE_DIR)/usr/bin \
 	BLKID_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
 	BLKID_LIBS="-lblkid" ./configure --prefix=/usr \
@@ -2398,5 +2404,25 @@ libarchive: glibc bzip2 lzo zlib
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(call clean_la_files,libarchive)
+	$(TOUCH) $(@)
+
+mcelog: glibc
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+edac-utils: glibc sysfsutils
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir)/src install SUBDIRS="lib util" \
+	DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files,libedac)
+	$(TOUCH) $(@)
+
+sysfsutils: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files,libsysfs)
 	$(TOUCH) $(@)
 

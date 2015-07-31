@@ -154,3 +154,6 @@ gperf
 multipath-tools
 archivemount
 libarchive
+edac-utils
+mcelog
+sysfsutils
