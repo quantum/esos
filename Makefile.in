@@ -1685,6 +1685,9 @@ linux_firmware:
 	$(CP) $(tgt_src_dir)/LICENCE.chelsio_firmware $(IMAGE_DIR)/lib/firmware/
 	$(CP) -r $(tgt_src_dir)/cxgb* $(IMAGE_DIR)/lib/firmware/
 	$(CP) -r $(tgt_src_dir)/qlogic $(IMAGE_DIR)/lib/firmware/
+	$(CP) -r $(tgt_src_dir)/cbfw* $(IMAGE_DIR)/lib/firmware/
+	$(CP) -r $(tgt_src_dir)/ctfw* $(IMAGE_DIR)/lib/firmware/
+	$(CP) -r $(tgt_src_dir)/ct2fw* $(IMAGE_DIR)/lib/firmware/
 	$(TOUCH) $(@)
 
 dlm: glibc corosync
