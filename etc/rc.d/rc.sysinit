@@ -61,6 +61,7 @@ if [ -n "${fs_node}" ]; then
         /usr/sbin/parted -m -s ${fs_node%?} rm 4
         /usr/sbin/parted -m -s ${fs_node%?} mkpart primary \
             ${orig_start} ${free_end}
+        /usr/sbin/udevadm settle --timeout=30
         /sbin/blockdev --rereadpt ${fs_node%?}
         /bin/sleep 1
         /usr/sbin/resize2fs -p ${fs_node}
