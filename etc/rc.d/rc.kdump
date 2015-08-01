@@ -1,17 +1,40 @@
 #! /bin/sh
 
+# From: https://wiki.gentoo.org/wiki/Custom_Initramfs
+cmdline() {
+    local value
+    value=" $(cat /proc/cmdline) "
+    value="${value##* $1=}"
+    value="${value%% *}"
+    [ "$value" != "" ] && echo "$value"
+}
+
+# Get the slot kernel parameter
+slot_name="$(cmdline slot)"
+if [ -z "${slot_name}" ]; then
+    echo "Is the slot= kernel parameter missing?"
+    exit 1
+fi
+
 # Need the boot file system so we can load a kernel
-/bin/mount /boot
+/bin/mount /boot || exit 1
 
 # Load a kernel (prod or debug) for use on panic
 case "`/bin/uname -r`" in
     *prod*)
-        /usr/sbin/kexec -p /boot/bzImage*prod* --initrd=/boot/initramfs.cpio.gz --append="single irqpoll maxcpus=1 reset_devices"
+        kernel=/boot/${slot_name}-bzImage-esos.prod
+        initramfs=/boot/${slot_name}-initramfs.cpio.gz
+        /usr/sbin/kexec -p ${kernel} --initrd=${initramfs} \
+            --append="single irqpoll maxcpus=1 reset_devices"
     ;;
     *debug*)
-        /usr/sbin/kexec -p /boot/bzImage*debug* --initrd=/boot/initramfs.cpio.gz --append="single irqpoll maxcpus=1 reset_devices"
+        kernel=/boot/${slot_name}-bzImage-esos.debug
+        initramfs=/boot/${slot_name}-initramfs.cpio.gz
+        /usr/sbin/kexec -p ${kernel} --initrd=${initramfs} \
+            --append="single irqpoll maxcpus=1 reset_devices"
     ;;
 esac
 
 # Done
-/bin/umount /boot
+/bin/umount /boot || exit 1
+
