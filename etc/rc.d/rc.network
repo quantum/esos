@@ -62,7 +62,7 @@ if ($ARGV[0] eq "start") {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
-        if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) || ($iface =~ /bond\d+/)) {
+        if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) || ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) || ($iface =~ /bond\d+/)) {
             print("Bringing up interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " up 2>&1");
             if ($? == -1) {
@@ -275,7 +275,7 @@ if ($ARGV[0] eq "start") {
         }
 
         # Interface configuration
-        if (($each =~ /enp\d+s\d+/) || ($each =~ /eth\d+/) || ($each =~ /ib\d+/) || ($each =~ /bond\d+/) || ($each =~ /br\d+/)) {
+        if (($each =~ /enp\d+s\d+/) || ($each =~ /eno\d+/) || ($each =~ /eth\d+/) || ($each =~ /ib\d+/) || ($each =~ /bond\d+/) || ($each =~ /br\d+/)) {
             # Check the boot protocol (DHCP/static)
             my $hash_key = $each . ":bootproto";
             if (exists($ini_hash{$hash_key})) {
@@ -524,7 +524,7 @@ if ($ARGV[0] eq "start") {
         }
 
         # Bring down interface
-        if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) || ($iface =~ /bond\d+/) || ($iface =~ /br\d+/)) {
+        if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) || ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) || ($iface =~ /bond\d+/) || ($iface =~ /br\d+/)) {
             print("Bringing down interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " 0.0.0.0 down 2>&1");
             if ($? == -1) {
