@@ -405,6 +405,12 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             else if (strstr(net_if_name, "br") != NULL)
                 conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
                     DEFAULT_ETH_MTU);
+            else if (strstr(net_if_name, "enp") != NULL)
+                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
+                    DEFAULT_ETH_MTU);
+            else if (strstr(net_if_name, "eno") != NULL)
+                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
+                    DEFAULT_ETH_MTU);
             else
                 conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, "");
 
