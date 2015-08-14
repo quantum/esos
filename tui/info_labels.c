@@ -44,7 +44,7 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
 
     /* Figure out how much real estate we have */
     getmaxyx(cdk_screen->window, window_y, window_x);
-    usable_height = window_y - 1;
+    usable_height = window_y - 2;
     /* Its okay if its odd, integer division will truncate (1 spare row) */
     half_height = usable_height / 2;
 
@@ -86,7 +86,7 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
     }
 
     /* Left-side y-values for the label widgets */
-    tgt_y_start = 2;
+    tgt_y_start = 3;
     sess_y_start = tgt_y_start + tgt_lbl_height;
 
     /* If the screen size has changed, or either label row count has changed
