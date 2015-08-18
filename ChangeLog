@@ -1,6 +1,16 @@
-2015-05-17  Marc A. Smith  <marc@astersmith.com>
+2015-08-18  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'scst_update' into 0.1.x
 
 	updated dlm package/recipe to include the dlm_stonith binary (resolves issue # 124); updated autoconf script to create the /var/lock/subsys directory (resolves issue # 123)
+	Conflicts:
+		ChangeLog
+		Makefile.in
+		configure.ac
+
+2015-08-14  Marc A. Smith  <marc@astersmith.com>
+
+	updated SCST to 3.0.x_r6474 (latest revision in the 3.0.x branch)
 
 2015-07-31  Marc A. Smith  <marc@astersmith.com>
 
