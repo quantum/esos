@@ -115,7 +115,6 @@ e768b9b55c033d9c1dffda72db3a6ac7  htop-1.0.3.tar.gz
 a0edda805eb7d6ea600a230fb0979ea1  stunnel-5.10.tar.gz
 87558f3a55c62bc9244b19594f103ffa  sudo-1.8.12.tar.gz
 43bd6676f0b404326eee2d63be3cdcfe  rsync-3.1.1.tar.gz
-0f0c764c2c96202265b15ccfe8cfd22b  scst-trunk_r6146.tar.gz
 15e8df76375803c65c5c90ca06426e96  linux-3.14.36.tar.xz
 797e5469b65775153ba0462333fb311f  mhvtl-master_20150330.tar.gz
 73e7f49f525c51fa4a995aea4d80de41  python-daemon-2.0.5.tar.gz
@@ -139,3 +138,4 @@ fee40b1ba0b212c76bd867ad68c63536  mcelog-master_20150731.tar.gz
 77dda84f25ddba732da1d94fe357bf87  edac-utils-0.16.tar.bz2
 966b31b98b16fd91a9c2980a4761e4a5  eudev-3.1.2.tar.gz
 14e7dcd0436d2f49aa403f67e1ef7ddc  sysfsutils-2.1.0.tar.gz
+5e7036a3ea483a958d8dcefe013d7291  scst-3.0.x_r6474.tar.gz

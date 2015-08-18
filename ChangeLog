@@ -1,14 +1,62 @@
-2015-07-06  Marc A. Smith  <marc@astersmith.com>
+2015-08-18  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'scst_update'
+	Conflicts:
+		CHECKSUM.MD5
+		CHECKSUM.SHA256
+		ChangeLog
+		Makefile.in
+		configure.ac
+
+2015-08-14  Marc A. Smith  <marc@astersmith.com>
+
+	updated SCST to 3.0.x_r6474 (latest revision in the 3.0.x branch)
+
+2015-08-01  Marc A. Smith  <marc@astersmith.com>
+
+	the /boot directory is needed for rc.kdump (added to staging directory); added a 'udevadm settle' after modifying the disk label in rc.sysinit (grow esos_logs FS) so blockdev doesn't complain
+
+	updated rc.kdump to handle new install slots system
+
+2015-07-31  Marc A. Smith  <marc@astersmith.com>
+
+	updated eudev to version 3.1.2; added the mcelog and edac-utils packages (and sysfsutils as a dep) -- resolves issue # 137
+
+	Merge branch 'bna_fw_fix' into 0.1.x
+
+	Merge branch 'bna_fw_fix'
+
+	the 'losetup -d' is not needed in the install.sh script as it appears 'kpartx -d' handles removing the loop device for us
+
+2015-07-30  Marc A. Smith  <marc@astersmith.com>
+
+	updated GRUB config file, install.sh script, and Makefile for handling the initramfs archive for the primary/secondary slot system
+
+	added the archivemount (and dep libarchive) package to support mounting cpio archives; setup a "staging" directory in the Makefile for the image recipe to eliminate the package size inconsistencies (due to stripping debug symbols); increased esos_boot and esos_root partition sizes; implemented a new image management system with a "primary" slot and "secondary" slot to handle multiple ESOS images (versions) on a single USB flash drive... many changes that accompany this (namely GRUB, initramfs, and the install.sh script); updated fsck wording in the rc.fsmount script; include the wipefs binary from the util-linux package
+
+2015-07-07  Marc A. Smith  <marc@astersmith.com>
 
 	use the real blkid program (disable Busybox option, install from util-linux) to fix some udev rules that rely on it
 
+2015-07-02  Marc A. Smith  <marc@astersmith.com>
+
+	create missing /var/lib/lldpad directory
+
+	build fixes for CentOS/RHEL (in EnhanceIO driver and open-lldp)
+
 2015-07-01  Marc A. Smith  <marc@astersmith.com>
+
+	finished fixing conflicts in esos_kernels...
 
 	Merge branch 'qla2xxx_update'
 
 	Merge branch 'qlogic_opt'
 
 	Merge branch 'debug_fix'
+
+	Merge branch 'qla2xxx_update' into 0.1.x
+
+	Merge branch 'qlogic_opt' into 0.1.x
 
 2015-06-26  Marc A. Smith  <marc@astersmith.com>
 
@@ -23,6 +71,8 @@
 	Merge branch 'dswartz-issue-134'
 
 	minor cleanup and variable name fix to rc.network ethX name changes
+
+	enabled loading of the Brocade 10G Ethernet driver (bna) in run-level 2
 
 2015-06-12  Marc A. Smith  <marc@astersmith.com>
 
@@ -41,6 +91,10 @@
 	Merge branch 'dswartz-issue-117'
 
 	tweaked the new ZFS pool check a bit, in the health_chk script (and tested)
+
+2015-06-02  Marc A. Smith  <marc@astersmith.com>
+
+	updates for the 'BNA' driver... includ the required firmware packages and build as a module so firmware is loaded on insertion
 
 2015-05-26  Dan Swartzendruber  <dswartz@druber.com>
 
