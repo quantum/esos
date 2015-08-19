@@ -204,6 +204,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		stunnel-5.10.tar.gz \
 		sudo-1.8.12.tar.gz \
 		rsync-3.1.1.tar.gz \
+		sqlite-autoconf-3081101.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -226,7 +227,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
-		stunnel sudo rsync
+		stunnel sudo rsync sqlite-autoconf
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -913,7 +914,7 @@ perl: glibc
 	DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
 	$(TOUCH) $(@)
 
-Python: glibc gcc bzip2 readline openssl
+Python: glibc gcc bzip2 readline openssl sqlite-autoconf
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/Python-2.7.3.patch
 	cd $(tgt_src_dir) && LDFLAGS="$(LDFLAGS)" \
@@ -1922,6 +1923,7 @@ btier: glibc
 	$(IMAGE_DIR)/usr/share/man/man1/btier_setup.1
 	$(INSTALL) -D -m 644 $(tgt_src_dir)/man/btier_inspect.1 \
 	$(IMAGE_DIR)/usr/share/man/man1/btier_inspect.1
+	$(INSTALL) -D -m 755 $(tgt_src_dir)/tools/contributed/migrate_blocks_freq.py $(IMAGE_DIR)/usr/sbin/migrate_blocks_freq.py
 	$(TOUCH) $(@)
 
 librdmacm: glibc libibverbs
@@ -2255,5 +2257,12 @@ rsync: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+sqlite-autoconf: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files,libsqlite3)
 	$(TOUCH) $(@)
 
