@@ -1,3 +1,7 @@
+2015-08-19  Marc A. Smith  <marc@astersmith.com>
+
+	added the SQLite package which enables the sqlite3 module in Python (resolves issue # 139); include the migrate-blocks Python script from BTIER
+
 2015-08-18  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'scst_update' into 0.1.x
