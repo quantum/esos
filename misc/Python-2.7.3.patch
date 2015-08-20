@@ -25,3 +25,13 @@
          elif self.compiler.find_library_file(lib_dirs, 'ncurses'):
              curses_library = 'ncurses'
          elif self.compiler.find_library_file(lib_dirs, 'curses'):
+--- a/setup.py	2015-08-19 16:51:39.364687224 -0400
++++ b/setup.py	2015-08-19 16:52:16.832361428 -0400
+@@ -1096,7 +1096,6 @@
+                                   include_dirs=["Modules/_sqlite",
+                                                 sqlite_incdir],
+                                   library_dirs=sqlite_libdir,
+-                                  runtime_library_dirs=sqlite_libdir,
+                                   extra_link_args=sqlite_extra_link_args,
+                                   libraries=["sqlite3",]))
+         else:

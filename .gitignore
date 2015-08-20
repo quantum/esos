@@ -157,3 +157,4 @@ libarchive
 edac-utils
 mcelog
 sysfsutils
+sqlite-autoconf

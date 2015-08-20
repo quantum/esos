@@ -1,9 +1,30 @@
+2015-08-20  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'sqlite_btier_script'
+	Conflicts:
+		.gitignore
+		ChangeLog
+		Makefile.in
+		configure.ac
+
+2015-08-19  Marc A. Smith  <marc@astersmith.com>
+
+	added the SQLite package which enables the sqlite3 module in Python (resolves issue # 139); include the migrate-blocks Python script from BTIER
+
 2015-08-18  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'scst_update' into 0.1.x
 
 	Merge branch 'scst_update'
 	Conflicts:
 		CHECKSUM.MD5
 		CHECKSUM.SHA256
+		ChangeLog
+		Makefile.in
+		configure.ac
+
+	updated dlm package/recipe to include the dlm_stonith binary (resolves issue # 124); updated autoconf script to create the /var/lock/subsys directory (resolves issue # 123)
+	Conflicts:
 		ChangeLog
 		Makefile.in
 		configure.ac
