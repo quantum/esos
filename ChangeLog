@@ -1,5 +1,7 @@
 2015-08-20  Marc A. Smith  <marc@astersmith.com>
 
+	fixed typo in build_targets var
+
 	Merge branch 'sqlite_btier_script'
 	Conflicts:
 		.gitignore

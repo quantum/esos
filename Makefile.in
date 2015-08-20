@@ -239,7 +239,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
 		stunnel sudo rsync eudev gperf multipath-tools archivemount \
-		libarchive mcelog edac-utils sysfsutils sqlite-autoconf
+		libarchive mcelog edac-utils sysfsutils sqlite-autoconf \
 		stunnel sudo rsync sqlite-autoconf
 
 # Check if we should enable additional build options
