@@ -1257,6 +1257,8 @@ mdadm: glibc
 	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdadm $(IMAGE_DIR)/sbin/mdadm
 	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdmon $(IMAGE_DIR)/sbin/mdmon
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-man
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	UDEVDIR=/usr/lib/udev install-udev
 	$(TOUCH) $(@)
 
 parted: glibc util-linux lvm2
