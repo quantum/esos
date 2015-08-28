@@ -1,3 +1,11 @@
+2015-08-28  Marc A. Smith  <marc@astersmith.com>
+
+	updated LVM2 to version 2.02.129
+
+2015-08-25  Marc A. Smith  <marc@astersmith.com>
+
+	updated the mdadm recipe to also install the md udev rules (in /usr/lib/udev/rules.d)
+
 2015-08-20  Marc A. Smith  <marc@astersmith.com>
 
 	fixed typo in build_targets var

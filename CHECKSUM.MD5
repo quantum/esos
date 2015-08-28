@@ -129,7 +129,6 @@ efc2ee6093aa6aa0a88aaad83e998a3f  dlm-4.0.2.tar.xz
 64f12ce2004bf80a0ea5eea37771582b  pacemaker-1.1.12.tar.gz
 2b7c39a561f59d146882f4c020fa9060  crmsh-2.1.0.tar.gz
 a9a65972afc173ec7a39c585f4eea69c  lxml-3.4.4.tar.gz
-46ef603de23704658003782b5eae7bab  lvm2-2_02_120.tar.xz
 faf261d4cc717bf4c979557dc7bf5f52  multipath-tools-0.5.0.tar.bz2
 f95928e6a21681feb768132e23064815  scst_qla2xxx-20150625.tar.gz
 ae580e4a3c71b90aa7b0b00418691ab1  archivemount-0.8.5.tar.gz
@@ -140,3 +139,4 @@ fee40b1ba0b212c76bd867ad68c63536  mcelog-master_20150731.tar.gz
 14e7dcd0436d2f49aa403f67e1ef7ddc  sysfsutils-2.1.0.tar.gz
 5e7036a3ea483a958d8dcefe013d7291  scst-3.0.x_r6474.tar.gz
 298c8d6af7ca314f68de92bc7a356cbe  sqlite-autoconf-3081101.tar.gz
+4e26ce5b0f0a8bee85e345231a6f8ded  lvm2-2_02_129.tar.xz

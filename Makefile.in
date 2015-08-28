@@ -105,7 +105,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		scst-3.0.x_r6474.tar.gz \
 		kexec-tools-2.0.7.tar.gz \
 		drbd-8.4.4.tar.gz \
-		lvm2-2_02_120.tar.xz \
+		lvm2-2_02_129.tar.xz \
 		xfsprogs-3.1.8.tar.gz \
 		mdadm-3.3.2.tar.gz \
 		parted-2.3.tar.gz \
