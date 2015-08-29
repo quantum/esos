@@ -1,3 +1,11 @@
+2015-08-29  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'feldsam-dlm-patch'
+
+2015-08-29  Kristián Feldsam  <feldsam@gmail.com>
+
+	Kernel patch dlm: keep listening connection alive with sctp mode
+
 2015-08-28  Marc A. Smith  <marc@astersmith.com>
 
 	updated LVM2 to version 2.02.129
