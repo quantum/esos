@@ -152,6 +152,19 @@ scst_stop() {
         ;;
     esac
 
+	# Demote to offline only makes sense if we are using ALUA
+    if ocf_is_true ${OCF_RESKEY_alua}; then
+        check_alua
+		# Set the local target group to the offline ALUA state
+	    ocf_log debug "scst_demote() -> Setting target group" \
+	        "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
+	        "'offline'..."
+	    ocf_run scstadmin -noprompt -set_tgrp_attr \
+	        ${OCF_RESKEY_local_tgt_grp} -dev_group \
+	        ${OCF_RESKEY_device_group} -attributes \
+	        state\=offline || exit ${OCF_ERR_GENERIC}
+	fi
+
     # Save the SCST configuration, just in case
     ocf_log info "Saving SCST configuration..."
     if [ -f "${NO_CLOBBER}" ]; then
