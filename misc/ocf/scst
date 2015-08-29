@@ -254,15 +254,26 @@ scst_monitor() {
 	            ${OCF_RESKEY_remote_tgt_grp} -dev_group \
 	            ${OCF_RESKEY_device_group} -attributes \
 	            state\=offline || exit ${OCF_ERR_GENERIC}
-        else  	    
-	        # Remote exists, so set the remote target group
-	        ocf_log debug "scst_promote() -> Setting target group" \
-	            "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-	            "'${OCF_RESKEY_s_alua_state}'..."
-	        ocf_run scstadmin -noprompt -set_tgrp_attr \
-	            ${OCF_RESKEY_remote_tgt_grp} -dev_group \
-	            ${OCF_RESKEY_device_group} -attributes \
-	            state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+        else
+        	if [ "x${tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
+        		# Remote exists, so set the remote target group
+		        ocf_log debug "scst_promote() -> Setting target group" \
+		            "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
+		            "'${OCF_RESKEY_m_alua_state}'..."
+		        ocf_run scstadmin -noprompt -set_tgrp_attr \
+		            ${OCF_RESKEY_remote_tgt_grp} -dev_group \
+		            ${OCF_RESKEY_device_group} -attributes \
+		            state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+        	else  	    
+		        # Remote exists, so set the remote target group
+		        ocf_log debug "scst_promote() -> Setting target group" \
+		            "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
+		            "'${OCF_RESKEY_s_alua_state}'..."
+		        ocf_run scstadmin -noprompt -set_tgrp_attr \
+		            ${OCF_RESKEY_remote_tgt_grp} -dev_group \
+		            ${OCF_RESKEY_device_group} -attributes \
+		            state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+		    fi
         fi
     fi
 
