@@ -3973,3 +3973,19 @@ diff -Naur a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
 +		type, raid6 ? "(RAID6 capable)" : "", ARCMSR_DRIVER_VERSION);
  	return buf;
  }
+ 
+diff -Naur a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -618,6 +618,11 @@ static void retry_failed_sctp_send(struct connection *recv_con,
+ 
+ 	log_print("Retry sending %d bytes to node id %d", len, nodeid);
+ 
++	if (!nodeid) {
++		log_print("Shouldn't resend data via listening connection.");
++		return;
++	}
++
+ 	con = nodeid2con(nodeid, 0);
+ 	if (!con) {
+ 		log_print("Could not look up con for nodeid %d\n",
