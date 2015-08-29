@@ -156,7 +156,7 @@ scst_stop() {
     if ocf_is_true ${OCF_RESKEY_alua}; then
         check_alua
 		# Set the local target group to the offline ALUA state
-	    ocf_log debug "scst_demote() -> Setting target group" \
+	    ocf_log debug "scst_stop() -> Setting target group" \
 	        "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
 	        "'offline'..."
 	    ocf_run scstadmin -noprompt -set_tgrp_attr \
