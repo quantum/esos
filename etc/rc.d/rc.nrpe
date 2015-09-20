@@ -5,7 +5,7 @@ source /etc/rc.d/common
 NRPE="/usr/bin/nrpe"
 NRPE_LOCK="/var/lock/nrpe"
 NRPE_CFG="/etc/nrpe.cfg"
-NRPE_OPTS="-d -n"
+NRPE_OPTS="-d"
 
 check_args ${@}
 
