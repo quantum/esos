@@ -1220,7 +1220,8 @@ lvm2: glibc corosync dlm thin-provisioning-tools eudev
 	--with-clvmd=corosync --with-cluster=internal --enable-ocf \
 	--enable-cmirrord --disable-readline --with-thin=internal \
 	--with-thin-check=$(IMAGE_DIR)/usr/sbin/thin_check \
-	--with-cache=internal --enable-udev_sync --enable-udev_rules
+	--with-cache=internal --enable-udev_sync --enable-udev_rules \
+	--disable-udev-systemd-background-jobs --enable-lvmetad
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
