@@ -1039,7 +1039,8 @@ openssh: glibc zlib openssl
 	cd $(tgt_src_dir) && LD_LIBRARY_PATH=/lib64:/lib/x86_64-linux-gnu:\
 	/usr/lib64:/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:\
 	$(IMAGE_DIR)/usr/lib ./configure --prefix="" --exec-prefix=/usr \
-	--without-openssl-header-check --sysconfdir=/etc/ssh
+	--sysconfdir=/etc/ssh --datarootdir=/usr/share \
+	--without-openssl-header-check
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-files
 	$(INSTALL) -D -m 644 $(tgt_src_dir)/moduli.out $(IMAGE_DIR)/etc/ssh/moduli

@@ -9,6 +9,11 @@ if [ -e "${UDEV_CONF}" ]; then
     source ${UDEV_CONF}
 fi
 
+if [ ! -f "/etc/udev/hwdb.bin" ]; then
+    /bin/echo "Generating the udev hardware database index..."
+    ${UDEVADM} hwdb --update
+fi
+
 # Start the udev daemon and populate /dev
 /bin/echo "Starting udevd..."
 ${UDEVD} --daemon
