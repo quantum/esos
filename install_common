@@ -1,16 +1,16 @@
 PROP_TOOLS="MegaCLI StorCLI arcconf hpacucli linuxcli 3DM2_CLI"
 
 TOOL_DESC_MegaCLI="LSI Logic MegaRAID Controllers (MegaCLI)"
-TOOL_FILE_MegaCLI="8.07.06_MegaCLI.zip"
-TOOL_URL_MegaCLI="http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/8.07.06_MegaCLI.zip"
+TOOL_FILE_MegaCLI="8-07-14_MegaCLI.zip"
+TOOL_URL_MegaCLI="http://docs.avagotech.com/docs/12351587"
 
 TOOL_DESC_StorCLI="LSI Logic Syncro/MegaRAID Controllers (StorCLI)"
-TOOL_FILE_StorCLI="1.09.13_StorCLI.zip"
-TOOL_URL_StorCLI="http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/1.09.13_StorCLI.zip"
+TOOL_FILE_StorCLI="SW_MR_SAS_StorCLI_6.7-1.15.12-SCGCQ00852539_201506.zip"
+TOOL_URL_StorCLI="http://docs.avagotech.com/docs/12354905"
 
 TOOL_DESC_arcconf="Adaptec AACRAID Controllers"
-TOOL_FILE_arcconf="arcconf_v1_00_20206.zip"
-TOOL_URL_arcconf="http://www.adaptec.com/en-us/speed/raid/storage_manager/arcconf_v1_00_20206_zip.htm"
+TOOL_FILE_arcconf="arcconf_v1_8_21375.zip"
+TOOL_URL_arcconf="http://www.adaptec.com/en-us/speed/raid/storage_manager/arcconf_v1_8_21375_zip.php"
 
 TOOL_DESC_hpacucli="HP Smart Array Controllers"
 TOOL_FILE_hpacucli="hpacucli-9.40-12.0.x86_64.rpm"
@@ -21,6 +21,6 @@ TOOL_FILE_linuxcli="linuxcli_V1.14.2_140528.zip"
 TOOL_URL_linuxcli="http://www.areca.us/support/s_linux/cli/linuxcli_V1.14.2_140528.zip"
 
 TOOL_DESC_3DM2_CLI="3ware SATA/SAS RAID Controllers"
-TOOL_FILE_3DM2_CLI="3DM2_CLI-Linux_10.2.1_9.5.4.zip"
-TOOL_URL_3DM2_CLI="http://www.lsi.com/downloads/Public/SATA/SATA%20Common%20Files/3DM2_CLI-Linux_10.2.1_9.5.4.zip"
+TOOL_FILE_3DM2_CLI="SW_3DM2_CLI_linux_v10.2.2.1_9.5.5.1_20121221.zip"
+TOOL_URL_3DM2_CLI="http://docs.avagotech.com/docs/12353043"
 
