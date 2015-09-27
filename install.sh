@@ -299,11 +299,11 @@ else
             unzip -o ${PKG_DIR}/*_MegaCLI.zip && ${rpm2cpio} Linux/MegaCli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "StorCLI" ]; then
-            unzip -o ${PKG_DIR}/*_StorCLI.zip && ${rpm2cpio} storcli_all_os/Linux/storcli-*.rpm | \
+            unzip -o ${PKG_DIR}/*_StorCLI*.zip && unzip -o versionChangeSet/univ_viva_cli_rel/storcli_all_os.zip && ${rpm2cpio} storcli_all_os/Linux/storcli-*.rpm | \
             cpio -idmv && cp opt/MegaRAID/storcli/storcli64 ${MNT_DIR}/opt/sbin/ && \
             cp opt/MegaRAID/storcli/libstorelibir* ${MNT_DIR}/opt/lib/
         elif [ "${i}" = "arcconf" ]; then
-            unzip -o ${PKG_DIR}/arcconf_*.zip && cp linux_x64/arcconf ${MNT_DIR}/opt/sbin/
+            unzip -o ${PKG_DIR}/arcconf_*.zip && cp linux_x64/cmdline/arcconf ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "hpacucli" ]; then
             ${rpm2cpio} ${PKG_DIR}/hpacucli-*.x86_64.rpm | cpio -idmv && \
             cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli && \
@@ -312,10 +312,11 @@ else
             unzip -o ${PKG_DIR}/linuxcli_*.zip && \
             cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "3DM2_CLI" ]; then
-            unzip -o ${PKG_DIR}/3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && \
+            unzip -o ${PKG_DIR}/SW_3DM2_CLI_*.zip tdmCliLnx.tgz && tar xvfz tdmCliLnx.tgz && \
             cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/
         fi
     done
+
     cd -
     umount ${MNT_DIR}
     echo
