@@ -99,6 +99,7 @@ if test -d "${image_dir}"; then
 	${mkdir} -p ${image_dir}/usr/{bin,sbin,libexec,lib} || exit 1
 	${mkdir} -p ${image_dir}/usr/local/{bin,sbin} || exit 1
 	${mkdir} -p ${image_dir}/opt/{bin,sbin,lib} || exit 1
+	${mkdir} -p ${image_dir}/run/lvm || exit 1
 	${mkdir} -p -m 1777 ${image_dir}/tmp || exit 1
 	${mkdir} -p ${image_dir}/var/{spool,lock,run,state,cache,log} || exit 1
 	${mkdir} -p ${image_dir}/var/lock/subsys || exit 1

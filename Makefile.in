@@ -2410,10 +2410,6 @@ multipath-tools: glibc lvm2 readline eudev
 	$(IMAGE_DIR)/etc/multipath.conf
 	$(SED) -i 's/"\/sbin\//"\/usr\/sbin\//' \
 	$(IMAGE_DIR)/usr/lib/udev/rules.d/66-kpartx.rules
-	$(SED) -i '53iENV{DM_STATE}!="SUSPENDED", ENV{DM_UUID}=="LVM-*", \\' \
-	$(IMAGE_DIR)/usr/lib/udev/rules.d/66-kpartx.rules
-	$(SED) -i '54i\ \ \ \ \ \ \ \ RUN+="/usr/sbin/kpartx -u -p p /dev/$$name"' \
-	$(IMAGE_DIR)/usr/lib/udev/rules.d/66-kpartx.rules
 	$(TOUCH) $(@)
 
 archivemount: glibc libarchive fuse

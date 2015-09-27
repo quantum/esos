@@ -2,19 +2,27 @@
 
 source /etc/rc.d/common
 
+LVMETAD="/usr/sbin/lvmetad"
+LVMETAD_LOCK="/var/lock/lvmetad"
+
 check_args ${@}
 
 start() {
-    # Setup LVM 2
+    # Start the LVM metadata cache daemon
+    /bin/echo "Starting lvmetad..."
+    ${LVMETAD} -l wire || exit 1
+    /bin/touch ${LVMETAD_LOCK}
+    # Setup LVM
     /bin/echo "Configuring the LVM subsystem..."
     /usr/sbin/dmsetup mknodes
     /usr/sbin/vgscan --ignorelockingfailure
-    /usr/sbin/vgchange -ay --ignorelockingfailure
+    /usr/sbin/vgchange -aay --sysinit
 }
 
 stop() {
-    # Do nothing
-    :
+    /bin/echo "Stopping lvmetad..."
+    /bin/kill -TERM $(/bin/pidof ${LVMETAD}) || exit 1
+    wait_for_stop ${LVMETAD} && /bin/rm -f ${LVMETAD_LOCK}
 }
 
 status() {
