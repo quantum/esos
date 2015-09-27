@@ -312,7 +312,7 @@ else
             unzip -o ${PKG_DIR}/linuxcli_*.zip && \
             cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "3DM2_CLI" ]; then
-            unzip -o ${PKG_DIR}/SW_3DM2_CLI_*.zip tdmCliLnx.tgz && tar xvfz tdmCliLnx.tgz && \
+            unzip -o ${PKG_DIR}/SW_3DM2_CLI_*.zip && tar xvfz tdmCliLnx.tgz && \
             cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/
         fi
     done
