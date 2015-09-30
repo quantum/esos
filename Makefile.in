@@ -256,8 +256,8 @@ ifeq ($(enable_qla),yes)
 	build_targets += scst_qla2xxx
 endif
 ifeq ($(enable_zfs),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.6.4.tar.gz)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.6.4.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.6.5.1.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.6.5.1.tar.gz)
 	build_targets += spl
 	build_targets += zfs
 endif
@@ -765,7 +765,7 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	    $(MAKE) --directory=$(spl_src)/module modules; \
 	    $(MAKE) --directory=$(spl_src)/module modules_install \
 	    DESTDIR=$(IMAGE_DIR); \
-	    cd $(zfs_src) && ./configure --prefix=/usr \
+	    cd $(zfs_src) && $(SED) -i 's/CDDL/GPL/' META && ./configure --prefix=/usr \
 	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src) \
 	    --with-spl=$(spl_src) --with-spl-obj=$(spl_src) \
 	    --with-udevdir="/usr/lib/udev"; \
