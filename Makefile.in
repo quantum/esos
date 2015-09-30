@@ -1099,7 +1099,7 @@ zlib: glibc
 ncurses: glibc gcc
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < $(SRC_DIR)/misc/ncurses-5.7.patch
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-shared \
-	--without-gpm --mandir=/usr/share/man --with-termlib --enable-widec
+	--without-gpm --mandir=/usr/share/man --with-termlib
 	$(MAKE) --directory=$(tgt_src_dir) CXXLIBS="-lstdc++"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
@@ -2472,11 +2472,10 @@ iftop: glibc libpcap ncurses
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
 
-iperf2: glibc
+iperf2: glibc gcc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
-	$(call clean_la_files,libiperf)
 	$(TOUCH) $(@)
 
 iperf3: glibc

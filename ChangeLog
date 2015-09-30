@@ -1,3 +1,26 @@
+2015-09-30  Marc A. Smith  <marc@astersmith.com>
+
+	updated .gitignore for new packages; disabled (removed) '--enable-widec' for ncurses... this is something we want to move to eventually, but breaks too many package builds for now; build dependency fix for the iperf2 package (needs gcc)
+
+	renamed the iperf* packages to follow the ESOS Makefile recipe/package format (separated); added the CHECKSUM.* lines for the iperf*, iftop, and libpcap packages
+
+	Merge branch 'byteworks-ch-perf-tools'
+
+	Merge branch 'perf-tools' of https://github.com/byteworks-ch/esos into byteworks-ch-perf-tools
+
+	Merge branch 'byteworks-ch-zfs'
+
+2015-09-28  Michael Bischof  <mb@byteworks.ch>
+
+	Added some performance tools: iperf2/iperf3/iftop
+	In order to build these sources need to be added:
+	https://iperf.fr/download/iperf_2.0.4/iperf-2.0.4-source.tar.gz
+	https://iperf.fr/download/iperf_3.0/iperf-3.0.11-source.tar.gz
+	http://www.ex-parrot.com/pdw/iftop/download/iftop-1.0pre4.tar.gz
+	http://www.tcpdump.org/release/libpcap-1.7.4.tar.gz
+
+	Updated zfs to 0.6.5.1
+
 2015-09-27  Marc A. Smith  <marc@astersmith.com>
 
 	updated the Windows installer script for the new CLI tool package versions / format; fixed typo in install.sh for the 3DM2 package
