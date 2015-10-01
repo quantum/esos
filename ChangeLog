@@ -1,3 +1,7 @@
+2015-10-01  Marc A. Smith  <marc@astersmith.com>
+
+	build fix for iftop... needs to use LD_LIBRARY_PATH since configure attempts to execute a binary (missing libpcap)
+
 2015-09-30  Marc A. Smith  <marc@astersmith.com>
 
 	updated .gitignore for new packages; disabled (removed) '--enable-widec' for ncurses... this is something we want to move to eventually, but breaks too many package builds for now; build dependency fix for the iperf2 package (needs gcc)

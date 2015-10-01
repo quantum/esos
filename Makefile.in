@@ -2467,7 +2467,8 @@ libpcap: glibc
 	$(TOUCH) $(@)
 
 iftop: glibc libpcap ncurses
-	cd $(tgt_src_dir) && LIBS="-ltinfo -lncurses" ./configure --prefix=/usr
+	cd $(tgt_src_dir) && LD_LIBRARY_PATH=$(IMAGE_DIR)/usr/lib: \
+	LIBS="-ltinfo -lncurses" ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
