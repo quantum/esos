@@ -2406,10 +2406,9 @@ multipath-tools: glibc lvm2 readline eudev
 	$(tgt_src_dir)/kpartx/Makefile
 	$(SED) -i 's/\/etc\/udev\/rules.d\/$$/\/usr\/lib\/udev\/rules.d\/66-kpartx.rules/' \
 	$(tgt_src_dir)/kpartx/Makefile
-	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
-	$(MAKE) --directory=$(tgt_src_dir) exec_prefix=/usr \
-	libudevdir=/usr/lib/udev syslibdir=/usr/lib libdir=/usr/lib/multipath \
-	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" LIB="usr/lib"
+	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib" bindir=/usr/sbin \
+	libudevdir=/usr/lib/udev DESTDIR=$(IMAGE_DIR) install
 	$(INSTALL) -D -m 0644 $(tgt_src_dir)/multipath.conf.annotated \
 	$(IMAGE_DIR)/etc/multipath.conf
 	$(SED) -i 's/"\/sbin\//"\/usr\/sbin\//' \
