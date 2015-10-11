@@ -11,7 +11,7 @@ rc.nut rc.smartd rc.stunnel"
 # Script status values
 RUNNING=0
 STOPPED=1
-UNKNOWN=-1
+UNKNOWN=2
 
 # Check if the service is enabled, or not
 check_enabled() {
