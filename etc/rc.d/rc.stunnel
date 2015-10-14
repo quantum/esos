@@ -4,12 +4,24 @@ source /etc/rc.d/common
 
 STUNNEL="/usr/bin/stunnel"
 STUNNEL_LOCK="/var/lock/stunnel"
+DFLT_OPTS=""
 
 check_args ${@}
 
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
 start() {
     /bin/echo "Starting stunnel..."
-    ${STUNNEL} || exit 1
+    eval ${STUNNEL} ${USER_OPTS} || exit 1
     /bin/touch ${STUNNEL_LOCK}
 }
 

@@ -4,13 +4,24 @@ source /etc/rc.d/common
 
 NRPE="/usr/bin/nrpe"
 NRPE_LOCK="/var/lock/nrpe"
-NRPE_CFG="/etc/nrpe.cfg"
+DFLT_OPTS="-c /etc/nrpe.cfg -d > /dev/null 2>&1"
 
 check_args ${@}
 
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
 start() {
     /bin/echo "Starting nrpe..."
-    ${NRPE} -c ${NRPE_CFG} -d > /dev/null 2>&1 || exit 1
+    eval ${NRPE} ${USER_OPTS} || exit 1
     /bin/touch ${NRPE_LOCK}
     /bin/sleep 1
 }

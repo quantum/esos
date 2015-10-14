@@ -4,19 +4,34 @@ source /etc/rc.d/common
 
 LVMETAD="/usr/sbin/lvmetad"
 LVMETAD_LOCK="/var/lock/lvmetad"
+DMSETUP="/usr/sbin/dmsetup"
+VGSCAN="/usr/sbin/vgscan"
+VGCHANGE="/usr/sbin/vgchange"
+DFLT_OPTS="-l wire"
 
 check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
 
 start() {
     # Start the LVM metadata cache daemon
     /bin/echo "Starting lvmetad..."
-    ${LVMETAD} -l wire || exit 1
+    eval ${LVMETAD} ${USER_OPTS} || exit 1
     /bin/touch ${LVMETAD_LOCK}
     # Setup LVM
     /bin/echo "Configuring the LVM subsystem..."
-    /usr/sbin/dmsetup mknodes
-    /usr/sbin/vgscan --ignorelockingfailure
-    /usr/sbin/vgchange -aay --sysinit
+    ${DMSETUP} mknodes || exit 1
+    ${VGSCAN} --ignorelockingfailure || exit 1
+    ${VGCHANGE} -aay --sysinit || exit 1
 }
 
 stop() {
@@ -26,8 +41,8 @@ stop() {
 }
 
 status() {
-    # We don't know anything
-    exit ${UNKNOWN}
+    /bin/pidof ${LVMETAD} > /dev/null 2>&1
+    exit ${?}
 }
 
 # Perform specified action

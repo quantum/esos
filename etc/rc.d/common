@@ -17,7 +17,8 @@ UNKNOWN=2
 check_enabled() {
     rc_conf_line="$(/bin/egrep ^${1}_enable /etc/rc.conf)"
     if [ ${?} -eq 0 ]; then
-        on_off="$(/bin/echo ${rc_conf_line} | /usr/bin/cut -d= -f2 | /usr/bin/tr -d ' ')"
+        on_off="$(/bin/echo ${rc_conf_line} | /usr/bin/cut -d= -f2 | \
+        /usr/bin/tr -d ' ')"
         case ${on_off} in
             # "yes", "true", "on", or "1"
         [Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1)
@@ -64,3 +65,26 @@ check_args() {
     fi
 }
 
+# Check if optional parameter variable is set
+check_opts_set() {
+    /bin/egrep ^${1}_opts /etc/rc.conf > /dev/null 2>&1
+    if [ ${?} -eq 0 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Get the value of the optional parameter variable
+get_rc_opts() {
+    rc_conf_line="$(/bin/egrep ^${1}_opts /etc/rc.conf)"
+    if [ ${?} -eq 0 ]; then
+        opts_val="$(/bin/echo ${rc_conf_line} | /usr/bin/cut -d= -f2 | \
+        /usr/bin/tr -d '\"')"
+        /bin/echo ${opts_val}
+        return 0
+    else
+        /bin/echo "The variable ${1}_opts is not set!"
+        return 1
+    fi
+}

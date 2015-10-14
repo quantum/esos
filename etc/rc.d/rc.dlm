@@ -4,14 +4,26 @@ source /etc/rc.d/common
 
 DLM_CONTROLD="/usr/sbin/dlm_controld"
 DLM_CONTROLD_LOCK="/var/lock/dlm_controld"
+DFLT_OPTS=""
 
 check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
 
 start() {
     /bin/echo "Setting up for DLM..."
     /bin/mount -t configfs none /sys/kernel/config > /dev/null 2>&1
     /bin/echo "Starting dlm_controld..."
-    ${DLM_CONTROLD} || exit 1
+    eval ${DLM_CONTROLD} ${USER_OPTS} || exit 1
     /bin/touch ${DLM_CONTROLD_LOCK}
     /bin/sleep 1
 }

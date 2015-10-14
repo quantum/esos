@@ -3,21 +3,33 @@
 source /etc/rc.d/common
 
 PACEMAKERD="/usr/sbin/pacemakerd"
-LOCK_FILE="/var/lock/pacemakerd"
+PACEMAKERD_LOCK="/var/lock/pacemakerd"
+DFLT_OPTS="> /dev/null 2>&1"
 
 check_args ${@}
 
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
 start() {
     /bin/echo "Starting pacemakerd..."
-    ${PACEMAKERD} > /dev/null 2>&1 &
-    /bin/touch ${LOCK_FILE}
+    eval ${PACEMAKERD} ${USER_OPTS} &
+    /bin/touch ${PACEMAKERD_LOCK}
     /bin/sleep 1
 }
 
 stop() {
     /bin/echo "Stopping pacemakerd..."
     /bin/kill -TERM $(/bin/pidof ${PACEMAKERD}) || exit 1
-    wait_for_stop ${PACEMAKERD} && /bin/rm -f ${LOCK_FILE}
+    wait_for_stop ${PACEMAKERD} && /bin/rm -f ${PACEMAKERD_LOCK}
 }
 
 status() {
