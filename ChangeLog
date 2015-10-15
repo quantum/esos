@@ -1,3 +1,17 @@
+2015-10-14  Marc A. Smith  <marc@astersmith.com>
+
+	added the check_zpools.sh script/plugin for Nagios/NRPE (issue #157)
+
+	modified the rc subsystem to support user options for rc scripts/daemons using /etc/rc.conf (satisfies issue #152) -- the system works by having an optional key/value pair in /etc/rc.conf... each rc script that supports this has an internal default options set in case the value doesn't exist in /etc/rc.conf, and the user can override/change the default by modifying the "rc.NAME_opts" variable in /etc/rc.conf; other cleanup of some rc scripts
+
+2015-10-10  Marc A. Smith  <marc@astersmith.com>
+
+	status/exit codes shouldn't be signed numbers... the value of an UNKNOWN exit is now 2
+
+2015-10-02  Marc A. Smith  <marc@astersmith.com>
+
+	fixed the multipath-tools recipe so the default 'multipath_dir' configuration setting is the correct value
+
 2015-10-01  Marc A. Smith  <marc@astersmith.com>
 
 	build fix for iftop... needs to use LD_LIBRARY_PATH since configure attempts to execute a binary (missing libpcap)

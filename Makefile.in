@@ -390,6 +390,8 @@ image: $(build_targets)
 	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py $(STAGING_DIR)/usr/local/bin/
 	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d/esos
 	$(INSTALL) $(SRC_DIR)/misc/ocf/* $(STAGING_DIR)/usr/lib/ocf/resource.d/esos/
+	$(INSTALL) $(SRC_DIR)/contrib/check_zpools.sh \
+	$(STAGING_DIR)/usr/libexec/
 	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
 	$(INSTALL) $(SRC_DIR)/perf-agent/* $(STAGING_DIR)/usr/local/perf-agent/
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > \
