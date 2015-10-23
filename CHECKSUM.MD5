@@ -115,7 +115,6 @@ e768b9b55c033d9c1dffda72db3a6ac7  htop-1.0.3.tar.gz
 a0edda805eb7d6ea600a230fb0979ea1  stunnel-5.10.tar.gz
 87558f3a55c62bc9244b19594f103ffa  sudo-1.8.12.tar.gz
 43bd6676f0b404326eee2d63be3cdcfe  rsync-3.1.1.tar.gz
-15e8df76375803c65c5c90ca06426e96  linux-3.14.36.tar.xz
 797e5469b65775153ba0462333fb311f  mhvtl-master_20150330.tar.gz
 73e7f49f525c51fa4a995aea4d80de41  python-daemon-2.0.5.tar.gz
 687bbaffd6b57328ea09dc97308c5ab4  spl-0.6.5.1.tar.gz
@@ -144,3 +143,4 @@ fee40b1ba0b212c76bd867ad68c63536  mcelog-master_20150731.tar.gz
 b2e13142bbaba857ab1c6894aedaf547  libpcap-1.7.4.tar.gz
 5703c841c810fed58249673f1e19003f  iperf2-2.0.4.tar.gz
 88e59c2049484c203c70453abc923301  iperf3-3.0.11.tar.gz
+63e5981e38f935772a5309289fe76972  linux-4.1.11.tar.xz
