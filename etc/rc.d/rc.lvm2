@@ -31,7 +31,7 @@ start() {
     /bin/echo "Configuring the LVM subsystem..."
     ${DMSETUP} mknodes || exit 1
     ${VGSCAN} --ignorelockingfailure || exit 1
-    ${VGCHANGE} -aay --sysinit || exit 1
+    ${VGCHANGE} -aay --ignorelockingfailure || exit 1
     # Make partition nodes                       
     /bin/echo "Probing logical volumes for partitions..."
     for i in $(/usr/sbin/lvs --noheadings -o lv_path --rows); do
