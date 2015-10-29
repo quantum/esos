@@ -102,7 +102,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		linux-4.1.11.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-3.0.x_r6474.tar.gz \
+		scst-trunk_r6566.tar.gz \
 		kexec-tools-2.0.7.tar.gz \
 		drbd-8.4.4.tar.gz \
 		lvm2-2_02_129.tar.xz \
@@ -566,18 +566,6 @@ esos_kernels: btier_src = $(wildcard $(PKG_SRC_DIR)/btier-*)
 esos_kernels: spl_src = $(wildcard $(PKG_SRC_DIR)/spl-*)
 esos_kernels: zfs_src = $(wildcard $(PKG_SRC_DIR)/zfs-*)
 esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux,)
-	if [ ! -d $(linux_src)/scst_exec_req_fifo.patch ]; \
-	then \
-	  echo $(PATCH) -F 3 -d $(linux_src) -b \
-	  -B $(linux_src)/scst_exec_req_fifo.patch/ -p1 < \
-	  $(scst_src)/scst/kernel/scst_exec_req_fifo-3.14.patch; \
-	fi
-	if [ ! -d $(linux_src)/put_page_callback.patch ]; \
-	then \
-	  echo $(PATCH) -F 3 -d $(linux_src) -b \
-	  -B $(linux_src)/put_page_callback.patch/ -p1 < \
-	  $(scst_src)/iscsi-scst/kernel/patches/put_page_callback-3.14.patch; \
-	fi
 	if [ "$(enable_qla)" != "yes" ]; then \
 	  $(RM) $(linux_src)/drivers/scsi/qla2xxx; \
 	  $(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx; \
@@ -662,10 +650,10 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	  INSTALL_DIR_H=$(IMAGE_DIR)/usr/include/scst scst_install; \
 	  if [ "$(enable_qla)" != "yes" ]; then \
 	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	    KVER=$(kernel_ver)$$i qla; \
+	    KVER=$(kernel_ver)$$i qla_old; \
 	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i INSTALL_MOD_PATH=$(IMAGE_DIR) \
-	    qla_install; \
+	    qla_old_install; \
 	  fi; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
 	  include/iscsi_scst_itf_ver.h; \
