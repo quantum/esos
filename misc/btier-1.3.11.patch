@@ -1,0 +1,124 @@
+diff -Naur a/kernel/btier/btier_main.c b/kernel/btier/btier_main.c
+--- a/kernel/btier/btier_main.c	2015-10-26 16:30:46.155707719 -0400
++++ b/kernel/btier/btier_main.c	2015-10-28 11:16:31.382317117 -0400
+@@ -402,7 +402,11 @@
+ 	if (likely(bw == len))
+ 		return 0;
+ 	pr_err("Write error on device %s at offset %llu, length %li\n",
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++	       backdev->fds->f_path.dentry->d_name.name,
++#else
+ 	       backdev->fds->f_dentry->d_name.name,
++#endif
+ 	       (unsigned long long)pos, (unsigned long)len);
+ 	if (bw >= 0)
+ 		bw = -EIO;
+@@ -2161,7 +2165,11 @@
+ static void tier_check(struct tier_device *dev, int devicenr)
+ {
+ 	pr_info("device %s is not clean, check forced\n",
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++		dev->backdev[devicenr]->fds->f_path.dentry->d_name.name);
++#else
+ 		dev->backdev[devicenr]->fds->f_dentry->d_name.name);
++#endif
+ 	recover_journal(dev, devicenr);
+ }
+ 
+@@ -2323,13 +2331,21 @@
+ 	if (!xbuf)
+ 		return NULL;
+ 	for (i = 0; i < dev->attached_devices; i++) {
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++		name = dev->backdev[i]->fds->f_path.dentry->d_name.name;
++#else
+ 		name = dev->backdev[i]->fds->f_dentry->d_name.name;
++#endif
+ 		thash = tiger_hash((char *)name, strlen(name));
+ 		if (!thash) {
+ 			/* When tiger is not supported, use a simple UUID construction */
+ 			thash = kzalloc(TIGER_HASH_LEN, GFP_KERNEL);
+ 			memcpy(thash,
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++			       dev->backdev[i]->fds->f_path.dentry->d_name.name,
++#else
+ 			       dev->backdev[i]->fds->f_dentry->d_name.name,
++#endif
+ 			       hashlen);
+ 		}
+ 		for (n = 0; n < hashlen; n++) {
+@@ -2414,7 +2430,11 @@
+ 		dev->backdev[i]->devmagic->clean = DIRTY;
+ 		write_device_magic(dev, i);
+ 		dtapolicy = &dev->backdev[i]->devmagic->dtapolicy;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++		devicename = dev->backdev[i]->fds->f_path.dentry->d_name.name;
++#else
+ 		devicename = dev->backdev[i]->fds->f_dentry->d_name.name;
++#endif
+ 		pr_info("device %s registered as tier %u\n", devicename, i);
+ 		if (0 == dtapolicy->max_age)
+ 			dtapolicy->max_age = TIERMAXAGE;
+@@ -2955,7 +2975,11 @@
+ 	u64 startofnewbitlist;
+ 
+ 	pr_info("resize device %s devicenr %u from %llu to %llu\n",
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++		dev->backdev[devicenr]->fds->f_path.dentry->d_name.name,
++#else
+ 		dev->backdev[devicenr]->fds->f_dentry->d_name.name,
++#endif
+ 		devicenr, dev->backdev[devicenr]->devicesize, curdevsize);
+ 	startofnewbitlist = newdevsize - newbitlistsize;
+ 	res =
+diff -Naur a/kernel/btier/btier_sysfs.c b/kernel/btier/btier_sysfs.c
+--- a/kernel/btier/btier_sysfs.c	2015-10-26 16:30:46.156707705 -0400
++++ b/kernel/btier/btier_sysfs.c	2015-10-28 11:17:07.308023714 -0400
+@@ -420,7 +420,11 @@
+ 	memcpy(devicename, a, p - a);
+ 	if (0 !=
+ 	    strcmp(devicename,
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++		   dev->backdev[devicenr]->fds->f_path.dentry->d_name.name)) {
++#else
+ 		   dev->backdev[devicenr]->fds->f_dentry->d_name.name)) {
++#endif
+ 		kfree(devicename);
+ 		goto end_error;
+ 	}
+@@ -653,7 +657,11 @@
+ 			    as_sprintf
+ 			    ("%7s %20s %15s %15s\n%7u %20s %15u %15u\n", "tier",
+ 			     "device", "max_age", "hit_collecttime", i,
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++			     dev->backdev[i]->fds->f_path.dentry->d_name.name,
++#else
+ 			     dev->backdev[i]->fds->f_dentry->d_name.name,
++#endif
+ 			     dev->backdev[i]->devmagic->dtapolicy.max_age,
+ 			     dev->backdev[i]->devmagic->dtapolicy.
+ 			     hit_collecttime);
+@@ -661,7 +669,11 @@
+ 			msg2 =
+ 			    as_sprintf("%s%7u %20s %15u %15u\n", msg,
+ 				       i,
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++				       dev->backdev[i]->fds->f_path.dentry->
++#else
+ 				       dev->backdev[i]->fds->f_dentry->
++#endif
+ 				       d_name.name,
+ 				       dev->backdev[i]->devmagic->dtapolicy.
+ 				       max_age,
+@@ -734,7 +746,11 @@
+ 		line =
+ 		    as_sprintf
+ 		    ("%7u %20s %15lu %15llu %15u %15u %15llu %15llu\n", i,
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
++		     dev->backdev[i]->fds->f_path.dentry->d_name.name, devblocks,
++#else
+ 		     dev->backdev[i]->fds->f_dentry->d_name.name, devblocks,
++#endif
+ 		     allocated, dev->backdev[i]->devmagic->average_reads,
+ 		     dev->backdev[i]->devmagic->average_writes,
+ 		     dev->backdev[i]->devmagic->total_reads,

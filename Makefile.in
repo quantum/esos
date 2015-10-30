@@ -692,6 +692,11 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	  $(INSTALL) -m 0644 $(eio_src)/Driver/enhanceio/*.ko \
 	  $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio/; \
 	  $(ECHO) "### Building the BTIER module..."; \
+	  if [ ! -d $(btier_src)/$(notdir $(btier_src)).patch ]; then \
+	    $(PATCH) -d $(btier_src) -b \
+	    -B $(btier_src)/$(notdir $(btier_src)).patch/ -p1 < \
+	    $(SRC_DIR)/misc/$(notdir $(btier_src)).patch; \
+	  fi; \
 	  $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
 	  M=$(btier_src)/kernel/btier modules; \
 	  $(INSTALL) -D -m 0644 $(btier_src)/kernel/btier/btier.ko \
