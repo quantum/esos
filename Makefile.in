@@ -126,7 +126,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		glue-1.0.11.tar.bz2 \
 		readline-6.2.tar.gz \
 		resource-agents-3.9.6.tar.gz \
-		mhvtl-master_20150330.tar.gz \
+		mhvtl-1.5-3_release.tar.gz \
 		lzo-2.06.tar.gz \
 		mhash-0.9.9.9.tar.bz2 \
 		lessfs-1.7.0.tar.gz \
