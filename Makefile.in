@@ -165,7 +165,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		lockfile-0.9.1.tar.gz \
 		python-daemon-2.0.5.tar.gz \
 		bcache-tools-master_20130930.tar.gz \
-		EnhanceIO-master_20140810.tar.gz \
+		EnhanceIO-master_20151029.tar.gz \
 		util-linux-2.26.1.tar.gz \
 		nrpe-2.15.tar.gz \
 		thin-provisioning-tools-0.2.8.tar.gz \
@@ -685,11 +685,11 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	  $(INSTALL) -m 0644 $(mhvtl_src)/kernel/mhvtl.ko \
 	  $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/; \
 	  $(ECHO) "### Building the EnhanceIO driver..."; \
-	  echo $(MAKE) --directory=$(eio_src)/Driver/enhanceio \
+	  $(MAKE) --directory=$(eio_src)/Driver/enhanceio \
 	  RHEL5_VER="" KERNEL_SOURCE_VERSION=$(kernel_ver)$$i \
 	  KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio; \
-	  echo $(MKDIR) $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio; \
-	  echo $(INSTALL) -m 0644 $(eio_src)/Driver/enhanceio/*.ko \
+	  $(MKDIR) $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio; \
+	  $(INSTALL) -m 0644 $(eio_src)/Driver/enhanceio/*.ko \
 	  $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/enhanceio/; \
 	  $(ECHO) "### Building the BTIER module..."; \
 	  $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
