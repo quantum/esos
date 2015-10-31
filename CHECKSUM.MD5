@@ -91,7 +91,6 @@ de62b43dfcd858e66a74bee1c834e959  openssl-1.0.1g.tar.gz
 4f981c3fdbbb7184b2718afaa21f974b  win_binaries-20140704.tar.xz
 ce8f0e44671fb0c7d9ec30bb0bfa8b5c  mtx-1.3.12.tar.gz
 fdd5f5ec673c9f630a102ceff7612774  mt-st-1.1.tar.gz
-c6d30facf18ff825e2721d0aa9c3add8  EnhanceIO-master_20140810.tar.gz
 6755765bab88b506181268ef7982595e  nagios-plugins-2.0.3.tar.gz
 80e243e1a1379230403345821bcc72f8  ceph-0.80.5.tar.gz
 7f8ac985c45086b5fbcd12cecd23cf07  keyutils-1.5.9.tar.bz2
@@ -104,7 +103,6 @@ c4f491dd411a09e9de3b8702ea6f73eb  libmcrypt-2.5.8.tar.bz2
 84f58dec00b60f2dc8fd1c9709291cc7  attr-2.4.47.tar.gz
 a61415312426e9c2212bd7dc7929abda  acl-2.2.52.tar.gz
 2309ba43981cb6d39d07ac3a9aac30ab  kexec-tools-2.0.7.tar.gz
-31668a6dfb8823dd0b7ac09d06fb902e  makedumpfile-1.5.7.tar.gz
 baa2deaf70fc9ffa4589a363416db5a7  bash-4.3_025.tar.xz
 12e8c6131a27c05422edcd2ae3e79dfb  qlogic_fw-20140928.tar.gz
 8afdb925dba24a58b74fff74d7f3180e  lessfs-1.7.0.tar.gz
@@ -115,8 +113,6 @@ e768b9b55c033d9c1dffda72db3a6ac7  htop-1.0.3.tar.gz
 a0edda805eb7d6ea600a230fb0979ea1  stunnel-5.10.tar.gz
 87558f3a55c62bc9244b19594f103ffa  sudo-1.8.12.tar.gz
 43bd6676f0b404326eee2d63be3cdcfe  rsync-3.1.1.tar.gz
-15e8df76375803c65c5c90ca06426e96  linux-3.14.36.tar.xz
-797e5469b65775153ba0462333fb311f  mhvtl-master_20150330.tar.gz
 73e7f49f525c51fa4a995aea4d80de41  python-daemon-2.0.5.tar.gz
 687bbaffd6b57328ea09dc97308c5ab4  spl-0.6.5.1.tar.gz
 0421551f728c1fd4239bdd9932ba2c52  zfs-0.6.5.1.tar.gz
@@ -137,10 +133,14 @@ fee40b1ba0b212c76bd867ad68c63536  mcelog-master_20150731.tar.gz
 77dda84f25ddba732da1d94fe357bf87  edac-utils-0.16.tar.bz2
 966b31b98b16fd91a9c2980a4761e4a5  eudev-3.1.2.tar.gz
 14e7dcd0436d2f49aa403f67e1ef7ddc  sysfsutils-2.1.0.tar.gz
-5e7036a3ea483a958d8dcefe013d7291  scst-3.0.x_r6474.tar.gz
 298c8d6af7ca314f68de92bc7a356cbe  sqlite-autoconf-3081101.tar.gz
 4e26ce5b0f0a8bee85e345231a6f8ded  lvm2-2_02_129.tar.xz
 7e6decb4958e8a4890cccac335239f24  iftop-1.0pre4.tar.gz
 b2e13142bbaba857ab1c6894aedaf547  libpcap-1.7.4.tar.gz
 5703c841c810fed58249673f1e19003f  iperf2-2.0.4.tar.gz
 88e59c2049484c203c70453abc923301  iperf3-3.0.11.tar.gz
+63e5981e38f935772a5309289fe76972  linux-4.1.11.tar.xz
+58c326172da715b6d5e82c2c1d1adb7d  scst-trunk_r6566.tar.gz
+7acec816283b96392b41594606d1a637  mhvtl-1.5-3_release.tar.gz
+bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
+e44244db888acdb0e75962bb59feace2  makedumpfile-1.5.9.tar.gz
