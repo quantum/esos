@@ -104,14 +104,14 @@ if [ -f "/etc/esos-release" ]; then
             "CLI tools." && read confirm
             echo
         if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
+            echo "### Increasing the /tmp file system..."
+            mount -o remount,size=5G /tmp || exit 1
+            echo
             echo "### Mounting the ESOS USB flash drive file systems..."
             usb_esos_mnt="${TEMP_DIR}/old_esos"
             mkdir -p ${usb_esos_mnt} || exit 1
             mount ${esos_blk_dev}2 ${usb_esos_mnt} || exit 1
             mount ${esos_blk_dev}1 ${usb_esos_mnt}/boot || exit 1
-            echo
-            echo "### Increasing the /tmp file system..."
-            mount -o remount,size=5G /tmp || exit 1
             echo
             echo "### Extracting the image file..."
             mkdir -p ${TEMP_DIR} || exit 1
