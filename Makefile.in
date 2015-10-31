@@ -186,7 +186,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		smartmontools-6.2.tar.gz \
 		cryptsetup-1.6.4.tar.xz \
 		popt-1.16.tar.gz \
-		makedumpfile-1.5.7.tar.gz \
+		makedumpfile-1.5.9.tar.gz \
 		elfutils-0.158.tar.bz2 \
 		fio-2.0.13.tar.bz2 \
 		mtx-1.3.12.tar.gz \
