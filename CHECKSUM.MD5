@@ -96,7 +96,6 @@ fdd5f5ec673c9f630a102ceff7612774  mt-st-1.1.tar.gz
 7f8ac985c45086b5fbcd12cecd23cf07  keyutils-1.5.9.tar.bz2
 28171438127a2d268893f040fd84ae2a  libedit-20140620-3.1.tar.gz
 e91fd7cbced8b84e21f357a866ad226a  leveldb-1.15.0.tar.gz
-b51815343c1a9151e2936b3b97520388  drbd-8.4.4.tar.gz
 c4f491dd411a09e9de3b8702ea6f73eb  libmcrypt-2.5.8.tar.bz2
 33a98e7975f633a9489d7a8938ed6131  nsca-2.7.2.tar.gz
 26035e2ff30513dfeeb2538cacf954b2  btrfs-progs-v3.16.tar.xz
@@ -144,3 +143,4 @@ b2e13142bbaba857ab1c6894aedaf547  libpcap-1.7.4.tar.gz
 7acec816283b96392b41594606d1a637  mhvtl-1.5-3_release.tar.gz
 bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
 e44244db888acdb0e75962bb59feace2  makedumpfile-1.5.9.tar.gz
+8671f86d366288ea082ac1b4571eaa4d  drbd-utils-8.9.4.tar.gz

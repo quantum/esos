@@ -104,7 +104,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		cdk-5.0-20120323.tar.gz \
 		scst-trunk_r6566.tar.gz \
 		kexec-tools-2.0.7.tar.gz \
-		drbd-8.4.4.tar.gz \
+		drbd-utils-8.9.4.tar.gz \
 		lvm2-2_02_129.tar.xz \
 		xfsprogs-3.1.8.tar.gz \
 		mdadm-3.3.2.tar.gz \
@@ -228,11 +228,11 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		qlogic_fw scstadmin openssh vixie-cron gcc setuptools \
 		openssl zlib ncurses e2fsprogs ssmtp libibumad libibverbs \
 		srptools lsscsi sg3_utils groff python-suds kexec-tools \
-		iniparser cdk lvm2 xfsprogs drbd mdadm parted opensm libqb \
-		pacemaker corosync nss glib libxml2 libxslt libtool bzip2 \
-		crmsh lxml libaio glue readline resource-agents mhvtl lzo \
-		mhash lessfs tokyocabinet fuse db snappy fence_agents pexpect \
-		pycurl curl Net-Telnet fio bash open-fcoe open-lldp \
+		iniparser cdk lvm2 xfsprogs drbd-utils mdadm parted opensm \
+		libqb pacemaker corosync nss glib libxml2 libxslt libtool \
+		bzip2 crmsh lxml libaio glue readline resource-agents mhvtl \
+		lzo mhash lessfs tokyocabinet fuse db snappy fence_agents \
+		pexpect pycurl curl Net-Telnet fio bash open-fcoe open-lldp \
 		libconfig libnl libpciaccess linux_firmware dlm ipmitool \
 		sysklogd less irqbalance ethtool postgresql psycopg2 mysql \
 		MySQLdb SQLAlchemy infiniband-diags libibmad lockfile \
@@ -1236,19 +1236,17 @@ xfsprogs: glibc util-linux
 	$(MAKE) --directory=$(tgt_src_dir) DIST_ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-drbd: glibc eudev
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-km \
+drbd-utils: glibc eudev
+	$(SED) -e '/install -d $$(DESTDIR)$$(INITDIR)/ s/^#*/#/' -i \
+	$(tgt_src_dir)/scripts/Makefile.in
+	$(SED) -e '/install -m 755 drbd $$(DESTDIR)$$(INITDIR)\// s/^#*/#/' -i \
+	$(tgt_src_dir)/scripts/Makefile.in
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-83support \
 	--with-udev --without-xen --with-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic \
-	--sysconfdir=/etc --localstatedir=/var --with-utils
-	$(MAKE) --directory=$(tgt_src_dir) tools doc
-	$(MAKE) --directory=$(tgt_src_dir)/user DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/documentation DESTDIR=$(IMAGE_DIR) \
-	install
-	$(MAKE) --directory=$(tgt_src_dir)/scripts DESTDIR=$(IMAGE_DIR) \
-	sysconfdir="/usr/lib" install
+	--sysconfdir=/etc --localstatedir=/var --with-initscripttype=sysv
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 mdadm: glibc
@@ -1806,6 +1804,8 @@ linux_firmware:
 dlm: glibc corosync libxml2 pacemaker
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" USE_SD_NOTIFY=no
 	$(SED) -i 's/`xml2-config/`$(subst /,\/,$(WORK_DIR))\/xml2-config --prefix=$(subst /,\/,$(IMAGE_DIR))\/usr/g' $(tgt_src_dir)/fence/Makefile
+	$(SED) -e '/$$(INSTALL) -d $$(DESTDIR)\/$$(MANDIR)\/man8/ s/^#*/#/' \
+	-i $(tgt_src_dir)/fence/Makefile
 	$(MAKE) --directory=$(tgt_src_dir)/fence CC="$(esos_cc)"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	UDEVDIR="/usr/lib/udev/rules.d" install

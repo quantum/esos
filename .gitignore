@@ -54,7 +54,7 @@ iniparser
 cdk
 lvm2
 xfsprogs
-drbd
+drbd-utils
 mdadm
 parted
 opensm

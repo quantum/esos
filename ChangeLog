@@ -1,3 +1,43 @@
+2015-11-01  Marc A. Smith  <marc@astersmith.com>
+
+	replaced the drbd package with drbd-utils (verion 8.9.4); fixed issue with the dlm package where it created an extraneous /man8 directory
+
+2015-10-31  Marc A. Smith  <marc@astersmith.com>
+
+	in the update-mode of install.sh, try changing the size of /tmp first, before mounting anything else (under some conditions /tmp may not be mounted)
+
+	Merge branch '4.1_kern_update'
+
+	updated makedumpfile to version 1.5.9 (for 4.1.x kernel)
+
+2015-10-30  Marc A. Smith  <marc@astersmith.com>
+
+	added a patch for BTIER so it builds on recent kernel versions; enabled the MLX5 driver as a module
+
+	updated EnhanceIO to the latest from the master branch (20151029)
+
+	updated mhvtl to version 1.5-3_release
+
+2015-10-29  Marc A. Smith  <marc@astersmith.com>
+
+	updated SCST to trunk/r6566 and removed SCST kernel patching lines that are no longer needed for trunk
+
+	update to Linux 4.1.11 (new config file, -debug patch, Makefile changes, and CHECKSUM files) -- the changes (Areca arcmsr driver and DLM lowcomms.c fix) from misc/3.14.36.patch are not needed in this version; disabled non-working third-party modules for now (eg, EIO)
+
+2015-10-24  Marc A. Smith  <marc@astersmith.com>
+
+	using --sysinit with vgchange and lvmetad doesn't activate the LV in time for partprobe, so just use -aay instead
+
+2015-10-20  Marc A. Smith  <marc@astersmith.com>
+
+	updated to set default Ethernet MTU for enp* and eno* interfaces; increased spacing for interface name in the get-network-ifaces dialog
+
+	updated the rc.network script to handle "on-board" Ethernet adapters (enoX)
+
+2015-10-16  Marc A. Smith  <marc@astersmith.com>
+
+	updated the rc.lvm2 script to probe all LV's for partitions (via partprobe)
+
 2015-10-14  Marc A. Smith  <marc@astersmith.com>
 
 	added the check_zpools.sh script/plugin for Nagios/NRPE (issue #157)
