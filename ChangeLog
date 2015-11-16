@@ -1,3 +1,9 @@
+2015-11-16  Marc A. Smith  <marc@astersmith.com>
+
+	updated Linux to the latest version in 3.14.x (3.14.57)
+
+	updated .gitignore for optional build items; fixed the esos_kernels and ocs_sdk recipes (resolves issue # 163) -- CONFIG_LOCKDEP can't be used with proprietary kernel modules, tested with OCS SDK version 10.6.248.0; updated the autoconf macro script to produce an error message when attempting to use --with-uwire (broken for now)
+
 2015-08-19  Marc A. Smith  <marc@astersmith.com>
 
 	added the SQLite package which enables the sqlite3 module in Python (resolves issue # 139); include the migrate-blocks Python script from BTIER
