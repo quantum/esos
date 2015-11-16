@@ -594,6 +594,14 @@ esos_kernels: kernel_headers
 	    if [ "$(enable_qla)" = "yes" ]; then \
 	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2debug; \
 	    fi; \
+	    if [ "$(with_ocs_sdk)" = "yes" ]; then \
+	      $(SED) -i 's/CONFIG_DEBUG_LOCK_ALLOC=y/# CONFIG_DEBUG_LOCK_ALLOC is not set/' \
+	      $(linux_src)/.config; \
+	      $(SED) -i 's/CONFIG_PROVE_LOCKING=y/# CONFIG_PROVE_LOCKING is not set/' \
+	      $(linux_src)/.config; \
+	      $(SED) -i 's/CONFIG_LOCKDEP=y/# CONFIG_LOCKDEP is not set/' \
+	      $(linux_src)/.config; \
+	    fi; \
 	  fi; \
 	  if [ "$(enable_qla)" != "yes" ]; then \
 	    $(SED) -i 's/# CONFIG_SCSI_QLA_FC is not set/CONFIG_SCSI_QLA_FC=m\nCONFIG_SCSI_QLA2XXX_TARGET=y/' $(linux_src)/.config; \
@@ -771,9 +779,10 @@ valgrind: glibc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-ocs_sdk: glibc
+ocs_sdk: glibc libxml2
 	$(MAKE) --directory=$(ocs_sdk_dir)/tools/user/elxsdkutil \
-	CC="$(esos_cc)"
+	CC="$(esos_cc)" LIBXML2_INC="-I$(IMAGE_DIR)/usr/include/libxml2" \
+	LIBXML2_LIB="-lxml2 -lm -ldl"
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/user/elxsdkutil/elxsdkutil \
 	$(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/bin/ocs_config.py \
