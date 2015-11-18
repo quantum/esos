@@ -199,6 +199,7 @@ AC_ARG_WITH(uwire,
 	[uwire_file="${withval}"; with_uwire="yes"],
 	[with_uwire="no"]), with_uwire="no")
 if test  "x${with_uwire}" = "xyes"; then
+	AC_MSG_ERROR([support for Chelsio Unified Wire adapters is broken])
 	if test -f "${uwire_file}"; then
 		AC_MSG_NOTICE([extracting the uwire package file...])
 		uwire_dir="${work_dir}/uwire"

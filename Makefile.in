@@ -390,6 +390,10 @@ image: $(build_targets)
 	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py $(STAGING_DIR)/usr/local/bin/
 	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d/esos
 	$(INSTALL) $(SRC_DIR)/misc/ocf/* $(STAGING_DIR)/usr/lib/ocf/resource.d/esos/
+	$(INSTALL) -D -m 0755 $(SRC_DIR)/misc/drbd_xsltproc/drbd-xmlproc \
+	$(STAGING_DIR)/usr/local/bin/drbd-xmlproc
+	$(INSTALL) -D -m 0644 $(SRC_DIR)/misc/drbd_xsltproc/xml2conf.xsl \
+	$(STAGING_DIR)/usr/local/share/drbd/xml2conf.xsl
 	$(INSTALL) $(SRC_DIR)/contrib/check_zpools.sh \
 	$(STAGING_DIR)/usr/libexec/
 	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
@@ -623,6 +627,14 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	    if [ "$(enable_qla)" = "yes" ]; then \
 	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2debug; \
 	    fi; \
+	    if [ "$(with_ocs_sdk)" = "yes" ]; then \
+	      $(SED) -i 's/CONFIG_DEBUG_LOCK_ALLOC=y/# CONFIG_DEBUG_LOCK_ALLOC is not set/' \
+	      $(linux_src)/.config; \
+	      $(SED) -i 's/CONFIG_PROVE_LOCKING=y/# CONFIG_PROVE_LOCKING is not set/' \
+	      $(linux_src)/.config; \
+	      $(SED) -i 's/CONFIG_LOCKDEP=y/# CONFIG_LOCKDEP is not set/' \
+	      $(linux_src)/.config; \
+	    fi; \
 	  fi; \
 	  if [ "$(enable_qla)" != "yes" ]; then \
 	    $(SED) -i 's/# CONFIG_SCSI_QLA_FC is not set/CONFIG_SCSI_QLA_FC=m\nCONFIG_SCSI_QLA2XXX_TARGET=y/' $(linux_src)/.config; \
@@ -855,9 +867,10 @@ zfs: esos_kernels eudev
 	$(call clean_la_files,libzfs)
 	$(TOUCH) $(@)
 
-ocs_sdk: glibc
+ocs_sdk: glibc libxml2
 	$(MAKE) --directory=$(ocs_sdk_dir)/tools/user/elxsdkutil \
-	CC="$(esos_cc)"
+	CC="$(esos_cc)" LIBXML2_INC="-I$(IMAGE_DIR)/usr/include/libxml2" \
+	LIBXML2_LIB="-lxml2 -lm -ldl"
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/user/elxsdkutil/elxsdkutil \
 	$(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/bin/ocs_config.py \
