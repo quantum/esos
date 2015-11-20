@@ -24,8 +24,8 @@ start() {
 }
 
 stop() {
-    # Do nothing
-    :
+    /bin/echo "Stopping MD RAID arrays..."
+    ${MDADM} --stop --scan || exit 1
 }
 
 status() {

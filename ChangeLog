@@ -1,3 +1,11 @@
+2015-11-20  Marc A. Smith  <marc@astersmith.com>
+
+	updated rc.mdraid so we actually stop the arrays when told to do so; enhanced the health_chk script to now check MD arrays (mdadm --monitor), and also update the memory-check function to support a minimum KB value or percentage threshold (resolves issue # 158)
+
+2015-11-18  Marc A. Smith  <marc@astersmith.com>
+
+	added drbd-xmlproc (and accompanying .xsl file) to handle converting XML to DRBD configuration files; updates to the esos_kernels recipe for the OCS driver and debug kernel config; updated ocs_sdk for recent versions (eg, 10.6.248.0); disable support for Chelsio Unified Wire (it's broke)
+
 2015-11-01  Marc A. Smith  <marc@astersmith.com>
 
 	replaced the drbd package with drbd-utils (verion 8.9.4); fixed issue with the dlm package where it created an extraneous /man8 directory
