@@ -60,6 +60,7 @@ MY_PATH_PROG([xz])
 MY_PATH_PROG([readlink])
 MY_PATH_PROG([strip])
 MY_PATH_PROG([bzip2])
+MY_PATH_PROG([git])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then

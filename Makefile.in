@@ -52,6 +52,7 @@ XZ		:= @xz@
 READLINK	:= @readlink@
 STRIP		:= @strip@
 BZIP2		:= @bzip2@
+GIT		:= @git@
 
 enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
@@ -64,13 +65,13 @@ with_uwire	:= @with_uwire@
 uwire_dir	:= @uwire_dir@
 build_opts	:= @build_opts@
 
-git_branch	:= $(shell if branch="$$(git --git-dir=$(SRC_DIR)/.git rev-parse \
+git_branch	:= $(shell if branch="$$($(GIT) --git-dir=$(SRC_DIR)/.git rev-parse \
 		--symbolic-full-name --abbrev-ref HEAD 2>&1)"; \
 		then echo -n "$$branch"; else echo -n "UNKNOWN"; fi)
-git_hash	:= $(shell if hash="$$(git --git-dir=$(SRC_DIR)/.git rev-parse \
+git_hash	:= $(shell if hash="$$($(GIT) --git-dir=$(SRC_DIR)/.git rev-parse \
 		--short HEAD 2>&1)"; \
 		then echo -n "$$hash"; else echo -n "UNKNOWN"; fi)
-git_tag		:= $(shell if tag="$$(git --git-dir=$(SRC_DIR)/.git describe \
+git_tag		:= $(shell if tag="$$($(GIT) --git-dir=$(SRC_DIR)/.git describe \
 		--exact-match --abbrev=0 2>&1)"; \
 		then echo -n "$$tag"; else echo -n ""; fi)
 opt_suffix	:= $(if $(build_opts),_$(shell for i in $(build_opts); \
