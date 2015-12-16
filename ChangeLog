@@ -1,3 +1,7 @@
+2015-12-16  Marc A. Smith  <marc@astersmith.com>
+
+	updated the kernel config to include support for LSI SAS3 devices (12 Gb SAS HBAs)
+
 2015-11-16  Marc A. Smith  <marc@astersmith.com>
 
 	updated Linux to the latest version in 3.14.x (3.14.57)
