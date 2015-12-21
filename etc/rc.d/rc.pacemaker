@@ -21,7 +21,7 @@ fi
 
 start() {
     /bin/echo "Starting pacemakerd..."
-    eval ${PACEMAKERD} ${USER_OPTS} &
+    /bin/sh -c "/usr/bin/nohup ${PACEMAKERD} ${USER_OPTS} &"
     /bin/touch ${PACEMAKERD_LOCK}
     /bin/sleep 1
 }

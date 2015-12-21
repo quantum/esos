@@ -109,7 +109,7 @@
     <xsl:call-template name="indent">
 	<xsl:with-param name="depth" select="count(ancestor::*) - 1"/>
     </xsl:call-template>
-    <xsl:value-of select="name()"/><xsl:text> </xsl:text><xsl:if test="contains(., ' ')"><xsl:text>"</xsl:text></xsl:if><xsl:value-of select="."/><xsl:if test="contains(., ' ')"><xsl:text>"</xsl:text></xsl:if><xsl:text>;</xsl:text>
+    <xsl:value-of select="name()"/><xsl:text> </xsl:text><xsl:if test="contains(., ' ') or contains(., ':')"><xsl:text>"</xsl:text></xsl:if><xsl:value-of select="."/><xsl:if test="contains(., ' ') or contains(., ':')"><xsl:text>"</xsl:text></xsl:if><xsl:text>;</xsl:text>
 </xsl:template>
 
 <xsl:template match="text()">
