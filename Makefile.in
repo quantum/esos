@@ -165,7 +165,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		EnhanceIO-master_20140810.tar.gz \
 		util-linux-2.23.2.tar.bz2 \
 		nrpe-2.15.tar.gz \
-		thin-provisioning-tools-0.2.8.tar.gz \
+		thin-provisioning-tools-0.5.6.tar.gz \
 		expat-1.95.8.tar.gz \
 		boost-1_55_0.tar.xz \
 		btier-tip_c3e46b.tar.gz \
@@ -1878,8 +1878,6 @@ util-linux: glibc ncurses zlib
 	$(TOUCH) $(@)
 
 thin-provisioning-tools: glibc gcc expat boost
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(SRC_DIR)/misc/thin-provisioning-tools-0.2.8.patch
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && autoconf; \
 	fi
