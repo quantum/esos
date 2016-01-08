@@ -40,7 +40,7 @@ if [ -x "${MEGACLI}" ]; then
                     -NoLog | grep "State" | cut -d: -f2 | \
                     tr -d ' ' | tr -d '\n'`
                 if [ "${ld_state}" != "Optimal" ]; then
-                    echo "** Warning! MegaRAID logical drive ${logical_drv} " \
+                    echo "** Warning! MegaRAID logical drive ${logical_drv}" \
                         "on adapter ${adapter} is not optimal!" 1>&2
                     echo "** Logical drive state: ${ld_state}" 1>&2
                 fi
@@ -59,9 +59,17 @@ if [ -x "${MEGACLI}" ]; then
                 if [ "${drv_state}" != "Unconfigured(good), Spun Up" ] &&
                     [ "${drv_state}" != "Online, Spun Up" ] &&
                     [ "${drv_state}" != "Hotspare, Spun Up" ]; then
-                    echo "** Warning! It appears a MegaRAID physical drive " \
+                    echo "** Warning! It appears a MegaRAID physical drive" \
                         "has failed on adapter ${adapter}!" 1>&2
                     echo "** Physical drive state: ${drv_state}" 1>&2
+                fi
+            elif echo "${i}" | grep "Media Error Count:" > /dev/null 2>&1; then
+                media_err=`echo "${i}" | cut -d: -f2 | sed 's/^ *//' | \
+                    tr -d '\n'`
+                if [ "${media_err}" != "0" ]; then
+                    echo "** Warning! It appears a MegaRAID physical drive" \
+                        "on adapter ${adapter} contains media errors!" 1>&2
+                    echo "** Physical media error count: ${media_err}" 1>&2
                 fi
             fi
         done
@@ -212,8 +220,8 @@ else
     # Check using the percentage
     if [ x$(perl -e "print ${prct_mem_used} > ${MEM_PRCT_THRESH}") = "x1" ]; \
         then
-        echo "** Warning! Maximum memory used threshold percent \
-            (${MEM_PRCT_THRESH}) has been exceeded..." 1>&2
+        echo "** Warning! Maximum memory used threshold percent" \
+            "(${MEM_PRCT_THRESH}) has been exceeded..." 1>&2
         echo "Total Physical RAM: ${mem_total} kB" 1>&2
         echo "Available Physical RAM: ${mem_avail} kB" 1>&2
     fi
