@@ -121,7 +121,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libtool-2.4.2.tar.xz \
 		bzip2-1.0.6.tar.gz \
 		Python-2.7.3.tar.bz2 \
-		crmsh-2.1.0.tar.gz \
+		crmsh-master_20160126.tar.gz \
 		lxml-3.4.4.tar.gz \
 		libaio-0.3.109.tar.bz2 \
 		glue-1.0.11.tar.bz2 \
