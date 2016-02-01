@@ -308,6 +308,9 @@ else
             ${rpm2cpio} ${PKG_DIR}/hpacucli-*.x86_64.rpm | cpio -idmv && \
             cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli && \
             cp opt/compaq/hpacucli/bld/*.so ${MNT_DIR}/opt/lib/
+        elif [ "${i}" = "hpssacli" ]; then
+            ${rpm2cpio} ${PKG_DIR}/hpssacli-*.x86_64.rpm | cpio -idmv && \
+            cp opt/hp/hpssacli/bld/hpssacli ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "linuxcli" ]; then
             unzip -o ${PKG_DIR}/linuxcli_*.zip && \
             cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/

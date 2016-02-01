@@ -1,4 +1,35 @@
-2015-11-20  Marc A. Smith  <marc@astersmith.com>
+2016-02-01  Marc A. Smith  <marc@astersmith.com>
+
+	added support in the installer scripts for the 'hpssacli' HP Smart Array CLI tool (for Gen8+ servers)
+
+2016-01-26  Marc A. Smith  <marc@astersmith.com>
+
+	updated crmsh to the latest (20160126) clone from the master branch
+
+2016-01-08  Marc A. Smith  <marc@astersmith.com>
+
+	updated the health-check script to handle checking MegaRAID physical drives for media errors (satisfies issue # 168); clean-up a few lines with unneeded white space in the health-check script
+
+2016-01-07  Marc A. Smith  <marc@astersmith.com>
+
+	updated the thin-provisioning-tools package to version 0.5.6 (includes the cache_check utility)
+	Conflicts:
+		CHECKSUM.MD5
+		CHECKSUM.SHA256
+
+2015-12-21  Marc A. Smith  <marc@astersmith.com>
+
+	updated the DRBD XML-to-conf XSLT stylesheet to double-quote strings that contain colons; using eval in the Pacemaker rc script didn't return an EOF so use sh instead
+
+2015-12-16  Marc A. Smith  <marc@astersmith.com>
+
+	updated the kernel config to include support for LSI SAS3 devices (12 Gb SAS HBAs)
+
+2015-12-11  Marc A. Smith  <marc@astersmith.com>
+
+	updated the Makefile and autoconf script to search for the git binary and use the absolute path to it instead of search path
+
+2015-11-25  Marc A. Smith  <marc@astersmith.com>
 
 	updated rc.mdraid so we actually stop the arrays when told to do so; enhanced the health_chk script to now check MD arrays (mdadm --monitor), and also update the memory-check function to support a minimum KB value or percentage threshold (resolves issue # 158)
 
