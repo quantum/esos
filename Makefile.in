@@ -221,6 +221,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iperf3-3.0.11.tar.gz \
 		libpcap-1.7.4.tar.gz \
 		iftop-1.0pre4.tar.gz \
+		nmon-16c.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -245,7 +246,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
 		stunnel sudo rsync eudev gperf multipath-tools archivemount \
 		libarchive mcelog edac-utils sysfsutils sqlite-autoconf \
-		stunnel sudo rsync iperf2 iperf3 libpcap iftop
+		stunnel sudo rsync iperf2 iperf3 libpcap iftop nmon
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2488,5 +2489,12 @@ iperf3: glibc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(call clean_la_files,libiperf)
+	$(TOUCH) $(@)
+
+nmon: glibc gcc ncurses
+	$(esos_cc) -o $(tgt_src_dir)/nmon $(tgt_src_dir)/lmon.c $(LDFLAGS) \
+	-g -O3 -Wall -D JFS -D GETUSER -D LARGEMEM -ltinfo -lncurses -lm -g \
+	-D KERNEL_2_6_18 -D X86
+	$(INSTALL) -D -m 0755 -v $(tgt_src_dir)/nmon $(IMAGE_DIR)/usr/sbin/nmon
 	$(TOUCH) $(@)
 
