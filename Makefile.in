@@ -149,7 +149,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libconfig-1.4.9.tar.gz \
 		libnl-1.1.2.tar.gz \
 		libpciaccess-0.13.1.tar.bz2 \
-		linux_firmware-20131226.tar.xz \
+		linux_firmware-master_20160209.tar.xz \
 		dlm-4.0.2.tar.xz \
 		sysklogd-1.5.tar.gz \
 		ipmitool-1.8.12.tar.bz2 \

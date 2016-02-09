@@ -1,4 +1,12 @@
-2016-02-01  Marc A. Smith  <marc@astersmith.com>
+2016-02-09  Marc A. Smith  <marc@astersmith.com>
+
+	updated linux_firmware (linux-firmware) to the latest tree available in their master branch (should resolve issue # 170)
+
+	added the 'nmon' utility (version 16c)
+
+	yet another fix for drbd_xsltproc -- drbdadm interprets values that start with a double-quote as a string and well, an IP address is actually a number (not a string)
+
+2016-02-03  Marc A. Smith  <marc@astersmith.com>
 
 	added support in the installer scripts for the 'hpssacli' HP Smart Array CLI tool (for Gen8+ servers)
 
