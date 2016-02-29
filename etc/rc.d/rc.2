@@ -16,6 +16,11 @@ for i in ${EARLY_SERVICES}; do
     fi
 done
 
+if [ -f "/etc/crypttab" ]; then
+    /bin/echo "Starting disk encryption (early)..."
+    init_crypto 1
+fi
+
 /bin/echo "Loading the Brocade 10G Ethernet driver..."
 /sbin/modprobe bna
 
@@ -80,6 +85,11 @@ for i in ${LATE_SERVICES}; do
         ${RC_D_PREFIX}/${i} start
     fi
 done
+
+if [ -f "/etc/crypttab" ]; then
+    /bin/echo "Starting disk encryption (late)..."
+    init_crypto 1
+fi
 
 /bin/echo "Executing /etc/rc.local..."
 if [ -f /etc/rc.local ]; then

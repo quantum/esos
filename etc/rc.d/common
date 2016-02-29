@@ -88,3 +88,137 @@ get_rc_opts() {
         return 1
     fi
 }
+
+# Most of this came from /etc/rc.d/rc.sysinit in RHEL 5.11
+key_is_random() {
+    [ "$1" = "/dev/urandom" -o "$1" = "/dev/hw_random" \
+        -o "$1" = "/dev/random" ]
+}
+init_crypto() {
+    local have_random dst src key opt mode owner params makeswap skip arg opt
+    local param value rc ret mke2fs mdir
+
+    ret=0
+    have_random=${1}
+    while read dst src key opt; do
+        [ -z "${dst}" -o "${dst#\#}" != "${dst}" ] && continue
+        [ -b "/dev/mapper/${dst}" ] && continue;
+        if [ "${have_random}" = 0 ] && key_is_random "${key}"; then
+            continue
+        fi
+        if [ -n "${key}" -a "x${key}" != "xnone" ]; then
+            if /usr/bin/test -e "${key}" ; then
+                owner=$(/bin/ls -l ${key} | (read a b owner rest; \
+                    /bin/echo ${owner}))
+                if ! key_is_random "${key}"; then
+                mode=$(/bin/ls -l "${key}" | cut -c 5-10)
+                    if [ "${mode}" != "------" ]; then
+                       /bin/echo $"INSECURE MODE FOR ${key}"
+                    fi
+                fi
+                if [ "${owner}" != root ]; then
+                    /bin/echo $"INSECURE OWNER FOR ${key}"
+                fi
+            else
+                /bin/echo $"Key file for ${dst} not found, skipping"
+                ret=1
+                continue
+            fi
+        else
+            key=""
+        fi
+        params=""
+        makeswap=""
+        mke2fs=""
+        skip=""
+        # Parse the src field for UUID= and convert to real device names
+        if [ "${src%%=*}" == "UUID" ]; then
+                src=$(/usr/sbin/blkid -t "${src}" -l -o device)
+        elif [ "${src/^\/dev\/disk\/by-uuid\/}" != "${src}" ]; then
+                src=$(/usr/bin/readlink ${src})
+        fi
+        [ -z "${src}" ] && continue
+        [ -b "${src}" ] || continue
+        # Parse the options field, convert to cryptsetup parameters
+        # and contruct the command line
+        while [ -n "${opt}" ]; do
+            arg=${opt%%,*}
+            opt=${opt##$arg}
+            opt=${opt##,}
+            param=${arg%%=*}
+            value=${arg##$param=}
+
+            case "${param}" in
+            cipher)
+                params="${params} -c ${value}"
+                if [ -z "${value}" ]; then
+                    /bin/echo $"${dst}: no value for cipher option, skipping"
+                    skip="yes"
+                fi
+            ;;
+            size)
+                params="${params} -s ${value}"
+                if [ -z "${value}" ]; then
+                    /bin/echo $"${dst}: no value for size option, skipping"
+                    skip="yes"
+                fi
+            ;;
+            hash)
+                params="${params} -h ${value}"
+                if [ -z "${value}" ]; then
+                    /bin/echo $"${dst}: no value for hash option, skipping"
+                    skip="yes"
+                fi
+            ;;
+            verify)
+                params="${params} -y"
+            ;;
+            swap)
+                makeswap=yes
+                ;;
+            tmp)
+                mke2fs=yes
+            esac
+        done
+        if [ "${skip}" = "yes" ]; then
+            ret=1
+            continue
+        fi
+        if /usr/sbin/cryptsetup isLuks "${src}" 2>/dev/null; then
+            if key_is_random "${key}"; then
+                /bin/echo $"${dst}: LUKS requires non-random key, skipping"
+                ret=1
+                continue
+            fi
+            if [ -n "${params}" ]; then
+                /bin/echo "${dst}: options are invalid for LUKS partitions," \
+                    "ignoring them"
+            fi
+            /usr/sbin/cryptsetup ${key:+-d $key} luksOpen "${src}" "${dst}" <&1
+        else
+            /usr/sbin/cryptsetup ${params} ${key:+-d $key} create \
+                "${dst}" "${src}" <&1
+        fi
+        rc=${?}
+        if [ ${rc} -ne 0 ]; then
+            ret=1
+            continue
+        fi
+        if [ -b "/dev/mapper/${dst}" ]; then
+            if [ "${makeswap}" = "yes" ]; then
+                /sbin/mkswap "/dev/mapper/${dst}" > /dev/null 2>&1
+            fi
+            if [ "${mke2fs}" = "yes" ]; then
+                if /usr/sbin/mke2fs "/dev/mapper/${dst}" > /dev/null 2>&1 \
+                    && mdir=$(/bin/mktemp -d /tmp/mountXXXXXX); then
+                    /bin/mount "/dev/mapper/${dst}" "${mdir}" \
+                        && /bin/chmod 1777 "${mdir}"
+                    /bin/umount "${mdir}"
+                    /bin/rmdir "${mdir}"
+                fi
+            fi
+        fi
+    done < /etc/crypttab
+    return ${ret}
+}
+
