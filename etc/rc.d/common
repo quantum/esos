@@ -106,7 +106,7 @@ init_crypto() {
         if [ "${have_random}" = 0 ] && key_is_random "${key}"; then
             continue
         fi
-        if [ -n "${key}" -a "x${key}" != "xnone" ]; then
+        if [ -n "${key}" -a "x${key}" != "xnone" -a "x${key}" != "x-" ]; then
             if /usr/bin/test -e "${key}" ; then
                 owner=$(/bin/ls -l ${key} | (read a b owner rest; \
                     /bin/echo ${owner}))
@@ -175,9 +175,18 @@ init_crypto() {
             ;;
             swap)
                 makeswap=yes
-                ;;
+            ;;
             tmp)
                 mke2fs=yes
+            ;;
+            allow-discards)
+                params="${params} --allow-discards"
+            ;;
+            discard)
+                params="${params} --allow-discards"
+            ;;
+            noauto)
+                skip="yes"
             esac
         done
         if [ "${skip}" = "yes" ]; then
