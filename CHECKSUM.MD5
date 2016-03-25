@@ -136,7 +136,6 @@ b2e13142bbaba857ab1c6894aedaf547  libpcap-1.7.4.tar.gz
 5703c841c810fed58249673f1e19003f  iperf2-2.0.4.tar.gz
 88e59c2049484c203c70453abc923301  iperf3-3.0.11.tar.gz
 63e5981e38f935772a5309289fe76972  linux-4.1.11.tar.xz
-58c326172da715b6d5e82c2c1d1adb7d  scst-trunk_r6566.tar.gz
 7acec816283b96392b41594606d1a637  mhvtl-1.5-3_release.tar.gz
 bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
 e44244db888acdb0e75962bb59feace2  makedumpfile-1.5.9.tar.gz
@@ -145,3 +144,4 @@ e44244db888acdb0e75962bb59feace2  makedumpfile-1.5.9.tar.gz
 dc20699a97a27005c6cca2752e3d3af8  crmsh-master_20160126.tar.gz
 7ab813b2e8921fc4e9f2f92cd5271b30  nmon-16c.tar.gz
 f0ed8036a25ea6a3cd9a1f553e6897fa  linux_firmware-master_20160209.tar.xz
+010ac45ce03c53fce9b9c306db8793e4  scst-3.1.x_r6840.tar.gz

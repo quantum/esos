@@ -1,6 +1,36 @@
-2016-02-09  Marc A. Smith  <marc@astersmith.com>
+2016-03-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated SCST to 3.1.x/r6840
+
+	Merge branch 'tg3_fix'
+
+	Merge branch 'add_crypto'
+
+2016-03-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated init_crypto() to handle using either 'none' or '-' for the key column; updated init_crypto() to accept the 'allow-discards', 'discard', and 'noauto' option parameters; enabled CONFIG_CRYPTO_PCRYPT in the kernel config
+
+2016-03-09  Marc A. Smith  <marc.smith@parodyne.com>
+
+	enabled NVM Express (NVMe) support in the kernel configuration
+
+2016-02-29  Marc A. Smith  <marc@astersmith.com>
+
+	updated the rc/init scripts to handle disk encryption... we use a common function to initialize crypto and run it two times: early, before LVM and other stuff, and then late, after all other user-settable services
+
+2016-02-26  Marc A. Smith  <marc@astersmith.com>
+
+	fix for tg3 NIC devices ("Problem fetching invariants of chip, aborting" issue)
+
+2016-02-15  Marc A. Smith  <marc@astersmith.com>
+
+	started initial work to support disk encryption (eg, LUKS)
+
+2016-02-10  Marc A. Smith  <marc@astersmith.com>
 
 	updated linux_firmware (linux-firmware) to the latest tree available in their master branch (should resolve issue # 170)
+
+2016-02-09  Marc A. Smith  <marc@astersmith.com>
 
 	added the 'nmon' utility (version 16c)
 
