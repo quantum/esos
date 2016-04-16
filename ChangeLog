@@ -1,3 +1,13 @@
+2016-04-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'openssl_update' into 0.1.x
+
+	Merge branch 'fix_python-daemon_deps' into 0.1.x
+
+	updated openssl to 1.0.1s
+
+	updated lockfile to 0.12.2 and added the pbr package (dep for lockfile) -- these resolve a build issue in 0.1.x and master; added zlib as a dep for Python
+
 2016-01-06  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'thin-provisioning-tools_update' into 0.1.x
