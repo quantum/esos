@@ -159,7 +159,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		SQLAlchemy-0.8.1.tar.gz \
 		infiniband-diags-1.5.13.tar.gz \
 		libibmad-1.3.8.tar.gz \
-		lockfile-0.9.1.tar.gz \
+		lockfile-0.12.2.tar.gz \
+		pbr-1.8.1.tar.gz \
 		python-daemon-2.0.5.tar.gz \
 		bcache-tools-master_20130930.tar.gz \
 		EnhanceIO-master_20140810.tar.gz \
@@ -220,7 +221,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		pycurl curl Net-Telnet fio bash open-fcoe open-lldp \
 		libconfig libnl libpciaccess linux_firmware dlm ipmitool \
 		sysklogd less irqbalance ethtool postgresql psycopg2 mysql \
-		MySQLdb SQLAlchemy infiniband-diags libibmad lockfile \
+		MySQLdb SQLAlchemy infiniband-diags libibmad lockfile pbr \
 		python-daemon nrpe bcache-tools EnhanceIO util-linux \
 		thin-provisioning-tools expat boost btier librdmacm \
 		sysstat pciutils tar net-snmp nut libusb libusb_compat \
@@ -923,7 +924,7 @@ perl: glibc
 	DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
 	$(TOUCH) $(@)
 
-Python: glibc gcc bzip2 readline openssl sqlite-autoconf
+Python: glibc gcc bzip2 readline openssl sqlite-autoconf zlib
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/Python-2.7.3.patch
 	cd $(tgt_src_dir) && LDFLAGS="$(LDFLAGS)" \
@@ -1819,7 +1820,12 @@ libibmad: glibc libibumad libibverbs
 	$(call clean_la_files,libibmad)
 	$(TOUCH) $(@)
 
-lockfile: glibc Python setuptools SQLAlchemy
+lockfile: glibc Python setuptools SQLAlchemy pbr
+	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py \
+	install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+pbr: glibc Python setuptools
 	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py \
 	install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)

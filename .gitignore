@@ -105,6 +105,7 @@ SQLAlchemy
 infiniband-diags
 libibmad
 lockfile
+pbr
 python-daemon
 nrpe
 bcache-tools
