@@ -89,7 +89,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		openssh-5.8p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
 		perl-5.12.4.tar.bz2 \
-		openssl-1.0.1g.tar.gz \
+		openssl-1.0.1s.tar.gz \
 		e2fsprogs-1.41.14.tar.gz \
 		zlib-1.2.5.tar.bz2 \
 		lsscsi-0.25.tar.gz \
