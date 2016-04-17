@@ -62,7 +62,8 @@ bf280949049161aa68cf29e600d9ec79  mysql-5.0.96.tar.gz
 65d1f3a9f25f3cd558b6001b11392ce1  SQLAlchemy-0.8.1.tar.gz
 367affa587f346f9ddc064bcce4206cf  infiniband-diags-1.5.13.tar.gz
 fe88bdfa48626d01ffad8b2fde87466e  libibmad-1.3.8.tar.gz
-4e4c7ea4c4301500da5e7f3b51e01cfe  lockfile-0.9.1.tar.gz
+a6a1a82957a23afdf44cfdd039b65ff9  lockfile-0.12.2.tar.gz
+c8f9285e1a4ca6f9654c529b158baa3a  pbr-1.8.1.tar.gz
 6b6e8bed3ce737ffb21f3c8ee2704dba  bcache-tools-master_20130930.tar.gz
 3921ddc598312983f604541784b35a50  nrpe-2.15.tar.gz
 aff487543845a82fe262e6e2922b4c8e  expat-1.95.8.tar.gz
