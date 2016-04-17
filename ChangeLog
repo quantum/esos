@@ -1,3 +1,22 @@
+2016-04-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'openssl_update'
+	Conflicts:
+		CHECKSUM.MD5
+		CHECKSUM.SHA256
+
+	Merge branch 'fix_python-daemon_deps'
+	Conflicts:
+		.gitignore
+		CHECKSUM.MD5
+		CHECKSUM.SHA256
+		ChangeLog
+		Makefile.in
+
+	updated openssl to 1.0.1s
+
+	updated lockfile to 0.12.2 and added the pbr package (dep for lockfile) -- these resolve a build issue in 0.1.x and master; added zlib as a dep for Python
+
 2016-03-25  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated SCST to 3.1.x/r6840
@@ -55,11 +74,21 @@
 		CHECKSUM.MD5
 		CHECKSUM.SHA256
 
+2016-01-06  Marc A. Smith  <marc@astersmith.com>
+
+	Merge branch 'thin-provisioning-tools_update' into 0.1.x
+
+2016-01-02  Marc A. Smith  <marc@astersmith.com>
+
+	updated the thin-provisioning-tools package to version 0.5.6 (includes the cache_check utility)
+
 2015-12-21  Marc A. Smith  <marc@astersmith.com>
 
 	updated the DRBD XML-to-conf XSLT stylesheet to double-quote strings that contain colons; using eval in the Pacemaker rc script didn't return an EOF so use sh instead
 
 2015-12-16  Marc A. Smith  <marc@astersmith.com>
+
+	updated the kernel config to include support for LSI SAS3 devices (12 Gb SAS HBAs)
 
 	updated the kernel config to include support for LSI SAS3 devices (12 Gb SAS HBAs)
 
@@ -74,6 +103,12 @@
 2015-11-18  Marc A. Smith  <marc@astersmith.com>
 
 	added drbd-xmlproc (and accompanying .xsl file) to handle converting XML to DRBD configuration files; updates to the esos_kernels recipe for the OCS driver and debug kernel config; updated ocs_sdk for recent versions (eg, 10.6.248.0); disable support for Chelsio Unified Wire (it's broke)
+
+2015-11-16  Marc A. Smith  <marc@astersmith.com>
+
+	updated Linux to the latest version in 3.14.x (3.14.57)
+
+	updated .gitignore for optional build items; fixed the esos_kernels and ocs_sdk recipes (resolves issue # 163) -- CONFIG_LOCKDEP can't be used with proprietary kernel modules, tested with OCS SDK version 10.6.248.0; updated the autoconf macro script to produce an error message when attempting to use --with-uwire (broken for now)
 
 2015-11-01  Marc A. Smith  <marc@astersmith.com>
 
