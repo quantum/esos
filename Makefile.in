@@ -596,9 +596,13 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	  fi; \
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean; \
 	  $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) distclean; \
-	  $(MAKE) --directory=$(eio_src)/Driver/enhanceio \
-	  KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio clean; \
-	  $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
+	  if [ "$(enable_eio)" = "yes" ]; then \
+	    $(MAKE) --directory=$(eio_src)/Driver/enhanceio \
+	    KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio clean; \
+	  fi; \
+	  if [ "$(enable_btier)" = "yes" ]; then \
+	    $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
+	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(MAKE) --directory=$(linux_src) \
 	    M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst clean; \
