@@ -110,7 +110,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		drbd-utils-8.9.4.tar.gz \
 		lvm2-2_02_129.tar.xz \
 		xfsprogs-4.5.0.tar.gz \
-		mdadm-3.3.2.tar.gz \
+		mdadm-3.4.tar.gz \
 		parted-2.3.tar.gz \
 		gcc-4.4.5_gmp_mpfr.tar.bz2 \
 		libqb-0.14.4.tar.xz \

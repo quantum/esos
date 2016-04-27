@@ -1,3 +1,17 @@
+2016-04-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated mdadm to version 3.4
+
+	enabled CONFIG_SCSI_MQ_DEFAULT and CONFIG_DM_MQ_DEFAULT (new blk-mq stuff for SCSI and DM); enabled md-cluster support (CONFIG_MD_CLUSTER)
+
+	Merge branch 'linux_4.5.2'
+
+	fixed build issue in esos_kernels
+
+	updated rc.openibd and openib.conf to support mlx5_ib; in rc.2 we now load mlx5_core automatically (for MLX5 Ethernet + IB core)
+
+	updated the Linux kernel to version 4.5.2; updated xfsprogs to version 4.5.0; set EnhanceIO and BTIER as build-time options (disabled by default)... these two projects are not compatible with newer kernels, and their development efforts have seemed to stall
+
 2016-04-21  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated the issue file with a new ESOS logo; updated SCST to 3.1.x/r6873
