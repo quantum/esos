@@ -24,6 +24,9 @@ fi
 /bin/echo "Loading the Brocade 10G Ethernet driver..."
 /sbin/modprobe bna
 
+/bin/echo "Loading the Mellanox ConnectX-4 and Connect-IB core driver..."
+/sbin/modprobe mlx5_core
+
 /bin/echo "Loading the Linux Ethernet Bonding driver..."
 /sbin/modprobe bonding
 

@@ -15,7 +15,7 @@ c4e36b106624aff78527c54cf08ecbfe  lsscsi-0.25.tar.gz
 4fa656ee307db1cc59b05e492055badd  gcc-4.4.5_gmp_mpfr.tar.bz2
 929969d06ce034e862976bb7d1a36b25  cdk-5.0-20120323.tar.gz
 02e035eea876b86b665a34c43dd6eb26  iniparser-3.1.tar.gz
-f70b2e7200d4c29f0af1cf70e7be1db6  xfsprogs-3.1.8.tar.gz
+fcba94b6c74b726dac956d7a650c0c31  xfsprogs-4.5.0.tar.gz
 e927540b6eda8b024fb0391eeaa4091c  grub-2.00.tar.gz
 30ceb6df7e8681891e865e2fe5a7903d  parted-2.3.tar.gz
 ad4c179c119bbb78be740e33b59746ad  opensm-3.3.15.tar.gz
@@ -136,7 +136,7 @@ fee40b1ba0b212c76bd867ad68c63536  mcelog-master_20150731.tar.gz
 b2e13142bbaba857ab1c6894aedaf547  libpcap-1.7.4.tar.gz
 5703c841c810fed58249673f1e19003f  iperf2-2.0.4.tar.gz
 88e59c2049484c203c70453abc923301  iperf3-3.0.11.tar.gz
-63e5981e38f935772a5309289fe76972  linux-4.1.11.tar.xz
+eae8f700463ea73185027caece5f1c5d  linux-4.5.2.tar.xz
 7acec816283b96392b41594606d1a637  mhvtl-1.5-3_release.tar.gz
 bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
 e44244db888acdb0e75962bb59feace2  makedumpfile-1.5.9.tar.gz

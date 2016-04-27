@@ -25,6 +25,9 @@ fi
 if [ "x${MLX4_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} mlx4_ib"
 fi
+if [ "x${MLX5_LOAD}" == "xyes" ]; then
+    KERN_MODS="${KERN_MODS} mlx5_ib"
+fi
 if [ "x${QIB_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_qib"
 fi

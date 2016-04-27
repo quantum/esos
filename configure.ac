@@ -163,12 +163,30 @@ AC_MSG_NOTICE([qla: ${enable_qla}])
 
 dnl Optional feature zfs
 AC_ARG_ENABLE(zfs,
-	AS_HELP_STRING([--enable-zfs], [build and include zfs]),
+	AS_HELP_STRING([--enable-zfs], [build and include ZFS]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_zfs="${enableval}"], [enable_zfs="no"]), enable_zfs="no")
 AS_IF([test "x$enable_zfs" = "xyes"], [build_opts="${build_opts} zfs"])
 AC_SUBST(enable_zfs, ${enable_zfs})
 AC_MSG_NOTICE([zfs: ${enable_zfs}])
+
+dnl Optional feature eio
+AC_ARG_ENABLE(eio,
+	AS_HELP_STRING([--enable-eio], [build and include EnhanceIO]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_eio="${enableval}"], [enable_eio="no"]), enable_eio="no")
+AS_IF([test "x$enable_eio" = "xyes"], [build_opts="${build_opts} eio"])
+AC_SUBST(enable_eio, ${enable_eio})
+AC_MSG_NOTICE([eio: ${enable_eio}])
+
+dnl Optional feature btier
+AC_ARG_ENABLE(btier,
+	AS_HELP_STRING([--enable-btier], [build and include BTIER]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_btier="${enableval}"], [enable_btier="no"]), enable_btier="no")
+AS_IF([test "x$enable_btier" = "xyes"], [build_opts="${build_opts} btier"])
+AC_SUBST(enable_btier, ${enable_btier})
+AC_MSG_NOTICE([btier: ${enable_btier}])
 
 dnl Optional package ocs_sdk (user provides package file)
 AC_ARG_WITH(ocs_sdk,
