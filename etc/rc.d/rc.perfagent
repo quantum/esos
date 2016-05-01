@@ -13,20 +13,32 @@ os.chdir('/usr/local/perf-agent')
 from daemon import runner
 import perfagentmain
 
-class App():
 
+class App():
     def __init__(self):
         self.stdin_path = '/dev/null'
         self.stdout_path = '/dev/null'
         self.stderr_path = '/dev/null'
         self.pidfile_path = '/var/run/perf-agent.pid'
         self.pidfile_timeout = 5
-    
-
     def run(self):
         perfagentmain.start()
 
+
+class ESOSDaemonRunner(runner.DaemonRunner):
+    def __init__(self, app):
+        self.action_funcs = runner.DaemonRunner.action_funcs.copy()
+        self.action_funcs['status'] = ESOSDaemonRunner._status
+        super(ESOSDaemonRunner, self).__init__(app)
+    def _status(self):
+        pidfile_pid = self.pidfile.read_pid()
+        if pidfile_pid is None:
+            sys.exit(1)
+        else:
+            sys.exit(0)
+
+
 app = App()
-daemon_runner = runner.DaemonRunner(app)
+daemon_runner = ESOSDaemonRunner(app)
 daemon_runner.do_action()
 
