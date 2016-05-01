@@ -27,9 +27,10 @@
 int main(int argc, char** argv) {
     CDKSCREEN *cdk_screen = 0;
     WINDOW *main_window = 0, *sub_window = 0;
-    CDKMENU *menu = 0;
+    CDKMENU *menu_1 = 0, *menu_2 = 0;
     CDKLABEL *targets_label = 0, *sessions_label = 0;
-    const char *menu_list[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}};
+    const char *menu_list_1[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}},
+            *menu_list_2[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}};
     char *tgt_label_msg[MAX_INFO_LABEL_ROWS] = {NULL},
             *sess_label_msg[MAX_INFO_LABEL_ROWS] = {NULL};
     char *error_msg = NULL;
@@ -38,8 +39,10 @@ int main(int argc, char** argv) {
             i = 0, child_status = 0, proc_status = 0, tty_fd = 0,
             labels_last_scr_y = 0, labels_last_scr_x = 0,
             last_tgt_lbl_rows = 0, last_sess_lbl_rows = 0;
-    int submenu_size[CDK_MENU_MAX_SIZE] = {0},
-            menu_loc[CDK_MENU_MAX_SIZE] = {0};
+    int submenu_size_1[CDK_MENU_MAX_SIZE] = {0},
+            menu_loc_1[CDK_MENU_MAX_SIZE] = {0},
+            submenu_size_2[CDK_MENU_MAX_SIZE] = {0},
+            menu_loc_2[CDK_MENU_MAX_SIZE] = {0};
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
     boolean inet_works = FALSE;
@@ -74,153 +77,198 @@ start:
     initCDKColor();
 
     /* Create the menu lists */
-    menu_list[SYSTEM_MENU][0] = "</29/B/U>S<!29><!U>ystem  <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_SYNC_CONF] = \
+    menu_list_1[SYSTEM_MENU][0] = "</29/B/U>S<!29><!U>ystem  <!B>";
+    menu_list_1[SYSTEM_MENU][SYSTEM_SYNC_CONF] = \
             "</B>Sync Configuration<!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_NETWORK] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_NETWORK] = \
             "</B>Network Settings  <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_RESTART_NET] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_RESTART_NET] = \
             "</B>Restart Networking<!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_MAIL] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_MAIL] = \
             "</B>Mail Setup        <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_TEST_EMAIL] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_TEST_EMAIL] = \
             "</B>Send Test Email   <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_ADD_USER] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_ADD_USER] = \
             "</B>Add User          <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_DEL_USER] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_DEL_USER] = \
             "</B>Delete User       <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_CHG_PASSWD] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_CHG_PASSWD] = \
             "</B>Change Password   <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_SCST_INFO] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_SCST_INFO] = \
             "</B>SCST Information  <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_CRM_STATUS] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_CRM_STATUS] = \
             "</B>CRM Status        <!B>";
-    menu_list[SYSTEM_MENU][SYSTEM_DATE_TIME] = \
+    menu_list_1[SYSTEM_MENU][SYSTEM_DRBD_STATUS] = \
+            "</B>DRBD Status       <!B>";
+    menu_list_1[SYSTEM_MENU][SYSTEM_DATE_TIME] = \
             "</B>Date/Time Settings<!B>";
 
-    menu_list[BACK_STORAGE_MENU][0] = "</29/B/U>B<!29><!U>ack-End "
-            "Storage  <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_PROP] = \
-            "</B>MegaRAID Adptr Props<!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADP_INFO] = \
-            "</B>MegaRAID Adptr Info <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VOL] = \
-            "</B>Add MegaRAID Volume <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VOL] = \
-            "</B>Delete MegaRAID Vol <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VOL_PROP] = \
-            "</B>MegaRAID Vol Props  <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DRBD_STAT] = \
-            "</B>DRBD Status         <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_SOFT_RAID_STAT] = \
-            "</B>Software RAID Stats <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_LVM2_INFO] = \
-            "</B>LVM2 LV Information <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_CREATE_FS] = \
-            "</B>Create File System  <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_REMOVE_FS] = \
-            "</B>Remove File System  <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_ADD_VDISK_FILE] = \
-            "</B>Add Virt Disk File  <!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_DEL_VDISK_FILE] = \
-            "</B>Delete Virt Dsk File<!B>";
-    menu_list[BACK_STORAGE_MENU][BACK_STORAGE_VDISK_FILE_LIST] = \
-            "</B>Virt Disk File List <!B>";
+    menu_list_1[HW_RAID_MENU][0] = "</B>H</29/U>a<!29><!U>rdware RAID  <!B>";
+    menu_list_1[HW_RAID_MENU][HW_RAID_ADD_VOL] = \
+            "</B>Add Volume      <!B>";
+    menu_list_1[HW_RAID_MENU][HW_RAID_REM_VOL] = \
+            "</B>Remove Volume   <!B>";
+    menu_list_1[HW_RAID_MENU][HW_RAID_MOD_VOL] = \
+            "</B>Modify Volume   <!B>";
+    menu_list_1[HW_RAID_MENU][HW_RAID_ADD_HSP] = \
+            "</B>Add Hot Spare   <!B>";
+    menu_list_1[HW_RAID_MENU][HW_RAID_REM_HSP] = \
+            "</B>Remove Hot Spare<!B>";
 
-    menu_list[HOSTS_MENU][0] = "</29/B/U>H<!29><!U>osts  <!B>";
-    menu_list[HOSTS_MENU][HOSTS_ADD_GROUP] = \
+    menu_list_1[SW_RAID_MENU][0] = "</B>S</29/U>o<!29><!U>ftware RAID  <!B>";
+    menu_list_1[SW_RAID_MENU][SW_RAID_MD_STAT] = \
+            "</B>Linux MD Status  <!B>";
+    menu_list_1[SW_RAID_MENU][SW_RAID_ADD_ARRAY] = \
+            "</B>Add Array        <!B>";
+    menu_list_1[SW_RAID_MENU][SW_RAID_REM_ARRAY] = \
+            "</B>Remove Array     <!B>";
+    menu_list_1[SW_RAID_MENU][SW_RAID_FAULT_DEV] = \
+            "</B>Set Device Faulty<!B>";
+    menu_list_1[SW_RAID_MENU][SW_RAID_ADD_DEV] = \
+            "</B>Add Device       <!B>";
+    menu_list_1[SW_RAID_MENU][SW_RAID_REM_DEV] = \
+            "</B>Remove Device    <!B>";
+
+    menu_list_1[LVM_MENU][0] = "</29/B/U>L<!29><!U>VM  <!B>";
+    menu_list_1[LVM_MENU][LVM_LV_LIST] = \
+            "</B>LV List  <!B>";
+    menu_list_1[LVM_MENU][LVM_ADD_PV] = \
+            "</B>Add PV   <!B>";
+    menu_list_1[LVM_MENU][LVM_REM_PV] = \
+            "</B>Remove PV<!B>";
+    menu_list_1[LVM_MENU][LVM_ADD_VG] = \
+            "</B>Add VG   <!B>";
+    menu_list_1[LVM_MENU][LVM_REM_VG] = \
+            "</B>Remove VG<!B>";
+    menu_list_1[LVM_MENU][LVM_ADD_LV] = \
+            "</B>Add LV   <!B>";
+    menu_list_1[LVM_MENU][LVM_REM_LV] = \
+            "</B>Remove LV<!B>";
+
+    menu_list_1[FILE_SYS_MENU][0] = "</29/B/U>F<!29><!U>ile System  <!B>";
+    menu_list_1[FILE_SYS_MENU][FILE_SYS_VDISK_LIST] = \
+            "</B>VDisk File List   <!B>";
+    menu_list_1[FILE_SYS_MENU][FILE_SYS_ADD_FS] = \
+            "</B>Add File System   <!B>";
+    menu_list_1[FILE_SYS_MENU][FILE_SYS_REM_FS] = \
+            "</B>Remove File System<!B>";
+    menu_list_1[FILE_SYS_MENU][FILE_SYS_ADD_VDISK] = \
+            "</B>Add VDisk File    <!B>";
+    menu_list_1[FILE_SYS_MENU][FILE_SYS_REM_VDISK] = \
+            "</B>Remove VDisk File <!B>";
+
+    menu_list_1[INTERFACE_MENU][0] = "</29/B/U>I<!29><!U>nterface  <!B>";
+    menu_list_1[INTERFACE_MENU][INTERFACE_QUIT] = \
+            "</B>Quit          <!B>";
+    menu_list_1[INTERFACE_MENU][INTERFACE_SHELL] = \
+            "</B>Exit to Shell <!B>";
+    menu_list_1[INTERFACE_MENU][INTERFACE_THEME] = \
+            "</B>Color Theme   <!B>";
+    menu_list_1[INTERFACE_MENU][INTERFACE_HELP] = \
+            "</B>Help          <!B>";
+    menu_list_1[INTERFACE_MENU][INTERFACE_SUPPORT_PKG] = \
+            "</B>Support Bundle<!B>";
+    menu_list_1[INTERFACE_MENU][INTERFACE_ABOUT] = \
+            "</B>About         <!B>";
+
+    menu_list_2[HOSTS_MENU][0] = "</29/B/U>H<!29><!U>osts  <!B>";
+    menu_list_2[HOSTS_MENU][HOSTS_ADD_GROUP] = \
             "</B>Add Group       <!B>";
-    menu_list[HOSTS_MENU][HOSTS_REM_GROUP] = \
+    menu_list_2[HOSTS_MENU][HOSTS_REM_GROUP] = \
             "</B>Remove Group    <!B>";
-    menu_list[HOSTS_MENU][HOSTS_ADD_INIT] = \
+    menu_list_2[HOSTS_MENU][HOSTS_ADD_INIT] = \
             "</B>Add Initiator   <!B>";
-    menu_list[HOSTS_MENU][HOSTS_REM_INIT] = \
+    menu_list_2[HOSTS_MENU][HOSTS_REM_INIT] = \
             "</B>Remove Initiator<!B>";
 
-    menu_list[DEVICES_MENU][0] = "</29/B/U>D<!29><!U>evices  <!B>";
-    menu_list[DEVICES_MENU][DEVICES_LUN_LAYOUT] = \
-            "</B>LUN/Group Layout   <!B>";
-    menu_list[DEVICES_MENU][DEVICES_DEV_INFO] = \
-            "</B>Device Information <!B>";
-    menu_list[DEVICES_MENU][DEVICES_ADD_DEV] = \
-            "</B>Add Device         <!B>";
-    menu_list[DEVICES_MENU][DEVICES_REM_DEV] = \
-            "</B>Remove Device      <!B>";
-    menu_list[DEVICES_MENU][DEVICES_MAP_TO] = \
-            "</B>Map to Host Group  <!B>";
-    menu_list[DEVICES_MENU][DEVICES_UNMAP_FROM] = \
-            "</B>Unmap from Host Grp<!B>";
+    menu_list_2[DEVICES_MENU][0] = "</29/B/U>D<!29><!U>evices  <!B>";
+    menu_list_2[DEVICES_MENU][DEVICES_LUN_LAYOUT] = \
+            "</B>LUN/Group Layout     <!B>";
+    menu_list_2[DEVICES_MENU][DEVICES_DEV_INFO] = \
+            "</B>Device Information   <!B>";
+    menu_list_2[DEVICES_MENU][DEVICES_ADD_DEV] = \
+            "</B>Add Device           <!B>";
+    menu_list_2[DEVICES_MENU][DEVICES_REM_DEV] = \
+            "</B>Remove Device        <!B>";
+    menu_list_2[DEVICES_MENU][DEVICES_MAP_TO] = \
+            "</B>Map to Host Group    <!B>";
+    menu_list_2[DEVICES_MENU][DEVICES_UNMAP_FROM] = \
+            "</B>Unmap from Host Group<!B>";
 
-    menu_list[TARGETS_MENU][0] = "</29/B/U>T<!29><!U>argets  <!B>";
-    menu_list[TARGETS_MENU][TARGETS_TGT_INFO] = \
-            "</B>Target Information <!B>";
-    menu_list[TARGETS_MENU][TARGETS_ADD_ISCSI] = \
-            "</B>Add iSCSI Target   <!B>";
-    menu_list[TARGETS_MENU][TARGETS_REM_ISCSI] = \
-            "</B>Remove iSCSI Target<!B>";
-    menu_list[TARGETS_MENU][TARGETS_LIP] = \
-            "</B>Issue LIP          <!B>";
-    menu_list[TARGETS_MENU][TARGETS_TOGGLE] = \
-            "</B>Enable/Disable Tgt <!B>";
-    menu_list[TARGETS_MENU][TARGETS_SET_REL_TGT_ID] = \
-            "</B>Set Rel Target ID  <!B>";
+    menu_list_2[TARGETS_MENU][0] = "</29/B/U>T<!29><!U>argets  <!B>";
+    menu_list_2[TARGETS_MENU][TARGETS_TGT_INFO] = \
+            "</B>Target Information    <!B>";
+    menu_list_2[TARGETS_MENU][TARGETS_ADD_ISCSI] = \
+            "</B>Add iSCSI Target      <!B>";
+    menu_list_2[TARGETS_MENU][TARGETS_REM_ISCSI] = \
+            "</B>Remove iSCSI Target   <!B>";
+    menu_list_2[TARGETS_MENU][TARGETS_LIP] = \
+            "</B>Issue LIP             <!B>";
+    menu_list_2[TARGETS_MENU][TARGETS_TOGGLE] = \
+            "</B>Enable/Disable Target <!B>";
+    menu_list_2[TARGETS_MENU][TARGETS_SET_REL_TGT_ID] = \
+            "</B>Set Relative Target ID<!B>";
 
-    menu_list[ALUA_MENU][0] = "</29/B/U>A<!29><!U>LUA  <!B>";
-    menu_list[ALUA_MENU][ALUA_DEV_GRP_LAYOUT] = \
-            "</B>Dev/Tgt Group Layout<!B>";
-    menu_list[ALUA_MENU][ALUA_ADD_DEV_GRP] = \
-            "</B>Add Device Group    <!B>";
-    menu_list[ALUA_MENU][ALUA_REM_DEV_GRP] = \
-            "</B>Remove Device Group <!B>";
-    menu_list[ALUA_MENU][ALUA_ADD_TGT_GRP] = \
-            "</B>Add Target Group    <!B>";
-    menu_list[ALUA_MENU][ALUA_REM_TGT_GRP] = \
-            "</B>Remove Target Group <!B>";
-    menu_list[ALUA_MENU][ALUA_ADD_DEV_TO_GRP] = \
-            "</B>Add Device to Group <!B>";
-    menu_list[ALUA_MENU][ALUA_REM_DEV_FROM_GRP] = \
-            "</B>Remove Dev from Grp <!B>";
-    menu_list[ALUA_MENU][ALUA_ADD_TGT_TO_GRP] = \
-            "</B>Add Target to Group <!B>";
-    menu_list[ALUA_MENU][ALUA_REM_TGT_FROM_GRP] = \
-            "</B>Remove Tgt from Grp <!B>";
-
-    menu_list[INTERFACE_MENU][0] = "</29/B/U>I<!29><!U>nterface<!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_QUIT] = \
-            "</B>Quit         <!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_SHELL] = \
-            "</B>Exit to Shell<!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_HELP] = \
-            "</B>Help         <!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_SUPPORT_PKG] = \
-            "</B>Support Bndle<!B>";
-    menu_list[INTERFACE_MENU][INTERFACE_ABOUT] = \
-            "</B>About        <!B>";
+    menu_list_2[ALUA_MENU][0] = "</B>AL</29/U>U<!29><!U>A  <!B>";
+    menu_list_2[ALUA_MENU][ALUA_DEV_GRP_LAYOUT] = \
+            "</B>Device/Target Group Layout<!B>";
+    menu_list_2[ALUA_MENU][ALUA_ADD_DEV_GRP] = \
+            "</B>Add Device Group          <!B>";
+    menu_list_2[ALUA_MENU][ALUA_REM_DEV_GRP] = \
+            "</B>Remove Device Group       <!B>";
+    menu_list_2[ALUA_MENU][ALUA_ADD_TGT_GRP] = \
+            "</B>Add Target Group          <!B>";
+    menu_list_2[ALUA_MENU][ALUA_REM_TGT_GRP] = \
+            "</B>Remove Target Group       <!B>";
+    menu_list_2[ALUA_MENU][ALUA_ADD_DEV_TO_GRP] = \
+            "</B>Add Device to Group       <!B>";
+    menu_list_2[ALUA_MENU][ALUA_REM_DEV_FROM_GRP] = \
+            "</B>Remove Device from Group  <!B>";
+    menu_list_2[ALUA_MENU][ALUA_ADD_TGT_TO_GRP] = \
+            "</B>Add Target to Group       <!B>";
+    menu_list_2[ALUA_MENU][ALUA_REM_TGT_FROM_GRP] = \
+            "</B>Remove Target from Group  <!B>";
 
     /* Set menu sizes and locations */
-    submenu_size[SYSTEM_MENU]       = 12;
-    menu_loc[SYSTEM_MENU]           = LEFT;
-    submenu_size[BACK_STORAGE_MENU] = 14;
-    menu_loc[BACK_STORAGE_MENU]     = LEFT;
-    submenu_size[HOSTS_MENU]        = 5;
-    menu_loc[HOSTS_MENU]            = LEFT;
-    submenu_size[DEVICES_MENU]      = 7;
-    menu_loc[DEVICES_MENU]          = LEFT;
-    submenu_size[TARGETS_MENU]      = 7;
-    menu_loc[TARGETS_MENU]          = LEFT;
-    submenu_size[ALUA_MENU]         = 10;
-    menu_loc[ALUA_MENU]             = LEFT;
-    submenu_size[INTERFACE_MENU]    = 6;
-    menu_loc[INTERFACE_MENU]        = RIGHT;
+    submenu_size_1[SYSTEM_MENU]       = 13;
+    menu_loc_1[SYSTEM_MENU]           = LEFT;
+    submenu_size_1[HW_RAID_MENU]      = 6;
+    menu_loc_1[HW_RAID_MENU]          = LEFT;
+    submenu_size_1[SW_RAID_MENU]      = 7;
+    menu_loc_1[SW_RAID_MENU]          = LEFT;
+    submenu_size_1[LVM_MENU]          = 8;
+    menu_loc_1[LVM_MENU]              = LEFT;
+    submenu_size_1[FILE_SYS_MENU]     = 6;
+    menu_loc_1[FILE_SYS_MENU]         = LEFT;
+    submenu_size_1[INTERFACE_MENU]    = 7;
+    menu_loc_1[INTERFACE_MENU]        = LEFT;
 
-    /* Create the menu */
-    menu = newCDKMenu(cdk_screen, menu_list, 7, submenu_size, menu_loc,
-            TOP, A_NORMAL, COLOR_MENU_TEXT);
-    if (!menu) {
+    submenu_size_2[HOSTS_MENU]        = 5;
+    menu_loc_2[HOSTS_MENU]            = LEFT;
+    submenu_size_2[DEVICES_MENU]      = 7;
+    menu_loc_2[DEVICES_MENU]          = LEFT;
+    submenu_size_2[TARGETS_MENU]      = 7;
+    menu_loc_2[TARGETS_MENU]          = LEFT;
+    submenu_size_2[ALUA_MENU]         = 10;
+    menu_loc_2[ALUA_MENU]             = LEFT;
+
+    /* Create the top menu */
+    menu_1 = newCDKMenu(cdk_screen, menu_list_1, 6, submenu_size_1, menu_loc_1,
+            0, A_NORMAL, COLOR_MENU_TEXT);
+    if (!menu_1) {
         errorDialog(cdk_screen, MENU_ERR_MSG, NULL);
         goto quit;
     }
-    setCDKMenuBackgroundColor(menu, "</5>");
+    setCDKMenuBackgroundColor(menu_1, "</5>");
+
+    /* Create the bottom menu */
+    menu_2 = newCDKMenu(cdk_screen, menu_list_2, 4, submenu_size_2, menu_loc_2,
+            1, A_NORMAL, COLOR_MENU_TEXT);
+    if (!menu_2) {
+        errorDialog(cdk_screen, MENU_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKMenuBackgroundColor(menu_2, "</5>");
 
     /* We need root privileges; for the short term I don't see any other way
      * around this; long term we can hopefully do something else */
@@ -266,44 +314,62 @@ start:
         if (key_pressed == 's' || key_pressed == 'S') {
             /* Start with the System menu */
             cbreak();
-            setCDKMenu(menu, SYSTEM_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu, 0);
-
-        } else if (key_pressed == 'b' || key_pressed == 'B') {
-            /* Start with the Back-End Storage menu */
-            cbreak();
-            setCDKMenu(menu, BACK_STORAGE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu, 0);
+            setCDKMenu(menu_1, SYSTEM_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_1, 0);
 
         } else if (key_pressed == 'a' || key_pressed == 'A') {
-            /* Start with the ALUA menu */
+            /* Start with the Hardware RAID menu */
             cbreak();
-            setCDKMenu(menu, ALUA_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu, 0);
+            setCDKMenu(menu_1, HW_RAID_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_1, 0);
 
-        } else if (key_pressed == 'h' || key_pressed == 'H') {
-            /* Start with the Hosts menu */
+        } else if (key_pressed == 'o' || key_pressed == 'O') {
+            /* Start with the Software RAID menu */
             cbreak();
-            setCDKMenu(menu, HOSTS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu, 0);
+            setCDKMenu(menu_1, SW_RAID_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_1, 0);
 
-        } else if (key_pressed == 'd' || key_pressed == 'D') {
-            /* Start with the Devices menu */
+        } else if (key_pressed == 'l' || key_pressed == 'L') {
+            /* Start with the LVM menu */
             cbreak();
-            setCDKMenu(menu, DEVICES_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu, 0);
+            setCDKMenu(menu_1, LVM_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_1, 0);
 
-        } else if (key_pressed == 't' || key_pressed == 'T') {
-            /* Start with the Targets menu */
+        } else if (key_pressed == 'f' || key_pressed == 'F') {
+            /* Start with the File System menu */
             cbreak();
-            setCDKMenu(menu, TARGETS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu, 0);
+            setCDKMenu(menu_1, FILE_SYS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_1, 0);
 
         } else if (key_pressed == 'i' || key_pressed == 'I') {
             /* Start with the Interface menu */
             cbreak();
-            setCDKMenu(menu, INTERFACE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu, 0);
+            setCDKMenu(menu_1, INTERFACE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_1, 0);
+
+        } else if (key_pressed == 'h' || key_pressed == 'H') {
+            /* Start with the Hosts menu */
+            cbreak();
+            setCDKMenu(menu_2, HOSTS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_2, 0);
+
+        } else if (key_pressed == 'd' || key_pressed == 'D') {
+            /* Start with the Devices menu */
+            cbreak();
+            setCDKMenu(menu_2, DEVICES_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_2, 0);
+
+        } else if (key_pressed == 't' || key_pressed == 'T') {
+            /* Start with the Targets menu */
+            cbreak();
+            setCDKMenu(menu_2, TARGETS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_2, 0);
+
+        } else if (key_pressed == 'u' || key_pressed == 'U') {
+            /* Start with the ALUA menu */
+            cbreak();
+            setCDKMenu(menu_2, ALUA_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_2, 0);
 
         } else if (key_pressed == KEY_RESIZE) {
             /* Screen re-size */
@@ -320,16 +386,198 @@ start:
             continue;
         }
 
-        if (menu->exitType == vNORMAL) {
+        if (menu_1->exitType == vNORMAL) {
             /* Get the selected menu choice */
             menu_choice = selection / 100;
             submenu_choice = selection % 100;
 
-            if (menu_choice == INTERFACE_MENU &&
+            if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_SYNC_CONF - 1) {
+                /* Sync. Configuration dialog */
+                syncConfig(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_NETWORK - 1) {
+                /* Networking dialog */
+                networkDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_RESTART_NET - 1) {
+                /* Restart Networking dialog */
+                restartNetDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_MAIL - 1) {
+                /* Mail Setup dialog */
+                mailDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_TEST_EMAIL - 1) {
+                /* Test Email dialog */
+                testEmailDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_ADD_USER - 1) {
+                /* Add User dialog */
+                addUserDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_DEL_USER - 1) {
+                /* Delete User dialog */
+                delUserDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_CHG_PASSWD - 1) {
+                /* Change Password dialog */
+                chgPasswdDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_SCST_INFO - 1) {
+                /* SCST Information dialog */
+                scstInfoDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_CRM_STATUS - 1) {
+                /* CRM Status dialog */
+                crmStatusDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_DRBD_STATUS - 1) {
+                /* DRBD Status dialog */
+                drbdStatDialog(cdk_screen);
+
+            } else if (menu_choice == SYSTEM_MENU &&
+                    submenu_choice == SYSTEM_DATE_TIME - 1) {
+                /* Date & Time Settings dialog */
+                dateTimeDialog(cdk_screen);
+
+            } else if (menu_choice == HW_RAID_MENU &&
+                    submenu_choice == HW_RAID_ADD_VOL - 1) {
+                /* Add Volume dialog */
+                //addVolDialog(cdk_screen);
+
+            } else if (menu_choice == HW_RAID_MENU &&
+                    submenu_choice == HW_RAID_REM_VOL - 1) {
+                /* Remove Volume dialog */
+                //remVolDialog(cdk_screen);
+
+            } else if (menu_choice == HW_RAID_MENU &&
+                    submenu_choice == HW_RAID_MOD_VOL - 1) {
+                /* Modify Volume dialog */
+                //modVolDialog(cdk_screen);
+
+            } else if (menu_choice == HW_RAID_MENU &&
+                    submenu_choice == HW_RAID_ADD_HSP - 1) {
+                /* Add Hot Spare dialog */
+                //addHSPDialog(cdk_screen);
+
+            } else if (menu_choice == HW_RAID_MENU &&
+                    submenu_choice == HW_RAID_REM_HSP - 1) {
+                /* Remove Hot Spare dialog */
+                //remHSPDialog(cdk_screen);
+
+            } else if (menu_choice == SW_RAID_MENU &&
+                    submenu_choice == SW_RAID_MD_STAT - 1) {
+                /* Linux MD RAID Status dialog */
+                softRAIDStatDialog(cdk_screen);
+
+            } else if (menu_choice == SW_RAID_MENU &&
+                    submenu_choice == SW_RAID_ADD_ARRAY - 1) {
+                /* Add Array dialog */
+                //addArrayDialog(cdk_screen);
+
+            } else if (menu_choice == SW_RAID_MENU &&
+                    submenu_choice == SW_RAID_REM_ARRAY - 1) {
+                /* Remove Array dialog */
+                //remArrayDialog(cdk_screen);
+
+            } else if (menu_choice == SW_RAID_MENU &&
+                    submenu_choice == SW_RAID_FAULT_DEV - 1) {
+                /* Set Device Faulty dialog */
+                //faultDevDialog(cdk_screen);
+
+            } else if (menu_choice == SW_RAID_MENU &&
+                    submenu_choice == SW_RAID_ADD_DEV - 1) {
+                /* Add Device dialog */
+                //addDevDialog(cdk_screen);
+
+            } else if (menu_choice == SW_RAID_MENU &&
+                    submenu_choice == SW_RAID_REM_DEV - 1) {
+                /* Remove Device dialog */
+                //remDevDialog(cdk_screen);
+
+            } else if (menu_choice == LVM_MENU &&
+                    submenu_choice == LVM_LV_LIST - 1) {
+                /* Logical Volume List dialog */
+                lvm2InfoDialog(cdk_screen);
+
+            } else if (menu_choice == LVM_MENU &&
+                    submenu_choice == LVM_ADD_PV - 1) {
+                /* Add PV dialog */
+                //addPVDialog(cdk_screen);
+
+            } else if (menu_choice == LVM_MENU &&
+                    submenu_choice == LVM_REM_PV - 1) {
+                /* Remove PV dialog */
+                //remPVialog(cdk_screen);
+
+            } else if (menu_choice == LVM_MENU &&
+                    submenu_choice == LVM_ADD_VG - 1) {
+                /* Add VG dialog */
+                //addVGDialog(cdk_screen);
+
+            } else if (menu_choice == LVM_MENU &&
+                    submenu_choice == LVM_REM_VG - 1) {
+                /* Remove VG dialog */
+                //remVGDialog(cdk_screen);
+
+            } else if (menu_choice == LVM_MENU &&
+                    submenu_choice == LVM_ADD_LV - 1) {
+                /* Add LV dialog */
+                //addLVDialog(cdk_screen);
+
+            } else if (menu_choice == LVM_MENU &&
+                    submenu_choice == LVM_REM_LV - 1) {
+                /* Remove LV dialog */
+                //remLVDialog(cdk_screen);
+
+            } else if (menu_choice == FILE_SYS_MENU &&
+                    submenu_choice == FILE_SYS_VDISK_LIST - 1) {
+                /* VDisk File List dialog */
+                vdiskFileListDialog(cdk_screen);
+
+            } else if (menu_choice == FILE_SYS_MENU &&
+                    submenu_choice == FILE_SYS_ADD_FS - 1) {
+                /* Add File System dialog */
+                createFSDialog(cdk_screen);
+
+            } else if (menu_choice == FILE_SYS_MENU &&
+                    submenu_choice == FILE_SYS_REM_FS - 1) {
+                /* Remove File System dialog */
+                removeFSDialog(cdk_screen);
+
+            } else if (menu_choice == FILE_SYS_MENU &&
+                    submenu_choice == FILE_SYS_ADD_VDISK - 1) {
+                /* Add VDisk File dialog */
+                addVDiskFileDialog(cdk_screen);
+
+            } else if (menu_choice == FILE_SYS_MENU &&
+                    submenu_choice == FILE_SYS_REM_VDISK - 1) {
+                /* Remove VDisk File dialog */
+                delVDiskFileDialog(cdk_screen);
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_QUIT - 1) {
+                /* Synchronize the configuration and quit */
+                syncConfig(cdk_screen);
+                goto quit;
+
+            } else if (menu_choice == INTERFACE_MENU &&
                     submenu_choice == INTERFACE_SHELL - 1) {
                 /* Set the UID to what was saved at the start */
                 if (setresuid(saved_uid, 0, -1) == -1) {
-                    SAFE_ASPRINTF(&error_msg, "setresuid(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "setresuid(): %s",
+                            strerror(errno));
                     errorDialog(cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                 }
@@ -382,10 +630,9 @@ start:
                 }
 
             } else if (menu_choice == INTERFACE_MENU &&
-                    submenu_choice == INTERFACE_QUIT - 1) {
-                /* Synchronize the configuration and quit */
-                syncConfig(cdk_screen);
-                goto quit;
+                    submenu_choice == INTERFACE_THEME - 1) {
+                /* Color Theme dialog */
+                //themeDialog(cdk_screen);
 
             } else if (menu_choice == INTERFACE_MENU &&
                     submenu_choice == INTERFACE_HELP - 1) {
@@ -401,171 +648,6 @@ start:
                     submenu_choice == INTERFACE_ABOUT - 1) {
                 /* About dialog */
                 aboutDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_SYNC_CONF - 1) {
-                /* Sync. Configuration dialog */
-                syncConfig(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_NETWORK - 1) {
-                /* Networking dialog */
-                networkDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_RESTART_NET - 1) {
-                /* Restart Networking dialog */
-                restartNetDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_MAIL - 1) {
-                /* Mail Setup dialog */
-                mailDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_TEST_EMAIL - 1) {
-                /* Test Email dialog */
-                testEmailDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_ADD_USER - 1) {
-                /* Add User dialog */
-                addUserDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_DEL_USER - 1) {
-                /* Delete User dialog */
-                delUserDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_CHG_PASSWD - 1) {
-                /* Change Password dialog */
-                chgPasswdDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_SCST_INFO - 1) {
-                /* SCST Information dialog */
-                scstInfoDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_CRM_STATUS - 1) {
-                /* CRM Status dialog */
-                crmStatusDialog(cdk_screen);
-
-            } else if (menu_choice == SYSTEM_MENU &&
-                    submenu_choice == SYSTEM_DATE_TIME - 1) {
-                /* Date & Time Settings dialog */
-                dateTimeDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_ADP_PROP - 1) {
-                /* Adapter Properties dialog */
-                adpPropsDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_ADP_INFO - 1) {
-                /* Adapter Information dialog */
-                adpInfoDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_ADD_VOL - 1) {
-                /* Add Volume dialog */
-                addVolumeDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_DEL_VOL - 1) {
-                /* Delete Volume dialog */
-                delVolumeDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_VOL_PROP - 1) {
-                /* Volume Properties dialog */
-                volPropsDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_DRBD_STAT - 1) {
-                /* DRBD Status dialog */
-                drbdStatDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_SOFT_RAID_STAT - 1) {
-                /* Software RAID Status dialog */
-                softRAIDStatDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_LVM2_INFO - 1) {
-                /* LVM2 LV Information dialog */
-                lvm2InfoDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_CREATE_FS - 1) {
-                /* Add Create File System dialog */
-                createFSDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_REMOVE_FS - 1) {
-                /* Remove File System dialog */
-                removeFSDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_ADD_VDISK_FILE - 1) {
-                /* Add Virtual Disk File dialog */
-                addVDiskFileDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_DEL_VDISK_FILE - 1) {
-                /* Delete Virtual Disk File dialog */
-                delVDiskFileDialog(cdk_screen);
-
-            } else if (menu_choice == BACK_STORAGE_MENU &&
-                    submenu_choice == BACK_STORAGE_VDISK_FILE_LIST - 1) {
-                /* Virtual Disk File List dialog */
-                vdiskFileListDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_DEV_GRP_LAYOUT - 1) {
-                /* Device/Target Group Layout dialog */
-                devTgtGrpLayoutDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_ADD_DEV_GRP - 1) {
-                /* Add Device Group dialog */
-                addDevGrpDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_REM_DEV_GRP - 1) {
-                /* Remove Device Group dialog */
-                remDevGrpDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_ADD_TGT_GRP - 1) {
-                /* Add Target Group dialog */
-                addTgtGrpDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_REM_TGT_GRP - 1) {
-                /* Remove Target Group dialog */
-                remTgtGrpDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_ADD_DEV_TO_GRP - 1) {
-                /* Add Device to Group dialog */
-                addDevToGrpDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_REM_DEV_FROM_GRP - 1) {
-                /* Remove Device from Group dialog */
-                remDevFromGrpDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_ADD_TGT_TO_GRP - 1) {
-                /* Add Target to Group dialog */
-                addTgtToGrpDialog(cdk_screen);
-
-            } else if (menu_choice == ALUA_MENU &&
-                    submenu_choice == ALUA_REM_TGT_FROM_GRP - 1) {
-                /* Remove Target from Group dialog */
-                remTgtFromGrpDialog(cdk_screen);
 
             } else if (menu_choice == HOSTS_MENU &&
                     submenu_choice == HOSTS_ADD_GROUP - 1) {
@@ -646,11 +728,56 @@ start:
                     submenu_choice == TARGETS_SET_REL_TGT_ID - 1) {
                 /* Set Relative Target ID dialog */
                 setRelTgtIDDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_DEV_GRP_LAYOUT - 1) {
+                /* Device/Target Group Layout dialog */
+                devTgtGrpLayoutDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_ADD_DEV_GRP - 1) {
+                /* Add Device Group dialog */
+                addDevGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_REM_DEV_GRP - 1) {
+                /* Remove Device Group dialog */
+                remDevGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_ADD_TGT_GRP - 1) {
+                /* Add Target Group dialog */
+                addTgtGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_REM_TGT_GRP - 1) {
+                /* Remove Target Group dialog */
+                remTgtGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_ADD_DEV_TO_GRP - 1) {
+                /* Add Device to Group dialog */
+                addDevToGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_REM_DEV_FROM_GRP - 1) {
+                /* Remove Device from Group dialog */
+                remDevFromGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_ADD_TGT_TO_GRP - 1) {
+                /* Add Target to Group dialog */
+                addTgtToGrpDialog(cdk_screen);
+
+            } else if (menu_choice == ALUA_MENU &&
+                    submenu_choice == ALUA_REM_TGT_FROM_GRP - 1) {
+                /* Remove Target from Group dialog */
+                remTgtFromGrpDialog(cdk_screen);
             }
 
             /* At this point we've finished the dialog, so we make
              * the screen look nice again and reset the menu exit status */
-            menu->exitType = vNEVER_ACTIVATED;
+            menu_1->exitType = vNEVER_ACTIVATED;
             wbkgd(cdk_screen->window, COLOR_MAIN_TEXT);
             wrefresh(cdk_screen->window);
             refreshCDKScreen(cdk_screen);

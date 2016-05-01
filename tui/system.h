@@ -47,33 +47,62 @@ extern "C" {
 #define SYSTEM_CHG_PASSWD       8
 #define SYSTEM_SCST_INFO        9
 #define SYSTEM_CRM_STATUS       10
-#define SYSTEM_DATE_TIME        11
+#define SYSTEM_DRBD_STATUS      11
+#define SYSTEM_DATE_TIME        12
 
-/* Back-End Storage menu layout */
-#define BACK_STORAGE_MENU               1
-#define BACK_STORAGE_ADP_PROP           1
-#define BACK_STORAGE_ADP_INFO           2
-#define BACK_STORAGE_ADD_VOL            3
-#define BACK_STORAGE_DEL_VOL            4
-#define BACK_STORAGE_VOL_PROP           5
-#define BACK_STORAGE_DRBD_STAT          6
-#define BACK_STORAGE_SOFT_RAID_STAT     7
-#define BACK_STORAGE_LVM2_INFO          8
-#define BACK_STORAGE_CREATE_FS          9
-#define BACK_STORAGE_REMOVE_FS          10
-#define BACK_STORAGE_ADD_VDISK_FILE     11
-#define BACK_STORAGE_DEL_VDISK_FILE     12
-#define BACK_STORAGE_VDISK_FILE_LIST    13
+/* Hardware RAID menu layout */
+#define HW_RAID_MENU            1
+#define HW_RAID_ADD_VOL         1
+#define HW_RAID_REM_VOL         2
+#define HW_RAID_MOD_VOL         3
+#define HW_RAID_ADD_HSP         4
+#define HW_RAID_REM_HSP         5
+
+/* Software RAID menu layout */
+#define SW_RAID_MENU            2
+#define SW_RAID_MD_STAT         1
+#define SW_RAID_ADD_ARRAY       2
+#define SW_RAID_REM_ARRAY       3
+#define SW_RAID_FAULT_DEV       4
+#define SW_RAID_ADD_DEV         5
+#define SW_RAID_REM_DEV         6
+
+/* Logical Volume Management (LVM) menu layout */
+#define LVM_MENU                3
+#define LVM_LV_LIST             1
+#define LVM_ADD_PV              2
+#define LVM_REM_PV              3
+#define LVM_ADD_VG              4
+#define LVM_REM_VG              5
+#define LVM_ADD_LV              6
+#define LVM_REM_LV              7
+
+/* File System menu layout */
+#define FILE_SYS_MENU           4
+#define FILE_SYS_VDISK_LIST     1
+#define FILE_SYS_ADD_FS         2
+#define FILE_SYS_REM_FS         3
+#define FILE_SYS_ADD_VDISK      4
+#define FILE_SYS_REM_VDISK      5
+
+/* Interface menu layout */
+#define INTERFACE_MENU          5
+#define INTERFACE_QUIT          1
+#define INTERFACE_SHELL         2
+#define INTERFACE_THEME         3
+#define INTERFACE_HELP          4
+#define INTERFACE_SUPPORT_PKG   5
+#define INTERFACE_ABOUT         6
 
 /* Hosts menu layout */
-#define HOSTS_MENU      2
-#define HOSTS_ADD_GROUP 1
-#define HOSTS_REM_GROUP 2
-#define HOSTS_ADD_INIT  3
-#define HOSTS_REM_INIT  4
+#define HOSTS_MENU              0
+#define HOSTS_ADD_GROUP         1
+#define HOSTS_REM_GROUP         2
+#define HOSTS_ADD_INIT          3
+#define HOSTS_REM_INIT          4
 
 /* Devices menu layout */
-#define DEVICES_MENU            3
+#define DEVICES_MENU            1
 #define DEVICES_LUN_LAYOUT      1
 #define DEVICES_DEV_INFO        2
 #define DEVICES_ADD_DEV         3
@@ -82,7 +111,7 @@ extern "C" {
 #define DEVICES_UNMAP_FROM      6
 
 /* Targets menu layout */
-#define TARGETS_MENU            4
+#define TARGETS_MENU            2
 #define TARGETS_TGT_INFO        1
 #define TARGETS_ADD_ISCSI       2
 #define TARGETS_REM_ISCSI       3
@@ -91,7 +120,7 @@ extern "C" {
 #define TARGETS_SET_REL_TGT_ID  6
 
 /* ALUA menu layout */
-#define ALUA_MENU               5
+#define ALUA_MENU               3
 #define ALUA_DEV_GRP_LAYOUT     1
 #define ALUA_ADD_DEV_GRP        2
 #define ALUA_REM_DEV_GRP        3
@@ -101,14 +130,6 @@ extern "C" {
 #define ALUA_REM_DEV_FROM_GRP   7
 #define ALUA_ADD_TGT_TO_GRP     8
 #define ALUA_REM_TGT_FROM_GRP   9
-
-/* Interface menu layout */
-#define INTERFACE_MENU          6
-#define INTERFACE_QUIT          1
-#define INTERFACE_SHELL         2
-#define INTERFACE_HELP          3
-#define INTERFACE_SUPPORT_PKG   4
-#define INTERFACE_ABOUT         5
 
 /* Misc. limits */
 #define GIBIBYTE_SIZE           1073741824LL
