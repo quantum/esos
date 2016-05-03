@@ -849,7 +849,10 @@ scst_qla2xxx:
 	$(TOUCH) $(@)
 
 gdb: glibc ncurses
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-python
+	$(SED) -i "/for ac_lib/s/ncurses/ncursesw/" \
+	$(tgt_src_dir)/gdb/configure
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-python \
+	--with-curses
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libopcodes)
@@ -1124,7 +1127,7 @@ zlib: glibc
 ncurses: glibc gcc
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < $(SRC_DIR)/misc/ncurses-5.7.patch
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-shared \
-	--without-gpm --mandir=/usr/share/man --with-termlib
+	--without-gpm --mandir=/usr/share/man --enable-widec
 	$(MAKE) --directory=$(tgt_src_dir) CXXLIBS="-lstdc++"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
@@ -1224,11 +1227,11 @@ cdk: glibc ncurses
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/cdk-5.0-20120323.patch
 	cd $(tgt_src_dir) && \
-	NCURSES_CONFIG="$(IMAGE_DIR)/usr/bin/ncurses5-config \
+	NCURSES_CONFIG="$(IMAGE_DIR)/usr/bin/ncursesw5-config \
 	--prefix=$(IMAGE_DIR)/usr --exec-prefix=$(IMAGE_DIR)/usr" \
-	./configure --prefix=/usr --with-ncurses --with-libtool \
+	./configure --prefix=/usr --with-ncursesw --with-libtool \
 	--mandir=/usr/share/man
-	$(MAKE) --directory=$(tgt_src_dir) LIBS="-lncurses"
+	$(MAKE) --directory=$(tgt_src_dir) LIBS="-lncursesw"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libcdk)
 	$(TOUCH) $(@)
@@ -1350,7 +1353,7 @@ pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	quorum_LIBS="$(LDFLAGS) -lquorum" PYTHON="$(WORK_DIR)/python" \
 	ac_cv_path_PKGCONFIG="pkg-config \
 	--define-variable=prefix=$(IMAGE_DIR)/usr" \
-	CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" LIBS="-ltinfo" \
+	CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 	./configure --prefix=/usr --disable-upstart --disable-systemd \
 	--without-heartbeat --without-snmp --without-esmtp \
 	--disable-fatal-warnings --disable-ansi --disable-silent-rules \
@@ -1723,7 +1726,7 @@ fio: glibc libaio
 bash: glibc ncurses
 	cd $(tgt_src_dir) && ./configure --prefix=/usr \
 	--exec-prefix=/ --with-curses
-	$(MAKE) --directory=$(tgt_src_dir) TERMCAP_LIB="-ltinfo"
+	$(MAKE) --directory=$(tgt_src_dir) TERMCAP_LIB="-lncursesw"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -1846,10 +1849,10 @@ dlm: glibc corosync libxml2 pacemaker
 
 ipmitool: glibc openssl ncurses readline libedit
 	cd $(tgt_src_dir) && \
-	LIBS="-ltinfo -lncurses -lreadline -ledit" \
+	LIBS="-lncursesw -lreadline -ledit" \
 	./configure --prefix=/usr --enable-intf-lan --enable-intf-lanplus
 	$(MAKE) --directory=$(tgt_src_dir) \
-	LIBS="-lreadline -ltinfo -lncurses -lcrypto -ledit"
+	LIBS="-lreadline -lncursesw -lcrypto -ledit"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
@@ -1996,7 +1999,7 @@ EnhanceIO: glibc
 util-linux: glibc ncurses zlib
 	cd $(tgt_src_dir) && \
 	PKG_CONFIG_LIBDIR="$(IMAGE_DIR)/usr/lib/pkgconfig" \
-	NCURSES_LIBS="-ltinfo -lncurses" \
+	NCURSES_LIBS="-lncursesw" \
 	NCURSES_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
 	./configure --prefix=/usr --disable-most-builds \
 	--disable-bash-completion --with-ncurses --disable-silent-rules \
@@ -2269,7 +2272,7 @@ ceph: glibc util-linux keyutils libedit snappy leveldb boost Python
 	cd $(tgt_src_dir) && NSS_CFLAGS="-I$(IMAGE_DIR)/usr/include/nss" \
 	NSS_LIBS="-lnss3 -lssl3 -lnssutil3 -lnspr4 -lsmime3" \
 	LIBEDIT_CFLAGS="-I$(IMAGE_DIR)/usr/include/editline" \
-	LIBEDIT_LIBS="-ledit -ltinfo" PYTHON="$(WORK_DIR)/python" \
+	LIBEDIT_LIBS="-ledit -lncursesw" PYTHON="$(WORK_DIR)/python" \
 	./configure --prefix=/usr \
 	--without-tcmalloc --without-libatomic-ops --without-radosgw \
 	--without-libxfs --without-fuse --with-nss --without-cryptopp
@@ -2292,6 +2295,7 @@ keyutils: glibc
 	$(TOUCH) $(@)
 
 libedit: glibc ncurses
+	$(SED) -i "/LIBS/s/ncurses/ncursesw/" $(tgt_src_dir)/configure
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
@@ -2352,8 +2356,7 @@ acl: glibc attr
 	$(TOUCH) $(@)
 
 htop: glibc ncurses
-	cd $(tgt_src_dir) && LIBS="-ltinfo" ./configure --prefix=/usr \
-	--disable-unicode
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	install-binPROGRAMS install-man1
@@ -2425,7 +2428,7 @@ gperf: glibc gcc
 
 multipath-tools: glibc lvm2 readline eudev
 	$(SED) -i '24,28 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
-	$(SED) -i 's/-lreadline/-lreadline -ltinfo/' \
+	$(SED) -i 's/-lreadline/-lreadline -lncursesw/' \
 	$(tgt_src_dir)/multipathd/Makefile
 	$(SED) -i '/rcdir/ s/^#*/#/' $(tgt_src_dir)/multipathd/Makefile
 	$(SED) -i 's/ln -sf $$(DESTDIR)/ln -sf /' \
@@ -2494,8 +2497,8 @@ libpcap: glibc
 	$(TOUCH) $(@)
 
 iftop: glibc libpcap ncurses
-	cd $(tgt_src_dir) && LD_LIBRARY_PATH=$(IMAGE_DIR)/usr/lib: \
-	LIBS="-ltinfo -lncurses" ./configure --prefix=/usr
+	$(SED) -i 's/\$$curseslib.h/ncurses.h/' $(tgt_src_dir)/configure
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
@@ -2515,7 +2518,7 @@ iperf3: glibc
 
 nmon: glibc gcc ncurses
 	$(esos_cc) -o $(tgt_src_dir)/nmon $(tgt_src_dir)/lmon.c $(LDFLAGS) \
-	-g -O3 -Wall -D JFS -D GETUSER -D LARGEMEM -ltinfo -lncurses -lm -g \
+	-g -O3 -Wall -D JFS -D GETUSER -D LARGEMEM -lncursesw -lm -g \
 	-D KERNEL_2_6_18 -D X86
 	$(INSTALL) -D -m 0755 -v $(tgt_src_dir)/nmon $(IMAGE_DIR)/usr/sbin/nmon
 	$(TOUCH) $(@)

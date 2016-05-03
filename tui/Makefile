@@ -15,9 +15,10 @@ clean:
 	$(RM) esos_tui
 
 %.o: %.c
-	$(CC) -m64 -std=gnu99 -Wall -Wextra -pedantic -c -g -O2 $(CPPFLAGS) $(CFLAGS) -D_GNU_SOURCE -o $@ $<
+	$(CC) -m64 -std=gnu99 -Wall -Wextra -pedantic -c -g -O2 \
+	$(CPPFLAGS) $(CFLAGS) -D_GNU_SOURCE -o $@ $<
 
 esos_tui: $(OBJ_FILES)
-	$(CC) -m64 -std=gnu99 -Wall -Wextra -pedantic $(LDFLAGS) $(OBJ_FILES) -lncurses -ltinfo -lcdk \
-	-liniparser -lparted -lblkid -luuid -lcurl -lanl -o $@
+	$(CC) -m64 -std=gnu99 -Wall -Wextra -pedantic $(LDFLAGS) $(OBJ_FILES) \
+	-lcdkw -lncursesw -liniparser -lparted -lblkid -luuid -lcurl -lanl -o $@
 
