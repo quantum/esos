@@ -1011,6 +1011,8 @@ glibc: kernel_headers
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build \
 	install_root=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(WORK_DIR)/glibc-build localedata/install-locales \
+	install_root=$(IMAGE_DIR)
 	$(SED) -i 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' \
 	$(IMAGE_DIR)/usr/lib/libc.so
 	$(SED) -i 's/ \// $(subst /,\/,$(IMAGE_DIR))\//g' \
