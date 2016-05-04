@@ -19,6 +19,7 @@ scst
 scst_qla2xxx
 gdb
 valgrind
+strace
 spl
 zfs
 ocs_sdk

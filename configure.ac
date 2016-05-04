@@ -152,6 +152,15 @@ AS_IF([test "x$enable_valgrind" = "xyes"], [build_opts="${build_opts} valgrind"]
 AC_SUBST(enable_valgrind, ${enable_valgrind})
 AC_MSG_NOTICE([valgrind: ${enable_valgrind}])
 
+dnl Optional feature strace
+AC_ARG_ENABLE(strace,
+	AS_HELP_STRING([--enable-strace], [build and include strace]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_strace="${enableval}"], [enable_strace="no"]), enable_strace="no")
+AS_IF([test "x$enable_strace" = "xyes"], [build_opts="${build_opts} strace"])
+AC_SUBST(enable_strace, ${enable_strace})
+AC_MSG_NOTICE([strace: ${enable_strace}])
+
 dnl Optional feature qla
 AC_ARG_ENABLE(qla,
 	AS_HELP_STRING([--enable-qla], [use the QLogic provided qla2xxx driver instead of the SCST in-tree driver]),

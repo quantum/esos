@@ -57,6 +57,7 @@ GIT		:= @git@
 enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
 enable_valgrind	:= @enable_valgrind@
+enable_strace	:= @enable_strace@
 enable_qla	:= @enable_qla@
 enable_zfs	:= @enable_zfs@
 enable_eio	:= @enable_eio@
@@ -257,6 +258,10 @@ endif
 ifeq ($(enable_valgrind),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.9.0.tar.bz2)
 	build_targets += valgrind
+endif
+ifeq ($(enable_strace),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,strace-4.11.tar.xz)
+	build_targets += strace
 endif
 ifeq ($(enable_qla),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,scst_qla2xxx-20150625.tar.gz)
@@ -860,6 +865,12 @@ gdb: glibc ncurses
 	$(TOUCH) $(@)
 
 valgrind: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+strace: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install

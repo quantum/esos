@@ -80,6 +80,7 @@ a5a5060dc2f80bcac700ab0236ea47dc  libgcrypt-1.6.1.tar.bz2
 8f0eb41a344d19ac2aa9bd101dfb9ce6  libgpg-error-1.12.tar.bz2
 271a18f41858a7e98b28ae4eb91287c9  gdb-7.7.tar.bz2
 0947de8112f946b9ce64764af7be6df2  valgrind-3.9.0.tar.bz2
+a15d2555a7febb56d00c6e1a51c655dc  strace-4.11.tar.xz
 d44f84081a12cef79cd17f78044351fc  smartmontools-6.2.tar.gz
 f68ce7b7f4be08449f3c8b114ed5accb  cryptsetup-1.6.4.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
