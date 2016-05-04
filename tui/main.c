@@ -157,20 +157,6 @@ start:
     menu_list_1[FILE_SYS_MENU][FILE_SYS_REM_VDISK] = \
             "</B>Remove VDisk File <!B>";
 
-    menu_list_1[INTERFACE_MENU][0] = "</29/B/U>I<!29><!U>nterface  <!B>";
-    menu_list_1[INTERFACE_MENU][INTERFACE_QUIT] = \
-            "</B>Quit          <!B>";
-    menu_list_1[INTERFACE_MENU][INTERFACE_SHELL] = \
-            "</B>Exit to Shell <!B>";
-    menu_list_1[INTERFACE_MENU][INTERFACE_THEME] = \
-            "</B>Color Theme   <!B>";
-    menu_list_1[INTERFACE_MENU][INTERFACE_HELP] = \
-            "</B>Help          <!B>";
-    menu_list_1[INTERFACE_MENU][INTERFACE_SUPPORT_PKG] = \
-            "</B>Support Bundle<!B>";
-    menu_list_1[INTERFACE_MENU][INTERFACE_ABOUT] = \
-            "</B>About         <!B>";
-
     menu_list_2[HOSTS_MENU][0] = "</29/B/U>H<!29><!U>osts  <!B>";
     menu_list_2[HOSTS_MENU][HOSTS_ADD_GROUP] = \
             "</B>Add Group       <!B>";
@@ -229,7 +215,21 @@ start:
     menu_list_2[ALUA_MENU][ALUA_REM_TGT_FROM_GRP] = \
             "</B>Remove Target from Group  <!B>";
 
-    /* Set menu sizes and locations */
+    menu_list_2[INTERFACE_MENU][0] = "</29/B/U>I<!29><!U>nterface  <!B>";
+    menu_list_2[INTERFACE_MENU][INTERFACE_QUIT] = \
+            "</B>Quit          <!B>";
+    menu_list_2[INTERFACE_MENU][INTERFACE_SHELL] = \
+            "</B>Exit to Shell <!B>";
+    menu_list_2[INTERFACE_MENU][INTERFACE_THEME] = \
+            "</B>Color Theme   <!B>";
+    menu_list_2[INTERFACE_MENU][INTERFACE_HELP] = \
+            "</B>Help          <!B>";
+    menu_list_2[INTERFACE_MENU][INTERFACE_SUPPORT_PKG] = \
+            "</B>Support Bundle<!B>";
+    menu_list_2[INTERFACE_MENU][INTERFACE_ABOUT] = \
+            "</B>About         <!B>";
+
+    /* Set top menu sizes and locations */
     submenu_size_1[SYSTEM_MENU]       = 13;
     menu_loc_1[SYSTEM_MENU]           = LEFT;
     submenu_size_1[HW_RAID_MENU]      = 6;
@@ -240,9 +240,8 @@ start:
     menu_loc_1[LVM_MENU]              = LEFT;
     submenu_size_1[FILE_SYS_MENU]     = 6;
     menu_loc_1[FILE_SYS_MENU]         = LEFT;
-    submenu_size_1[INTERFACE_MENU]    = 7;
-    menu_loc_1[INTERFACE_MENU]        = LEFT;
 
+    /* Set bottom menu sizes and locations */
     submenu_size_2[HOSTS_MENU]        = 5;
     menu_loc_2[HOSTS_MENU]            = LEFT;
     submenu_size_2[DEVICES_MENU]      = 7;
@@ -251,9 +250,11 @@ start:
     menu_loc_2[TARGETS_MENU]          = LEFT;
     submenu_size_2[ALUA_MENU]         = 10;
     menu_loc_2[ALUA_MENU]             = LEFT;
+    submenu_size_2[INTERFACE_MENU]    = 7;
+    menu_loc_2[INTERFACE_MENU]        = RIGHT;
 
     /* Create the top menu */
-    menu_1 = newCDKMenu(cdk_screen, menu_list_1, 6, submenu_size_1, menu_loc_1,
+    menu_1 = newCDKMenu(cdk_screen, menu_list_1, 5, submenu_size_1, menu_loc_1,
             0, A_NORMAL, COLOR_MENU_TEXT);
     if (!menu_1) {
         errorDialog(cdk_screen, MENU_ERR_MSG, NULL);
@@ -262,7 +263,7 @@ start:
     setCDKMenuBackgroundColor(menu_1, "</5>");
 
     /* Create the bottom menu */
-    menu_2 = newCDKMenu(cdk_screen, menu_list_2, 4, submenu_size_2, menu_loc_2,
+    menu_2 = newCDKMenu(cdk_screen, menu_list_2, 5, submenu_size_2, menu_loc_2,
             1, A_NORMAL, COLOR_MENU_TEXT);
     if (!menu_2) {
         errorDialog(cdk_screen, MENU_ERR_MSG, NULL);
@@ -341,12 +342,6 @@ start:
             setCDKMenu(menu_1, FILE_SYS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu_1, 0);
 
-        } else if (key_pressed == 'i' || key_pressed == 'I') {
-            /* Start with the Interface menu */
-            cbreak();
-            setCDKMenu(menu_1, INTERFACE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
-            selection = activateCDKMenu(menu_1, 0);
-
         } else if (key_pressed == 'h' || key_pressed == 'H') {
             /* Start with the Hosts menu */
             cbreak();
@@ -369,6 +364,12 @@ start:
             /* Start with the ALUA menu */
             cbreak();
             setCDKMenu(menu_2, ALUA_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            selection = activateCDKMenu(menu_2, 0);
+
+        } else if (key_pressed == 'i' || key_pressed == 'I') {
+            /* Start with the Interface menu */
+            cbreak();
+            setCDKMenu(menu_2, INTERFACE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
             selection = activateCDKMenu(menu_2, 0);
 
         } else if (key_pressed == KEY_RESIZE) {
@@ -565,91 +566,23 @@ start:
                     submenu_choice == FILE_SYS_REM_VDISK - 1) {
                 /* Remove VDisk File dialog */
                 delVDiskFileDialog(cdk_screen);
+            }
 
-            } else if (menu_choice == INTERFACE_MENU &&
-                    submenu_choice == INTERFACE_QUIT - 1) {
-                /* Synchronize the configuration and quit */
-                syncConfig(cdk_screen);
-                goto quit;
+            /* At this point we've finished the dialog, so we make
+             * the screen look nice again and reset the menu exit status */
+            menu_1->exitType = vNEVER_ACTIVATED;
+            wbkgd(cdk_screen->window, COLOR_MAIN_TEXT);
+            wrefresh(cdk_screen->window);
+            refreshCDKScreen(cdk_screen);
+            curs_set(0);
+        }
 
-            } else if (menu_choice == INTERFACE_MENU &&
-                    submenu_choice == INTERFACE_SHELL - 1) {
-                /* Set the UID to what was saved at the start */
-                if (setresuid(saved_uid, 0, -1) == -1) {
-                    SAFE_ASPRINTF(&error_msg, "setresuid(): %s",
-                            strerror(errno));
-                    errorDialog(cdk_screen, error_msg, NULL);
-                    FREE_NULL(error_msg);
-                }
-                /* Fork and execute a shell */
-                if ((child_pid = fork()) < 0) {
-                    /* Could not fork */
-                    SAFE_ASPRINTF(&error_msg, "fork(): %s", strerror(errno));
-                    errorDialog(cdk_screen, error_msg, NULL);
-                    FREE_NULL(error_msg);
-                } else if (child_pid == 0) {
-                    /* Child; fix up the terminal and execute the shell */
-                    endwin();
-                    curs_set(1);
-                    echo();
-                    system(CLEAR_BIN);
-                    /* Execute the shell; if we fail, print something
-                     * useful to syslog for debugging */
-                    if ((execl(SHELL_BIN, SHELL_BIN, "--rcfile", GLOBAL_BASHRC,
-                            "-i", (char *) NULL)) == -1) {
-                        DEBUG_LOG("Calling execl() failed: %s",
-                                strerror(errno));
-                    }
-                    exit(2);
-                } else {
-                    /* Parent; wait for the child to finish */
-                    while ((proc_status = wait(&child_status)) != child_pid) {
-                        if (proc_status < 0 && errno == ECHILD)
-                            break;
-                        errno = 0;
-                    }
-                    /* Ending everything and starting fresh seems to work
-                     * best when switching between the shell and UI */
-                    destroyCDKLabel(targets_label);
-                    targets_label = NULL;
-                    destroyCDKLabel(sessions_label);
-                    sessions_label = NULL;
-                    destroyCDKScreenObjects(cdk_screen);
-                    destroyCDKScreen(cdk_screen);
-                    endCDK();
-                    cdk_screen = NULL;
+        if (menu_2->exitType == vNORMAL) {
+            /* Get the selected menu choice */
+            menu_choice = selection / 100;
+            submenu_choice = selection % 100;
 
-                    /* Check and see if we're still attached to our terminal */
-                    if ((tty_fd = open("/dev/tty", O_RDONLY)) == -1) {
-                        /* Guess not, so we're done */
-                        goto quit;
-                    } else {
-                        close(tty_fd);
-                        goto start;
-                    }
-                }
-
-            } else if (menu_choice == INTERFACE_MENU &&
-                    submenu_choice == INTERFACE_THEME - 1) {
-                /* Color Theme dialog */
-                //themeDialog(cdk_screen);
-
-            } else if (menu_choice == INTERFACE_MENU &&
-                    submenu_choice == INTERFACE_HELP - 1) {
-                /* Help dialog */
-                helpDialog(cdk_screen);
-
-            } else if (menu_choice == INTERFACE_MENU &&
-                    submenu_choice == INTERFACE_SUPPORT_PKG - 1) {
-                /* Support Bundle dialog */
-                supportArchDialog(cdk_screen);
-
-            } else if (menu_choice == INTERFACE_MENU &&
-                    submenu_choice == INTERFACE_ABOUT - 1) {
-                /* About dialog */
-                aboutDialog(cdk_screen);
-
-            } else if (menu_choice == HOSTS_MENU &&
+            if (menu_choice == HOSTS_MENU &&
                     submenu_choice == HOSTS_ADD_GROUP - 1) {
                 /* Add Group dialog */
                 addGroupDialog(cdk_screen);
@@ -773,18 +706,101 @@ start:
                     submenu_choice == ALUA_REM_TGT_FROM_GRP - 1) {
                 /* Remove Target from Group dialog */
                 remTgtFromGrpDialog(cdk_screen);
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_QUIT - 1) {
+                /* Synchronize the configuration and quit */
+                syncConfig(cdk_screen);
+                goto quit;
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_SHELL - 1) {
+                /* Set the UID to what was saved at the start */
+                if (setresuid(saved_uid, 0, -1) == -1) {
+                    SAFE_ASPRINTF(&error_msg, "setresuid(): %s",
+                            strerror(errno));
+                    errorDialog(cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                }
+                /* Fork and execute a shell */
+                if ((child_pid = fork()) < 0) {
+                    /* Could not fork */
+                    SAFE_ASPRINTF(&error_msg, "fork(): %s", strerror(errno));
+                    errorDialog(cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                } else if (child_pid == 0) {
+                    /* Child; fix up the terminal and execute the shell */
+                    endwin();
+                    curs_set(1);
+                    echo();
+                    system(CLEAR_BIN);
+                    /* Execute the shell; if we fail, print something
+                     * useful to syslog for debugging */
+                    if ((execl(SHELL_BIN, SHELL_BIN, "--rcfile", GLOBAL_BASHRC,
+                            "-i", (char *) NULL)) == -1) {
+                        DEBUG_LOG("Calling execl() failed: %s",
+                                strerror(errno));
+                    }
+                    exit(2);
+                } else {
+                    /* Parent; wait for the child to finish */
+                    while ((proc_status = wait(&child_status)) != child_pid) {
+                        if (proc_status < 0 && errno == ECHILD)
+                            break;
+                        errno = 0;
+                    }
+                    /* Ending everything and starting fresh seems to work
+                     * best when switching between the shell and UI */
+                    destroyCDKLabel(targets_label);
+                    targets_label = NULL;
+                    destroyCDKLabel(sessions_label);
+                    sessions_label = NULL;
+                    destroyCDKScreenObjects(cdk_screen);
+                    destroyCDKScreen(cdk_screen);
+                    endCDK();
+                    cdk_screen = NULL;
+
+                    /* Check and see if we're still attached to our terminal */
+                    if ((tty_fd = open("/dev/tty", O_RDONLY)) == -1) {
+                        /* Guess not, so we're done */
+                        goto quit;
+                    } else {
+                        close(tty_fd);
+                        goto start;
+                    }
+                }
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_THEME - 1) {
+                /* Color Theme dialog */
+                //themeDialog(cdk_screen);
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_HELP - 1) {
+                /* Help dialog */
+                helpDialog(cdk_screen);
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_SUPPORT_PKG - 1) {
+                /* Support Bundle dialog */
+                supportArchDialog(cdk_screen);
+
+            } else if (menu_choice == INTERFACE_MENU &&
+                    submenu_choice == INTERFACE_ABOUT - 1) {
+                /* About dialog */
+                aboutDialog(cdk_screen);
             }
 
             /* At this point we've finished the dialog, so we make
              * the screen look nice again and reset the menu exit status */
-            menu_1->exitType = vNEVER_ACTIVATED;
+            menu_2->exitType = vNEVER_ACTIVATED;
             wbkgd(cdk_screen->window, COLOR_MAIN_TEXT);
             wrefresh(cdk_screen->window);
             refreshCDKScreen(cdk_screen);
             curs_set(0);
         }
 
-        /* Done with the menu, go back to half-delay mode */
+        /* Done with the menus, go back to half-delay mode */
         halfdelay(REFRESH_DELAY);
     }
 

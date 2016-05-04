@@ -85,15 +85,6 @@ extern "C" {
 #define FILE_SYS_ADD_VDISK      4
 #define FILE_SYS_REM_VDISK      5
 
-/* Interface menu layout */
-#define INTERFACE_MENU          5
-#define INTERFACE_QUIT          1
-#define INTERFACE_SHELL         2
-#define INTERFACE_THEME         3
-#define INTERFACE_HELP          4
-#define INTERFACE_SUPPORT_PKG   5
-#define INTERFACE_ABOUT         6
-
 /* Hosts menu layout */
 #define HOSTS_MENU              0
 #define HOSTS_ADD_GROUP         1
@@ -130,6 +121,15 @@ extern "C" {
 #define ALUA_REM_DEV_FROM_GRP   7
 #define ALUA_ADD_TGT_TO_GRP     8
 #define ALUA_REM_TGT_FROM_GRP   9
+
+/* Interface menu layout */
+#define INTERFACE_MENU          4
+#define INTERFACE_QUIT          1
+#define INTERFACE_SHELL         2
+#define INTERFACE_THEME         3
+#define INTERFACE_HELP          4
+#define INTERFACE_SUPPORT_PKG   5
+#define INTERFACE_ABOUT         6
 
 /* Misc. limits */
 #define GIBIBYTE_SIZE           1073741824LL

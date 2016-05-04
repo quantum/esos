@@ -217,6 +217,9 @@ boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
         if ((dir_entry->d_type == DT_DIR) &&
                 (strcmp(dir_entry->d_name, ".") != 0) &&
                 (strcmp(dir_entry->d_name, "..") != 0)) {
+            /* Skip the copy_manager driver */
+            if (strcmp(dir_entry->d_name, "copy_manager") == 0)
+                continue;
             if (i < MAX_SCST_DRIVERS) {
                 snprintf(tgt_drivers[i], MISC_STRING_LEN, dir_entry->d_name);
                 i++;

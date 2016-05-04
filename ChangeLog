@@ -1,3 +1,23 @@
+2016-05-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	a few TUI tweaks for the new dual menu widgets; updated listSCSTTgtDrivers() to ignore the copy_manager target driver
+
+	added support for strace as an optional build package (--enable-strace)
+
+2016-05-03  Marc A. Smith  <marc.smith@parodyne.com>
+
+	we weren't previously generating/installing locale data... fixed; updated global bashrc for a clean UTF-8 environment
+
+2016-05-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	initial round of build changes to switch from ncurses -> ncursesw (--enable-widec)
+
+2016-05-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'tui_enhancements'
+
+	tweaked /etc/issue to make the characters align; added a call to 'clear' at the end of rc.2; updated rc.perfagent to support a "status" action like the other rc scripts
+
 2016-04-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated mdadm to version 3.4
@@ -292,6 +312,16 @@
 2015-08-14  Marc A. Smith  <marc@astersmith.com>
 
 	updated SCST to 3.0.x_r6474 (latest revision in the 3.0.x branch)
+
+	updated the CDK patch to modify menu.c which adds support for specifiying rows instead of just TOP or BOTTOM in newCDKMenu(); modified updateInfoLabels() to give an additional row of space for new (additional) menu bar; added a new secondary menu to the TUI; updated menu item description strings to be full length; revamp of some existing menu items and sub-menu locations
+
+2015-08-03  Marc A. Smith  <marc@astersmith.com>
+
+	updated to set default Ethernet MTU for enp* and eno* interfaces; increased spacing for interface name in the get-network-ifaces dialog
+
+2015-08-02  Marc A. Smith  <marc@astersmith.com>
+
+	updated the rc.network script to handle "on-board" Ethernet adapters (enoX)
 
 2015-08-01  Marc A. Smith  <marc@astersmith.com>
 
