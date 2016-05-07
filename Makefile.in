@@ -2544,5 +2544,10 @@ munin-c: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(MKDIR) $(IMAGE_DIR)/etc/munin/plugins
+	for i in $$($(IMAGE_DIR)/usr/libexec/munin-c/munin-plugins-c listplugins); do \
+	  $(LN) /usr/libexec/munin-c/munin-plugins-c \
+	  $(IMAGE_DIR)/etc/munin/plugins/$$i; \
+	done
 	$(TOUCH) $(@)
 
