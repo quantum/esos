@@ -2549,5 +2549,7 @@ munin-c: glibc
 	  $(LN) /usr/libexec/munin-c/munin-plugins-c \
 	  $(IMAGE_DIR)/etc/munin/plugins/$$i; \
 	done
+	$(LN) /usr/libexec/munin-c/munin-plugins-c \
+	$(IMAGE_DIR)/etc/munin/plugins/memory
 	$(TOUCH) $(@)
 
