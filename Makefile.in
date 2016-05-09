@@ -224,6 +224,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libpcap-1.7.4.tar.gz \
 		iftop-1.0pre4.tar.gz \
 		nmon-16c.tar.gz \
+		munin-c-0.0.9.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -248,7 +249,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
 		stunnel sudo rsync eudev gperf multipath-tools archivemount \
 		libarchive mcelog edac-utils sysfsutils sqlite-autoconf \
-		stunnel sudo rsync iperf2 iperf3 libpcap iftop nmon
+		stunnel sudo rsync iperf2 iperf3 libpcap iftop nmon munin-c
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2535,5 +2536,21 @@ nmon: glibc gcc ncurses
 	-g -O3 -Wall -D JFS -D GETUSER -D LARGEMEM -lncursesw -lm -g \
 	-D KERNEL_2_6_18 -D X86
 	$(INSTALL) -D -m 0755 -v $(tgt_src_dir)/nmon $(IMAGE_DIR)/usr/sbin/nmon
+	$(TOUCH) $(@)
+
+munin-c: glibc
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && autoreconf -i -I m4; \
+	fi
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(MKDIR) $(IMAGE_DIR)/etc/munin/plugins
+	for i in $$($(IMAGE_DIR)/usr/libexec/munin-c/munin-plugins-c listplugins); do \
+	  $(LN) /usr/libexec/munin-c/munin-plugins-c \
+	  $(IMAGE_DIR)/etc/munin/plugins/$$i; \
+	done
+	$(LN) /usr/libexec/munin-c/munin-plugins-c \
+	$(IMAGE_DIR)/etc/munin/plugins/memory
 	$(TOUCH) $(@)
 

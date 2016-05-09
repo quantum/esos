@@ -1,0 +1,42 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+MUNIN_INETD="/usr/sbin/munin-inetd-c"
+MUNIN_NODE="/usr/sbin/munin-node-c"
+MUNIN_LOCK="/var/lock/munin"
+DFLT_OPTS="0.0.0.0:4949"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting munin-node..."
+    /bin/sh -c "/usr/bin/nohup ${MUNIN_INETD} ${USER_OPTS} ${MUNIN_NODE} &"
+    /bin/touch ${MUNIN_LOCK}
+    /bin/sleep 1
+}
+
+stop() {
+    /bin/echo "Stopping munin-node..."
+    /bin/kill -15 $(/bin/pidof ${MUNIN_INETD}) || exit 1
+    wait_for_stop ${MUNIN_INETD} && /bin/rm -f ${MUNIN_LOCK}
+}
+
+status() {
+    /bin/pidof ${MUNIN_INETD} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

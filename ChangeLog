@@ -1,4 +1,20 @@
+2016-05-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'add_munin'
+
+	apparently "munin-plugins-c listplugins" doesn't actually return all supported plugins, so we also manually create a symlink for the "memory" plugin
+
+2016-05-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the rc.munin script and updated rc.conf and rc.d/common to support the new rc script; enabled munin-c plugin symlinks in /etc/munin/plugins/
+
+2016-05-05  Marc A. Smith  <marc.smith@parodyne.com>
+
+	MegaCLI still needs libncurses.so.5 so we'll use a link for now
+
 2016-05-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the munin-c package (version 0.0.9)... just the basic install so far, still needs an rc script
 
 	a few TUI tweaks for the new dual menu widgets; updated listSCSTTgtDrivers() to ignore the copy_manager target driver
 
