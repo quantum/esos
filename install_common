@@ -1,11 +1,11 @@
 PROP_TOOLS="MegaCLI StorCLI arcconf hpacucli hpssacli linuxcli 3DM2_CLI"
 
-TOOL_DESC_MegaCLI="LSI Logic MegaRAID Controllers (MegaCLI)"
+TOOL_DESC_MegaCLI="Avago/LSI Logic MegaRAID Controllers (MegaCLI)"
 TOOL_FILE_MegaCLI="8-07-14_MegaCLI.zip"
 TOOL_URL_MegaCLI="http://docs.avagotech.com/docs/12351587"
 
-TOOL_DESC_StorCLI="LSI Logic Syncro/MegaRAID Controllers (StorCLI)"
-TOOL_FILE_StorCLI="SW_MR_SAS_StorCLI_6.7-1.15.12-SCGCQ00852539_201506.zip"
+TOOL_DESC_StorCLI="Avago/LSI Logic Syncro/MegaRAID Controllers (StorCLI)"
+TOOL_FILE_StorCLI="MR_SAS_StorCLI_6-7-1-15-12-SCGCQ00852539.zip"
 TOOL_URL_StorCLI="http://docs.avagotech.com/docs/12354905"
 
 TOOL_DESC_arcconf="Adaptec AACRAID Controllers"
