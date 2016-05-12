@@ -16,9 +16,6 @@ fi
 # Load configuration
 . ${IB_CONFIG}
 KERN_MODS=""
-if [ "x${IPATH_LOAD}" == "xyes" ]; then
-    KERN_MODS="${KERN_MODS} ib_ipath"
-fi
 if [ "x${MTHCA_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_mthca"
 fi
