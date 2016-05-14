@@ -1256,19 +1256,24 @@ lvm2: glibc corosync dlm thin-provisioning-tools eudev
 	COROSYNC_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
 	COROSYNC_LIBS="$(LDFLAGS)" \
 	QUORUM_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
-        QUORUM_LIBS="$(LDFLAGS) -lquorum -lrt" \
+	QUORUM_LIBS="$(LDFLAGS) -lquorum -lrt" \
 	CPG_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
-        CPG_LIBS="$(LDFLAGS) -lcpg -lrt -lpthread" \
+	CPG_LIBS="$(LDFLAGS) -lcpg -lrt -lpthread" \
 	CMAP_CFLAGS="-I$(IMAGE_DIR)/usr/include/corosync" \
-        CMAP_LIBS="$(LDFLAGS) -lcmap" DLM_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
-        DLM_LIBS="$(LDFLAGS) -ldlm -lpthread" \
-	UDEV_CFLAGS="-I$(IMAGE_DIR)/usr/include" UDEV_LIBS="$(LDFLAGS) -ludev" \
+	CMAP_LIBS="$(LDFLAGS) -lcmap" \
+	DLM_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	DLM_LIBS="$(LDFLAGS) -ldlm -lpthread" \
+	UDEV_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	UDEV_LIBS="$(LDFLAGS) -ludev" \
+	LOCKD_DLM_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	LOCKD_DLM_LIBS="$(LDFLAGS) -ldlm -lpthread" \
 	./configure --with-lvm1=none --disable-selinux --prefix=/usr \
 	--with-clvmd=corosync --with-cluster=internal --enable-ocf \
 	--enable-cmirrord --disable-readline --with-thin=internal \
 	--with-thin-check=$(IMAGE_DIR)/usr/sbin/thin_check \
 	--with-cache=internal --enable-udev_sync --enable-udev_rules \
-	--disable-udev-systemd-background-jobs --enable-lvmetad
+	--disable-udev-systemd-background-jobs --enable-lvmetad \
+	--enable-lockd-dlm
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
@@ -1349,6 +1354,8 @@ pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	  $(SED) -i 's/^DBUS_LIBS.*/DBUS_LIBS\=\"\$$CFLAGS\"/' $(tgt_src_dir)/configure.ac; \
 	  $(SED) -i 's/ -I\$${prefix}\/include\/heartbeat//' $(tgt_src_dir)/configure.ac; \
 	  $(SED) -i 's/ -I\$${prefix}\/include//g' $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i "/AC_CHECK_LIB/s/ncurses/ncursesw/g" $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/-lncurses/-lncursesw/g' $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
 	cd $(tgt_src_dir) && \
