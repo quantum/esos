@@ -1,7 +1,7 @@
 /**
- * @file menu_actions-system.c
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @file menu_system.c
+ * @brief Contains the menu actions for the 'System' menu.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -22,6 +22,7 @@
 #include "system.h"
 #include "dialogs.h"
 #include "strings.h"
+
 
 /*
  * Run the Networking dialog
@@ -2352,5 +2353,74 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     delwin(date_window);
     for (i = 0; i < MAX_TZ_FILES; i++)
         FREE_NULL(tz_files[i]);
+    return;
+}
+
+
+/*
+ * Run the DRBD Status dialog
+ */
+void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
+    CDKSWINDOW *drbd_info = 0;
+    char *swindow_info[MAX_DRBD_INFO_LINES] = {NULL};
+    char *error_msg = NULL;
+    int i = 0, line_pos = 0;
+    char line[DRBD_INFO_COLS] = {0};
+    FILE *drbd_file = NULL;
+
+    /* Open the file */
+    if ((drbd_file = fopen(PROC_DRBD, "r")) == NULL) {
+        SAFE_ASPRINTF(&error_msg, "fopen(): %s", strerror(errno));
+        errorDialog(main_cdk_screen, error_msg, NULL);
+        FREE_NULL(error_msg);
+    } else {
+        /* Setup scrolling window widget */
+        drbd_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+                (DRBD_INFO_ROWS + 2), (DRBD_INFO_COLS + 2),
+                "<C></31/B>Distributed Replicated Block Device "
+                "(DRBD) Information\n",
+                MAX_DRBD_INFO_LINES, TRUE, FALSE);
+        if (!drbd_info) {
+            errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
+            return;
+        }
+        setCDKSwindowBackgroundAttrib(drbd_info, COLOR_DIALOG_TEXT);
+        setCDKSwindowBoxAttribute(drbd_info, COLOR_DIALOG_BOX);
+
+        /* Add the contents to the scrolling window widget */
+        line_pos = 0;
+        while (fgets(line, sizeof (line), drbd_file) != NULL) {
+            if (line_pos < MAX_DRBD_INFO_LINES) {
+                SAFE_ASPRINTF(&swindow_info[line_pos], "%s", line);
+                line_pos++;
+            }
+        }
+        fclose(drbd_file);
+
+        /* Add a message to the bottom explaining how to close the dialog */
+        if (line_pos < MAX_DRBD_INFO_LINES) {
+            SAFE_ASPRINTF(&swindow_info[line_pos], " ");
+            line_pos++;
+        }
+        if (line_pos < MAX_DRBD_INFO_LINES) {
+            SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
+            line_pos++;
+        }
+
+        /* Set the scrolling window content */
+        setCDKSwindowContents(drbd_info, swindow_info, line_pos);
+
+        /* The 'g' makes the swindow widget scroll to the top, then activate */
+        injectCDKSwindow(drbd_info, 'g');
+        activateCDKSwindow(drbd_info, 0);
+
+        /* We fell through -- the user exited the widget, but
+         * we don't care how */
+        destroyCDKSwindow(drbd_info);
+    }
+
+    /* Done */
+    for (i = 0; i < MAX_DRBD_INFO_LINES; i++ )
+        FREE_NULL(swindow_info[i]);
     return;
 }

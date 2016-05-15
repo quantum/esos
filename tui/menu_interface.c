@@ -1,7 +1,7 @@
 /**
- * @file menu_actions-interface.c
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @file menu_interface.c
+ * @brief Contains the menu actions for the 'Interface' menu.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -17,6 +17,7 @@
 #include "system.h"
 #include "dialogs.h"
 #include "strings.h"
+
 
 /*
  * Run the Help dialog

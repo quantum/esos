@@ -1,7 +1,7 @@
 /**
- * @file menu_actions-hosts.c
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @file menu_hosts.c
+ * @brief Contains the menu actions for the 'Hosts' menu.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -18,6 +18,7 @@
 #include "system.h"
 #include "dialogs.h"
 #include "strings.h"
+
 
 /*
  * Run the Add Group dialog

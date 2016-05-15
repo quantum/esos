@@ -33,7 +33,7 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
 int readTargetData(char *label_msg[]);
 int readSessionData(char *label_msg[]);
 
-/* menu_actions.c */
+/* menu_common.c */
 void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 void okButtonCB(CDKBUTTON *button);
@@ -71,7 +71,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
         char iface_duplex[], bonding_t *iface_bonding, boolean *iface_bridge,
         char **slaves, int *slave_cnt, char **br_members, int *br_member_cnt);
 
-/* menu_actions-system.c */
+/* menu_system.c */
 void networkDialog(CDKSCREEN *main_cdk_screen);
 void restartNetDialog(CDKSCREEN *main_cdk_screen);
 void mailDialog(CDKSCREEN *main_cdk_screen);
@@ -82,23 +82,51 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen);
 void scstInfoDialog(CDKSCREEN *main_cdk_screen);
 void crmStatusDialog(CDKSCREEN *main_cdk_screen);
 void dateTimeDialog(CDKSCREEN *main_cdk_screen);
+void drbdStatDialog(CDKSCREEN *main_cdk_screen);
 
-/* menu_actions-back_storage.c */
+/* menu_hardraid.c */
 void adpPropsDialog(CDKSCREEN *main_cdk_screen);
 void adpInfoDialog(CDKSCREEN *main_cdk_screen);
 void addVolumeDialog(CDKSCREEN *main_cdk_screen);
 void delVolumeDialog(CDKSCREEN *main_cdk_screen);
 void volPropsDialog(CDKSCREEN *main_cdk_screen);
-void drbdStatDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_softraid.c */
 void softRAIDStatDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_lvm.c */
 void lvm2InfoDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_filesys.c */
 void createFSDialog(CDKSCREEN *main_cdk_screen);
 void removeFSDialog(CDKSCREEN *main_cdk_screen);
 void addVDiskFileDialog(CDKSCREEN *main_cdk_screen);
 void delVDiskFileDialog(CDKSCREEN *main_cdk_screen);
 void vdiskFileListDialog(CDKSCREEN *main_cdk_screen);
 
-/* menu_actions-alua.c */
+/* menu_hosts.c */
+void addGroupDialog(CDKSCREEN *main_cdk_screen);
+void remGroupDialog(CDKSCREEN *main_cdk_screen);
+void addInitDialog(CDKSCREEN *main_cdk_screen);
+void remInitDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_devices.c */
+void addDeviceDialog(CDKSCREEN *main_cdk_screen);
+void remDeviceDialog(CDKSCREEN *main_cdk_screen);
+void devInfoDialog(CDKSCREEN *main_cdk_screen);
+void mapDeviceDialog(CDKSCREEN *main_cdk_screen);
+void unmapDeviceDialog(CDKSCREEN *main_cdk_screen);
+void lunLayoutDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_targets.c */
+void tgtInfoDialog(CDKSCREEN *main_cdk_screen);
+void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen);
+void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen);
+void issueLIPDialog(CDKSCREEN *main_cdk_screen);
+void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen);
+void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen);
+
+/* menu_alua.c */
 void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen);
 void addDevGrpDialog(CDKSCREEN *main_cdk_screen);
 void remDevGrpDialog(CDKSCREEN *main_cdk_screen);
@@ -109,29 +137,7 @@ void remDevFromGrpDialog(CDKSCREEN *main_cdk_screen);
 void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen);
 void remTgtFromGrpDialog(CDKSCREEN *main_cdk_screen);
 
-/* menu_actions-hosts.c */
-void addGroupDialog(CDKSCREEN *main_cdk_screen);
-void remGroupDialog(CDKSCREEN *main_cdk_screen);
-void addInitDialog(CDKSCREEN *main_cdk_screen);
-void remInitDialog(CDKSCREEN *main_cdk_screen);
-
-/* menu_actions-devices.c */
-void addDeviceDialog(CDKSCREEN *main_cdk_screen);
-void remDeviceDialog(CDKSCREEN *main_cdk_screen);
-void devInfoDialog(CDKSCREEN *main_cdk_screen);
-void mapDeviceDialog(CDKSCREEN *main_cdk_screen);
-void unmapDeviceDialog(CDKSCREEN *main_cdk_screen);
-void lunLayoutDialog(CDKSCREEN *main_cdk_screen);
-
-/* menu_actions-targets.c */
-void tgtInfoDialog(CDKSCREEN *main_cdk_screen);
-void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen);
-void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen);
-void issueLIPDialog(CDKSCREEN *main_cdk_screen);
-void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen);
-void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen);
-
-/* menu_actions-interface.c */
+/* menu_interface.c */
 void helpDialog(CDKSCREEN *main_cdk_screen);
 void supportArchDialog(CDKSCREEN *main_cdk_screen);
 void aboutDialog(CDKSCREEN *main_cdk_screen);

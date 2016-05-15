@@ -145,7 +145,7 @@ start:
     menu_list_1[LVM_MENU][LVM_REM_LV] = \
             "</B>Remove LV<!B>";
 
-    menu_list_1[FILE_SYS_MENU][0] = "</29/B/U>F<!29><!U>ile System  <!B>";
+    menu_list_1[FILE_SYS_MENU][0] = "</29/B/U>F<!29><!U>ile Systems  <!B>";
     menu_list_1[FILE_SYS_MENU][FILE_SYS_VDISK_LIST] = \
             "</B>VDisk File List   <!B>";
     menu_list_1[FILE_SYS_MENU][FILE_SYS_ADD_FS] = \
@@ -455,11 +455,13 @@ start:
             } else if (menu_choice == HW_RAID_MENU &&
                     submenu_choice == HW_RAID_ADD_VOL - 1) {
                 /* Add Volume dialog */
+                addVolumeDialog(cdk_screen);
                 //addVolDialog(cdk_screen);
 
             } else if (menu_choice == HW_RAID_MENU &&
                     submenu_choice == HW_RAID_REM_VOL - 1) {
                 /* Remove Volume dialog */
+                delVolumeDialog(cdk_screen);
                 //remVolDialog(cdk_screen);
 
             } else if (menu_choice == HW_RAID_MENU &&

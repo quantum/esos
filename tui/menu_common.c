@@ -1,7 +1,7 @@
 /**
- * @file menu_actions.c
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @file menu_common.c
+ * @brief Contains the common menu actions used by most menus.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -28,6 +28,7 @@
 #include "system.h"
 #include "dialogs.h"
 #include "strings.h"
+
 
 /*
  * Generic error dialog; takes an error message and displays a nice red

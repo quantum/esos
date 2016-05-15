@@ -1,3 +1,25 @@
+2016-05-14  Marc A. Smith  <marc.smith@parodyne.com>
+
+	more TUI revamp... mostly just moving dialogs around, and renaming files
+
+2016-05-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the lvm2 target so lvmlockd is now built; fixed libncursesw-not-detected issue with pacemaker
+
+2016-05-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	removed obsolete ib_ipath stuff from rc.openibd and openib.conf; fixed extraction issue (syntax) for StorCLI with the Windows installer script (install.vbs)
+
+2016-05-10  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'update_libxml2'
+
+	updated zlib to version 1.2.8; updated libxml2 to version 2.9.3; added missing dep (zlib) to libxml2 target; added '--with-threads' to ensure libxml2 is built with thread support
+
+2016-05-09  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated file names for MegaCLI and StorCLI
+
 2016-05-08  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'add_munin'
