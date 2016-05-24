@@ -1,3 +1,7 @@
+2016-05-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed build issue with eudev package (--sysconfdir); added the rc.lvmlockd rc script to handle the LVM locking daemon and associated config updates (rc.d/common and rc.conf) -- untested
+
 2016-05-14  Marc A. Smith  <marc.smith@parodyne.com>
 
 	more TUI revamp... mostly just moving dialogs around, and renaming files

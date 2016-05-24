@@ -4,9 +4,9 @@ STOP_TIMEOUT=120
 # User settable services; started in this order and reversed on shutdown
 EARLY_SERVICES="rc.openibd rc.opensm"
 LATE_SERVICES="rc.sshd rc.multipathd rc.mdraid rc.lvm2 rc.eio rc.dmcache \
-rc.btier rc.drbd rc.rbdmap rc.corosync rc.dlm rc.clvmd rc.pacemaker \
-rc.fsmount rc.mhvtl rc.scst rc.perfagent rc.nrpe rc.munin rc.snmpd \
-rc.snmptrapd rc.nut rc.smartd rc.stunnel"
+rc.btier rc.drbd rc.rbdmap rc.corosync rc.dlm rc.clvmd rc.lvmlockd \
+rc.pacemaker rc.fsmount rc.mhvtl rc.scst rc.perfagent rc.nrpe rc.munin \
+rc.snmpd rc.snmptrapd rc.nut rc.smartd rc.stunnel"
 
 # Script status values
 RUNNING=0

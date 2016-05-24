@@ -1,0 +1,57 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+LVMLOCKD="/usr/sbin/LVMLOCKD"
+LVMLOCKD_LOCK="/var/lock/lvmlockd"
+VGCHANGE="/usr/sbin/vgchange"
+LVMLOCKCTL="/usr/sbin/lvmlockctl"
+DFLT_OPTS="-f"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    # Start the LVM locking daemon
+    /bin/echo "Starting lvmlockd..."
+    eval ${LVMLOCKD} ${USER_OPTS} || exit 1
+    /bin/touch ${LVMLOCKD_LOCK}
+    # Setup LVM
+    /bin/echo "Starting LVM lockspaces..."
+    ${VGCHANGE} --lock-start --lock-opt autowait || exit 1
+    /bin/echo "Activating LVM LVs..."
+    ${VGCHANGE} -aay -S 'locktype=sanlock || locktype=dlm' || exit 1
+    # Make partition nodes
+    /bin/echo "Probing logical volumes for partitions..."
+    for i in $(/usr/sbin/lvs --noheadings -o lv_path --rows); do
+        /usr/sbin/partprobe ${i}
+    done
+}
+
+stop() {
+    /bin/echo "Deactivating LVM LVs..."
+    ${VGCHANGE} -an -S 'locktype=sanlock || locktype=dlm' || exit 1
+    /bin/echo "Stopping LVM lockspaces..."
+    ${LVMLOCKCTL} --stop-lockspaces --wait 1 || exit 1
+    /bin/echo "Stopping lvmlockd..."
+    /bin/kill -TERM $(/bin/pidof ${LVMLOCKD}) || exit 1
+    wait_for_stop ${LVMLOCKD} && /bin/rm -f ${LVMLOCKD_LOCK}
+}
+
+status() {
+    /bin/pidof ${LVMLOCKD} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

@@ -2436,7 +2436,7 @@ eudev: glibc util-linux gperf
 	fi
 	cd $(tgt_src_dir) && PATH=$$PATH:$(IMAGE_DIR)/usr/bin \
 	BLKID_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
-	BLKID_LIBS="-lblkid" ./configure --prefix=/usr \
+	BLKID_LIBS="-lblkid" ./configure --prefix=/usr --sysconfdir=/etc \
 	--disable-selinux --disable-gudev --disable-kmod --disable-silent-rules
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
