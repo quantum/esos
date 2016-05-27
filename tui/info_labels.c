@@ -20,6 +20,7 @@
 #include "dialogs.h"
 #include "strings.h"
 
+
 /*
  * This function is responsible for moving, resizing, and updating the message
  * lines in the main screen information labels. It will read the screen size
@@ -345,7 +346,7 @@ int readTargetData(char *label_msg[]) {
         if (row_cnt < MAX_INFO_LABEL_ROWS) {
             snprintf(line_buffer, TARGETS_LABEL_COLS,
                     "%-33.33s %-10.10s %-10.10s %-20.20s",
-                    tgt_name[i], driver_name[i],
+                    prettyShrinkStr(33, tgt_name[i]), driver_name[i],
                     tgt_state[i], tgt_speed_str[i]);
             SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
             row_cnt++;
@@ -562,8 +563,8 @@ int readSessionData(char *label_msg[]) {
         if (row_cnt < MAX_INFO_LABEL_ROWS) {
             snprintf(line_buffer, SESSIONS_LABEL_COLS,
                     "%-25.25s %5d %5d %18llu %18llu",
-                    init_names[i], lun_count[i], active_cmds[i],
-                    read_io_kb[i], write_io_kb[i]);
+                    prettyShrinkStr(25, init_names[i]), lun_count[i],
+                    active_cmds[i], read_io_kb[i], write_io_kb[i]);
             SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
             row_cnt++;
         }

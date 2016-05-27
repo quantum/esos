@@ -201,7 +201,8 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                                 init_attr_val);
                         SAFE_ASPRINTF(&scroll_init_list[i],
                                 "<C>%.30s - Used By %d Groups",
-                                scst_sess_inits[i], init_use_cnt);
+                                prettyShrinkStr(30, scst_sess_inits[i]),
+                                init_use_cnt);
                         i++;
                     }
                 }

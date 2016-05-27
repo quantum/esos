@@ -16,6 +16,7 @@
 #include "prototypes.h"
 #include "system.h"
 
+
 /*
  * Strip whitespace and trailing newline from a string. Originally
  * from Linux kernel lib/string.c (strim()).
@@ -334,6 +335,9 @@ boolean checkInetAccess() {
         ++loop_cnt;
         /* Check the request */
         ret_val = gai_error(requests[0]);
+        freeaddrinfo(requests[0]->ar_request);
+        freeaddrinfo(requests[0]->ar_result);
+        free(requests);
         if (ret_val == EAI_INPROGRESS) {
             ;
         } else if (ret_val == 0) {
@@ -347,5 +351,61 @@ boolean checkInetAccess() {
             DEBUG_LOG("nanosleep(): %s", strerror(errno));
             return FALSE;
         }
+    }
+}
+
+
+/**
+ * @brief The utility function for strings takes a "maximum string size"
+ * argument and a string argument; if the length of the given string is less
+ * than the maximum, return the string as is. If the string is longer, then
+ * remove enough of the string from the center to accommodate the maximum size
+ * and include several periods to show the string was abbreviated.
+ * @param max_len The maximum length the string should fit.
+ * @param string The original string that needs to be shrunk.
+ * @return A pretty, formatted, shrunken (if needed) string.
+ */
+char *prettyShrinkStr(size_t max_len, char *string) {
+    size_t curr_size = 0, char_to_del = 0, left_len = 0, right_len = 0;
+    char *right_half = NULL, *curr_pos = NULL;
+    char str_buff[MISC_STRING_LEN] = {0};
+    static char ret_buff[MAX_SYSFS_ATTR_SIZE] = {0};
+    int i = 0;
+
+    /* Since ret_buff is re-used between calls, we reset the first character */
+    ret_buff[0] = '\0';
+
+    /* Maybe it is already an acceptable length */
+    curr_size = strlen(string);
+    if (curr_size <= max_len) {
+        strncpy(ret_buff, string, MAX_SYSFS_ATTR_SIZE);
+        return ret_buff;
+
+    } else {
+        /* Guess not, so lets shrink it */
+        strncpy(ret_buff, string, MAX_SYSFS_ATTR_SIZE);
+        char_to_del = curr_size - max_len + 3;
+        left_len = right_len = (curr_size - char_to_del) / 2;
+        while ((left_len + char_to_del + right_len) < max_len)
+            ++right_len;
+        right_half = ret_buff + left_len + char_to_del;
+        strncpy(str_buff, right_half, MISC_STRING_LEN);
+        curr_pos = ret_buff + left_len;
+        *curr_pos = '.';
+        ++curr_pos;
+        *curr_pos = '.';
+        ++curr_pos;
+        *curr_pos = '.';
+        ++curr_pos;
+        for (i = 0; i < MISC_STRING_LEN; i++) {
+            if (str_buff[i] == '\0') {
+                break;
+            } else {
+                *curr_pos = str_buff[i];
+                ++curr_pos;
+            }
+        }
+        *curr_pos = '\0';
+        return ret_buff;
     }
 }

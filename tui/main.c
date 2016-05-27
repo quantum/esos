@@ -24,6 +24,7 @@
 #include "dialogs.h"
 #include "strings.h"
 
+
 int main(int argc, char** argv) {
     CDKSCREEN *cdk_screen = 0;
     WINDOW *main_window = 0, *sub_window = 0;
@@ -988,8 +989,8 @@ void statusBar(WINDOW *window) {
     SAFE_ASPRINTF(&status_msg, "</B> %s%*s%s <!B>", esos_ver_str, bar_space,
             "", username_str);
     status_bar = char2Chtype(status_msg, &junk, &junk);
-    writeChtypeAttrib(window, 1, LINES-1, status_bar, COLOR_STATUS_BAR,
-            HORIZONTAL, 0, COLS-2);
+    writeChtypeAttrib(window, 1, (LINES - 1), status_bar, COLOR_STATUS_BAR,
+            HORIZONTAL, 0, (COLS - 2));
     freeChtype(status_bar);
     wrefresh(window);
 
