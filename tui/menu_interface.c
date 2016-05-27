@@ -87,30 +87,27 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
  */
 void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     CDKDIALOG *bundle_dialog = 0;
-    char tar_cmd[MAX_SHELL_CMD_LEN] = {0}, nice_date[MISC_STRING_LEN] = {0},
-            bundle_file[MISC_STRING_LEN] = {0},
-            file_name[MISC_STRING_LEN] = {0};
-    char *error_msg = NULL;
+    char pkg_file_path[MAX_SYSFS_ATTR_SIZE] = {0};
+    char *cmd_str = NULL, *error_msg = NULL;
     char *message[SUPPORT_PKG_MSG_SIZE] = {NULL};
     int ret_val = 0, exit_stat = 0, i = 0;
-    time_t now = 0;
-    struct tm *tm_now = NULL;
-
-    /* Make a file name path for the support bundle */
-    now = time(NULL);
-    tm_now = localtime(&now);
-    strftime(nice_date, sizeof(nice_date), "%s", tm_now);
-    snprintf(file_name, MISC_STRING_LEN, "esos_support_pkg-%s", nice_date);
-    snprintf(bundle_file, MISC_STRING_LEN, "%s/%s.tgz", TEMP_DIR, file_name);
+    FILE *support_cmd = NULL;
 
     /* Archive the configuration files and logs */
-    snprintf(tar_cmd, MAX_SHELL_CMD_LEN, "%s cpfz %s --transform "
-            "'s,^,%s/,' --exclude='rc.d' --exclude='ssh' "
-            "--exclude='shadow*' --exclude='ssmtp' "
-            "/etc /var/log > /dev/null 2>&1", TAR_BIN, bundle_file, file_name);
-    ret_val = system(tar_cmd);
-    if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-        SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, TAR_BIN, exit_stat);
+    SAFE_ASPRINTF(&cmd_str, "%s 2>&1", SUPPORT_TOOL);
+    support_cmd = popen(cmd_str, "r");
+    fgets(pkg_file_path, sizeof (pkg_file_path), support_cmd);
+    if ((exit_stat = pclose(support_cmd)) == -1) {
+        ret_val = -1;
+    } else {
+        if (WIFEXITED(exit_stat))
+            ret_val = WEXITSTATUS(exit_stat);
+        else
+            ret_val = -1;
+    }
+    FREE_NULL(cmd_str);
+    if (ret_val != 0) {
+        SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SUPPORT_TOOL, ret_val);
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
         return;
@@ -122,9 +119,9 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     SAFE_ASPRINTF(&message[2], "<C>An archive containing configuration files "
             "and logs has been");
     SAFE_ASPRINTF(&message[3], "<C>created; its located here: </B>%s<!B>",
-            bundle_file);
-    SAFE_ASPRINTF(&message[4], "<C>You may now retrieve the file from this host "
-            "via SFTP/SCP.");
+            pkg_file_path);
+    SAFE_ASPRINTF(&message[4], "<C>You may now retrieve the file from this "
+            "host via SFTP/SCP.");
     SAFE_ASPRINTF(&message[5], " ");
     SAFE_ASPRINTF(&message[6], " ");
 

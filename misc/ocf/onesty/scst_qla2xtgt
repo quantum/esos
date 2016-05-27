@@ -1,0 +1,469 @@
+#!/bin/bash
+if [[ $RA_DEBUG == 1 ]]
+then
+  set -x
+fi
+#
+# SCST qla2xtgt RA - manages SCST fibre channel targets. Used to start
+# drivers and enable FC ports as well as instanciate initiator groups
+# and io grouping. Made for HA FC ALUA targets so respects that every
+# target port must have a unique target port id.
+#
+# use this to initialize your SCST instance before starting devices
+# and device groups above it. So all your configuration can be held in
+# the cluster manager. SCST startup on system start must be disabled.
+#
+# Copyright (c) 2016 Onesty Tech GmbH, Felix Zachlod
+#                    All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it would be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Further, this software is distributed without any warranty that it is
+# free of the rightful claim of any third person regarding infringement
+# or the like.  Any license provided herein, whether implied or
+# otherwise, applies only to this software file.  Patent licenses, if
+# any, provided herein do not apply to combinations of this program with
+# other software, or any other product whatsoever.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
+#
+
+#######################################################################
+# Initialization:
+
+: ${OCF_FUNCTIONS=${OCF_ROOT}/resource.d/heartbeat/.ocf-shellfuncs}
+: ${COMMON_FUNCTIONS=${OCF_ROOT}/resource.d/onesty/.common-funcs}
+. ${OCF_FUNCTIONS}
+. ${COMMON_FUNCTIONS}
+: ${__OCF_ACTION=$1}
+
+#######################################################################
+
+OCF_RESKEY_initiators=$(echo $OCF_RESKEY_initiators | tr ';' ' ' | tr '[:upper:]' '[:lower:]')
+state="${HA_RSCTMP}/scst_qla2xtgt-${OCF_RESOURCE_INSTANCE}.state"
+REQUIRED_MODULES="scst qla2x00tgt"
+OCF_RESKEY_tgtdriver="qla2x00t"
+
+declare -a nodes
+declare -a targetports
+
+inigroup_names=""
+unset inigroups
+declare -A inigroups
+
+#######################################################################
+
+l_test_tgt_up() {
+  local target=$1
+  local tgtid=$2
+  if [[ -f $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/enabled ]] && [[ "$(cat $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/enabled 2>/dev/null)" == "1" ]] && [[ "$(cat $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/rel_tgt_id | head -n 1 2>/dev/null)" == "$tgtid" ]]
+  then
+    return $OCF_SUCCESS
+  fi
+  return $OCF_ERR_GENERIC
+}
+
+l_test_ini_group() {
+  local ini_up=0
+  local ini_total=0
+  local ini_exist=0
+  local target=$1
+  local inigroup=$2
+  if [[ -d $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/ini_groups/$inigroup ]]
+  then
+    ini_exist=$(($(ls $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/ini_groups/$inigroup/initiators/ | wc -l) -1))
+    for initiator in ${inigroups[$inigroup]}
+    do
+      if [[ -f $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/ini_groups/$inigroup/initiators/$initiator ]]
+      then
+        let "ini_up++"
+      fi
+      let "ini_total++"
+    done
+    if [[ $ini_up -eq $ini_total ]] && [[ $ini_up -eq $ini_exist ]]
+    then
+      return $OCF_SUCCESS
+    fi
+  fi
+  return $OCF_ERR_GENERIC
+}
+
+l_stop_targets()
+{
+  for target in ${targetports[$localnodeid]}
+  do
+    echo 0 > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/enabled 2>/dev/null &
+  done
+  local notstopped=1
+  while [[ $notstopped -ne 0 ]]
+  do
+    notstopped=0
+    for target in ${targetports[$localnodeid]}
+    do
+      if [[ "$(cat $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/enabled)" -ne "0" ]]
+      then
+        notstopped=1
+        sleep 1
+        break
+      fi
+    done
+  done
+}
+
+l_create_inigroup() {
+  echo "create $2" > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$1/ini_groups/mgmt 2>/dev/null
+}
+
+l_delete_inigroup()
+{
+  echo "clear" > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$1/ini_groups/$2/initiators/mgmt 2>/dev/null
+  echo "del $2" > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$1/ini_groups/mgmt 2>/dev/null
+}
+
+l_delete_initiator()
+{
+  echo "del $3" > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$1/ini_groups/$2/initiators/mgmt 2>/dev/null
+}
+
+l_add_initiator()
+{
+  echo "add $3" > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$1/ini_groups/$2/initiators/mgmt 2>/dev/null
+}
+
+l_clear_inigroups()
+{
+  for target in ${targetports[$localnodeid]}
+  do
+    for inigroup in $(find $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/ini_groups -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+    do
+      l_delete_inigroup $target $inigroup
+    done
+  done
+}
+
+l_create_inigroups() {
+  for target in ${targetports[$localnodeid]}
+  do
+    local groupid=$(($localnodeid*100))
+    for inigroup in $inigroup_names
+    do
+      let "groupid++"
+      l_create_inigroup $target $inigroup
+      l_set_iogrouping $target $inigroup $groupid
+      for initiator in ${inigroups[$inigroup]}
+      do
+        l_add_initiator $target $inigroup $initiator
+      done
+    done
+  done
+}
+
+l_set_iogrouping() {
+  echo $3 > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$1/ini_groups/$2/io_grouping_type
+}
+
+l_adjust_inigroups() {
+  for target in ${targetports[$localnodeid]}
+  do
+    existing_igs=$(find $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/ini_groups -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+    local groupid=$(($localnodeid*100))
+    for inigroup in $inigroup_names
+    do
+      let "groupid++"
+      if ! c_is_in $inigroup $existing_igs
+      then
+        l_create_inigroup $target $inigroup
+        l_set_iogrouping $target $inigroup $groupid
+      fi
+      existing_inis=$(find $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/ini_groups/$inigroup/initiators -mindepth 1 -maxdepth 1 -type f ! -name mgmt -printf '%f\n')
+      for initiator in ${inigroups[$inigroup]}
+      do
+        if ! c_is_in $initiator $existing_inis
+        then
+          l_add_initiator $target $inigroup $initiator
+        fi
+      done
+    done
+    for inigroup in $existing_igs
+    do
+      if ! c_is_in $inigroup $inigroup_names
+      then
+        l_delete_inigroup $target $inigroup
+      else
+      existing_inis=$(find $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/ini_groups/$inigroup/initiators -mindepth 1 -maxdepth 1 -type f ! -name mgmt -printf '%f\n')
+      for initiator in $existing_inis
+      do
+        if ! c_is_in $initiator ${inigroups[$inigroup]}
+        then
+          l_delete_initiator $target $inigroup $initiator
+        fi
+      done
+      fi
+    done
+  done
+}
+
+l_start_targets() {
+  local portid
+  portid=$(($localnodeid * 100))
+
+  for target in ${targetports[$localnodeid]}
+  do
+    let "portid++"
+    echo $portid > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/rel_tgt_id 2>/dev/null
+    echo 1 > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/enabled 2>/dev/null &
+  done
+  local notstarted=1
+  while [[ $notstarted -ne 0 ]]
+  do
+    notstarted=0
+    for target in ${targetports[$localnodeid]}
+    do
+      if [[ "$(cat $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$target/enabled)" -eq "0" ]]
+      then
+        notstarted=1
+        sleep 1
+        break
+      fi
+    done
+  done
+}
+
+meta_data() {
+  cat <<END
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="scst_qla2xtgt" version="1.0">
+<version>1.0</version>
+
+<longdesc lang="en">
+This resource agent manages starting up scst drivers and qla2xxx fibre
+channel targets, as well as initialize io_grouping and security groups
+it is the baseline that must be run before ALUA device groups are started
+</longdesc>
+<shortdesc lang="en">scst qla driver initialization</shortdesc>
+
+<parameters>
+<parameter name="initiators" required="1" unique="0">
+<longdesc lang="en">
+A list of initiator(groups) that should be added to the target.
+It has to be given in the following form:
+ini1=00:00:00:00:00:00:00:01,00:00:00:00:00:00:00:02; \
+ini2=00:00:00:00:00:00:00:03,00:00:00:00:00:00:00:04
+
+Different Initiator groups are used to perform IO grouping.
+
+This feature is intended to be used for MPIO access. Put all initiators into
+one group that belong to one host so that they are in the same IO group put
+initiators from different hosts into different groups so that they are in
+different IO groups. But can be used for security too. Export devices only
+to specific initiator groups for security purposes.
+</longdesc>
+<shortdesc lang="en">
+Which Initiators should have access to the target
+</shortdesc>
+<content type="string" />
+</parameter>
+</parameters>
+<actions>
+<action name="start"        timeout="60" />
+<action name="stop"         timeout="360" />
+<action name="monitor"      timeout="20" interval="10" depth="0" />
+<action name="reload"       timeout="120" />
+<action name="meta-data"    timeout="5" />
+<action name="validate-all"   timeout="20" />
+</actions>
+</resource-agent>
+END
+}
+
+#######################################################################
+
+qla2xtgt_usage() {
+  cat <<END
+usage: $0 {start|stop|monitor|validate-all|meta-data}
+
+Expects to have a fully populated OCF RA-compliant environment set.
+END
+}
+
+qla2xtgt_start() {
+  qla2xtgt_monitor
+  rc=$?
+  if [ $rc = $OCF_SUCCESS ]
+  then
+    return $OCF_SUCCESS
+  elif [ $rc = $OCF_NOT_RUNNING ]
+  then
+    if [[ -z ${targetports[$localnodeid]} ]]
+    then
+      ocf_log err "cannot start on a node without fc ports"
+      return $OCF_ERR_GENERIC
+    fi
+    l_create_inigroups || return $OCF_ERR_GENERIC
+    l_start_targets || return $OCF_ERR_GENERIC
+  else
+    return $OCF_ERR_GENERIC
+  fi
+  touch ${state} || return $OCF_ERR_GENERIC
+  return $OCF_SUCCESS
+}
+
+qla2xtgt_stop() {
+  qla2xtgt_monitor
+  if [ $? = $OCF_NOT_RUNNING ]
+  then
+    return $OCF_SUCCESS
+  fi
+
+  local rc_tgt
+  local rc_inigroups
+
+  l_stop_targets
+  rc_tgt=$?
+  l_clear_inigroups
+  rc_inigroups=$?
+  rm -f ${state}
+  rc_state=$?
+
+  if [[ $rc_tgt == $OCF_SUCCESS ]] && [[ $rc_inigroups == $OCF_SUCCESS ]] && [[ $rc_state == $OCF_SUCCESS ]]
+  then
+    return $OCF_SUCCESS
+  fi
+  return $OCF_ERR_GENERIC
+}
+
+qla2xtgt_reload() {
+  qla2xtgt_monitor
+  rc=$?
+  if [ $rc = $OCF_NOT_RUNNING ]
+  then
+    qla2xtgt_start
+  else
+    l_adjust_inigroups
+  fi
+  qla2xtgt_monitor
+  if [ $? =  $OCF_SUCCESS ]
+  then
+    return $OCF_SUCCESS
+  fi
+  return $OCF_ERR_GENERIC
+}
+
+qla2xtgt_monitor() {
+  qla2xtgt_validate || exit $?
+
+  local tgt_up=0
+  local tgt_total=0
+  local rc
+
+  if [[ -f ${state} ]]
+  then
+    for target in ${targetports[$localnodeid]}
+    do
+      let "tgt_total++"
+      portid=$(($localnodeid * 100 + $tgt_total))
+      if ! l_test_tgt_up $target $portid
+      then
+        continue
+      fi
+      let "tgt_up++"
+    done
+
+    if [[ $tgt_up -eq $tgt_total ]]
+    then
+      rc=$OCF_SUCCESS
+      ocf_log debug "qla2xtgt is running"
+    else
+      rc=$OCF_ERR_GENERIC
+      ocf_log err "qla2xtgt has failed"
+    fi
+  else
+    rc=$OCF_NOT_RUNNING
+    ocf_log debug "qla2xtgt is not running"
+  fi
+  return $rc
+}
+
+qla2xtgt_validate() {
+  local inigroup_count=0
+
+  c_test_instances || return $OCF_ERR_CONFIGURED
+  c_expand_nodes || return $OCF_ERR_CONFIGURED
+  c_test_local_ports || return $OCF_ERR_CONFIGURED
+
+  if [[ -z ${inigroup_names} ]]
+  then
+    for inigroup_inis in $OCF_RESKEY_initiators
+    do
+      key=$(echo $inigroup_inis | tr '=' ' ' | awk {'print $1'})
+      if [[ ! $key =~ $ALPHANUM_REGEX ]] || [[ ${#key} -gt 8 ]]
+      then
+        ocf_log warn "inigroup name must be alphanumeric and max 8 chars"
+        continue
+      fi
+      inigroup_inis=$(echo $inigroup_inis | tr '=' ' ' | awk {'print $2'})
+      if [[ ! -z ${inigroups[$key]} ]]
+      then
+        ocf_log warn "inigroup name must be unique"
+        continue
+      fi
+      inigroups[$key]=$(echo $inigroup_inis | tr ',' ' ')
+      initiators=""
+      for initiator in ${inigroups[$key]}
+      do
+        if [[ ! $initiator =~ $FC_ADDR_REGEX ]]
+        then
+          ocf_log warn "initiators must contain a valid initiator addresses. ${initiator} will be ignored"
+        else
+          initiators=${initiators}${initiator}" "
+        fi
+      done
+      inigroups[$key]=$initiators
+      inigroup_names=${inigroup_names}${key}" "
+      let "inigroup_count++"
+    done
+
+    if [[ $inigroup_count -lt 1 ]]
+    then
+      ocf_log err "at least one valid initiator group has to be defined."
+      return $OCF_ERR_CONFIGURED
+    fi
+
+    if [[ $inigroup_count -gt 99 ]]
+    then
+      ocf_log err "more than 100 initiator groups specified, which is invalid"
+      return $OCF_ERR_CONFIGURED
+    fi
+  fi
+
+  return $OCF_SUCCESS
+}
+
+case $__OCF_ACTION in
+meta-data)    meta_data
+              exit $OCF_SUCCESS
+              ;;
+start)        qla2xtgt_start;;
+stop)         qla2xtgt_stop;;
+monitor)      qla2xtgt_monitor;;
+reload)       qla2xtgt_reload;;
+validate-all) qla2xtgt_validate;;
+usage|help)   qla2xtgt_usage
+              exit $OCF_SUCCESS
+              ;;
+*)            qla2xtgt_usage
+              exit $OCF_ERR_UNIMPLEMENTED
+              ;;
+esac
+rc=$?
+ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : $rc"
+exit $rc

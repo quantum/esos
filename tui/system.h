@@ -165,6 +165,7 @@ extern "C" {
 #define SSMTP_BIN       "/usr/sbin/ssmtp"
 #define TAR_BIN         "/usr/bin/tar"
 #define CRM_TOOL        "/usr/sbin/crm"
+#define SUPPORT_TOOL    "/usr/local/sbin/support_pkg.sh"
 
 /* A few sysfs settings */
 #define SYSFS_FC_HOST           "/sys/class/fc_host"

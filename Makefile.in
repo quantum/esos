@@ -406,8 +406,10 @@ image: $(build_targets)
 	$(INSTALL) $(SRC_DIR)/scripts/crm_mon_email.sh $(STAGING_DIR)/usr/local/bin/
 	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py $(STAGING_DIR)/usr/local/bin/
 	$(INSTALL) $(SRC_DIR)/scripts/hw_raid_cli.py $(STAGING_DIR)/usr/local/sbin/
-	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d/esos
-	$(INSTALL) $(SRC_DIR)/misc/ocf/* $(STAGING_DIR)/usr/lib/ocf/resource.d/esos/
+	$(INSTALL) $(SRC_DIR)/scripts/support_pkg.sh $(STAGING_DIR)/usr/local/sbin/
+	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d
+	$(CP) -R $(SRC_DIR)/misc/ocf/esos $(STAGING_DIR)/usr/lib/ocf/resource.d/
+	$(CP) -R $(SRC_DIR)/misc/ocf/onesty $(STAGING_DIR)/usr/lib/ocf/resource.d/
 	$(INSTALL) -D -m 0755 $(SRC_DIR)/misc/drbd_xsltproc/drbd-xmlproc \
 	$(STAGING_DIR)/usr/local/bin/drbd-xmlproc
 	$(INSTALL) -D -m 0644 $(SRC_DIR)/misc/drbd_xsltproc/xml2conf.xsl \

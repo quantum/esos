@@ -1,0 +1,132 @@
+modinfo="${HA_SBIN_DIR}/modinfo"
+lsmod="${HA_SBIN_DIR}/lsmod"
+modprobe="${HA_SBIN_DIR}/modprobe"
+
+CRM_MASTER="${HA_SBIN_DIR}/crm_master -l reboot"
+
+FC_ADDR_REGEX="^([a-fA-F0-9]{2}\:){7}[a-fA-F0-9]{2}$"
+IB_ADDR_REGEX="^([a-fA-F0-9]{4}\:){3}[a-fA-F0-9]{4}$"
+LUN_REGEX="^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$"
+BOOL_REGEX="^[01]$"
+ALPHANUM_REGEX="^[a-zA-Z0-9]+$"
+ALPHANUM_EXTREGEX="^[a-zA-Z0-9\-_]+$"
+NUMERIC_REGEX="^[0-9]+$"
+
+SCST_BASE="/sys/kernel/scst_tgt"
+
+NODE_NAME=$(${HA_SBIN_DIR}/crm_node -n)
+NODES=$(${HA_SBIN_DIR}/crm_node -l | awk '{print $2}')
+localnodeid=$(${HA_SBIN_DIR}/crm_node -i)
+remotenodeid=0
+
+c_load_modules() {
+  for module in "$@"
+  do
+    ${modinfo} $module> /dev/null 2>&1 || { ocf_log err "Module $module not found"; return $OCF_ERR_INSTALLED; }
+    c_start_module $module || { ocf_log err "Module $module could not be found running and could not be started."; return $OCF_ERR_INSTALLED; }
+  done
+}
+
+c_start_module() {
+  local module=$1
+  if [ $(${lsmod} | grep -c "^$module ") -eq 0 ]
+  then
+    ${modprobe} $1> /dev/null 2>&1 || { ocf_log err "could not start module $1"; return $OCF_ERR_INSTALLED; }
+  fi
+  return $OCF_SUCCESS
+}
+
+c_is_in(){
+  for item in ${@:2}
+  do
+    if [[ "$1" == $item ]]
+    then
+      return $OCF_SUCCESS
+    fi
+  done
+  return $OCF_ERR_GENERIC
+}
+
+c_expand_nodes() {
+  for node in $NODES
+  do
+    nodeid=$(${HA_SBIN_DIR}/crm_node -l | grep $node | awk '{print $1}')
+    nodes[$nodeid]=$node
+    conftargetports="$(${HA_SBIN_DIR}/crm_attribute --node $node --name targetports --query | egrep -o 'value=[^ ]+' | egrep -o '[^=]+$' | tr '[:upper:]' '[:lower:]' | tr ',' ' ' 2>/dev/null)"
+    unset targetports[$nodeid]
+    for port in $conftargetports
+    do
+      if [[ ! $port =~ $FC_ADDR_REGEX ]] && [[ ! $port =~ $IB_ADDR_REGEX ]]
+      then
+        ocf_log err "port $port is not a valid target port address"
+        return $OCF_ERR_CONFIGURED
+      fi
+      if [[ ! -z ${targetports[$nodeid]} ]]
+      then
+        targetports[$nodeid]=${targetports[$nodeid]}" "${port}
+      else
+        targetports[$nodeid]=${port}
+      fi
+    done
+  done
+  return $OCF_SUCCESS
+}
+
+#c_test_node_count() {
+#  local targetnodes=0
+#  for nodeid in ${!nodes[@]}
+#  do
+#    if [[ ! -z ${targetports[$nodeid]} ]]
+#    then
+#      if [[ $nodeid != $localnodeid ]]
+#      then
+#        remotenodeid=$nodeid
+#      fi
+#      let "targetnodes++"
+#    fi
+#  done
+
+# if [[ $targetnodes != 2 ]]
+#  then
+#    ocf_log err "exactly two nodes with target ports expected."
+#    return $OCF_ERR_CONFIGURED
+#  fi
+#  return $OCF_SUCCESS
+#}
+
+c_test_local_ports() {
+  if [[ ! -z ${targetports[$localnodeid]} ]]
+  then
+    c_load_modules ${REQUIRED_MODULES}
+    for port in ${targetports[$localnodeid]}
+    do
+      if [[ ! -d $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$port ]]
+      then
+        ocf_log err "port $port does not exist in local system although it should"
+        return $OCF_ERR_CONFIGURED
+      fi
+    done
+  fi
+  return $OCF_SUCCESS
+}
+
+c_test_instances() {
+  if [[ $OCF_RESKEY_CRM_meta_clone_max -gt 2 ]] || [[ $OCF_RESKEY_CRM_meta_clone_node_max -gt 1 ]]
+  then
+    ocf_log err "maximum 1 instance per node and 2 instances per cluster allowed"
+    return $OCF_ERR_CONFIGURED
+  fi
+  return $OCF_SUCCESS
+}
+
+c_issue_lip() {
+  for port in ${targetports[$localnodeid]}
+  do
+    if [[ $(cat $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$port/enabled) == "1" ]]
+    then
+      ocf_log debug "issuing lip to target port $port"
+      echo 1 > $(readlink -f $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$port/host | sed 's/scsi_host/fc_host/g')/issue_lip & 2> /dev/null
+    fi
+  done
+  return $OCF_SUCCESS
+}

@@ -1,0 +1,1140 @@
+#!/bin/bash
+if [[ $RA_DEBUG == 1 ]]
+then
+  set -x
+fi
+#
+# SCST aluadg RA - manages SCST ALUA device groups. Used to create
+# device handlers, exports and manage ALUA states between targets
+#
+# Copyright (c) 2016 Onesty Tech GmbH, Felix Zachlod
+#                    All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it would be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Further, this software is distributed without any warranty that it is
+# free of the rightful claim of any third person regarding infringement
+# or the like.  Any license provided herein, whether implied or
+# otherwise, applies only to this software file.  Patent licenses, if
+# any, provided herein do not apply to combinations of this program with
+# other software, or any other product whatsoever.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
+#
+#######################################################################
+# Initialization:
+
+: ${OCF_FUNCTIONS=${OCF_ROOT}/resource.d/heartbeat/.ocf-shellfuncs}
+: ${COMMON_FUNCTIONS=${OCF_ROOT}/resource.d/onesty/.common-funcs}
+. ${OCF_FUNCTIONS}
+. ${COMMON_FUNCTIONS}
+: ${__OCF_ACTION=$1}
+
+: ${slave_score=5}
+: ${master_score=10}
+
+: ${OCF_RESKEY_CRM_meta_interval=0}
+
+#######################################################################
+
+state="${HA_RSCTMP}/scst_aluadg-${OCF_RESOURCE_INSTANCE}.state"
+REQUIRED_MODULES="scst_disk scst_vdisk"
+
+declare -a nodes
+declare -a targetports
+declare -A devices
+
+for ((device_num=0; device_num<256; device_num++))
+do
+  reskey_name=OCF_RESKEY_device$device_num
+  if [[ ! -z ${!reskey_name} ]]
+  then
+    params=$(echo ${!reskey_name} | tr ',' ' ' | tr -d \")
+    unset device_vals
+    declare -A device_vals
+
+    for param in $params
+    do
+      key=$(echo $param | awk -F'[=]' '{print $1}' | tr '[:upper:]' '[:lower:]')
+      value=$(echo $param | awk -F'[=]' '{print $2}')
+      device_vals[$key]=$value
+    done
+
+    for key in "${!device_vals[@]}"
+    do
+      devices[$device_num,$key]=${device_vals[$key]}
+    done
+  fi
+done
+
+#######################################################################
+
+l_create_handler() {
+  local rotational=1
+  local dgroupstate=$(cat $SCST_BASE/device_groups/${OCF_RESKEY_groupname}/target_groups/${nodes[$localnodeid]}/state 2>/dev/null | head -n 1)
+  device_num=$1
+
+  virtname=${OCF_RESKEY_groupname}"_"${devices[$device_num,virtname]}
+  if [[ -d $SCST_BASE/devices/$virtname ]]
+  then
+    ocf_log debug "device ${devices[$device_num,virtname]} already exists in device group ${OCF_RESKEY_groupname}. Noop"
+    return $OCF_SUCCESS
+  fi
+
+  if [[ ${devices[$device_num,is_ssd]} == "1" ]]
+  then
+    rotational=0
+  fi
+
+  if ([[ ${devices[$device_num,handler]} == "vdisk_blockio" ]] \
+      && [[ ! -b ${devices[$device_num,filename]} ]])
+  then
+    ocf_log err "Block device does not exist."
+    devices[$device_num,ignored]=1
+    return $OCF_ERR_GENERIC
+  fi
+
+  if ([[ ${devices[$device_num,handler]} == "vdisk_fileio" ]] \
+      && [[ ! -b ${devices[$device_num,filename]} ]] \
+      && [[ ! -f ${devices[$device_num,filename]} ]])
+  then
+    ocf_log err "Block device or device image does not exist."
+    devices[$device_num,ignored]=1
+    return $OCF_ERR_GENERIC
+  fi
+
+  case "${devices[$device_num,handler]}" in
+    "vdisk_nullio")
+      echo "add_device $virtname removable=${devices[$device_num,removable]}; read_only=${devices[$device_num,read_only]}; rotational=$rotational; dummy=${devices[$device_num,dummy]}" \
+        > $SCST_BASE/handlers/${devices[$device_num,handler]}/mgmt \
+        || { ocf_log err "cannot add device handler for unknown reason"; \
+          return $OCF_ERR_GENERIC; }
+      ;;
+    *)
+      echo "add_device $virtname filename=${devices[$device_num,filename]}; nv_cache=${devices[$device_num,nv_cache]}; removable=${devices[$device_num,removable]}; read_only=${devices[$device_num,read_only]}; rotational=$rotational" \
+        > $SCST_BASE/handlers/${devices[$device_num,handler]}/mgmt \
+        || { ocf_log err "cannot add device handler for unknown reason"; \
+          return $OCF_ERR_GENERIC; }
+      ;;
+    esac
+    if [[ ! -z ${devices[$device_num,t10devid]} ]]
+    then
+      echo "${devices[$device_num,t10devid]}" > $SCST_BASE/devices/$virtname/t10_dev_id || { ocf_log err "cannot set device id for unknown reason"; return $OCF_ERR_GENERIC; }
+    fi
+    echo "${nodes[$localnodeid]}" > $SCST_BASE/devices/$virtname/prod_id 2> /dev/null
+  return $OCF_SUCCESS
+}
+
+l_create_handlers() {
+  for ((device_num=0; device_num<256; device_num++))
+  do
+    if [[ ! -z ${devices[$device_num,virtname]} ]] && [[ -z ${devices[$device_num,ignored]} ]]
+    then
+      l_create_handler $device_num || return $OCF_ERR_GENERIC
+      ocf_log debug "device handler ${devices[$device_num,virtname]} created"
+    fi
+  done
+  return $OCF_SUCCESS
+}
+
+l_set_alua_state() {
+  local dgroup=$1
+  local tgroup=$2
+  local state=$3
+  if [[ -f $SCST_BASE/device_groups/$dgroup/target_groups/$tgroup/state ]]
+  then
+    echo $state > $SCST_BASE/device_groups/$dgroup/target_groups/$tgroup/state || return $OCF_ERR_GENERIC
+  elif [[ $state != "unavailable" ]]
+  then
+    return $OCF_ERR_GENERIC
+  fi
+  return $OCF_SUCCESS
+}
+
+l_add_target_port() {
+  local dgname=$1
+  local tgname=$2
+  local tgnum=$3
+  local port=$4
+  local portcount=$5
+  echo add $port > $SCST_BASE/device_groups/$dgname/target_groups/$tgname/mgmt || return $OCF_ERR_GENERIC
+  if [[ "$(cat $SCST_BASE/device_groups/$dgname/target_groups/$tgname/$port/rel_tgt_id | egrep -o -m 1 '[0-9]+')" == "0" ]]
+  then
+    #this is a remote port, so set rel_tgt_id
+    portid=$(($tgnum * 100 + $portcount))
+    echo $portid > $SCST_BASE/device_groups/$dgname/target_groups/$tgname/$port/rel_tgt_id || return $OCF_ERR_GENERIC
+  fi
+}
+
+l_add_device() {
+  local device_num=$1
+  local virtname=${OCF_RESKEY_groupname}"_"${devices[$device_num,virtname]}
+  if [[ ! -d $SCST_BASE/device_groups/${OCF_RESKEY_groupname}/devices/$virtname ]]
+  then
+    echo "add ${virtname}" > $SCST_BASE/device_groups/${OCF_RESKEY_groupname}/devices/mgmt || return $OCF_ERR_GENERIC
+  fi
+  return $OCF_SUCCESS
+}
+
+l_add_devices() {
+  for ((device_num=0; device_num<256; device_num++))
+  do
+    if [[ ! -z ${devices[$device_num,virtname]} ]] && [[ -z ${devices[$device_num,ignored]} ]]
+    then
+      l_add_device $device_num || return $OCF_ERR_GENERIC
+    fi
+  done
+  return $OCF_SUCCESS
+}
+
+l_create_targetgroup() {
+  local dgname=$1
+  local tgname=$2
+  local tgnum=$3
+  echo "create $tgname" > $SCST_BASE/device_groups/$dgname/target_groups/mgmt || return $OCF_ERR_GENERIC
+  echo $tgnum > $SCST_BASE/device_groups/$dgname/target_groups/$tgname/group_id || return $OCF_ERR_GENERIC
+  l_set_alua_state $dgname $tgname unavailable || return $OCF_ERR_GENERIC
+  local portcount=0
+  for port in ${targetports[$tgnum]}
+  do
+    let "portcount++"
+    l_add_target_port $dgname $tgname $tgnum $port $portcount || return $OCF_ERR_GENERIC
+  done
+}
+
+l_create_targetgroups() {
+  for tgnum in ${!nodes[@]}
+  do
+    if [[ ! -z ${targetports[$tgnum]} ]]
+    then
+      tgname=${nodes[$tgnum]}
+      if [[ -d $SCST_BASE/device_groups/$OCF_RESKEY_groupname/target_groups/$tgname ]]
+      then
+        ocf_log err "target group $tgname already exists. This should not happen."
+        return $OCF_ERR_GENERIC
+      fi
+      l_create_targetgroup $OCF_RESKEY_groupname $tgname $tgnum || { ocf_log err "Could not add target group for unknown reason"; return $OCF_ERR_GENERIC; }
+    fi
+  done
+}
+
+l_create_devicegroup() {
+  if [[ -d $SCST_BASE/device_groups/$OCF_RESKEY_groupname ]]
+  then
+    ocf_log err "device group $OCF_RESKEY_groupname already exists. This should not happen."
+    return $OCF_ERR_GENERIC
+  fi
+  echo "create ${OCF_RESKEY_groupname}" > $SCST_BASE/device_groups/mgmt || { ocf_log err "Cannot add device handler for unknown reason"; return $OCF_ERR_GENERIC; }
+  l_add_devices || { ocf_log err "Could not add devices to devicegroup for unknown reason"; return $OCF_ERR_GENERIC; }
+  l_create_targetgroups || { ocf_log err "Could not add target groups for unknown reason"; return $OCF_ERR_GENERIC; }
+  return $OCF_SUCCESS
+}
+
+l_export_device_to_lun() {
+  local virtname=$1
+  local port=$2
+  local inigroup=$3
+  local lun=$4
+
+  if [[ -d $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$port/ini_groups/$inigroup/luns/${lunnum} ]]
+  then
+    luname=$(readlink -f $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$port/ini_groups/$inigroup/luns/${lunnum}/device | egrep -o "[a-zA-Z0-9_]+$")
+    if [[ "$virtname" == "$luname" ]]
+    then
+      ocf_log debug "lun ${lunnum} in ${inigroup} already holds ${virtname}"
+      return $OCF_SUCCESS
+    else
+      ocf_log err "lun ${lunnum} in ${inigroup} already exports different device!!"
+      return $OCF_ERR_GENERIC
+    fi
+  fi
+  echo "add ${virtname} ${lunnum}" > $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$port/ini_groups/$inigroup/luns/mgmt || return $OCF_ERR_GENERIC
+  return $OCF_SUCCESS
+}
+
+l_export_device() {
+  local device_num=$1
+  local virtname=$OCF_RESKEY_groupname"_"${devices[$device_num,virtname]}
+
+  for ((export_num=0; export_num<256; export_num++))
+  do
+    option_name=export$export_num
+    if [[ ! -z ${devices[$device_num,$option_name]} ]]
+    then
+      inigroups=$(echo ${devices[$device_num,$option_name]} | awk -F[:] '{print $1}')
+      lunnum=$(echo ${devices[$device_num,$option_name]} | awk -F[:] '{print $2}')
+      for port in ${targetports[$localnodeid]}
+      do
+        if [[ $inigroups = "all" ]]
+        then
+          for inigroup in $(find $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$port/ini_groups -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+          do
+            l_export_device_to_lun $virtname $port $inigroup $lun || return $OCF_ERR_GENERIC
+          done
+        else
+          if [[ -d $SCST_BASE/targets/$OCF_RESKEY_tgtdriver/$port/ini_groups/$inigroups ]]
+          then
+            l_export_device_to_lun $virtname $port $inigroups $lun || return $OCF_ERR_GENERIC
+          else
+            ocf_log err "inigroup ${inigroups} does not exist, cannot export"
+            return $OCF_ERR_GENERIC
+          fi
+        fi
+      done
+    fi
+  done
+  return $OCF_SUCCESS
+}
+
+l_export_devices() {
+  for ((device_num=0; device_num<256; device_num++))
+  do
+    if [[ ! -z ${devices[$device_num,virtname]} ]] && [[ -z ${devices[$device_num,ignored]} ]]
+    then
+      l_export_device $device_num || { ocf_log err "Could export devive ${devices[$device_num,virtname]} for unknown reason"; return $OCF_ERR_GENERIC; }
+      ocf_log debug "device ${devices[$device_num,virtname]} exported"
+    fi
+  done
+  return $OCF_SUCCESS
+}
+
+l_remove_device_export() {
+  local exp=$1
+  local reference=$(readlink -f $exp)
+  local lu=$(echo $reference | egrep -o '[0-9]+$')
+  local mgmtfile=$(echo $reference | egrep -o '.*/')"mgmt"
+  echo "del $lu" > $mgmtfile &
+}
+
+l_remove_device_exports() {
+  local virtname=$1
+  local exports=$(find $SCST_BASE/devices/$virtname/exported/ -mindepth 1 -maxdepth 1 -type l)
+
+  for exp in $exports
+  do
+    l_remove_device_export $exp || return $OCF_ERR_GENERIC
+  done
+  return $OCF_SUCCESS
+}
+
+l_remove_exports() {
+  virtnames=$(find $SCST_BASE/handlers/ -maxdepth 2 -mindepth 2 -type l -name "${OCF_RESKEY_groupname}_*" | egrep -o "[a-zA-Z0-9_]+$")
+  for virtname in $virtnames
+  do
+    l_remove_device_exports $virtname || return $OCF_ERR_GENERIC
+  done
+  return $OCF_SUCCESS
+}
+
+l_remove_handler() {
+  local virtname=$1
+  handler=$(readlink -f $SCST_BASE/devices/$virtname/handler | egrep -o "[a-zA-Z0-9_]+$")
+  echo "del_device ${virtname}" > $SCST_BASE/handlers/$handler/mgmt || return $OCF_ERR_GENERIC
+}
+
+l_remove_handlers() {
+  devices=$(find $SCST_BASE/handlers/ -maxdepth 2 -mindepth 2 -type l -name "${OCF_RESKEY_groupname}_*")
+  for device in $devices
+  do
+    virtname=$(echo $device | egrep -o "[a-zA-Z0-9_]+$")
+    l_remove_handler $virtname
+  done
+  return $OCF_SUCCESS
+}
+
+l_remove_obsolete_devices() {
+  existing_devices=$(find $SCST_BASE/handlers/ -maxdepth 2 -mindepth 2 -type l -name "${OCF_RESKEY_groupname}_*" | egrep -o "[a-zA-Z0-9]+$")
+  for existing_device in $existing_devices
+  do
+    local in_config=0
+    for ((device_num=0; device_num<256; device_num++))
+    do
+      if [[ "${devices[$device_num,virtname]}" == "$existing_device" ]]
+      then
+        in_config=1
+        break;
+      fi
+    done
+    if [[ $in_config == 1 ]]
+    then
+      continue
+    else
+      l_remove_device_exports ${OCF_RESKEY_groupname}_${existing_device}
+      l_remove_handler ${OCF_RESKEY_groupname}_${existing_device}
+    fi
+  done
+}
+
+l_remove_obsolete_exports() {
+  local virtname=$1
+
+  existing_exports=$(find $SCST_BASE/devices/$virtname/exported/ -mindepth 1 -maxdepth 1 -type l)
+  for existing_export in $existing_exports
+  do
+    local in_config=0
+    local lu=$(readlink -f $existing_export | egrep -o [0-9]+$)
+    local driver=$(readlink -f $existing_export | egrep -o 'targets/[^/]+' | egrep -o '[^/]+$')
+    local inigroup=$(readlink -f $existing_export | egrep -o 'ini_groups/[^/]+' | egrep -o '[^/]+$')
+
+    if [[ ! $driver == $OCF_RESKEY_tgtdriver ]] || [[ -z $inigroup ]]
+    then
+      continue
+    fi
+
+    for ((export_num=0; export_num<256; export_num++))
+    do
+      option_name=export${export_num}
+      if [[ ! -z ${devices[$device_num,$option_name]} ]]
+      then
+        inigroups=$(echo ${devices[$device_num,$option_name]} | awk -F[:] '{print $1}')
+        lunnum=$(echo ${devices[$device_num,$option_name]} | awk -F[:] '{print $2}')
+
+        if [[ "$lunnum" == "$lu" ]] && [[ "$inigroups" == "$inigroup" ]] || [[ "$inigroups" == "all" ]]
+        then
+          in_config=1
+          break
+        fi
+      fi
+    done
+    if [[ $in_config == 0 ]]
+    then
+      l_remove_device_export $existing_export || return $OCF_ERR_GENERIC
+      ocf_log debug "device export to lun $lu in inigroup $inigroup removed"
+    fi
+  done
+  return $OCF_SUCCESS
+}
+
+l_adjust_device() {
+  local device_num=$1
+  local virtname=${OCF_RESKEY_groupname}_${devices[$device_num,virtname]}
+  l_remove_obsolete_exports $virtname || return $OCF_ERR_GENERIC
+  return $OCF_SUCCESS
+}
+
+l_adjust_devices() {
+  for ((device_num=0; device_num<256; device_num++))
+  do
+    if [[ ! -z ${devices[$device_num,virtname]} ]] && [[ -z ${devices[$device_num,ignored]} ]] && [[ -d "$SCST_BASE/devices/${OCF_RESKEY_groupname}_${devices[$device_num,virtname]}" ]]
+    then
+      l_adjust_device $device_num || return $OCF_ERR_GENERIC
+      ocf_log debug "device ${devices[$device_num,virtname]} parameters adjusted"
+    fi
+  done
+  return $OCF_SUCCESS
+}
+
+l_remove_devicegroup() {
+  if [[ -d $SCST_BASE/device_groups/${OCF_RESKEY_groupname} ]]
+  then
+    echo "del ${OCF_RESKEY_groupname}" > $SCST_BASE/device_groups/mgmt || { ocf_log err "Cannot add device handler for unknown reason"; return $OCF_ERR_GENERIC; }
+  fi
+  return $OCF_SUCCESS
+}
+
+l_check_device_already_blocked() {
+  local device=$1
+  local pending=$(cat $SCST_BASE/devices/${OCF_RESKEY_groupname}_${device}/block | egrep -o '[0-9]$')
+  if [[ "$pending" -ne "0" ]]
+  then
+    return $OCF_ERR_GENERIC
+  fi
+  return $OCF_SUCCESS
+}
+
+l_block_device() {
+  local device=$1
+  local rc
+  local isblocked=$(cat $SCST_BASE/devices/${OCF_RESKEY_groupname}_${device}/block | egrep -o '^[0-9]')
+  if [[ "$isblocked" == "0" ]]
+  then
+    echo 11 > $SCST_BASE/devices/${OCF_RESKEY_groupname}_${device}/block 2>/dev/null
+  fi
+  return $OCF_SUCCESS
+}
+
+l_unblock_device() {
+  local device=$1
+  local rc
+  local isblocked=$(cat $SCST_BASE/devices/${OCF_RESKEY_groupname}_${device}/block | egrep -o '^[0-9]')
+  while [[ ! "$isblocked" == "0" ]]
+  do
+    echo 0 > $SCST_BASE/devices/${OCF_RESKEY_groupname}_${device}/block 2>/dev/null
+    isblocked=$(cat $SCST_BASE/devices/${OCF_RESKEY_groupname}_${device}/block | egrep -o '^[0-9]')
+  done
+  return $OCF_SUCCESS
+}
+
+l_block_devices(){
+  for device in $(ls $SCST_BASE/device_groups/$OCF_RESKEY_groupname/devices/${OCF_RESKEY_groupname}_* -d | egrep -o '[a-zA-Z0-9]+$')
+  do
+    l_block_device $device || return $OCF_ERR_GENERIC
+  done
+  local notblocked=1
+  while [[ $notblocked -ne 0 ]]
+  do
+    notblocked=0
+    for device in $(ls $SCST_BASE/device_groups/$OCF_RESKEY_groupname/devices/${OCF_RESKEY_groupname}_* -d | egrep -o '[a-zA-Z0-9]+$')
+    do
+      if ! l_check_device_already_blocked $device
+      then
+        notblocked=1
+        continue
+      fi
+    done
+    sleep 1
+  done
+  return $OCF_SUCCESS
+}
+
+l_unblock_devices(){
+  for device in $(ls $SCST_BASE/device_groups/$OCF_RESKEY_groupname/devices/${OCF_RESKEY_groupname}_* -d | egrep -o '[a-zA-Z0-9]+$')
+  do
+    l_unblock_device $device || return $OCF_ERR_GENERIC
+  done
+  return $OCF_SUCCESS
+}
+
+l_preactivate_devicegroup() {
+  remotenode=$1
+  if [[ ! -z $remotenode ]]
+  then
+    l_set_alua_state ${OCF_RESKEY_groupname} $remotenode standby || return $OCF_ERR_GENERIC
+  else
+    l_set_alua_state ${OCF_RESKEY_groupname} ${nodes[$localnodeid]} transitioning || return $OCF_ERR_GENERIC
+    l_block_devices || return $OCF_ERR_GENERIC
+    l_set_alua_state ${OCF_RESKEY_groupname} ${nodes[$localnodeid]} standby || return $OCF_ERR_GENERIC
+    l_unblock_devices || return $OCF_ERR_GENERIC
+  fi
+  return $OCF_SUCCESS
+}
+
+l_activate_devicegroup() {
+  remotenode=$1
+  if [[ ! -z $remotenode ]]
+  then
+    l_set_alua_state ${OCF_RESKEY_groupname} $remotenode active || return $OCF_ERR_GENERIC
+  else
+    l_set_alua_state ${OCF_RESKEY_groupname} ${nodes[$localnodeid]} active || return $OCF_ERR_GENERIC
+  fi
+  return $OCF_SUCCESS
+}
+
+l_deactivate_devicegroup() {
+  remotenode=$1
+  if [[ ! -z $remotenode ]]
+  then
+    l_set_alua_state ${OCF_RESKEY_groupname} $remotenode unavailable || return $OCF_ERR_GENERIC
+  else
+    l_set_alua_state ${OCF_RESKEY_groupname} ${nodes[$localnodeid]} unavailable || return $OCF_ERR_GENERIC
+  fi
+  return $OCF_SUCCESS
+}
+
+l_transition_devicegroup() {
+  remotenode=$1
+  if [[ ! -z $remotenode ]]
+  then
+    l_set_alua_state ${OCF_RESKEY_groupname} $remotenode transitioning || return $OCF_ERR_GENERIC
+  else
+    l_set_alua_state ${OCF_RESKEY_groupname} ${nodes[$localnodeid]} transitioning || return $OCF_ERR_GENERIC
+  fi
+  return $OCF_SUCCESS
+}
+
+meta_data() {
+  cat <<END
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="scst_aluadg" version="1.0">
+<version>1.0</version>
+<longdesc lang="en">
+Resource agent for managing SCST ALUA device groups. Creates device handlers,
+exports devices and manages Device- and Targetgroups and the corresponding
+ALUA states. Supports notifications for setting the corresponsing ALUA state 
+of the remote Node.
+</longdesc>
+<shortdesc lang="en">manages SCST ALUA device groups</shortdesc>
+<parameters>
+<parameter name="groupname" required="1" unique="1">
+<longdesc lang="en">
+Name of the device group. Cluster wide unique. Max 8 anumeric characters.
+</longdesc>
+<shortdesc lang="en">
+Which name should be used
+</shortdesc>
+<content type="string" />
+</parameter>
+<parameter name="reload" required="0" unique="0">
+<longdesc lang="en">
+Dummy parameter which is not evaluated. This can be used to force a resource to reload.
+Used if you expanded underlying initiators or initiator groups, to correct "all" exports.
+</longdesc>
+<shortdesc lang="en">
+change to force reload 
+</shortdesc>
+<content type="string" />
+</parameter>
+<parameter name="tgtdriver" required="1" unique="0">
+<longdesc lang="en">
+Which target driver is being used, so to which target(s) shall the devices be exported.
+Currently supported: qla2x00t ib_srpt iscsi
+</longdesc>
+<shortdesc lang="en">
+Target driver to use.
+</shortdesc>
+<content type="string" />
+</parameter>
+<parameter name="device0" required="1" unique="0">
+<longdesc lang="en">
+Configuration for first device in the device group is given here.
+
+The configuration data should look like:
+filename=/testfile,virtname=foobar,handler=vdisk_blockio,export0=test1:0,export1=test2:0,op1,op2
+
+or
+
+filename=/testfile,virtname=foobar,handler=vdisk_blockio,export0=all:0,op1,op2
+
+The filename does not have to exist on configuration of the RA but on start in
+any case. Please make sure all your file names are configured correctly before
+starting the target or saving a changed configuration.
+
+It can be a reference to
+  - a file in case of vdisk_fileio handler
+  - a block device in case of vdisk_blockio and vdisk_fileio
+
+Neither required nor used for vdisk_nullio.
+
+The virtname can be an arbitrary string up to 8 characters consisting of
+alphanumeric characters. Must be unique within a device group.
+
+The handler must be one of vdisk_blockio,vdisk_fileio or vdisk_nullio. Please
+consult the SCST documentation for the differences.
+
+Defaults to vdisk_blockio if not given.
+
+t10devid sets the t10 dev id. Allowed are up to 25 alphanumeric characters as 
+well as _ and -. Use this if you want your device to identify itself with a 
+specific device id. Initiators use this to differentiate between devices. Only
+needed if you want to keep a special device id from a former installation. Will
+be stable anyway as it is generated from the virtname (and groupname).
+
+The export0 parameter will define the first export of the device. It is given in
+the form initiator group:lu (lu must be an integer between 0 and 255).
+
+Be aware that usually a dummy lu should be used as lu0 as the presence of lu0 is
+required by SPC-4 and for convenience could always be populated with a dummy.
+
+Make sure you do not try to populate lu twice. RA will fail to start if lu is al-
+ready populated!
+
+export1..255 define other exports of the device. Recommendation: keep this simple.
+
+Can be filled with a special keyword for initiator groups "all" which will export
+The device to each and every initiator group found in the system as the specified 
+lu.
+
+The options are the following:
+  - read_only 0/1 (0)
+  - removable 0/1 (0)
+  - nv_cache 0/1 (0)
+  - is_ssd 0/1 (0)
+  - dummy (only nullio)
+
+The write_through option is missing here for good reasons. the RA will always
+default to write_through as this is generally a good idea, especially in a
+clustered setup, where you could mess up your data with a single failover and WB
+enabled.
+If you are really insane or absolutely know what your are doing add this option
+yourself.
+
+Reload will be available and only adjust exports of the device. It is dangerous
+and not in most cases not possible to change device parameters while device is
+exported. If you want to do so remove device, reload and add device again, reload.
+</longdesc>
+<shortdesc lang="en">
+device0 config parameters
+</shortdesc>
+<content type="string" />
+</parameter>
+END
+for did in $(seq 1 255)
+do
+    echo "<parameter name=\"device$did\" required=\"0\" unique=\"0\">"
+    echo "<longdesc>additional device</longdesc>"
+    echo "<shortdesc>additional device</shortdesc>"
+    echo "<content type=\"string\" />"
+    echo "</parameter>"
+done
+    cat <<END
+</parameters>
+<actions>
+<action name="start"        timeout="120" />
+<action name="stop"         timeout="240" />
+<action name="promote"      timeout="30" />
+<action name="demote"       timeout="120" />
+<action name="reload"       timeout="120" />
+<action name="notify"       timeout="30" />
+<action name="monitor"      timeout="30" depth="0" interval="120" role="Master" />
+<action name="monitor"      timeout="30" depth="0" interval="120" role="Slave" />
+<action name="meta-data"    timeout="5" />
+<action name="validate-all" timeout="15" />
+</actions>
+</resource-agent>
+END
+  exit $OCF_SUCCESS
+}
+
+aluadg_validate() {
+  if [[ ! "$OCF_RESKEY_tgtdriver" == "qla2x00t" ]] && [[ ! "$OCF_RESKEY_tgtdriver" == "iscsi" ]] && [[ ! "$OCF_RESKEY_tgtdriver" == "ib_srpt" ]]
+  then
+    ocf_log err "invalid or no target driver name configured"
+    return $OCF_ERR_CONFIGURED
+  fi
+
+  c_expand_nodes || return $OCF_ERR_CONFIGURED
+  c_test_local_ports || return $OCF_ERR_CONFIGURED
+  c_test_instances || return $OCF_ERR_CONFIGURED
+
+  if [[ -z $OCF_RESKEY_groupname ]] || [[ ! $OCF_RESKEY_groupname =~ $ALPHANUM_REGEX ]] || [[ ${#OCF_RESKEY_groupname} -gt 8 ]]
+  then
+    ocf_log err "groupname must be set and alphanumeric and maximum 8 characters"
+    return $OCF_ERR_CONFIGURED
+  fi
+
+  unset virtnames
+  declare -A virtnames
+
+  for ((device_num=0; device_num<256; device_num++))
+  do
+    if [[ ! -z ${devices[$device_num,virtname]} ]]
+    then
+      if c_is_in ${devices[$device_num,virtname]} $virtnames
+      then
+        ocf_log warn "virtual name ${devices[$device_num,virtname]} already defined before. Cannot be used twice"
+        devices[$device_num,ignored]=1
+      fi
+      #this device has been configured, so test all parameters
+      if [[ ! ${devices[$device_num,virtname]} =~ $ALPHANUM_REGEX ]] || [[ ${#devices[$device_num,virtname]} -gt 8 ]]
+      then
+        ocf_log warn "device virtual name must consist of only alphanumeric characters and must not be longer than 8 characters ${devices[$device_num,virtname]}, ignoring device config"
+        devices[$device_num,ignored]=1
+      fi
+      if [[ ! ${devices[$device_num,t10devid]} =~ $ALPHANUMEXT_REGEX ]] || [[ ${#devices[$device_num,t10devid]} -gt 25 ]]
+      then
+        ocf_log warn "device t10devid must consist of only alphanumeric characters and - and _ and must not be longer than 25 characters ${devices[$device_num,t10devid]}, ignoring device config"
+        devices[$device_num,ignored]=1
+      fi
+      if [[ -z ${devices[$device_num,handler]} ]]
+      then
+        devices[$device_num,handler]="vdisk_blockio"
+      fi
+      for ((export_num=0; export_num<256; export_num++))
+      do
+        option_name=export$export_num
+        if [[ ! -z ${devices[$device_num,$option_name]} ]]
+        then
+          inigroup=$(echo ${devices[$device_num,$option_name]} | awk -F[:] '{print $1}')
+          lunnum=$(echo ${devices[$device_num,$option_name]} | awk -F[:] '{print $2}')
+          if [[ ! $inigroup =~ $ALPHANUM_REGEX ]] || [[ ${#inigroup} -gt 8 ]] || [[ ! ${lunnum} =~ $NUMERIC_REGEX ]] || [[ ${lunnum} -lt 0 ]] || [[ ${lunnum} -gt 256 ]]
+          then
+            ocf_log warn "$option_name invalid, ignoring export"
+            unset devices[$device_num,$option_name]
+          fi
+        fi
+      done
+      if [[ -z ${devices[$device_num,export0]} ]]
+      then
+        ocf_log warn "export0 must be filled ${devices[$device_num,virtname]}, ignoring device config"
+        devices[$device_num,ignored]=1
+      fi
+      if [[ -z ${devices[$device_num,nv_cache]} ]]
+      then
+        devices[$device_num,nv_cache]=0
+      elif [[ ! ${devices[$device_num,nv_cache]} =~ $BOOL_REGEX ]]
+      then
+        ocf_log warn "nv_cache must be either 0 or 1 unset ${devices[$device_num,virtname]}, ignoring device config"
+        devices[$device_num,ignored]=1
+      fi
+      if [[ -z ${devices[$device_num,read_only]} ]]
+      then
+        devices[$device_num,read_only]=0
+      elif [[ ! ${devices[$device_num,read_only]} =~ $BOOL_REGEX ]]
+      then
+        ocf_log warn "read_only must be either 0 or 1 unset ${devices[$device_num,virtname]}, ignoring device config"
+        devices[$lum_num,ignored]=1
+      fi
+      if [[ -z ${devices[$device_num,removable]} ]]
+      then
+        devices[$device_num,removable]=0
+      elif [[ ! ${devices[$device_num,removable]} =~ $BOOL_REGEX ]]
+      then
+        ocf_log warn "removable must be either 0 or 1 unset ${devices[$device_num,virtname]}, ignoring device config"
+        devices[$device_num,ignored]=1
+      fi
+      if [[ -z ${devices[$device_num,dummy]} ]]
+      then
+        devices[$device_num,dummy]=0
+      elif [[ ! ${devices[$device_num,dummy]} =~ $BOOL_REGEX ]]
+      then
+        ocf_log warn "dummy must be either 0 or 1 unset ${devices[$device_num,virtname]}, ignoring device config"
+        devices[$device_num,ignored]=1
+      fi
+      if [[ -z ${devices[$device_num,is_ssd]} ]]
+      then
+        devices[$device_num,is_ssd]=0
+      elif [[ ! ${devices[$device_num,is_ssd]} =~ $BOOL_REGEX ]]
+      then
+        ocf_log warn "is_ssd must be either 0 or 1 unset ${devices[$device_num,virtname]}, ignoring device config"
+        devices[$device_num,ignored]=1
+      fi
+      case "${devices[$device_num,handler]}" in
+        "vdisk_blockio")
+          ;;
+        "vdisk_fileio")
+          ;;
+        "vdisk_nullio")
+          ;;
+        *)
+          ocf_log warn "handler must either be vdisk_blockio, vdisk_nullio or vdisk_fileio ${devices[$device_num,virtname]}, ignoring device config"
+          devices[$device_num,ignored]=1
+          ;;
+      esac
+      if [[ ! ${devices[$device_num,handler]} == "vdisk_nullio" ]] && [[ -z ${devices[$device_num,filename]} ]]
+      then
+        ocf_log warn "filename cannot be empty if handler is other than vdisk_nullio ${devices[$device_num,virtname]}, ignoring device config"
+      fi
+      if [[ ! ${devices[$device_num,handler]} == "vdisk_nullio" ]] && [[ ${devices[$device_num,dummy]} == "1" ]]
+      then
+        ocf_log warn "dummy can only be set on nullio devices ${devices[$device_num,virtname]}, ignoring device config"
+        devices[$device_num,ignored]=1
+      fi
+      if [[ ${devices[$device_num,ignored]} -ne 1 ]]
+      then
+        virtnames=${virtnames}" "${devices[$device_num,virtname]}
+      fi
+    fi
+  done
+
+  if [[ -z ${devices[0,virtname]} ]] || [[ ${devices[0,ignored]} == 1 ]]
+  then
+    ocf_log err "device 0 not configured, exiting"
+    return $OCF_ERR_CONFIGURED
+  fi
+  return $OCF_SUCCESS
+}
+
+aluadg_start() {
+  aluadg_monitor
+  rc=$?
+
+  case "$rc" in
+    $OCF_SUCCESS)
+      ocf_log info "Resource is already running"
+      return $OCF_SUCCESS
+      ;;
+    $OCF_RUNNING_MASTER)
+      ocf_log info "Resource is already running master"
+      return $OCF_SUCCESS
+      ;;
+    $OCF_NOT_RUNNING)
+      ;;
+    *)
+      ocf_log err "Resource has failed, stop first"
+      return $OCF_ERR_GENERIC
+      ;;
+  esac
+
+  if [[ -z ${targetports[$localnodeid]} ]]
+  then
+    ocf_log err "cannot start on a node without target ports"
+    return $OCF_ERR_GENERIC
+  fi
+
+  l_create_handlers || { ocf_log err "could not create device handlers"; return $OCF_ERR_GENERIC; }
+  l_create_devicegroup || { ocf_log err "could not create device group"; return $OCF_ERR_GENERIC; }
+  l_export_devices || { ocf_log err "could not export devices"; return $OCF_ERR_GENERIC; }
+  l_preactivate_devicegroup || { ocf_log err "could not set ports to standby"; return $OCF_ERR_GENERIC; }
+  c_issue_lip
+
+  touch ${state} || { ocf_log err "could not create state file"; return $OCF_ERR_GENERIC; }
+  $CRM_MASTER -v ${slave_score}
+  return $OCF_SUCCESS
+}
+
+aluadg_stop() {
+  $CRM_MASTER -D
+  aluadg_monitor
+  rc=$?
+
+  case $rc in
+    $OCF_RUNNING_MASTER)
+      ocf_log info "Resource is running master, demoting."
+      aluadg_demote
+      ;;
+    $OCF_NOT_RUNNING)
+      ocf_log info "Resource is already stopped"
+      return $OCF_SUCCESS
+      ;;
+    *)
+      ;;
+  esac
+
+  l_deactivate_devicegroup
+  rc_ddg=$?
+  l_remove_handlers
+  rc_handler=$?
+  l_remove_devicegroup
+  rc_dg=$?
+  rm -f ${state}
+  rc_state=$?
+  if [[ $rc_ddg == $OCF_SUCCESS ]] && [[ $rc_handler == $OCF_SUCCESS ]] && [[ $rc_dg == $OCF_SUCCESS ]] && [[ $rc_state == $OCF_SUCCESS ]]
+  then
+    return $OCF_SUCCESS
+  fi
+  ocf_log err "could not fully stop devicegroup"
+  return $OCF_ERR_GENERIC;
+}
+
+aluadg_monitor() {
+  if [[ -f ${state} ]] || [[ -d $SCST_BASE/device_groups/$OCF_RESKEY_groupname ]]
+  then
+    if [[ -z $(find $SCST_BASE/devices/ -mindepth 1 -maxdepth 1 -type d -name ${OCF_RESKEY_groupname}_*) ]]
+    then
+      return $OCF_ERR_GENERIC
+    fi
+    local state=$(cat $SCST_BASE/device_groups/$OCF_RESKEY_groupname/target_groups/${nodes[$localnodeid]}/state | head -n 1)
+    case "$state" in
+      "active")
+        if [ $OCF_RESKEY_CRM_meta_interval = 0 ]; then
+          $CRM_MASTER -v ${master_score}
+        fi
+        return $OCF_RUNNING_MASTER
+        ;;
+      "standby"|"unavailable"|"transitioning")
+        if [ $OCF_RESKEY_CRM_meta_interval = 0 ]; then
+          $CRM_MASTER -v ${slave_score}
+        fi
+        return $OCF_SUCCESS
+        ;;
+      *)
+        return $OCF_ERR_GENERIC
+        ;;
+    esac
+  fi
+  return $OCF_NOT_RUNNING
+}
+
+aluadg_promote() {
+  local rc
+
+  aluadg_monitor
+  rc=$?
+  case "$rc" in
+    "$OCF_SUCCESS")
+      ocf_log debug "Resource is currently running as Slave"
+      ;;
+    "$OCF_RUNNING_MASTER")
+      ocf_log info "Resource is already running as Master"
+      return $OCF_SUCCESS
+      ;;
+    "$OCF_NOT_RUNNING")
+      ocf_log info "Resource is currently not running"
+      aluadg_start
+      ;;
+    *)
+      ocf_log err "Unexpected error, cannot promote"
+      exit $rc
+      ;;
+  esac
+
+  l_activate_devicegroup || exit $OCF_ERR_GENERIC
+
+  $CRM_MASTER -v ${master_score}
+  return $OCF_SUCCESS
+}
+
+aluadg_demote() {
+  local rc
+
+  aluadg_monitor
+  rc=$?
+  case "$rc" in
+    "$OCF_RUNNING_MASTER")
+      ocf_log debug "Resource is currently running as Master"
+      ;;
+    "$OCF_SUCCESS")
+      ocf_log debug "Resource is currently running as Slave"
+      return $OCF_SUCCESS
+      ;;
+    "$OCF_NOT_RUNNING")
+      ocf_log err "Resource is currently not running"
+      exit $OCF_ERR_GENERIC
+      ;;
+    *)
+      ocf_log err "Unexpected error, cannot demote"
+      exit $rc
+      ;;
+  esac
+
+  l_preactivate_devicegroup || exit $OCF_ERR_GENERIC
+
+  $CRM_MASTER -v ${slave_score}
+  return $OCF_SUCCESS
+}
+
+aluadg_reload()
+{
+  local rc
+  aluadg_monitor
+  rc=$?
+
+  if [[ $rc == $OCF_NOT_RUNNING ]]
+  then
+    aluadg_start
+    return $OCF_SUCCESS
+  fi
+
+  #the only thing considered fatal when reloading is if devices cannot be
+  #completely removed with the rest just warn to not fail the resource
+  l_remove_obsolete_devices || { ocf_log err "could not remove obsolete devices"; return $OCF_ERR_GENERIC; }
+  l_adjust_devices
+  l_create_handlers
+  l_add_devices
+  l_export_devices
+
+  return $OCF_SUCCESS
+}
+
+aluadg_notify() {
+  local type_op
+
+  type_op="${OCF_RESKEY_CRM_meta_notify_type}-${OCF_RESKEY_CRM_meta_notify_operation}"
+  ocf_log debug "Received $type_op notification."
+
+  case "$type_op" in
+    'post-start')
+      for node in $OCF_RESKEY_CRM_meta_notify_available_uname
+      do
+        if [[ ! "$node" == "${nodes[$localnodeid]}" ]]
+        then
+          if c_is_in $node $OCF_RESKEY_CRM_meta_notify_master_uname
+          then
+            l_activate_devicegroup $node
+          else
+            l_preactivate_devicegroup $node
+          fi
+        fi
+      done
+      ;;
+    'pre-promote')
+      for node in $OCF_RESKEY_CRM_meta_notify_promote_uname
+      do
+        if [[ ! "$node" == "${nodes[$localnodeid]}" ]]
+        then
+          l_transition_devicegroup $node
+        fi
+      done
+      ;;
+    'post-promote')
+      for node in $OCF_RESKEY_CRM_meta_notify_promote_uname
+      do
+        if [[ ! "$node" == "${nodes[$localnodeid]}" ]]
+        then
+          l_activate_devicegroup $node
+        fi
+      done
+      ;;
+    'pre-demote')
+      for node in $OCF_RESKEY_CRM_meta_notify_demote_uname
+      do
+        if [[ ! "$node" == "${nodes[$localnodeid]}" ]]
+        then
+          l_transition_devicegroup $node
+        fi
+      done
+      ;;
+    'post-demote')
+      for node in $OCF_RESKEY_CRM_meta_notify_demote_uname
+      do
+        if [[ ! "$node" == "${nodes[$localnodeid]}" ]]
+        then
+          l_preactivate_devicegroup $node
+        fi
+      done
+      ;;
+    'pre-stop')
+      for node in $OCF_RESKEY_CRM_meta_notify_stop_uname
+      do
+        if [[ ! "$node" == "${nodes[$localnodeid]}" ]]
+        then
+          l_transition_devicegroup $node
+        fi
+      done
+      ;;
+    'post-stop')
+      for node in $OCF_RESKEY_CRM_meta_notify_stop_uname
+      do
+        if [[ ! "$node" == "${nodes[$localnodeid]}" ]]
+        then
+          l_deactivate_devicegroup $node
+        fi
+      done
+      ;;
+  esac
+  return $OCF_SUCCESS
+}
+
+aluadg_usage() {
+  cat <<END
+usage: $0 {start|stop|promote|demote|status|monitor|notify|validate-all|meta-data}
+
+Expects to have a fully populated OCF RA-compliant environment set.
+END
+}
+
+case $1 in
+  meta-data)
+  meta_data
+  exit $OCF_SUCCESS
+  ;;
+  usage|help)
+  aluadg_usage
+  exit $OCF_SUCCESS
+  ;;
+esac
+
+aluadg_validate
+rc=$?
+if [[ $rc -ne 0 ]]
+then
+    ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : $rc";
+    exit $rc;
+fi
+
+echo $__OCF_ACTION >> /tmp/dg_action
+case $__OCF_ACTION in
+  start)          aluadg_start;;
+  stop)           aluadg_stop;;
+  promote)        aluadg_promote;;
+  demote)         aluadg_demote;;
+  reload)         aluadg_reload;;
+  monitor)        aluadg_monitor;;
+  notify)         aluadg_notify;;
+  validate-all)   ;;
+  *)              aluadg_usage
+                  exit $OCF_ERR_UNIMPLEMENTED
+                  ;;
+esac
+rc=$?
+ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : $rc"
+exit $rc

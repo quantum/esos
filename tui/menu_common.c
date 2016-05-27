@@ -1331,7 +1331,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 }
                 FREE_NULL(cmd_str);
                 if (ret_val != 0) {
-                    SAFE_ASPRINTF(&error_msg, "The %s command exited with %d.",
+                    SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR,
                             UDEVADM_BIN, ret_val);
                     errorDialog(cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
