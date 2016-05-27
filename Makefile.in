@@ -269,8 +269,8 @@ ifeq ($(enable_qla),yes)
 	build_targets += scst_qla2xxx
 endif
 ifeq ($(enable_zfs),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.6.5.1.tar.gz)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.6.5.1.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.6.5.7.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.6.5.7.tar.gz)
 	build_targets += spl
 	build_targets += zfs
 endif

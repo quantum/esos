@@ -1,4 +1,22 @@
+2016-05-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated spl/zfs to version 0.6.5.7 (supports recent Linux kernel versions, among other things)
+
+	added the prettyShrinkStr() to shorten long strings as elegantly as possible, which should resolve complains about strings being truncated and indistinguishable; used prettyShrinkStr() on several problem dialogs that have been a pain; fixed a couple memory leaks in the TUI caught with valgrind
+
+	added new RA scripts -> ocf:onesty:scst_aluadg, ocf:onesty:scst_qla2xtgt (thanks Felix); revamped the support-package function to capture more data and now supports being run from the shell (solves issue #111)
+
+2016-05-26  Marc A. Smith  <marc.smith@parodyne.com>
+
+	initial import of the new 'hw_raid_cli.py' script which provides a common syntax to hardware RAID controllers... as of right now, MegaRAID and AACRAID adapters are supported by it, and more to come in the future
+
 2016-05-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'feldsam-master' -> SCST RA improvements
+
+	some minor formatting cleanup in the ESOS SCST RA
+
+	Merge branch 'master' of https://github.com/feldsam/esos into feldsam-master
 
 	fixed build issue with eudev package (--sysconfdir); added the rc.lvmlockd rc script to handle the LVM locking daemon and associated config updates (rc.d/common and rc.conf) -- untested
 
@@ -302,13 +320,28 @@
 
 	updated configure options for the lvm2 recipe that enables rules/sync for udev
 
+2015-08-29  Kristian Feldsam  <feldsam@gmail.com>
+
+	Update modprobe.conf
+
 2015-08-29  Marc A. Smith  <marc@astersmith.com>
 
 	Merge branch 'feldsam-dlm-patch'
 
 2015-08-29  Kristián Feldsam  <feldsam@gmail.com>
 
+	SCST RA monitor action fix
+
 	Kernel patch dlm: keep listening connection alive with sctp mode
+
+	SCST RA Implemented ALUA offline state of remote target
+
+	SCST RA fixed debug log
+
+	SCST RA Enhancement
+	STOP action enhanced by setting ALUA state to "offline", so initiators are not confused about nonoptimized (or other configured) state and they don't need to regroup paths to one group and then back to two.
+
+	Updated qla2xxx module conf to prevent run qlogic cards in initiator mode. Closes #145
 
 2015-08-28  Marc A. Smith  <marc@astersmith.com>
 

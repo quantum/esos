@@ -113,8 +113,8 @@ a0edda805eb7d6ea600a230fb0979ea1  stunnel-5.10.tar.gz
 87558f3a55c62bc9244b19594f103ffa  sudo-1.8.12.tar.gz
 43bd6676f0b404326eee2d63be3cdcfe  rsync-3.1.1.tar.gz
 73e7f49f525c51fa4a995aea4d80de41  python-daemon-2.0.5.tar.gz
-687bbaffd6b57328ea09dc97308c5ab4  spl-0.6.5.1.tar.gz
-0421551f728c1fd4239bdd9932ba2c52  zfs-0.6.5.1.tar.gz
+4e6866cea182d25f2ecab1fb7201316a  spl-0.6.5.7.tar.gz
+b470c0426da6e1e3513f5166c907218d  zfs-0.6.5.7.tar.gz
 6873d5a217aee3026193fb85bfa18a4a  resource-agents-3.9.6.tar.gz
 65aa71b8d4cd4b927a7ec69b5d53ecc7  btier-1.3.11.tar.gz
 c1f1db32fb6598d6a93e6e88796a8632  gperf-3.0.4.tar.gz
