@@ -310,6 +310,7 @@ boolean checkInetAccess() {
     struct gaicb **requests = NULL;
     struct timespec timeout = {0};
     int ret_val = 0, loop_cnt = 0;
+    boolean has_inet = FALSE;
 
     /* Setup our request */
     requests = realloc(requests, (1 * sizeof requests[0]));
@@ -330,28 +331,35 @@ boolean checkInetAccess() {
         /* Don't wait too long */
         if (loop_cnt >= 10) {
             DEBUG_LOG("Timeout value reached, returning...");
-            return FALSE;
+            has_inet = FALSE;
+            break;
         }
         ++loop_cnt;
         /* Check the request */
         ret_val = gai_error(requests[0]);
-        freeaddrinfo(requests[0]->ar_request);
-        freeaddrinfo(requests[0]->ar_result);
-        free(requests);
         if (ret_val == EAI_INPROGRESS) {
             ;
         } else if (ret_val == 0) {
-            return TRUE;
+            has_inet = TRUE;
+            break;
         } else {
             DEBUG_LOG("gai_error(): %s", gai_strerror(ret_val));
-            return FALSE;
+            has_inet = FALSE;
+            break;
         }
         /* Sleep for a bit */
         if (nanosleep(&timeout, NULL) != 0) {
             DEBUG_LOG("nanosleep(): %s", strerror(errno));
-            return FALSE;
+            has_inet = FALSE;
+            break;
         }
     }
+
+    /* Done */
+    freeaddrinfo(requests[0]->ar_request);
+    freeaddrinfo(requests[0]->ar_result);
+    free(requests);
+    return has_inet;
 }
 
 

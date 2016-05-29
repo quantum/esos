@@ -1,3 +1,7 @@
+2016-05-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed TUI bug in checkInetAccess() (should resolve issue # 177)
+
 2016-05-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated spl/zfs to version 0.6.5.7 (supports recent Linux kernel versions, among other things)
