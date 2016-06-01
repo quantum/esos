@@ -1327,6 +1327,8 @@ parted: glibc util-linux lvm2
 	$(TOUCH) $(@)
 
 opensm: glibc gcc libibumad libibverbs
+	$(SED) -i 's/-I\\$$(includedir)//' $(tgt_src_dir)/configure
+	$(SED) -i 's/-L\\$$(libdir)//' $(tgt_src_dir)/configure
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-data
@@ -2551,6 +2553,7 @@ nmon: glibc gcc ncurses
 
 munin-c: glibc
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  $(SED) -i 's/-Werror//' $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && autoreconf -i -I m4; \
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr

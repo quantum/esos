@@ -1340,7 +1340,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                 /* We only want the first sym link */
                 dev_node_ptr = strtok(sym_links, " ");
                 assert(dev_node_ptr != NULL);
-                snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "%s", dev_node_ptr);
+                snprintf(ret_buff, MAX_SYSFS_PATH_SIZE, "%s", strStrip(dev_node_ptr));
 
             } else if ((strstr(block_dev, "/dev/dm-")) != NULL) {
                 /* A /dev/dm-* device, we're assuming its

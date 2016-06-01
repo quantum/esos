@@ -1,3 +1,9 @@
+2016-05-31  Marc A. Smith  <marc.smith@parodyne.com>
+
+	build fixes for Ubuntu in the opensm and munin-c targets (should resolve issue # 164); fixed issue in TUI with getBlockDevChoice() -- needed to strip the block-device string from the udevadm command
+
+	up'd SCST to version 3.1.x/r6895 which at least fixes an issue with megaraid_sas hanging when deleting VD's
+
 2016-05-29  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed TUI bug in checkInetAccess() (should resolve issue # 177)
