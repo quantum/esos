@@ -58,7 +58,8 @@ if [ -x "${MEGACLI}" ]; then
                     tr -d '\n'`
                 if [ "${drv_state}" != "Unconfigured(good), Spun Up" ] &&
                     [ "${drv_state}" != "Online, Spun Up" ] &&
-                    [ "${drv_state}" != "Hotspare, Spun Up" ]; then
+                    [ "${drv_state}" != "Hotspare, Spun Up" ] &&
+                    [ "${drv_state}" != "Hotspare, Spun down" ]; then
                     echo "** Warning! It appears a MegaRAID physical drive" \
                         "has failed on adapter ${adapter}!" 1>&2
                     echo "** Physical drive state: ${drv_state}" 1>&2
