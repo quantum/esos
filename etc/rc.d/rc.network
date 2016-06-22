@@ -20,6 +20,7 @@ my $ip_prog = "/bin/ip";
 my $ifenslave_prog = "/sbin/ifenslave";
 my $brctl_prog = "/usr/sbin/brctl";
 my $ethtool_prog = "/usr/sbin/ethtool";
+my $vconfig_prog = "/sbin/vconfig";
 my $net_if_dir = "/sys/class/net";
 my $section;
 my @sections;
@@ -40,7 +41,7 @@ if ($ARGV[0] eq "start") {
     while (<INI>) {
         chomp;
         # Get the INI file section
-        if (/^\s*\[(\w+)\].*/) {
+        if (/^\s*\[(.+)\].*/) {
             $section = $1;
             push(@sections, $section);
             next;
@@ -276,6 +277,24 @@ if ($ARGV[0] eq "start") {
 
         # Interface configuration
         if (($each =~ /enp\d+s\d+/) || ($each =~ /eno\d+/) || ($each =~ /eth\d+/) || ($each =~ /ib\d+/) || ($each =~ /bond\d+/) || ($each =~ /br\d+/)) {
+            # If its a VLAN interface, make sure it exists
+            if ($each =~ /.*\.\d+/) {
+                my $vlan_iface = $net_if_dir . "/" . $each;
+                if (! -e "$vlan_iface") {
+                    printf("Creating VLAN interface " . $each . "...\n");
+                    my @vlan_if_parts = split(/\./, $each);
+                    system($vconfig_prog . " add " . $vlan_if_parts[0] . " " . $vlan_if_parts[1] . " 2>&1");
+                    if ($? == -1) {
+                        print("ERROR: Running $vconfig_prog failed: $!\n");
+                        next;
+                    }
+                    my $exit_status = $? >> 8;
+                    if ($exit_status != 0) {
+                        print("ERROR: The $vconfig_prog program exited with value $exit_status.\n");
+                        next;
+                    }
+                }
+            }
             # Check the boot protocol (DHCP/static)
             my $hash_key = $each . ":bootproto";
             if (exists($ini_hash{$hash_key})) {
@@ -525,6 +544,10 @@ if ($ARGV[0] eq "start") {
 
         # Bring down interface
         if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) || ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) || ($iface =~ /bond\d+/) || ($iface =~ /br\d+/)) {
+            if ($iface =~ /.*\.\d+/) {
+                # Skip VLAN interfaces
+                next;
+            }
             print("Bringing down interface $iface...\n");
             system($ifconfig_prog . " " . $iface . " 0.0.0.0 down 2>&1");
             if ($? == -1) {
