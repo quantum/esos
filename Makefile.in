@@ -416,6 +416,8 @@ image: $(build_targets)
 	$(STAGING_DIR)/usr/local/share/drbd/xml2conf.xsl
 	$(INSTALL) $(SRC_DIR)/contrib/check_zpools.sh \
 	$(STAGING_DIR)/usr/libexec/
+	$(INSTALL) $(SRC_DIR)/contrib/list-pcie-ports.sh \
+	$(STAGING_DIR)/usr/local/sbin/
 	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
 	$(INSTALL) $(SRC_DIR)/perf-agent/* $(STAGING_DIR)/usr/local/perf-agent/
 	$(LN) libncursesw.so.5 $(STAGING_DIR)/usr/lib/libncurses.so.5
