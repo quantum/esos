@@ -1,4 +1,24 @@
-2016-06-08  Marc A. Smith  <marc.smith@parodyne.com>
+2016-06-26  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'dswartz-issue-182'
+
+	Merge branch 'issue-182' of https://github.com/dswartz/esos into dswartz-issue-182
+
+	tweaked the health-check script to use more meaningful names/values in the memory and disk usage sections (satisfies issue # 181)
+
+2016-06-26  Dan Swartzendruber  <dswartz@druber.com>
+
+	Change check_zpools.sh to diagnose not running as root - this is necessary if nrpe is run as other than root (which is what is recommended.)
+
+2016-06-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the useful list-pcie-ports.sh script (from Dell @ http://linux.dell.com/cgi-bin/cgit.cgi/sys-admin-tools.git/plain/list-pcie-ports.sh)
+
+2016-06-22  Marc A. Smith  <marc.smith@parodyne.com>
+
+	additional condition for MegaRAD hot spare drives that are "spun down" in the health-check script
+
+	added support for interface VLANs in the rc network script
 
 	fix for ZFS build inconsistencies by specifying '--sysconfdir' for both spl and zfs
 
