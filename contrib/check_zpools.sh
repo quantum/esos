@@ -49,6 +49,12 @@ if [ "${1}" = "--help" -o "${#}" = "0" ];
        exit ${STATE_UNKNOWN};
 fi
 #########################################################################
+# Ensure we are executing as root
+if [ `/usr/bin/id -u` != 0 ];
+	then
+	echo "UNKNOWN: this plugin must be executed with root privileges!"
+	exit ${STATE_UNKNOWN};
+fi
 # Get user-given variables
 while getopts "p:w:c:" Input;
 do
