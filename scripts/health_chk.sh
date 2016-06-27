@@ -222,12 +222,13 @@ else
     if [ x$(perl -e "print ${prct_mem_used} > ${MEM_PRCT_THRESH}") = "x1" ]; \
         then
         echo "** Warning! Maximum memory used threshold percent" \
-            "(${MEM_PRCT_THRESH}) has been exceeded..." 1>&2
+            "(`echo ${MEM_PRCT_THRESH} | awk '{ printf("%d", $1 * 100) }'`%)" \
+            "has been exceeded..." 1>&2
         echo "Total Physical RAM: ${mem_total} kB" 1>&2
         echo "Available Physical RAM: ${mem_avail} kB" 1>&2
     fi
 fi
-echo -e "Memory used percent:\t${prct_mem_used}"
+echo -e "Memory Used Percent:\t`echo ${prct_mem_used} | awk '{ printf("%d", $1 * 100) }'`%"
 echo
 
 # Check disk space (well, tmpfs root FS space)
@@ -239,10 +240,11 @@ echo -e "Total Disk Space:\t${disk_total} MB\nUsed Disk" \
     "Space:\t${disk_used} MB\nAvail. Disk Space:\t${disk_avail} MB"
 prct_disk_used=`echo "${disk_used} ${disk_total}" | \
     awk '{ printf("%.1g", $1 / $2) }'`
-echo -e "Disk used percent:\t${prct_disk_used}"
+echo -e "Disk Used Percent:\t`echo ${prct_disk_used} | awk '{ printf("%d", $1 * 100) }'`%"
 if [ x$(perl -e "print ${prct_disk_used} > ${DISK_PRCT_THRESH}") = "x1" ]; then
-    echo "** Warning! Maximum disk space used threshold" \
-        "(${DISK_PRCT_THRESH}) has been exceeded..." 1>&2
+    echo "** Warning! Maximum disk space used threshold percent" \
+        "(`echo ${DISK_PRCT_THRESH} | awk '{ printf("%d", $1 * 100) }'`%)" \
+        "has been exceeded..." 1>&2
     echo "Total Disk Space: ${disk_total} MB" 1>&2
     echo "Avail. Disk Space: ${disk_avail} MB" 1>&2
 fi
