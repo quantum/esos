@@ -1,7 +1,7 @@
 /**
  * @file info_labels.c
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @brief Functions for the TUI main screen information labels.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -21,11 +21,11 @@
 #include "strings.h"
 
 
-/*
- * This function is responsible for moving, resizing, and updating the message
- * lines in the main screen information labels. It will read the screen size
- * and message data for each label then act based on this data. It should be
- * called when the terminal is re-sized and frequently to update the display.
+/**
+ * @brief This function is responsible for moving, resizing, and updating the
+ * message lines in the main screen information labels. It will read the screen
+ * size and message data for each label then act based on this data. It should
+ * be called when the terminal is re-sized and frequently to update the display.
  */
 boolean updateInfoLabels(CDKSCREEN *cdk_screen,
         CDKLABEL **tgt_info, CDKLABEL **sess_info,
@@ -148,8 +148,8 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
 }
 
 
-/*
- * This function will fill an array of char pointers for the "targets"
+/**
+ * @brief This function will fill an array of char pointers for the "targets"
  * information label (main screen). The return value is the number of rows
  * that should be displayed in the label. If an error occurs, we simply
  * print the error message in the label row data and return.
@@ -363,8 +363,8 @@ int readTargetData(char *label_msg[]) {
 }
 
 
-/*
- * This function will fill an array of char pointers for the "sessions"
+/**
+ * @brief This function will fill an array of char pointers for the "sessions"
  * information label (main screen). The return value is the number of rows
  * that should be displayed in the label. If an error occurs, we simply
  * print the error message in the label row data and return.

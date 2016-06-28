@@ -26,8 +26,8 @@
 #include "strings.h"
 
 
-/*
- * Run the LVM2 LV Information dialog
+/**
+ * @brief Run the "LVM2 LV Information" dialog.
  */
 void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lvm2_info = 0;

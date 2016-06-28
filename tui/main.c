@@ -1,7 +1,7 @@
 /**
  * @file main.c
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @brief Contains the main() implementation and supporting functions.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -827,10 +827,10 @@ quit:
 }
 
 
-/*
- * Helper to fix initial terminal/screen size (before CDK initialization). If
- * the screen size is less than the minimum, keep displaying the message until
- * the user resizes to the minimum values.
+/**
+ * @brief Helper to fix initial terminal/screen size (before CDK
+ * initialization). If the screen size is less than the minimum, keep
+ * displaying the message until the user resizes to the minimum values.
  */
 void termSize(WINDOW *screen) {
     int input_char = 0, screen_x = 0, screen_y = 0;
@@ -886,10 +886,10 @@ void termSize(WINDOW *screen) {
 }
 
 
-/*
- * Handle terminal resize (SIGWINCH / KEY_RESIZE). If the screen is made
- * smaller than the last size, we display a message to the user until
- * they exit. If its larger, we try to handle that gracefully.
+/**
+ * @brief Handle terminal resize (SIGWINCH / KEY_RESIZE). If the screen is made
+ * smaller than the last size, we display a message to the user until they
+ * exit. If its larger, we try to handle that gracefully.
  */
 void screenResize(CDKSCREEN *cdk_screen, WINDOW *main_window,
         WINDOW *sub_window, int *latest_term_y, int *latest_term_x) {
@@ -957,8 +957,8 @@ void screenResize(CDKSCREEN *cdk_screen, WINDOW *main_window,
 }
 
 
-/*
- * Make a nice pretty status bar; may be called multiple times in case
+/**
+ * @brief Make a nice pretty status bar; may be called multiple times in case
  * of a screen resize. Also draws the box around the window.
  */
 void statusBar(WINDOW *window) {
@@ -1000,8 +1000,8 @@ void statusBar(WINDOW *window) {
 }
 
 
-/*
- * Read the ESOS configuration file and prompt the user to participate
+/**
+ * @brief Read the ESOS configuration file and prompt the user to participate
  * in anonymous usage statistics; if user participates, whenever the ESOS
  * version changes (upgrade), an HTTP POST request is made.
  */

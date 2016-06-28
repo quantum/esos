@@ -1,7 +1,7 @@
 /**
  * @file utility.c
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @brief Contains common utility functions used by other functions.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -17,8 +17,8 @@
 #include "system.h"
 
 
-/*
- * Strip whitespace and trailing newline from a string. Originally
+/**
+ * @brief Strip whitespace and trailing newline from a string. Originally
  * from Linux kernel lib/string.c (strim()).
  */
 char *strStrip(char *string) {
@@ -37,8 +37,8 @@ char *strStrip(char *string) {
 }
 
 
-/*
- * Reads a sysfs attribute value. Open the specified file and read its
+/**
+ * @brief Reads a sysfs attribute value. Open the specified file and read its
  * contents. If an error occurs, fill the character array with the error.
  */
 void readAttribute(char sysfs_attr[], char attr_value[]) {
@@ -66,8 +66,8 @@ void readAttribute(char sysfs_attr[], char attr_value[]) {
 }
 
 
-/*
- * Write a sysfs attribute value. If an error is encountered, we return
+/**
+ * @brief Write a sysfs attribute value. If an error is encountered, we return
  * the errno value, otherwise we return 0 (zero).
  */
 int writeAttribute(char sysfs_attr[], char attr_value[]) {
@@ -88,8 +88,8 @@ int writeAttribute(char sysfs_attr[], char attr_value[]) {
 }
 
 
-/*
- * Test if SCST is loaded on the current machine. For now we have a very
+/**
+ * @brief Test if SCST is loaded on the current machine. For now we have a very
  * simple test using the SCST sysfs directory; return TRUE (1) if the
  * directory exists and return FALSE (0) if it doesn't.
  */
@@ -102,8 +102,8 @@ boolean isSCSTLoaded() {
 }
 
 
-/*
- * Check if the given initiator name is already in use in the group name
+/**
+ * @brief Check if the given initiator name is already in use in the group name
  * specified. Return TRUE if it does exist, and FALSE if it does not. If any
  * errors occur in this function, we return FALSE.
  */
@@ -139,9 +139,9 @@ boolean isSCSTInitInGroup(char tgt_name[], char tgt_driver[],
 }
 
 
-/*
- * Walk the group directories in sysfs for the specified target and count the
- * number of times the initiator is used. Return -1 if an error occurs.
+/**
+ * @brief Walk the group directories in sysfs for the specified target and count
+ * the number of times the initiator is used. Return -1 if an error occurs.
  */
 int countSCSTInitUses(char tgt_name[], char tgt_driver[], char init_name[]) {
     DIR *grp_dir_stream = NULL, *init_dir_stream = NULL;
@@ -194,10 +194,10 @@ int countSCSTInitUses(char tgt_name[], char tgt_driver[], char init_name[]) {
 }
 
 
-/*
- * Fill the SCST target drivers list and set driver count for all target
- * drivers detected in the sysfs structure. If something fails internally
- * in the function, return FALSE, otherwise return TRUE.
+/**
+ * @brief Fill the SCST target drivers list and set driver count for all target
+ * drivers detected in the sysfs structure. If something fails internally in
+ * the function, return FALSE, otherwise return TRUE.
  */
 boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
         int *driver_cnt) {
@@ -237,9 +237,9 @@ boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
 }
 
 
-/*
- * Count the number of LUNs for a session with the given target, driver, and
- * initiator combination. Return -1 if an error occurs.
+/**
+ * @brief Count the number of LUNs for a session with the given target, driver,
+ * and initiator combination. Return -1 if an error occurs.
  */
 int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]) {
     DIR *dir_stream = NULL;
@@ -272,9 +272,10 @@ int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]) {
 }
 
 
-/*
- * This function takes a number of bytes and formats/converts the value for
- * a "human-readable" representation of the number (eg, 2048 returns "2 KiB").
+/**
+ * @brief This function takes a number of bytes and formats/converts the value
+ * for a "human-readable" representation of the number (eg, 2048 returns
+ * "2 KiB").
  * Originally taken from here: http://stackoverflow.com/questions/3898840
  */
 char *prettyFormatBytes(uint64_t size) {
@@ -300,11 +301,11 @@ char *prettyFormatBytes(uint64_t size) {
 }
 
 
-/*
- * Test and see if the Internet is reachable; we do this by attempting
- * to resolve a DNS entry. The GLIBC getaddrinfo_a() function is used
- * so we can timeout if the query takes too long. We simply assume the
- * Internet access works if we're able to successfully resolve the entry.
+/**
+ * @brief Test and see if the Internet is reachable; we do this by attempting
+ * to resolve a DNS entry. The GLIBC getaddrinfo_a() function is used so we
+ * can timeout if the query takes too long. We simply assume the Internet
+ * access works if we're able to successfully resolve the entry.
  */
 boolean checkInetAccess() {
     struct gaicb **requests = NULL;
@@ -356,7 +357,7 @@ boolean checkInetAccess() {
     }
 
     /* Done */
-    freeaddrinfo(requests[0]->ar_request);
+    //freeaddrinfo(requests[0]->ar_request);
     freeaddrinfo(requests[0]->ar_result);
     free(requests);
     return has_inet;
@@ -369,9 +370,6 @@ boolean checkInetAccess() {
  * than the maximum, return the string as is. If the string is longer, then
  * remove enough of the string from the center to accommodate the maximum size
  * and include several periods to show the string was abbreviated.
- * @param max_len The maximum length the string should fit.
- * @param string The original string that needs to be shrunk.
- * @return A pretty, formatted, shrunken (if needed) string.
  */
 char *prettyShrinkStr(size_t max_len, char *string) {
     size_t curr_size = 0, char_to_del = 0, left_len = 0, right_len = 0;

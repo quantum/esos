@@ -19,8 +19,8 @@
 #include "strings.h"
 
 
-/*
- * Run the Help dialog
+/**
+ * @brief Run the "Help" dialog.
  */
 void helpDialog(CDKSCREEN *main_cdk_screen) {
     CDKDIALOG *help_dialog = 0;
@@ -82,8 +82,8 @@ void helpDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Support Bundle dialog
+/**
+ * @brief Run the "Support Bundle" dialog.
  */
 void supportArchDialog(CDKSCREEN *main_cdk_screen) {
     CDKDIALOG *bundle_dialog = 0;
@@ -151,8 +151,8 @@ void supportArchDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the About dialog
+/**
+ * @brief Run the "About" dialog.
  */
 void aboutDialog(CDKSCREEN *main_cdk_screen) {
     CDKDIALOG *about_dialog = 0;

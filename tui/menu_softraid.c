@@ -26,8 +26,8 @@
 #include "strings.h"
 
 
-/*
- * Run the Software RAID Status dialog
+/**
+ * @brief Run the "Software RAID Status" dialog.
  */
 void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *mdstat_info = 0;

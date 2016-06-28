@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iniparser.h>
-// TODO: #undef CTRL /* This is defined in sys/ioctl.h which conflicts with cdk.h */
 #include <cdk.h>
 #include <string.h>
 #include <cdk/swindow.h>
@@ -24,8 +23,8 @@
 #include "strings.h"
 
 
-/*
- * Run the Networking dialog
+/**
+ * @brief Run the "Networking" dialog.
  */
 void networkDialog(CDKSCREEN *main_cdk_screen) {
     CDKSCREEN *net_screen = 0;
@@ -831,8 +830,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Restart Networking dialog
+/**
+ * @brief Run the "Restart Networking" dialog.
  */
 void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *net_restart_info = 0;
@@ -972,8 +971,8 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Mail Setup dialog
+/**
+ * @brief Run the "Mail Setup" dialog.
  */
 void mailDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *mail_window = 0;
@@ -1325,8 +1324,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Send Test Email dialog
+/**
+ * @brief Run the "Send Test Email" dialog.
  */
 void testEmailDialog(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *test_email_label = 0;
@@ -1414,8 +1413,8 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add User dialog
+/**
+ * @brief Run the "Add User" dialog.
  */
 void addUserDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *add_user_window = 0;
@@ -1578,8 +1577,8 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Delete User dialog
+/**
+ * @brief Run the "Delete User" dialog.
  */
 void delUserDialog(CDKSCREEN *main_cdk_screen) {
     int ret_val = 0, exit_stat = 0;
@@ -1648,8 +1647,8 @@ void delUserDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Change Password dialog
+/**
+ * @brief Run the "Change Password" dialog.
  */
 void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *chg_pass_window = 0;
@@ -1794,8 +1793,8 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the SCST Information dialog
+/**
+ * @brief Run the "SCST Information" dialog.
  */
 void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *scst_info = 0;
@@ -1898,8 +1897,8 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the CRM Status dialog
+/**
+ * @brief Run the "CRM Status" dialog.
  */
 void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *crm_info = 0;
@@ -1984,8 +1983,8 @@ void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Date & Time Settings dialog
+/**
+ * @brief Run the "Date & Time Settings" dialog.
  */
 void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *date_window = 0;
@@ -2357,8 +2356,8 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the DRBD Status dialog
+/**
+ * @brief Run the "DRBD Status" dialog.
  */
 void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *drbd_info = 0;

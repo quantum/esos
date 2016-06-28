@@ -19,8 +19,8 @@
 #include "strings.h"
 
 
-/*
- * Run the Target Information dialog
+/**
+ * @brief Run the "Target Information" dialog.
  */
 void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *tgt_info = 0;
@@ -117,8 +117,8 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add iSCSI Target dialog
+/**
+ * @brief Run the "Add iSCSI Target" dialog.
  */
 void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *tgt_name_entry = 0;
@@ -199,8 +199,8 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Remove iSCSI Target dialog
+/**
+ * @brief Run the "Remove iSCSI Target" dialog.
  */
 void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
     char scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -238,8 +238,8 @@ void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Issue LIP dialog
+/**
+ * @brief Run the "Issue LIP" dialog.
  */
 void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lip_info = 0;
@@ -309,8 +309,8 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Enable/Disable Target dialog
+/**
+ * @brief Run the "Enable/Disable Target" dialog.
  */
 void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
     CDKSCREEN *tgt_screen = 0;
@@ -473,8 +473,8 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Set Relative Target ID dialog
+/**
+ * @brief Run the "Set Relative Target ID" dialog.
  */
 void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
     CDKSCALE *rel_tgt_id_scale = 0;

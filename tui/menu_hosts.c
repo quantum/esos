@@ -20,8 +20,8 @@
 #include "strings.h"
 
 
-/*
- * Run the Add Group dialog
+/**
+ * @brief Run the "Add Group" dialog.
  */
 void addGroupDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *grp_name_entry = 0;
@@ -85,8 +85,8 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Remove Group dialog
+/**
+ * @brief Run the "Remove Group" dialog.
  */
 void remGroupDialog(CDKSCREEN *main_cdk_screen) {
     char scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -133,8 +133,8 @@ void remGroupDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add Initiator dialog
+/**
+ * @brief Run the "Add Initiator" dialog.
  */
 void addInitDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *init_entry = 0;
@@ -296,8 +296,8 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Remove Initiator dialog
+/**
+ * @brief Run the "Remove Initiator" dialog.
  */
 void remInitDialog(CDKSCREEN *main_cdk_screen) {
     char scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},

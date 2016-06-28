@@ -1,7 +1,7 @@
 /**
  * @file dialogs.h
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @brief Settings related to the TUI dialogs.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _DIALOGS_H

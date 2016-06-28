@@ -19,8 +19,8 @@
 #include "strings.h"
 
 
-/*
- * Run the Device/Target Group Layout dialog
+/**
+ * @brief Run the "Device/Target Group Layout" dialog.
  */
 void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *alua_info = 0;
@@ -210,8 +210,8 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add Device Group dialog
+/**
+ * @brief Run the "Add Device Group" dialog.
  */
 void addDevGrpDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *dev_grp_name_entry = 0;
@@ -266,8 +266,8 @@ void addDevGrpDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Remove Device Group dialog
+/**
+ * @brief Run the "Remove Device Group" dialog.
  */
 void remDevGrpDialog(CDKSCREEN *main_cdk_screen) {
     char dev_grp_name[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -306,8 +306,8 @@ void remDevGrpDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add Target Group dialog
+/**
+ * @brief Run the "Add Target Group" dialog.
  */
 void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *tgt_grp_window = 0;
@@ -463,8 +463,8 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Remove Target Group dialog
+/**
+ * @brief Run the "Remove Target Group" dialog.
  */
 void remTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
     char dev_grp_name[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -511,8 +511,8 @@ void remTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add Device to Group dialog
+/**
+ * @brief Run the "Add Device to Group" dialog.
  */
 void addDevToGrpDialog(CDKSCREEN *main_cdk_screen) {
     char device_name[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -551,8 +551,8 @@ void addDevToGrpDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Remove Device from Group dialog
+/**
+ * @brief Run the "Remove Device from Group" dialog.
  */
 void remDevFromGrpDialog(CDKSCREEN *main_cdk_screen) {
     char dev_grp_name[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -600,8 +600,8 @@ void remDevFromGrpDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add Target to Group dialog
+/**
+ * @brief Run the "Add Target to Group" dialog.
  */
 void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *add_tgt_window = 0;
@@ -765,8 +765,8 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Remove Target from Group dialog
+/**
+ * @brief Run the "Remove Target from Group" dialog.
  */
 void remTgtFromGrpDialog(CDKSCREEN *main_cdk_screen) {
     char dev_grp_name[MAX_SYSFS_ATTR_SIZE] = {0},

@@ -20,8 +20,8 @@
 #include "strings.h"
 
 
-/*
- * Run the Device Information dialog
+/**
+ * @brief Run the "Device Information" dialog.
  */
 void devInfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *dev_info = 0;
@@ -188,8 +188,8 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add Device dialog
+/**
+ * @brief Run the "Add Device" dialog.
  */
 void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
     CDKSCROLL *dev_list = 0, *fio_type_list = 0;
@@ -973,8 +973,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Delete Device dialog
+/**
+ * @brief Run the "Delete Device" dialog.
  */
 void remDeviceDialog(CDKSCREEN *main_cdk_screen) {
     char scst_dev[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -1013,8 +1013,8 @@ void remDeviceDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Map to Group dialog
+/**
+ * @brief Run the "Map to Group" dialog.
  */
 void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
     CDKSCREEN *map_screen = 0;
@@ -1164,8 +1164,8 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Unmap from Group dialog
+/**
+ * @brief Run the "Unmap from Group" dialog.
  */
 void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
     char scst_tgt[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -1216,8 +1216,8 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the LUN/Group Layout dialog
+/**
+ * @brief Run the "LUN/Group Layout" dialog.
  */
 void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lun_info = 0;

@@ -26,8 +26,8 @@
 #include "strings.h"
 
 
-/*
- * Run the Create File System dialog
+/**
+ * @brief Run the "Create File System" dialog.
  */
 void createFSDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *fs_window = 0;
@@ -543,8 +543,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Remove File System dialog
+/**
+ * @brief Run the "Remove File System" dialog.
  */
 void removeFSDialog(CDKSCREEN *main_cdk_screen) {
     char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
@@ -638,8 +638,8 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add Virtual Disk File dialog
+/**
+ * @brief Run the "Add Virtual Disk File" dialog.
  */
 void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     WINDOW *vdisk_window = 0;
@@ -966,8 +966,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Delete Virtual Disk File dialog
+/**
+ * @brief Run the "Delete Virtual Disk File" dialog.
  */
 void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     CDKFSELECT *file_select = 0;
@@ -1045,8 +1045,8 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Virtual Disk File List dialog
+/**
+ * @brief Run the "Virtual Disk File List" dialog.
  */
 void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *vdisk_files = 0;

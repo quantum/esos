@@ -1,7 +1,7 @@
 /**
  * @file megaraid.c
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @brief Function implementations of everything MegaRAID.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE

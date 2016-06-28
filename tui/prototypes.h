@@ -1,7 +1,7 @@
 /**
  * @file prototypes.h
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @brief Contains the function prototypes for just about everything.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _PROTOTYPES_H

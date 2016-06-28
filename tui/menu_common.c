@@ -30,8 +30,8 @@
 #include "strings.h"
 
 
-/*
- * Generic error dialog; takes an error message and displays a nice red
+/**
+ * @brief Generic error dialog; takes an error message and displays a nice red
  * "ERROR" box to the user. Accepts multiple lines; caller should pass NULL
  * for lines that shouldn't be set.
  */
@@ -70,8 +70,8 @@ void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 }
 
 
-/*
- * Two callback functions for use with CDK buttons (and traverse).
+/**
+ * @brief Two callback functions for use with CDK buttons (and traverse).
  */
 void okButtonCB(CDKBUTTON *button) {
     exitOKCDKScreenOf(&button->obj);
@@ -81,10 +81,10 @@ void cancelButtonCB(CDKBUTTON *button) {
 }
 
 
-/*
- * Confirmation dialog with a message and two buttons (OK/Cancel). Typically
- * used as a last check for possibly dangerous operations. Accepts multiple
- * lines; caller should pass NULL for lines that shouldn't be set.
+/**
+ * @brief Confirmation dialog with a message and two buttons (OK/Cancel).
+ * Typically used as a last check for possibly dangerous operations. Accepts
+ * multiple lines; caller should pass NULL for lines that shouldn't be set.
  */
 boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
     CDKDIALOG *confirm = 0;
@@ -134,9 +134,9 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 }
 
 
-/*
- * Present the user with a list of SCST targets and let them choose one. We
- * then fill the char arrays with the target name and target driver.
+/**
+ * @brief Present the user with a list of SCST targets and let them choose one.
+ * We then fill the char arrays with the target name and target driver.
  * Optionally, if tgt_driver is set, then we will only display targets for
  * that driver.
  */
@@ -247,9 +247,9 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
 }
 
 
-/*
- * Present the user with a list of SCST groups and let them choose one. The
- * driver / target name combination is passed in and we then fill the
+/**
+ * @brief Present the user with a list of SCST groups and let them choose one.
+ * The driver / target name combination is passed in and we then fill the
  * char array with the selected group name.
  */
 void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
@@ -330,9 +330,9 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
 }
 
 
-/*
- * Present the user with a list of SCST LUNs and let them choose one. The
- * driver / target / group name combination is passed in and we return
+/**
+ * @brief Present the user with a list of SCST LUNs and let them choose one.
+ * The driver / target / group name combination is passed in and we return
  * the LUN as an int; return -1 if there was an error or escape.
  */
 int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
@@ -431,8 +431,8 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
 }
 
 
-/*
- * Give the user a list of SCSI disk devices and have them select one.
+/**
+ * @brief Give the user a list of SCSI disk devices and have them select one.
  * We return a char array with "H:C:I:L" for the chosen disk.
  */
 char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
@@ -579,9 +579,9 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
 }
 
 
-/*
- * Present the user with a list of SCST devices and let them choose one. We
- * then fill the char arrays with the device name and the handler.
+/**
+ * @brief Present the user with a list of SCST devices and let them choose one.
+ * We then fill the char arrays with the device name and the handler.
  */
 void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
         char dev_handler[]) {
@@ -669,10 +669,10 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
 }
 
 
-/*
- * Present a list of adapters to the user and return the adapter
- * number (ID) selected. Currently only MegaRAID adapters.
- * This function will also fill the adapter array.
+/**
+ * @brief Present a list of adapters to the user and return the adapter number
+ * (ID) selected. Currently only MegaRAID adapters. This function will also
+ * fill the adapter array.
  */
 int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
     CDKSCROLL *adapter_list = 0;
@@ -728,10 +728,10 @@ int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
 }
 
 
-/*
- * Present the user with a list of SCST initiators for a particular group and
- * have them choose one. The driver / target / group name combination is passed
- * in and we fill the initiator char array.
+/**
+ * @brief Present the user with a list of SCST initiators for a particular
+ * group and have them choose one. The driver / target / group name combination
+ * is passed in and we fill the initiator char array.
  */
 void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         char tgt_driver[], char tgt_group[], char initiator[]) {
@@ -810,9 +810,9 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
 }
 
 
-/*
- * Synchronize the ESOS configuration files to the USB drive; this will also
- * dump the SCST configuration to a flat file (before sync'ing).
+/**
+ * @brief Synchronize the ESOS configuration files to the USB drive; this will
+ * also dump the SCST configuration to a flat file (before sync'ing).
  */
 void syncConfig(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *sync_msg = 0;
@@ -866,9 +866,9 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Give the user a list of user accounts to choose from; the list of users
- * is everyone that belongs to the "ESOS users" group.
+/**
+ * @brief Give the user a list of user accounts to choose from; the list of
+ * users is everyone that belongs to the "ESOS users" group.
  */
 void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
     CDKSCROLL *user_scroll = 0;
@@ -925,8 +925,8 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
 }
 
 
-/*
- * Question dialog with a message and two buttons (OK/Cancel). Typically
+/**
+ * @brief Question dialog with a message and two buttons (OK/Cancel). Typically
  * used as a convenience to run some function after another dialog. Accepts
  * multiple lines; caller should pass NULL for lines that shouldn't be set.
  */
@@ -977,8 +977,9 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 }
 
 
-/*
- * Present a list of file systems from /etc/fstab and have the user pick one.
+/**
+ * @brief Present a list of file systems from /etc/fstab and have the user
+ * pick one.
  */
 void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
         char fs_type[], boolean *mounted) {
@@ -1095,9 +1096,10 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
 }
 
 
-/*
- * Give the user a list of block devices (SCSI, etc.) and have them select one.
- * We return a char array with the "/dev/X" path for the chosen device.
+/**
+ * @brief Give the user a list of block devices (SCSI, etc.) and have them
+ * select one. We return a char array with the "/dev/X" path for the chosen
+ * device.
  */
 char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     CDKSCROLL *block_dev_list = 0;
@@ -1379,9 +1381,10 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
 }
 
 
-/*
- * Give the user a list of SCSI devices (based on scsi_dev_type) and have
- * them select one. We return a char array with "H:C:I:L" for the chosen device.
+/**
+ * @brief Give the user a list of SCSI devices (based on scsi_dev_type) and
+ * have them select one. We return a char array with "H:C:I:L" for the chosen
+ * device.
  */
 char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
     CDKSCROLL *scsi_dev_list = 0;
@@ -1494,8 +1497,8 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
 }
 
 
-/*
- * Present the user with a list of SCST ALUA device groups and let them
+/**
+ * @brief Present the user with a list of SCST ALUA device groups and let them
  * choose one. We then fill the char array with the chosen device group name.
  */
 void getSCSTDevGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[]) {
@@ -1571,8 +1574,8 @@ void getSCSTDevGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[]) {
     return;
 }
 
-/*
- * Present the user with a list of SCST ALUA target groups and let them
+/**
+ * @brief Present the user with a list of SCST ALUA target groups and let them
  * choose one. The device group name is passed in and we then fill the
  * char array with the selected target group name.
  */
@@ -1656,9 +1659,9 @@ void getSCSTTgtGrpChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
 }
 
 
-/*
- * Present the user with a list of SCST ALUA device group devices and let them
- * choose one. The device group name is passed in and we then fill the
+/**
+ * @brief Present the user with a list of SCST ALUA device group devices and
+ * let them choose one. The device group name is passed in and we then fill the
  * char array with the selected device name.
  */
 void getSCSTDevGrpDevChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
@@ -1738,9 +1741,9 @@ void getSCSTDevGrpDevChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
 }
 
 
-/*
- * Present the user with a list of SCST ALUA device group devices and let them
- * choose one. The device group name is passed in and we then fill the
+/**
+ * @brief Present the user with a list of SCST ALUA device group devices and
+ * let them choose one. The device group name is passed in and we then fill the
  * char array with the selected device name.
  */
 void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
@@ -1823,10 +1826,10 @@ void getSCSTTgtGrpTgtChoice(CDKSCREEN *cdk_screen, char alua_dev_group[],
 }
 
 
-/*
- * Check that the given char pointer string contains "valid characters" based
- * on the valid-character-type parameter. If the string is good, return TRUE,
- * and FALSE if its bad (doesn't pass test). If the string does not pass
+/**
+ * @brief Check that the given char pointer string contains "valid characters"
+ * based on the valid-character-type parameter. If the string is good, return
+ * TRUE, and FALSE if its bad (doesn't pass test). If the string does not pass
  * validation, we also print an error message pop-up to the given CDK screen.
  */
 boolean checkInputStr(CDKSCREEN *cdk_screen, valid_input_t char_test_type,
@@ -1901,10 +1904,11 @@ boolean checkInputStr(CDKSCREEN *cdk_screen, valid_input_t char_test_type,
 }
 
 
-/*
- * Retrieve a list of of network interfaces (eg, Ethernet) on this system,
- * build a scroll widget dialog and present it to the user. The top option (0)
- * in the scroll widget represents the "general" network settings option.
+/**
+ * @brief Retrieve a list of of network interfaces (eg, Ethernet) on this
+ * system, build a scroll widget dialog and present it to the user. The top
+ * option (0) in the scroll widget represents the "general" network settings
+ * option.
  */
 void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
         char iface_name[], char iface_mac[], char iface_speed[],

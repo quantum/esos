@@ -1,7 +1,7 @@
 /**
  * @file strings.h
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @brief Common string macros used throughout the entire program.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef STRINGS_H

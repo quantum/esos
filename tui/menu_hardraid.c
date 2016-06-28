@@ -27,8 +27,8 @@
 #include "megaraid.h"
 
 
-/*
- * Run the Adapter Properties dialog
+/**
+ * @brief Run the "Adapter Properties" dialog.
  */
 void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
@@ -244,8 +244,8 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Adapter Information dialog
+/**
+ * @brief Run the "Adapter Information" dialog.
  */
 void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     MRENCL *mr_enclosures[MAX_ENCLOSURES] = {NULL};
@@ -380,8 +380,8 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Add Volume dialog
+/**
+ * @brief Run the "Add Volume" dialog.
  */
 void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
@@ -746,8 +746,8 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Delete Volume dialog
+/**
+ * @brief Run the "Delete Volume" dialog.
  */
 void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
@@ -859,8 +859,8 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
 }
 
 
-/*
- * Run the Volume Properties dialog
+/**
+ * @brief Run the "Volume Properties" dialog.
  */
 void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};

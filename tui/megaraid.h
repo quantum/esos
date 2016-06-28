@@ -1,7 +1,7 @@
 /**
  * @file megaraid.h
- * @author Copyright (c) 2012-2015 Astersmith, LLC
- * @author Marc A. Smith
+ * @brief Macros and structure definitions for MegaRAID functions.
+ * @author Copyright (c) 2012-2016 Marc A. Smith
  */
 
 #ifndef _MEGARAID_H
