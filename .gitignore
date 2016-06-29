@@ -166,3 +166,5 @@ iperf3
 libpcap
 nmon
 munin-c
+open-iscsi
+open-isns

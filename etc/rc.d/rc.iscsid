@@ -1,0 +1,45 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+ISCSID="/sbin/iscsid"
+ISCSID_LOCK="/var/lock/iscsid"
+ISCSIADM="/sbin/iscsiadm"
+SYNC="/bin/sync"
+DFLT_OPTS=""
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting iSCSI initiator service..."
+    eval ${ISCSID} ${USER_OPTS} || exit 1
+    /bin/touch ${ISCSID_LOCK}
+    /bin/echo "Setting up iSCSI targets..."
+    ${ISCSIADM} -m node --loginall=automatic || exit 1
+}
+
+stop() {
+    /bin/echo "Stopping iSCSI initiator service..."
+    ${SYNC}
+    ${ISCSIADM} -m node --logoutall=all || exit 1
+    ${ISCSIADM} -k 0 && /bin/rm -f ${ISCSID_LOCK}
+}
+
+status() {
+    /bin/pidof ${ISCSID} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

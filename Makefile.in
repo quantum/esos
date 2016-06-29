@@ -225,6 +225,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iftop-1.0pre4.tar.gz \
 		nmon-16c.tar.gz \
 		munin-c-0.0.9.tar.gz \
+		open-iscsi-master_20160628.tar.gz \
+		open-isns-0.96.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -249,7 +251,8 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
 		stunnel sudo rsync eudev gperf multipath-tools archivemount \
 		libarchive mcelog edac-utils sysfsutils sqlite-autoconf \
-		stunnel sudo rsync iperf2 iperf3 libpcap iftop nmon munin-c
+		stunnel sudo rsync iperf2 iperf3 libpcap iftop nmon munin-c \
+		open-iscsi open-isns
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2569,5 +2572,26 @@ munin-c: glibc
 	done
 	$(LN) /usr/libexec/munin-c/munin-plugins-c \
 	$(IMAGE_DIR)/etc/munin/plugins/memory
+	$(TOUCH) $(@)
+
+open-iscsi: glibc open-isns
+	$(MAKE) --directory=$(tgt_src_dir) user CC="$(esos_cc)"
+	$(MAKE) --directory=$(tgt_src_dir) install_programs DESTDIR=$(IMAGE_DIR)
+	$(MAKE) --directory=$(tgt_src_dir) install_doc DESTDIR=$(IMAGE_DIR)
+	$(MAKE) --directory=$(tgt_src_dir) install_etc DESTDIR=$(IMAGE_DIR)
+	$(MAKE) --directory=$(tgt_src_dir) install_iname DESTDIR=$(IMAGE_DIR)
+	$(MAKE) --directory=$(tgt_src_dir) install_iface DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+open-isns: glibc
+	$(SED) -i '/isnsd\.service/d' $(tgt_src_dir)/Makefile.in
+	$(SED) -i '/isnsd\.socket/d' $(tgt_src_dir)/Makefile.in
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared \
+	--disable-static
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install SYSTEMDDIR="" \
+	DESTDIR=$(IMAGE_DIR)
+	$(MAKE) --directory=$(tgt_src_dir) install_hdrs DESTDIR=$(IMAGE_DIR)
+	$(MAKE) --directory=$(tgt_src_dir) install_lib DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
 
