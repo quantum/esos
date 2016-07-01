@@ -32,7 +32,7 @@
 void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lvm2_info = 0;
     char *swindow_info[MAX_LVM2_INFO_LINES] = {NULL};
-    char *error_msg = NULL, *lvdisplay_cmd = NULL;
+    char *error_msg = NULL, *lvdisplay_cmd = NULL, *swindow_title = NULL;
     int i = 0, line_pos = 0, status = 0, ret_val = 0;
     char line[LVM2_INFO_COLS] = {0};
     FILE *lvdisplay_proc = NULL;
@@ -75,16 +75,20 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
         }
         if (ret_val == 0) {
             /* Setup scrolling window widget */
+            SAFE_ASPRINTF(&swindow_title,
+                    "<C></%d/B>LVM2 Logical Volume Information\n",
+                    g_color_dialog_title[g_curr_theme]);
             lvm2_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-                    LVM2_INFO_ROWS+2, LVM2_INFO_COLS+2,
-                    "<C></31/B>LVM2 Logical Volume Information\n",
-                    MAX_LVM2_INFO_LINES, TRUE, FALSE);
+                    (LVM2_INFO_ROWS + 2), (LVM2_INFO_COLS + 2),
+                    swindow_title, MAX_LVM2_INFO_LINES, TRUE, FALSE);
             if (!lvm2_info) {
                 errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
                 return;
             }
-            setCDKSwindowBackgroundAttrib(lvm2_info, COLOR_DIALOG_TEXT);
-            setCDKSwindowBoxAttribute(lvm2_info, COLOR_DIALOG_BOX);
+            setCDKSwindowBackgroundAttrib(lvm2_info,
+                    g_color_dialog_text[g_curr_theme]);
+            setCDKSwindowBoxAttribute(lvm2_info,
+                    g_color_dialog_box[g_curr_theme]);
 
             /* Set the scrolling window content */
             setCDKSwindowContents(lvm2_info, swindow_info, line_pos);
@@ -106,6 +110,7 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Done */
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_LVM2_INFO_LINES; i++ )
         FREE_NULL(swindow_info[i]);
     return;

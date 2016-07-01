@@ -94,11 +94,13 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
                 break;
             }
-            boxWindow(net_window, COLOR_DIALOG_BOX);
-            wbkgd(net_window, COLOR_DIALOG_TEXT);
+            boxWindow(net_window, g_color_dialog_box[g_curr_theme]);
+            wbkgd(net_window, g_color_dialog_text[g_curr_theme]);
             wrefresh(net_window);
 
-            SAFE_ASPRINTF(&net_info_msg[0], "</31/B>General network settings...");
+            SAFE_ASPRINTF(&net_info_msg[0],
+                    "</%d/B>General network settings...",
+                    g_color_dialog_title[g_curr_theme]);
             SAFE_ASPRINTF(&net_info_msg[1], " ");
 
             /* Read network configuration file (INI file) */
@@ -125,42 +127,49 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 break;
             }
-            setCDKLabelBackgroundAttrib(net_label, COLOR_DIALOG_TEXT);
+            setCDKLabelBackgroundAttrib(net_label,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Host name field */
             host_name = newCDKEntry(net_screen, (window_x + 1), (window_y + 3),
                     NULL, "</B>System host name: ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     MAX_HOSTNAME, 0, MAX_HOSTNAME, FALSE, FALSE);
             if (!host_name) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(host_name, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(host_name,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(host_name, conf_hostname);
 
             /* Domain name field */
             domain_name = newCDKEntry(net_screen, (window_x + 1),
                     (window_y + 5), NULL, "</B>System domain name: ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     MAX_DOMAINNAME, 0, MAX_DOMAINNAME, FALSE, FALSE);
             if (!domain_name) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(domain_name, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(domain_name,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(domain_name, conf_domainname);
 
             /* Default gateway field */
             default_gw = newCDKEntry(net_screen, (window_x + 1), (window_y + 7),
                     NULL, "</B>Default gateway (leave blank if using DHCP): ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
             if (!default_gw) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(default_gw, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(default_gw,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(default_gw, conf_defaultgw);
 
             /* A very small label for instructions */
@@ -173,30 +182,35 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 break;
             }
-            setCDKLabelBackgroundAttrib(short_label, COLOR_DIALOG_TEXT);
+            setCDKLabelBackgroundAttrib(short_label,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Primary name server field */
             name_server_1 = newCDKEntry(net_screen, (window_x + 1),
                     (window_y + 10), NULL, "</B>NS 1: ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
             if (!name_server_1) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(name_server_1, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(name_server_1,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(name_server_1, conf_nameserver1);
 
             /* Secondary name server field */
             name_server_2 = newCDKEntry(net_screen, (window_x + 1),
                     (window_y + 11), NULL, "</B>NS 2: ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
             if (!name_server_2) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(name_server_2, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(name_server_2,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(name_server_2, conf_nameserver2);
 
             /* Buttons */
@@ -206,7 +220,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(ok_button,
+                    g_color_dialog_input[g_curr_theme]);
             cancel_button = newCDKButton(net_screen, (window_x + 36),
                     (window_y + 14), g_ok_cancel_msg[1], cancel_cb,
                     FALSE, FALSE);
@@ -214,7 +229,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(cancel_button,
+                    g_color_dialog_input[g_curr_theme]);
 
             /* Allow user to traverse the screen */
             refreshCDKScreen(net_screen);
@@ -298,7 +314,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 ini_file = fopen(NETWORK_CONF, "w");
                 if (ini_file == NULL) {
-                    SAFE_ASPRINTF(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, NET_CONF_WRITE_ERR,
+                            strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                 } else {
@@ -340,13 +357,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
                 break;
             }
-            boxWindow(net_window, COLOR_DIALOG_BOX);
-            wbkgd(net_window, COLOR_DIALOG_TEXT);
+            boxWindow(net_window, g_color_dialog_box[g_curr_theme]);
+            wbkgd(net_window, g_color_dialog_text[g_curr_theme]);
             wrefresh(net_window);
 
             /* Make a nice, informational label */
-            SAFE_ASPRINTF(&net_info_msg[0], "</31/B>Configuring interface %s...",
-                    net_if_name);
+            SAFE_ASPRINTF(&net_info_msg[0],
+                    "</%d/B>Configuring interface %s...",
+                    g_color_dialog_title[g_curr_theme], net_if_name);
             SAFE_ASPRINTF(&net_info_msg[1], " ");
             SAFE_ASPRINTF(&net_info_msg[2], "</B>MAC Address:<!B>\t%s",
                     net_if_mac);
@@ -421,30 +439,34 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 break;
             }
-            setCDKLabelBackgroundAttrib(net_label, COLOR_DIALOG_TEXT);
+            setCDKLabelBackgroundAttrib(net_label,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Interface MTU field */
             iface_mtu = newCDKEntry(net_screen, (window_x + 50), (window_y + 3),
                     "</B>Interface MTU:  ", NULL,
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vINT,
                     15, 0, 15, FALSE, FALSE);
             if (!iface_mtu) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(iface_mtu, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(iface_mtu,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(iface_mtu, conf_if_mtu);
 
             /* IP settings radio */
             ip_config = newCDKRadio(net_screen, (window_x + 1), (window_y + 7),
                     NONE, 5, 10, "</B>IP Settings:", g_ip_opts, 3,
-                    '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!ip_config) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(ip_config, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(ip_config,
+                    g_color_dialog_text[g_curr_theme]);
             if (strcasecmp(conf_bootproto, g_ip_opts[1]) == 0)
                 setCDKRadioCurrentItem(ip_config, 1);
             else if (strcasecmp(conf_bootproto, g_ip_opts[2]) == 0)
@@ -462,42 +484,49 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 break;
             }
-            setCDKLabelBackgroundAttrib(short_label, COLOR_DIALOG_TEXT);
+            setCDKLabelBackgroundAttrib(short_label,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* IP address field */
             ip_addy = newCDKEntry(net_screen, (window_x + 20), (window_y + 8),
                     NULL, "</B>IP address: ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
             if (!ip_addy) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(ip_addy, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(ip_addy,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(ip_addy, conf_ipaddr);
 
             /* Netmask field */
             netmask = newCDKEntry(net_screen, (window_x + 20), (window_y + 9),
                     NULL, "</B>Netmask:    ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
             if (!netmask) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(netmask, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(netmask,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(netmask, conf_netmask);
 
             /* Broadcast field */
             broadcast = newCDKEntry(net_screen, (window_x + 20),
                     (window_y + 10), NULL, "</B>Broadcast:  ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
             if (!broadcast) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(broadcast, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(broadcast,
+                    g_color_dialog_input[g_curr_theme]);
             setCDKEntryValue(broadcast, conf_broadcast);
 
             // TODO: For now, bridging and bonding are mutually exclusive.
@@ -506,7 +535,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                  * they can set options */
                 bond_opts = newCDKMentry(net_screen, (window_x + 1),
                         (window_y + 11), "</B>Bonding Options:", NULL,
-                        COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                        g_color_dialog_select[g_curr_theme],
+                        '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                         25, 2, 50, 0, TRUE, FALSE);
                 if (!bond_opts) {
                     errorDialog(main_cdk_screen, MENTRY_ERR_MSG, NULL);
@@ -515,19 +545,21 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 // TODO: Some tweaking to make this widget look like the
                 // others; CDK bug?
                 setCDKMentryBoxAttribute(bond_opts, COLOR_PAIR(55));
-                setCDKMentryBackgroundAttrib(bond_opts, COLOR_DIALOG_TEXT);
+                setCDKMentryBackgroundAttrib(bond_opts,
+                        g_color_dialog_text[g_curr_theme]);
                 setCDKMentryValue(bond_opts, conf_bondopts);
                 /* They can also select slaves for the bond interface */
                 slave_select = newCDKSelection(net_screen, (window_x + 35),
                         (window_y + 12), RIGHT, 3, 20, "</B>Bonding Slaves:",
                         poten_slaves, poten_slave_cnt,
-                        g_choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
+                        g_choice_char, 2, g_color_dialog_select[g_curr_theme],
+                        FALSE, FALSE);
                 if (!slave_select) {
                     errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
                     break;
                 }
                 setCDKSelectionBackgroundAttrib(slave_select,
-                        COLOR_DIALOG_TEXT);
+                        g_color_dialog_text[g_curr_theme]);
                 /* Parse the existing slaves (if any) */
                 strtok_result = strtok(conf_slaves, ",");
                 while (strtok_result != NULL) {
@@ -544,13 +576,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 br_member_select = newCDKSelection(net_screen, (window_x + 1),
                         (window_y + 12), RIGHT, 3, 20, "</B>Bridge Members:",
                         poten_br_members, poten_br_member_cnt,
-                        g_choice_char, 2, COLOR_DIALOG_SELECT, FALSE, FALSE);
+                        g_choice_char, 2, g_color_dialog_select[g_curr_theme],
+                        FALSE, FALSE);
                 if (!br_member_select) {
                     errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
                     break;
                 }
                 setCDKSelectionBackgroundAttrib(br_member_select,
-                        COLOR_DIALOG_TEXT);
+                        g_color_dialog_text[g_curr_theme]);
                 /* Parse the existing members (if any) */
                 strtok_result = strtok(conf_brmembers, ",");
                 while (strtok_result != NULL) {
@@ -567,7 +600,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                  or bonding slave) then we can set ethtool options */
                 ethtool_opts = newCDKMentry(net_screen, (window_x + 1),
                         (window_y + 11), "</B>Options for 'ethtool':", NULL,
-                        COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                        g_color_dialog_select[g_curr_theme],
+                        '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                         25, 2, 50, 0, TRUE, FALSE);
                 if (!ethtool_opts) {
                     errorDialog(main_cdk_screen, MENTRY_ERR_MSG, NULL);
@@ -576,7 +610,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 // TODO: Some tweaking to make this widget look like the
                 // others; CDK bug?
                 setCDKMentryBoxAttribute(ethtool_opts, COLOR_PAIR(55));
-                setCDKMentryBackgroundAttrib(ethtool_opts, COLOR_DIALOG_TEXT);
+                setCDKMentryBackgroundAttrib(ethtool_opts,
+                        g_color_dialog_text[g_curr_theme]);
                 setCDKMentryValue(ethtool_opts, conf_ethtoolopts);
             }
 
@@ -587,7 +622,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(ok_button,
+                    g_color_dialog_input[g_curr_theme]);
             cancel_button = newCDKButton(net_screen, (window_x + 36),
                     (window_y + 16), g_ok_cancel_msg[1], cancel_cb,
                     FALSE, FALSE);
@@ -595,7 +631,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(cancel_button,
+                    g_color_dialog_input[g_curr_theme]);
 
             /* Allow user to traverse the screen */
             refreshCDKScreen(net_screen);
@@ -735,7 +772,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                      * interfaces were selected (or removed) */
                     for (i = 0; i < poten_br_member_cnt; i++) {
                         if (br_member_select->selections[i] == 1) {
-                            SAFE_ASPRINTF(&temp_pstr, "%s,", poten_br_members[i]);
+                            SAFE_ASPRINTF(&temp_pstr, "%s,",
+                                    poten_br_members[i]);
                             /* We add one extra for the null byte */
                             br_member_val_size = strlen(temp_pstr) + 1;
                             br_members_line_size = br_members_line_size +
@@ -786,7 +824,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 /* Write to network config. file */
                 ini_file = fopen(NETWORK_CONF, "w");
                 if (ini_file == NULL) {
-                    SAFE_ASPRINTF(&error_msg, NET_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, NET_CONF_WRITE_ERR,
+                            strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                 } else {
@@ -836,7 +875,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *net_restart_info = 0;
     char *swindow_info[MAX_NET_RESTART_INFO_LINES] = {NULL};
-    char *error_msg = NULL;
+    char *error_msg = NULL, *swindow_title = NULL;
     char net_rc_cmd[MAX_SHELL_CMD_LEN] = {0}, line[NET_RESTART_INFO_COLS] = {0};
     int i = 0, status = 0;
     FILE *net_rc = NULL;
@@ -850,16 +889,20 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Setup scrolling window widget */
+    SAFE_ASPRINTF(&swindow_title,
+            "<C></%d/B>Restarting networking services...\n",
+            g_color_dialog_title[g_curr_theme]);
     net_restart_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (NET_RESTART_INFO_ROWS + 2), (NET_RESTART_INFO_COLS + 2),
-            "<C></31/B>Restarting networking services...\n",
-            MAX_NET_RESTART_INFO_LINES, TRUE, FALSE);
+            swindow_title, MAX_NET_RESTART_INFO_LINES, TRUE, FALSE);
     if (!net_restart_info) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(net_restart_info, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(net_restart_info, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(net_restart_info,
+            g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(net_restart_info,
+            g_color_dialog_box[g_curr_theme]);
     drawCDKSwindow(net_restart_info, TRUE);
 
     /* Set our line counter */
@@ -965,6 +1008,7 @@ void restartNetDialog(CDKSCREEN *main_cdk_screen) {
     /* Done */
     if (net_restart_info)
         destroyCDKSwindow(net_restart_info);
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_NET_RESTART_INFO_LINES; i++)
         FREE_NULL(swindow_info[i]);
     return;
@@ -993,6 +1037,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             *conf_usetls = NULL, *conf_usestarttls = NULL,
             *mailhub_host = NULL, *mailhub_port = NULL,
             *error_msg = NULL;
+    char *mail_title_msg[1] = {NULL};
     dictionary *ini_dict = NULL;
     FILE *ini_file = NULL;
     boolean question = FALSE;
@@ -1036,29 +1081,34 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
             break;
         }
-        boxWindow(mail_window, COLOR_DIALOG_BOX);
-        wbkgd(mail_window, COLOR_DIALOG_TEXT);
+        boxWindow(mail_window, g_color_dialog_box[g_curr_theme]);
+        wbkgd(mail_window, g_color_dialog_text[g_curr_theme]);
         wrefresh(mail_window);
 
         /* Screen title label */
+        SAFE_ASPRINTF(&mail_title_msg[0],
+                "</%d/B>System mail (SMTP) settings...",
+                g_color_dialog_title[g_curr_theme]);
         mail_label = newCDKLabel(mail_screen, (window_x + 1), (window_y + 1),
-                g_mail_title_msg, 1, FALSE, FALSE);
+                mail_title_msg, 1, FALSE, FALSE);
         if (!mail_label) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(mail_label, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(mail_label,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Email address (to send alerts to) field */
         email_addr = newCDKEntry(mail_screen, (window_x + 1), (window_y + 3),
                 NULL, "</B>Alert Email Address: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 MAX_EMAIL_LEN, 0, MAX_EMAIL_LEN, FALSE, FALSE);
         if (!email_addr) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(email_addr, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(email_addr, g_color_dialog_input[g_curr_theme]);
         setCDKEntryValue(email_addr, conf_root);
 
         /* Split up mailhub string from configuration */
@@ -1071,38 +1121,40 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         /* SMTP host field */
         smtp_host = newCDKEntry(mail_screen, (window_x + 1), (window_y + 5),
                 NULL, "</B>SMTP Host: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 24, 0, MAX_SMTP_LEN, FALSE, FALSE);
         if (!smtp_host) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(smtp_host, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(smtp_host, g_color_dialog_input[g_curr_theme]);
         setCDKEntryValue(smtp_host, mailhub_host);
 
         /* SMTP port field */
         smtp_port = newCDKEntry(mail_screen, (window_x + 38), (window_y + 5),
                 NULL, "</B>SMTP Port: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vINT,
                 5, 0, 5, FALSE, FALSE);
         if (!smtp_port) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(smtp_port, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(smtp_port, g_color_dialog_input[g_curr_theme]);
         if (mailhub_port != NULL)
             setCDKEntryValue(smtp_port, mailhub_port);
 
         /* TLS radio */
         use_tls = newCDKRadio(mail_screen, (window_x + 1), (window_y + 7),
                 NONE, 5, 10, "</B>Use TLS", g_no_yes_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!use_tls) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(use_tls, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(use_tls, g_color_dialog_text[g_curr_theme]);
         if (strcasecmp(conf_usetls, "yes") == 0)
             setCDKRadioCurrentItem(use_tls, 1);
         else
@@ -1111,13 +1163,14 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         /* STARTTLS radio */
         use_starttls = newCDKRadio(mail_screen, (window_x + 15), (window_y + 7),
                 NONE, 5, 10, "</B>Use STARTTLS", g_no_yes_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!use_starttls) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(use_starttls, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(use_starttls,
+                g_color_dialog_text[g_curr_theme]);
         if (strcasecmp(conf_usestarttls, "yes") == 0)
             setCDKRadioCurrentItem(use_starttls, 1);
         else
@@ -1126,13 +1179,14 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         /* Auth. Method radio */
         auth_method = newCDKRadio(mail_screen, (window_x + 29), (window_y + 7),
                 NONE, 9, 10, "</B>Auth. Method", g_auth_meth_opts, 3,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!auth_method) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(auth_method, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(auth_method,
+                g_color_dialog_text[g_curr_theme]);
         if (strcasecmp(conf_authmethod, "NOT_SET") == 0)
             setCDKRadioCurrentItem(auth_method, 0);
         else if (strcasecmp(conf_authmethod, "cram-md5") == 0)
@@ -1143,25 +1197,27 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
         /* Auth. User field */
         auth_user = newCDKEntry(mail_screen, (window_x + 1), (window_y + 12),
                 NULL, "</B>Auth. User: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 15, 0, MAX_SMTP_USER_LEN, FALSE, FALSE);
         if (!auth_user) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(auth_user, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(auth_user, g_color_dialog_input[g_curr_theme]);
         setCDKEntryValue(auth_user, conf_authuser);
 
         /* Auth. Password field */
         auth_pass = newCDKEntry(mail_screen, (window_x + 30), (window_y + 12),
                 NULL, "</B>Auth. Password: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 15, 0, MAX_SMTP_PASS_LEN, FALSE, FALSE);
         if (!auth_pass) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(auth_pass, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(auth_pass, g_color_dialog_input[g_curr_theme]);
         setCDKEntryValue(auth_pass, conf_authpass);
 
         /* Buttons */
@@ -1171,14 +1227,16 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(mail_screen, (window_x + 36),
                 (window_y + 15), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(mail_screen);
@@ -1283,7 +1341,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             /* Write the configuration file */
             ini_file = fopen(SSMTP_CONF, "w");
             if (ini_file == NULL) {
-                SAFE_ASPRINTF(&error_msg, SSMTP_CONF_WRITE_ERR, strerror(errno));
+                SAFE_ASPRINTF(&error_msg, SSMTP_CONF_WRITE_ERR,
+                        strerror(errno));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
             } else {
@@ -1305,6 +1364,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
 
     /* All done -- clean up */
     iniparser_freedict(ini_dict);
+    FREE_NULL(mail_title_msg[0]);
     if (mail_screen != NULL) {
         destroyCDKScreenObjects(mail_screen);
         destroyCDKScreen(mail_screen);
@@ -1364,8 +1424,10 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(test_email_label, COLOR_DIALOG_TEXT);
-        setCDKLabelBoxAttribute(test_email_label, COLOR_DIALOG_BOX);
+        setCDKLabelBackgroundAttrib(test_email_label,
+                g_color_dialog_text[g_curr_theme]);
+        setCDKLabelBoxAttribute(test_email_label,
+                g_color_dialog_box[g_curr_theme]);
         refreshCDKScreen(main_cdk_screen);
 
         /* Send the test email message */
@@ -1429,6 +1491,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
             chg_pass_cmd[MAX_SHELL_CMD_LEN] = {0},
             password_1[MAX_PASSWD_LEN] = {0}, password_2[MAX_PASSWD_LEN] = {0};
     char *error_msg = NULL;
+    char *add_user_title_msg[1] = {NULL};
 
     while (1) {
         /* Setup a new CDK screen for adding a new user account */
@@ -1447,53 +1510,65 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
             break;
         }
-        boxWindow(add_user_window, COLOR_DIALOG_BOX);
-        wbkgd(add_user_window, COLOR_DIALOG_TEXT);
+        boxWindow(add_user_window, g_color_dialog_box[g_curr_theme]);
+        wbkgd(add_user_window, g_color_dialog_text[g_curr_theme]);
         wrefresh(add_user_window);
 
         /* Screen title label */
+        SAFE_ASPRINTF(&add_user_title_msg[0],
+                "</%d/B>Adding a new ESOS user account...",
+                g_color_dialog_title[g_curr_theme]);
         add_user_label = newCDKLabel(add_user_screen, (window_x + 1),
-                (window_y + 1), g_add_user_title_msg, 1, FALSE, FALSE);
+                (window_y + 1), add_user_title_msg, 1, FALSE, FALSE);
         if (!add_user_label) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(add_user_label, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(add_user_label,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Username field */
         uname_field = newCDKEntry(add_user_screen, (window_x + 1),
                 (window_y + 3), NULL, "</B>Username: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 MAX_UNAME_LEN, 0, MAX_UNAME_LEN, FALSE, FALSE);
         if (!uname_field) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(uname_field, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(uname_field,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Password field (1) */
         pass_1_field = newCDKEntry(add_user_screen, (window_x + 1),
                 (window_y + 5), NULL, "</B>User Password:   ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vHMIXED,
                 25, 0, MAX_PASSWD_LEN, FALSE, FALSE);
         if (!pass_1_field) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(pass_1_field, COLOR_DIALOG_INPUT);
-        setCDKEntryHiddenChar(pass_1_field, '*' | COLOR_DIALOG_SELECT);
+        setCDKEntryBoxAttribute(pass_1_field,
+                g_color_dialog_input[g_curr_theme]);
+        setCDKEntryHiddenChar(pass_1_field,
+                '*' | g_color_dialog_select[g_curr_theme]);
 
         /* Password field (2) */
         pass_2_field = newCDKEntry(add_user_screen, (window_x + 1),
                 (window_y + 6), NULL, "</B>Retype Password: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vHMIXED,
                 25, 0, MAX_PASSWD_LEN, FALSE, FALSE);
         if (!pass_2_field) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(pass_2_field, COLOR_DIALOG_INPUT);
-        setCDKEntryHiddenChar(pass_2_field, '*' | COLOR_DIALOG_SELECT);
+        setCDKEntryBoxAttribute(pass_2_field,
+                g_color_dialog_input[g_curr_theme]);
+        setCDKEntryHiddenChar(pass_2_field,
+                '*' | g_color_dialog_select[g_curr_theme]);
 
         /* Buttons */
         ok_button = newCDKButton(add_user_screen, (window_x + 17),
@@ -1502,14 +1577,16 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(add_user_screen, (window_x + 27),
                 (window_y + 10), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(add_user_screen);
@@ -1546,7 +1623,8 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
                     getCDKEntryValue(uname_field));
             ret_val = system(add_user_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, ADDUSER_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, ADDUSER_BIN,
+                        exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -1558,7 +1636,8 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
                     getCDKEntryValue(uname_field), password_1, CHPASSWD_BIN);
             ret_val = system(chg_pass_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN,
+                        exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -1572,6 +1651,7 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         destroyCDKScreenObjects(add_user_screen);
         destroyCDKScreen(add_user_screen);
     }
+    FREE_NULL(add_user_title_msg[0]);
     delwin(add_user_window);
     return;
 }
@@ -1687,13 +1767,14 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
             break;
         }
-        boxWindow(chg_pass_window, COLOR_DIALOG_BOX);
-        wbkgd(chg_pass_window, COLOR_DIALOG_TEXT);
+        boxWindow(chg_pass_window, g_color_dialog_box[g_curr_theme]);
+        wbkgd(chg_pass_window, g_color_dialog_text[g_curr_theme]);
         wrefresh(chg_pass_window);
 
         /* Screen title label */
-        SAFE_ASPRINTF(&screen_title[0], "</31/B>Changing password for user %s...",
-                user_acct);
+        SAFE_ASPRINTF(&screen_title[0],
+                "</%d/B>Changing password for user %s...",
+                g_color_dialog_title[g_curr_theme], user_acct);
         passwd_label = newCDKLabel(chg_pass_screen,
                 (window_x + 1), (window_y + 1),
                 screen_title, CHG_PASSWD_INFO_LINES, FALSE, FALSE);
@@ -1701,31 +1782,38 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(passwd_label, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(passwd_label,
+                g_color_dialog_text[g_curr_theme]);
 
         /* New password field (1) */
         new_pass_1 = newCDKEntry(chg_pass_screen, (window_x + 1),
                 (window_y + 3), NULL, "</B>New Password:    ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vHMIXED,
                 20, 0, MAX_PASSWD_LEN, FALSE, FALSE);
         if (!new_pass_1) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(new_pass_1, COLOR_DIALOG_INPUT);
-        setCDKEntryHiddenChar(new_pass_1, '*' | COLOR_DIALOG_SELECT);
+        setCDKEntryBoxAttribute(new_pass_1,
+                g_color_dialog_input[g_curr_theme]);
+        setCDKEntryHiddenChar(new_pass_1,
+                '*' | g_color_dialog_select[g_curr_theme]);
 
         /* New password field (2) */
         new_pass_2 = newCDKEntry(chg_pass_screen, (window_x + 1),
                 (window_y + 4), NULL, "</B>Retype Password: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vHMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vHMIXED,
                 20, 0, MAX_PASSWD_LEN, FALSE, FALSE);
         if (!new_pass_2) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(new_pass_2, COLOR_DIALOG_INPUT);
-        setCDKEntryHiddenChar(new_pass_2, '*' | COLOR_DIALOG_SELECT);
+        setCDKEntryBoxAttribute(new_pass_2,
+                g_color_dialog_input[g_curr_theme]);
+        setCDKEntryHiddenChar(new_pass_2,
+                '*' | g_color_dialog_select[g_curr_theme]);
 
         /* Buttons */
         ok_button = newCDKButton(chg_pass_screen, (window_x + 14),
@@ -1734,14 +1822,16 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(chg_pass_screen, (window_x + 24),
                 (window_y + 8), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(chg_pass_screen);
@@ -1772,7 +1862,8 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
                     user_acct, password_1, CHPASSWD_BIN);
             ret_val = system(chg_pass_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, CHPASSWD_BIN,
+                        exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -1805,21 +1896,22 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
             tmp_sysfs_path[MAX_SYSFS_PATH_SIZE] = {0},
             tmp_attr_line[SCST_INFO_COLS] = {0};
     char *swindow_info[MAX_SCST_INFO_LINES] = {NULL};
-    char *temp_pstr = NULL;
+    char *temp_pstr = NULL, *swindow_title = NULL;
     FILE *sysfs_file = NULL;
     int i = 0;
 
     /* Setup scrolling window widget */
+    SAFE_ASPRINTF(&swindow_title, "<C></%d/B>SCST Information / Statistics\n",
+            g_color_dialog_title[g_curr_theme]);
     scst_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-            SCST_INFO_ROWS+2, SCST_INFO_COLS+2,
-            "<C></31/B>SCST Information / Statistics\n", MAX_SCST_INFO_LINES,
-            TRUE, FALSE);
+            (SCST_INFO_ROWS + 2), (SCST_INFO_COLS + 2),
+            swindow_title, MAX_SCST_INFO_LINES, TRUE, FALSE);
     if (!scst_info) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(scst_info, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(scst_info, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(scst_info, g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(scst_info, g_color_dialog_box[g_curr_theme]);
 
     /* Grab some semi-useful information for our scrolling window widget */
     snprintf(tmp_sysfs_path, MAX_SYSFS_PATH_SIZE,
@@ -1890,6 +1982,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
 
     /* We fell through -- the user exited the widget, but we don't care how */
     destroyCDKSwindow(scst_info);
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_SCST_INFO_LINES; i++) {
         FREE_NULL(swindow_info[i]);
     }
@@ -1903,7 +1996,7 @@ void scstInfoDialog(CDKSCREEN *main_cdk_screen) {
 void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *crm_info = 0;
     char *swindow_info[MAX_CRM_INFO_LINES] = {NULL};
-    char *error_msg = NULL, *crm_cmd = NULL;
+    char *error_msg = NULL, *crm_cmd = NULL, *swindow_title = NULL;
     int i = 0, line_pos = 0, status = 0, ret_val = 0;
     char line[CRM_INFO_COLS] = {0};
     FILE *crm_proc = NULL;
@@ -1946,16 +2039,19 @@ void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
         }
         if (ret_val == 0) {
             /* Setup scrolling window widget */
+            SAFE_ASPRINTF(&swindow_title, "<C></%d/B>CRM Status\n",
+                    g_color_dialog_title[g_curr_theme]);
             crm_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-                    CRM_INFO_ROWS+2, CRM_INFO_COLS+2,
-                    "<C></31/B>CRM Status\n",
-                    MAX_CRM_INFO_LINES, TRUE, FALSE);
+                    (CRM_INFO_ROWS + 2), (CRM_INFO_COLS + 2),
+                    swindow_title, MAX_CRM_INFO_LINES, TRUE, FALSE);
             if (!crm_info) {
                 errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
                 return;
             }
-            setCDKSwindowBackgroundAttrib(crm_info, COLOR_DIALOG_TEXT);
-            setCDKSwindowBoxAttribute(crm_info, COLOR_DIALOG_BOX);
+            setCDKSwindowBackgroundAttrib(crm_info,
+                    g_color_dialog_text[g_curr_theme]);
+            setCDKSwindowBoxAttribute(crm_info,
+                    g_color_dialog_box[g_curr_theme]);
 
             /* Set the scrolling window content */
             setCDKSwindowContents(crm_info, swindow_info, line_pos);
@@ -1977,6 +2073,7 @@ void crmStatusDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Done */
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_CRM_INFO_LINES; i++ )
         FREE_NULL(swindow_info[i]);
     return;
@@ -2002,7 +2099,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             curr_day = 0, curr_month = 0, curr_year = 0, curr_hour = 0,
             curr_minute = 0, curr_second = 0, date_window_lines = 0,
             date_window_cols = 0;
-    char *tz_files[MAX_TZ_FILES] = {NULL};
+    char *tz_files[MAX_TZ_FILES] = {NULL}, *date_title_msg[1] = {NULL};
     char *error_msg = NULL, *remove_me = NULL, *strstr_result = NULL;
     char zoneinfo_path[MAX_ZONEINFO_PATH] = {0},
             ntp_serv_val[MAX_NTP_LEN] = {0},
@@ -2033,18 +2130,22 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
             break;
         }
-        boxWindow(date_window, COLOR_DIALOG_BOX);
-        wbkgd(date_window, COLOR_DIALOG_TEXT);
+        boxWindow(date_window, g_color_dialog_box[g_curr_theme]);
+        wbkgd(date_window, g_color_dialog_text[g_curr_theme]);
         wrefresh(date_window);
 
         /* Date/time title label */
+        SAFE_ASPRINTF(&date_title_msg[0],
+                "</%d/B>Edit date and time settings...",
+                g_color_dialog_title[g_curr_theme]);
         date_title_label = newCDKLabel(date_screen, (window_x + 1),
-                (window_y + 1), g_date_title_msg, 1, FALSE, FALSE);
+                (window_y + 1), date_title_msg, 1, FALSE, FALSE);
         if (!date_title_label) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(date_title_label, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(date_title_label,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Get time zone information; we only traverse
          * two directories deep */
@@ -2106,7 +2207,8 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 closedir(tz_sub_dir1);
             } else if (base_dir_entry->d_type == DT_REG) {
-                SAFE_ASPRINTF(&tz_files[file_cnt], "%s", base_dir_entry->d_name);
+                SAFE_ASPRINTF(&tz_files[file_cnt], "%s",
+                        base_dir_entry->d_name);
                 file_cnt++;
             }
         }
@@ -2117,13 +2219,14 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         /* A radio widget for displaying/choosing time zone */
         tz_select = newCDKRadio(date_screen, (window_x + 1), (window_y + 3),
                 NONE, 12, 34, "</B>Time Zone\n", tz_files, file_cnt,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!tz_select) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(tz_select, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(tz_select,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Get the current time zone data file path (from sym. link) */
         if (readlink(LOCALTIME, zoneinfo_path, MAX_ZONEINFO_PATH) == -1) {
@@ -2154,13 +2257,14 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         /* NTP server */
         ntp_server = newCDKEntry(date_screen, (window_x + 1), (window_y + 16),
                 NULL, "</B>NTP Server: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED, 20,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED, 20,
                 0, MAX_NTP_LEN, FALSE, FALSE);
         if (!ntp_server) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(ntp_server, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(ntp_server, g_color_dialog_input[g_curr_theme]);
 
         /* Get the current NTP server setting (if any) and set widget */
         if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
@@ -2193,39 +2297,44 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         /* Calendar widget for displaying/setting current date */
         calendar = newCDKCalendar(date_screen, (window_x + 39), (window_y + 3),
                 "</B>Current Date", curr_day, curr_month, curr_year,
-                COLOR_DIALOG_TEXT, COLOR_DIALOG_TEXT, COLOR_DIALOG_TEXT,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                g_color_dialog_text[g_curr_theme],
+                g_color_dialog_text[g_curr_theme],
+                g_color_dialog_text[g_curr_theme],
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!calendar) {
             errorDialog(main_cdk_screen, CALENDAR_ERR_MSG, NULL);
             break;
         }
-        setCDKCalendarBackgroundAttrib(calendar, COLOR_DIALOG_TEXT);
+        setCDKCalendarBackgroundAttrib(calendar,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Hour, minute, second scale widgets */
         hour = newCDKUScale(date_screen, (window_x + 39), (window_y + 15),
-                "</B>Hour  ", NULL, COLOR_DIALOG_INPUT, 3, curr_hour, 0, 23,
-                1, 5, FALSE, FALSE);
+                "</B>Hour  ", NULL, g_color_dialog_input[g_curr_theme], 3,
+                curr_hour, 0, 23, 1, 5, FALSE, FALSE);
         if (!hour) {
             errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
             break;
         }
-        setCDKUScaleBackgroundAttrib(hour, COLOR_DIALOG_TEXT);
+        setCDKUScaleBackgroundAttrib(hour, g_color_dialog_text[g_curr_theme]);
         minute = newCDKUScale(date_screen, (window_x + 47), (window_y + 15),
-                "</B>Minute", NULL, COLOR_DIALOG_INPUT, 3, curr_minute, 0, 59,
+                "</B>Minute", NULL, g_color_dialog_input[g_curr_theme], 3,
+                curr_minute, 0, 59,
                 1, 5, FALSE, FALSE);
         if (!minute) {
             errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
             break;
         }
-        setCDKUScaleBackgroundAttrib(minute, COLOR_DIALOG_TEXT);
+        setCDKUScaleBackgroundAttrib(minute, g_color_dialog_text[g_curr_theme]);
         second = newCDKUScale(date_screen, (window_x + 55), (window_y + 15),
-                "</B>Second", NULL, COLOR_DIALOG_INPUT, 3, curr_second, 0, 59,
+                "</B>Second", NULL, g_color_dialog_input[g_curr_theme], 3,
+                curr_second, 0, 59,
                 1, 5, FALSE, FALSE);
         if (!second) {
             errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
             break;
         }
-        setCDKUScaleBackgroundAttrib(second, COLOR_DIALOG_TEXT);
+        setCDKUScaleBackgroundAttrib(second, g_color_dialog_text[g_curr_theme]);
 
         /* Buttons */
         ok_button = newCDKButton(date_screen, (window_x + 24), (window_y + 18),
@@ -2234,14 +2343,16 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(date_screen, (window_x + 34),
                 (window_y + 18), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(date_screen);
@@ -2265,7 +2376,8 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                     snprintf(dir_name, MAX_ZONEINFO_PATH, "%s/%s",
                             ZONEINFO, tz_files[temp_int]);
                     if (symlink(dir_name, LOCALTIME) == -1) {
-                        SAFE_ASPRINTF(&error_msg, "symlink(): %s", strerror(errno));
+                        SAFE_ASPRINTF(&error_msg, "symlink(): %s",
+                                strerror(errno));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
                         break;
@@ -2292,7 +2404,8 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                 } else {
                     fprintf(ntp_server_file, "%s", new_ntp_serv_val);
                     if (fclose(ntp_server_file) != 0) {
-                        SAFE_ASPRINTF(&error_msg, "fclose(): %s", strerror(errno));
+                        SAFE_ASPRINTF(&error_msg, "fclose(): %s",
+                                strerror(errno));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
                         break;
@@ -2334,7 +2447,8 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
                 curr_date_info->tm_isdst = -1;
                 const struct timeval time_val = {mktime(curr_date_info), 0};
                 if (settimeofday(&time_val, 0) == -1) {
-                    SAFE_ASPRINTF(&error_msg, "settimeofday(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "settimeofday(): %s",
+                            strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -2349,6 +2463,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         destroyCDKScreenObjects(date_screen);
         destroyCDKScreen(date_screen);
     }
+    FREE_NULL(date_title_msg[0]);
     delwin(date_window);
     for (i = 0; i < MAX_TZ_FILES; i++)
         FREE_NULL(tz_files[i]);
@@ -2362,7 +2477,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
 void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *drbd_info = 0;
     char *swindow_info[MAX_DRBD_INFO_LINES] = {NULL};
-    char *error_msg = NULL;
+    char *error_msg = NULL, *swindow_title = NULL;
     int i = 0, line_pos = 0;
     char line[DRBD_INFO_COLS] = {0};
     FILE *drbd_file = NULL;
@@ -2374,17 +2489,19 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
         FREE_NULL(error_msg);
     } else {
         /* Setup scrolling window widget */
+        SAFE_ASPRINTF(&swindow_title, "<C></%d/B>Distributed Replicated Block "
+                "Device (DRBD) Information\n",
+                g_color_dialog_title[g_curr_theme]);
         drbd_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                 (DRBD_INFO_ROWS + 2), (DRBD_INFO_COLS + 2),
-                "<C></31/B>Distributed Replicated Block Device "
-                "(DRBD) Information\n",
-                MAX_DRBD_INFO_LINES, TRUE, FALSE);
+                swindow_title, MAX_DRBD_INFO_LINES, TRUE, FALSE);
         if (!drbd_info) {
             errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
             return;
         }
-        setCDKSwindowBackgroundAttrib(drbd_info, COLOR_DIALOG_TEXT);
-        setCDKSwindowBoxAttribute(drbd_info, COLOR_DIALOG_BOX);
+        setCDKSwindowBackgroundAttrib(drbd_info,
+                g_color_dialog_text[g_curr_theme]);
+        setCDKSwindowBoxAttribute(drbd_info, g_color_dialog_box[g_curr_theme]);
 
         /* Add the contents to the scrolling window widget */
         line_pos = 0;
@@ -2419,6 +2536,7 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Done */
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_DRBD_INFO_LINES; i++ )
         FREE_NULL(swindow_info[i]);
     return;

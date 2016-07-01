@@ -32,7 +32,7 @@
 void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *mdstat_info = 0;
     char *swindow_info[MAX_MDSTAT_INFO_LINES] = {NULL};
-    char *error_msg = NULL;
+    char *error_msg = NULL, *swindow_title = NULL;
     int i = 0, line_pos = 0;
     char line[MDSTAT_INFO_COLS] = {0};
     FILE *mdstat_file = NULL;
@@ -44,16 +44,20 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
         FREE_NULL(error_msg);
     } else {
         /* Setup scrolling window widget */
+        SAFE_ASPRINTF(&swindow_title,
+                "<C></%d/B>Linux Software RAID (md) Status\n",
+                g_color_dialog_title[g_curr_theme]);
         mdstat_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-                MDSTAT_INFO_ROWS+2, MDSTAT_INFO_COLS+2,
-                "<C></31/B>Linux Software RAID (md) Status\n",
-                MAX_MDSTAT_INFO_LINES, TRUE, FALSE);
+                (MDSTAT_INFO_ROWS + 2), (MDSTAT_INFO_COLS + 2),
+                swindow_title, MAX_MDSTAT_INFO_LINES, TRUE, FALSE);
         if (!mdstat_info) {
             errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
             return;
         }
-        setCDKSwindowBackgroundAttrib(mdstat_info, COLOR_DIALOG_TEXT);
-        setCDKSwindowBoxAttribute(mdstat_info, COLOR_DIALOG_BOX);
+        setCDKSwindowBackgroundAttrib(mdstat_info,
+                g_color_dialog_text[g_curr_theme]);
+        setCDKSwindowBoxAttribute(mdstat_info,
+                g_color_dialog_box[g_curr_theme]);
 
         /* Add the contents to the scrolling window widget */
         line_pos = 0;
@@ -88,6 +92,7 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Done */
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_MDSTAT_INFO_LINES; i++ )
         FREE_NULL(swindow_info[i]);
     return;

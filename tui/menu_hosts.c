@@ -39,18 +39,19 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Get new group name (entry widget) */
-        SAFE_ASPRINTF(&entry_title, "<C></31/B>Add New Group to Target %s (%s)\n",
-                scst_tgt, tgt_driver);
+        SAFE_ASPRINTF(&entry_title,
+                "<C></%d/B>Add New Group to Target %s (%s)\n",
+                g_color_dialog_title[g_curr_theme], scst_tgt, tgt_driver);
         grp_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
                 entry_title, "</B>New Group Name (no spaces): ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme], '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 SCST_SEC_GRP_NAME_LEN, 0, SCST_SEC_GRP_NAME_LEN, TRUE, FALSE);
         if (!grp_name_entry) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(grp_name_entry, COLOR_DIALOG_BOX);
-        setCDKEntryBackgroundAttrib(grp_name_entry, COLOR_DIALOG_TEXT);
+        setCDKEntryBoxAttribute(grp_name_entry, g_color_dialog_box[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(grp_name_entry, g_color_dialog_text[g_curr_theme]);
 
         /* Draw the entry widget */
         curs_set(1);
@@ -213,17 +214,17 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
         closedir(dir_stream);
 
         /* Get SCST initiator choice from user */
-        SAFE_ASPRINTF(&scroll_title, "<C></31/B>Select an Initiator (%s)\n",
-                scst_tgt);
+        SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Select an Initiator (%s)\n",
+                g_color_dialog_title[g_curr_theme], scst_tgt);
         scst_init_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE,
                 15, 55, scroll_title, scroll_init_list, i,
-                FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+                FALSE, g_color_dialog_select[g_curr_theme], TRUE, FALSE);
         if (!scst_init_list) {
             errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
             break;
         }
-        setCDKScrollBoxAttribute(scst_init_list, COLOR_DIALOG_BOX);
-        setCDKScrollBackgroundAttrib(scst_init_list, COLOR_DIALOG_TEXT);
+        setCDKScrollBoxAttribute(scst_init_list, g_color_dialog_box[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(scst_init_list, g_color_dialog_text[g_curr_theme]);
         init_choice = activateCDKScroll(scst_init_list, 0);
 
         /* Check exit from widget */
@@ -239,19 +240,20 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
             if (init_choice == 0) {
                 /* Let the user enter their own initiator name (entry widget) */
                 SAFE_ASPRINTF(&entry_title,
-                        "<C></31/B>Add Initiator to Group %s (%s)\n",
-                        group_name, scst_tgt);
+                        "<C></%d/B>Add Initiator to Group %s (%s)\n",
+                        g_color_dialog_title[g_curr_theme], group_name,
+                        scst_tgt);
                 init_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
                         entry_title, "</B>Initiator Name (no spaces): ",
-                        COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                        g_color_dialog_select[g_curr_theme], '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                         30, 0, SCST_INITIATOR_LEN, TRUE, FALSE);
                 if (!init_entry) {
                     errorDialog(main_cdk_screen, ENTRY_ERR_MSG,
                             NULL);
                     break;
                 }
-                setCDKEntryBoxAttribute(init_entry, COLOR_DIALOG_BOX);
-                setCDKEntryBackgroundAttrib(init_entry, COLOR_DIALOG_TEXT);
+                setCDKEntryBoxAttribute(init_entry, g_color_dialog_box[g_curr_theme]);
+                setCDKEntryBackgroundAttrib(init_entry, g_color_dialog_text[g_curr_theme]);
 
                 /* Draw the entry widget */
                 curs_set(1);
@@ -275,7 +277,8 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                 ((entry_init_name == NULL) ?
                 scst_sess_inits[init_choice] : entry_init_name));
         if ((temp_int = writeAttribute(mgmt_attr_path, mgmt_attr_value)) != 0) {
-            SAFE_ASPRINTF(&error_msg, "Couldn't add initiator to SCST group: %s",
+            SAFE_ASPRINTF(&error_msg,
+                    "Couldn't add initiator to SCST group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);

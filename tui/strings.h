@@ -88,9 +88,6 @@ extern char *g_no_yes_opts[], *g_auth_meth_opts[], *g_ip_opts[],
         *g_cache_opts[], *g_write_opts[], *g_read_opts[], *g_bbu_opts[],
         *g_raid_opts[], *g_strip_opts[], *g_dsbl_enbl_opts[], *g_fs_type_opts[];
 
-/* Label title strings */
-extern char *g_mail_title_msg[], *g_add_user_title_msg[], *g_date_title_msg[];
-
 /* Misc. widget related strings */
 extern char *g_choice_char[], *g_bonding_map[], *g_scst_dev_types[],
         *g_scst_bs_list[], *g_fio_types[], *g_sync_label_msg[],

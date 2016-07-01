@@ -44,7 +44,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             new_blk_dev_node[MAX_FS_ATTR_LEN] = {0},
             real_blk_dev_node[MAX_SYSFS_PATH_SIZE] = {0};
     char *block_dev = NULL, *error_msg = NULL, *confirm_msg = NULL,
-            *dev_node = NULL, *device_size = NULL, *tmp_str_ptr = NULL;
+            *dev_node = NULL, *device_size = NULL, *tmp_str_ptr = NULL,
+            *swindow_title = NULL;
     char *fs_dialog_msg[MAX_FS_DIALOG_INFO_LINES] = {NULL},
             *swindow_info[MAX_MAKE_FS_INFO_LINES] = {NULL};
     FILE *fstab_file = NULL, *new_fstab_file = NULL;
@@ -135,8 +136,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
             break;
         }
-        boxWindow(fs_window, COLOR_DIALOG_BOX);
-        wbkgd(fs_window, COLOR_DIALOG_TEXT);
+        boxWindow(fs_window, g_color_dialog_box[g_curr_theme]);
+        wbkgd(fs_window, g_color_dialog_text[g_curr_theme]);
         wrefresh(fs_window);
 
         /* Grab the device information */
@@ -163,8 +164,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Information label */
         SAFE_ASPRINTF(&fs_dialog_msg[0],
-                "</31/B>Creating new file system (on block device %.20s)...",
-                real_blk_dev_node);
+                "</%d/B>Creating new file system (on block device %.20s)...",
+                g_color_dialog_title[g_curr_theme], real_blk_dev_node);
         /* Using asprintf() for a blank space makes it
          * easier on clean-up (free) */
         SAFE_ASPRINTF(&fs_dialog_msg[1], " ");
@@ -209,7 +210,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(add_fs_info, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(add_fs_info,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Clean up the libparted stuff */
         FREE_NULL(device_size);
@@ -220,35 +222,37 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
         /* FS label field */
         fs_label = newCDKEntry(fs_screen, (window_x + 1), (window_y + 13),
                 "</B>File System Label", NULL,
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vLMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vLMIXED,
                 MAX_FS_LABEL, 0, MAX_FS_LABEL, FALSE, FALSE);
         if (!fs_label) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(fs_label, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(fs_label, g_color_dialog_input[g_curr_theme]);
 
         /* FS type radio list */
         fs_type = newCDKRadio(fs_screen, (window_x + 22), (window_y + 13),
                 NONE, 5, 10, "</B>File System Type", g_fs_type_opts, 4,
-                '#' | COLOR_DIALOG_SELECT, 0,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 0,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!fs_type) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(fs_type, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(fs_type, g_color_dialog_text[g_curr_theme]);
 
         /* Partition yes/no widget (radio) */
         add_part = newCDKRadio(fs_screen, (window_x + 42), (window_y + 13),
                 NONE, 3, 10, "</B>Partition Device", g_no_yes_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!add_part) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(add_part, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(add_part,
+                g_color_dialog_text[g_curr_theme]);
         setCDKRadioCurrentItem(add_part, 1);
 
         /* Buttons */
@@ -258,14 +262,16 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(fs_screen, (window_x + 36),
                 (window_y + 19), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(fs_screen);
@@ -322,16 +328,20 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             FREE_NULL(confirm_msg);
             if (confirm) {
                 /* A scroll window to show progress */
+                SAFE_ASPRINTF(&swindow_title,
+                        "<C></%d/B>Setting up new file system...\n",
+                        g_color_dialog_title[g_curr_theme]);
                 make_fs_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                         MAKE_FS_INFO_ROWS + 2, MAKE_FS_INFO_COLS + 2,
-                        "<C></31/B>Setting up new file system...\n",
-                        MAX_MAKE_FS_INFO_LINES, TRUE, FALSE);
+                        swindow_title, MAX_MAKE_FS_INFO_LINES, TRUE, FALSE);
                 if (!make_fs_info) {
                     errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
                     return;
                 }
-                setCDKSwindowBackgroundAttrib(make_fs_info, COLOR_DIALOG_TEXT);
-                setCDKSwindowBoxAttribute(make_fs_info, COLOR_DIALOG_BOX);
+                setCDKSwindowBackgroundAttrib(make_fs_info,
+                        g_color_dialog_text[g_curr_theme]);
+                setCDKSwindowBoxAttribute(make_fs_info,
+                        g_color_dialog_box[g_curr_theme]);
                 drawCDKSwindow(make_fs_info, TRUE);
                 i = 0;
 
@@ -433,7 +443,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                         new_blk_dev_node);
                 ret_val = system(mkfs_cmd);
                 if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                    SAFE_ASPRINTF(&error_msg, "Running '%s' failed; exited with %d.",
+                    SAFE_ASPRINTF(&error_msg,
+                            "Running '%s' failed; exited with %d.",
                             mkfs_cmd, exit_stat);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -449,14 +460,16 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 /* Open the original file system tab file */
                 if ((fstab_file = setmntent(FSTAB, "r")) == NULL) {
-                    SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "setmntent(): %s",
+                            strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
                 }
                 /* Open the new/temporary file system tab file */
                 if ((new_fstab_file = setmntent(FSTAB_TMP, "w+")) == NULL) {
-                    SAFE_ASPRINTF(&error_msg, "setmntent(): %s", strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, "setmntent(): %s",
+                            strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -530,6 +543,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
     /* All done */
     destroyCDKSwindow(make_fs_info);
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_MAKE_FS_INFO_LINES; i++)
         FREE_NULL(swindow_info[i]);
     for (i = 0; i < info_line_cnt; i++)
@@ -573,7 +587,8 @@ void removeFSDialog(CDKSCREEN *main_cdk_screen) {
                     UMOUNT_BIN, fs_path);
             ret_val = system(umount_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, UMOUNT_BIN, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, UMOUNT_BIN,
+                        exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 return;
@@ -656,7 +671,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             gib_total_str[MISC_STRING_LEN] = {0},
             zero_buff[VDISK_WRITE_SIZE] = {0},
             new_vdisk_file[MAX_VDISK_PATH_LEN] = {0};
-    char *error_msg = NULL;
+    char *error_msg = NULL, *histogram_title = NULL;
     char *vdisk_dialog_msg[ADD_VDISK_INFO_LINES] = {NULL};
     boolean mounted = FALSE, question = FALSE, finished = FALSE;
     struct statvfs *fs_info = NULL;
@@ -709,8 +724,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
             break;
         }
-        boxWindow(vdisk_window, COLOR_DIALOG_BOX);
-        wbkgd(vdisk_window, COLOR_DIALOG_TEXT);
+        boxWindow(vdisk_window, g_color_dialog_box[g_curr_theme]);
+        wbkgd(vdisk_window, g_color_dialog_text[g_curr_theme]);
         wrefresh(vdisk_window);
 
         /* Get the file system information */
@@ -733,7 +748,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Fill the information label */
         SAFE_ASPRINTF(&vdisk_dialog_msg[0],
-                "</31/B>Adding new virtual disk file...");
+                "</%d/B>Adding new virtual disk file...",
+                g_color_dialog_title[g_curr_theme]);
         /* Using asprintf() for a blank space makes
          * it easier on clean-up (free) */
         SAFE_ASPRINTF(&vdisk_dialog_msg[1], " ");
@@ -750,29 +766,32 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(vdisk_label, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(vdisk_label,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Virtual disk file name */
         vdisk_name = newCDKEntry(vdisk_screen, (window_x + 1), (window_y + 6),
                 "</B>Virtual Disk File Name", NULL,
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vLMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vLMIXED,
                 20, 0, MAX_VDISK_NAME, FALSE, FALSE);
         if (!vdisk_name) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(vdisk_name, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(vdisk_name, g_color_dialog_input[g_curr_theme]);
 
         /* Virtual disk size */
         vdisk_size = newCDKEntry(vdisk_screen, (window_x + 30), (window_y + 6),
                 "</B>Virtual Disk Size (GiB)", NULL,
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vINT,
                 12, 0, 12, FALSE, FALSE);
         if (!vdisk_size) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(vdisk_size, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(vdisk_size, g_color_dialog_input[g_curr_theme]);
 
         /* Buttons */
         ok_button = newCDKButton(vdisk_screen, (window_x + 26), (window_y + 10),
@@ -781,14 +800,16 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(vdisk_screen, (window_x + 36),
                 (window_y + 10), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(vdisk_screen);
@@ -824,7 +845,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(new_vdisk_file, MAX_VDISK_PATH_LEN, "%s/%s",
                     fs_path, vdisk_name_buff);
             if (access(new_vdisk_file, F_OK) != -1) {
-                SAFE_ASPRINTF(&error_msg, "It appears the '%s'", new_vdisk_file);
+                SAFE_ASPRINTF(&error_msg, "It appears the '%s'",
+                        new_vdisk_file);
                 errorDialog(main_cdk_screen, error_msg, "file already exists!");
                 FREE_NULL(error_msg);
                 break;
@@ -839,16 +861,19 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Make a new histogram widget to display the virtual
              * disk creation progress */
+            SAFE_ASPRINTF(&histogram_title,
+                    "<C></%d/B>Writing new virtual disk file (units = MiB):\n",
+                    g_color_dialog_title[g_curr_theme]);
             vdisk_progress = newCDKHistogram(main_cdk_screen, CENTER, CENTER,
-                    1, 50, HORIZONTAL,
-                    "<C></31/B>Writing new virtual disk file (units = MiB):\n",
-                    TRUE, FALSE);
+                    1, 50, HORIZONTAL, histogram_title, TRUE, FALSE);
             if (!vdisk_progress) {
                 errorDialog(main_cdk_screen, HISTOGRAM_ERR_MSG, NULL);
                 break;
             }
-            setCDKScrollBoxAttribute(vdisk_progress, COLOR_DIALOG_BOX);
-            setCDKScrollBackgroundAttrib(vdisk_progress, COLOR_DIALOG_TEXT);
+            setCDKScrollBoxAttribute(vdisk_progress,
+                    g_color_dialog_box[g_curr_theme]);
+            setCDKScrollBackgroundAttrib(vdisk_progress,
+                    g_color_dialog_text[g_curr_theme]);
             drawCDKHistogram(vdisk_progress, TRUE);
 
             /* We'll use mebibyte as our unit for the histogram widget; need to
@@ -896,7 +921,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                     bytes_written = write(new_vdisk_fd, zero_buff,
                             write_length);
                     if (bytes_written == -1) {
-                        SAFE_ASPRINTF(&error_msg, "write(): %s", strerror(errno));
+                        SAFE_ASPRINTF(&error_msg, "write(): %s",
+                                strerror(errno));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
                         close(new_vdisk_fd);
@@ -918,7 +944,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                     /* Since our maximum size was checked above against an int
                      * type, we'll assume we're safe if we made it this far */
                     setCDKHistogram(vdisk_progress, vPERCENT, CENTER,
-                            COLOR_DIALOG_TEXT, 0, new_vdisk_mib,
+                            g_color_dialog_text[g_curr_theme], 0, new_vdisk_mib,
                             (position / MEBIBYTE_SIZE), ' ' | A_REVERSE, TRUE);
                     drawCDKHistogram(vdisk_progress, TRUE);
                 }
@@ -927,7 +953,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                 break;
 
             /* We've completed writing the new file; update the progress bar */
-            setCDKHistogram(vdisk_progress, vPERCENT, CENTER, COLOR_DIALOG_TEXT,
+            setCDKHistogram(vdisk_progress, vPERCENT, CENTER,
+                    g_color_dialog_text[g_curr_theme],
                     0, new_vdisk_mib, new_vdisk_mib,
                     ' ' | A_REVERSE, TRUE);
             drawCDKHistogram(vdisk_progress, TRUE);
@@ -953,6 +980,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Done */
+    FREE_NULL(histogram_title);
     for (i = 0; i < ADD_VDISK_INFO_LINES; i++)
         FREE_NULL(vdisk_dialog_msg[i]);
     if (vdisk_progress != NULL)
@@ -973,7 +1001,8 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     CDKFSELECT *file_select = 0;
     char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
             fs_type[MAX_FS_ATTR_LEN] = {0}, mount_cmd[MAX_SHELL_CMD_LEN] = {0};
-    char *error_msg = NULL, *selected_file = NULL, *confirm_msg = NULL;
+    char *error_msg = NULL, *selected_file = NULL, *confirm_msg = NULL,
+            *fselect_title = NULL;
     boolean mounted = FALSE, question = FALSE, confirm = FALSE;
     int exit_stat = 0, ret_val = 0;
 
@@ -1002,16 +1031,20 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Create the file selector widget */
+    SAFE_ASPRINTF(&fselect_title,
+            "<C></%d/B>Choose a virtual disk file to delete:\n",
+            g_color_dialog_title[g_curr_theme]);
     file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER, 20, 40,
-            "<C></31/B>Choose a virtual disk file to delete:\n",
-            "VDisk File: ", COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
+            fselect_title, "VDisk File: ", g_color_dialog_input[g_curr_theme],
+            '_' | g_color_dialog_input[g_curr_theme],
             A_REVERSE, "</N>", "</B>", "</N>", "</N>", TRUE, FALSE);
     if (!file_select) {
         errorDialog(main_cdk_screen, FSELECT_ERR_MSG, NULL);
         return;
     }
-    setCDKFselectBoxAttribute(file_select, COLOR_DIALOG_BOX);
-    setCDKFselectBackgroundAttrib(file_select, COLOR_DIALOG_TEXT);
+    setCDKFselectBoxAttribute(file_select, g_color_dialog_box[g_curr_theme]);
+    setCDKFselectBackgroundAttrib(file_select,
+            g_color_dialog_text[g_curr_theme]);
     setCDKFselectDirectory(file_select, fs_path);
 
     /* Activate the widget and let the user choose a file */
@@ -1041,6 +1074,7 @@ void delVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
     }
+    FREE_NULL(fselect_title);
     return;
 }
 
@@ -1077,7 +1111,8 @@ void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Setup scrolling window widget */
     snprintf(vd_list_title, VDLIST_INFO_COLS,
-            "<C></31/B>Virtual Disk File List (%.25s)\n", fs_path);
+            "<C></%d/B>Virtual Disk File List (%.25s)\n",
+            g_color_dialog_title[g_curr_theme], fs_path);
     vdisk_files = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (VDLIST_INFO_ROWS + 2), (VDLIST_INFO_COLS + 2),
             vd_list_title, MAX_VDLIST_INFO_LINES, TRUE, FALSE);
@@ -1085,8 +1120,9 @@ void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(vdisk_files, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(vdisk_files, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(vdisk_files,
+            g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(vdisk_files, g_color_dialog_box[g_curr_theme]);
 
     /* Loop over each entry in the directory */
     if (line_pos < MAX_VDLIST_INFO_LINES) {
@@ -1103,12 +1139,14 @@ void vdiskFileListDialog(CDKSCREEN *main_cdk_screen) {
                         fs_path, dir_entry->d_name);
                 if (stat(file_path, &file_stat) == -1) {
                     SAFE_ASPRINTF(&error_msg, "stat(): %s", strerror(errno));
-                    SAFE_ASPRINTF(&swindow_info[line_pos], "<C>%-20.20s %15.15s",
+                    SAFE_ASPRINTF(&swindow_info[line_pos],
+                            "<C>%-20.20s %15.15s",
                             dir_entry->d_name, error_msg);
                     FREE_NULL(error_msg);
                 } else {
                     pretty_size = prettyFormatBytes(file_stat.st_size);
-                    SAFE_ASPRINTF(&swindow_info[line_pos], "<C>%-20.20s %15.15s",
+                    SAFE_ASPRINTF(&swindow_info[line_pos],
+                            "<C>%-20.20s %15.15s",
                             dir_entry->d_name, pretty_size);
                     FREE_NULL(pretty_size);
                 }

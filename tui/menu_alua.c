@@ -24,6 +24,7 @@
  */
 void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *alua_info = 0;
+    char *scroll_title = NULL;
     char *swindow_info[MAX_ALUA_LAYOUT_LINES] = {NULL};
     int i = 0, line_pos = 0;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
@@ -34,16 +35,18 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
             *tgt_dir_entry = NULL, *dev_dir_entry = NULL;
 
     /* Setup scrolling window widget */
+    SAFE_ASPRINTF(&scroll_title,
+            "<C></%d/B>SCST ALUA Device/Target Group Layout\n",
+            g_color_dialog_title[g_curr_theme]);
     alua_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-            (ALUA_LAYOUT_ROWS + 2), (ALUA_LAYOUT_COLS + 2),
-            "<C></31/B>SCST ALUA Device/Target Group Layout\n",
+            (ALUA_LAYOUT_ROWS + 2), (ALUA_LAYOUT_COLS + 2), scroll_title,
             MAX_ALUA_LAYOUT_LINES, TRUE, FALSE);
     if (!alua_info) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(alua_info, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(alua_info, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(alua_info, g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(alua_info, g_color_dialog_box[g_curr_theme]);
 
     line_pos = 0;
     while (1) {
@@ -204,6 +207,7 @@ void devTgtGrpLayoutDialog(CDKSCREEN *main_cdk_screen) {
     destroyCDKSwindow(alua_info);
 
     /* Done */
+    FREE_NULL(scroll_title);
     for (i = 0; i < MAX_ALUA_LAYOUT_LINES; i++)
         FREE_NULL(swindow_info[i]);
     return;
@@ -217,22 +221,26 @@ void addDevGrpDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *dev_grp_name_entry = 0;
     char attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0};
-    char *dev_grp_name = NULL, *error_msg = NULL;
+    char *entry_title = NULL, *dev_grp_name = NULL, *error_msg = NULL;
     int temp_int = 0;
 
     while (1) {
         /* Get new device group name (entry widget) */
+        SAFE_ASPRINTF(&entry_title, "<C></%d/B>Add New Device Group\n",
+                g_color_dialog_title[g_curr_theme]);
         dev_grp_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
-                "<C></31/B>Add New Device Group\n",
-                "</B>New Group Name (no spaces): ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                entry_title, "</B>New Group Name (no spaces): ",
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 SCST_DEV_GRP_NAME_LEN, 0, SCST_DEV_GRP_NAME_LEN, TRUE, FALSE);
         if (!dev_grp_name_entry) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(dev_grp_name_entry, COLOR_DIALOG_BOX);
-        setCDKEntryBackgroundAttrib(dev_grp_name_entry, COLOR_DIALOG_TEXT);
+        setCDKEntryBoxAttribute(dev_grp_name_entry,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(dev_grp_name_entry,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Draw the entry widget */
         curs_set(1);
@@ -261,6 +269,7 @@ void addDevGrpDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Done */
+    FREE_NULL(entry_title);
     destroyCDKEntry(dev_grp_name_entry);
     return;
 }
@@ -294,7 +303,8 @@ void remDevGrpDialog(CDKSCREEN *main_cdk_screen) {
                 "%s/device_groups/mgmt", SYSFS_SCST_TGT);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", dev_grp_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            SAFE_ASPRINTF(&error_msg, "Couldn't delete SCST (ALUA) device group: %s",
+            SAFE_ASPRINTF(&error_msg,
+                    "Couldn't delete SCST (ALUA) device group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -346,14 +356,15 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
         return;
     }
-    boxWindow(tgt_grp_window, COLOR_DIALOG_BOX);
-    wbkgd(tgt_grp_window, COLOR_DIALOG_TEXT);
+    boxWindow(tgt_grp_window, g_color_dialog_box[g_curr_theme]);
+    wbkgd(tgt_grp_window, g_color_dialog_text[g_curr_theme]);
     wrefresh(tgt_grp_window);
 
     while (1) {
         /* Information label */
         SAFE_ASPRINTF(&tgt_grp_info_msg[0],
-                "</31/B>Adding new SCST target group...");
+                "</%d/B>Adding new SCST target group...",
+                g_color_dialog_title[g_curr_theme]);
         SAFE_ASPRINTF(&tgt_grp_info_msg[1], " ");
         SAFE_ASPRINTF(&tgt_grp_info_msg[2],
                 "</B>Device group:<!B>\t%s", dev_grp_name);
@@ -364,29 +375,32 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(tgt_grp_info, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(tgt_grp_info,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Target group name (entry) */
         grp_name = newCDKEntry(tgt_grp_screen, (window_x + 1), (window_y + 5),
                 NULL, "</B>Target Group Name: ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 SCST_TGT_GRP_NAME_LEN, 0, SCST_TGT_GRP_NAME_LEN, FALSE, FALSE);
         if (!grp_name) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(grp_name, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(grp_name, g_color_dialog_input[g_curr_theme]);
 
         /* Target group ID (scale) */
         group_id = newCDKScale(tgt_grp_screen, (window_x + 1), (window_y + 6),
-                NULL, "</B>Target Group ID:  ", COLOR_DIALOG_SELECT,
-                7, 0, MIN_SCST_TGT_GRP_ID, MAX_SCST_TGT_GRP_ID,
-                1, 100, FALSE, FALSE);
+                NULL, "</B>Target Group ID:  ",
+                g_color_dialog_select[g_curr_theme], 7, 0, MIN_SCST_TGT_GRP_ID,
+                MAX_SCST_TGT_GRP_ID, 1, 100, FALSE, FALSE);
         if (!group_id) {
             errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
             break;
         }
-        setCDKScaleBackgroundAttrib(group_id, COLOR_DIALOG_TEXT);
+        setCDKScaleBackgroundAttrib(group_id,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Buttons */
         ok_button = newCDKButton(tgt_grp_screen, (window_x + 16),
@@ -395,14 +409,16 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(tgt_grp_screen, (window_x + 26),
                 (window_y + 8), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(tgt_grp_screen);
@@ -499,7 +515,8 @@ void remTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
                 SYSFS_SCST_TGT, dev_grp_name);
         snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "del %s", tgt_grp_name);
         if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-            SAFE_ASPRINTF(&error_msg, "Couldn't delete SCST (ALUA) target group: %s",
+            SAFE_ASPRINTF(&error_msg,
+                    "Couldn't delete SCST (ALUA) target group: %s",
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -647,14 +664,15 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
         return;
     }
-    boxWindow(add_tgt_window, COLOR_DIALOG_BOX);
-    wbkgd(add_tgt_window, COLOR_DIALOG_TEXT);
+    boxWindow(add_tgt_window, g_color_dialog_box[g_curr_theme]);
+    wbkgd(add_tgt_window, g_color_dialog_text[g_curr_theme]);
     wrefresh(add_tgt_window);
 
     while (1) {
         /* Information label */
         SAFE_ASPRINTF(&add_tgt_info_msg[0],
-                "</31/B>Adding SCST target to target group...");
+                "</%d/B>Adding SCST target to target group...",
+                g_color_dialog_title[g_curr_theme]);
         SAFE_ASPRINTF(&add_tgt_info_msg[1], " ");
         SAFE_ASPRINTF(&add_tgt_info_msg[2],
                 "</B>Device group:<!B>\t%s", dev_grp_name);
@@ -667,29 +685,33 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(add_tgt_info, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(add_tgt_info,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Target name (entry) */
         tgt_name = newCDKEntry(add_tgt_screen, (window_x + 1), (window_y + 6),
                 NULL, "</B>Target Name:         ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 20, 0, SCST_TGT_NAME_LEN, FALSE, FALSE);
         if (!tgt_name) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(tgt_name, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(tgt_name, g_color_dialog_input[g_curr_theme]);
 
         /* Relative target ID (scale) */
         rel_tgt_id = newCDKScale(add_tgt_screen, (window_x + 1), (window_y + 7),
-                NULL, "</B>Relative Target ID: ", COLOR_DIALOG_SELECT,
+                NULL, "</B>Relative Target ID: ",
+                g_color_dialog_select[g_curr_theme],
                 7, 0, MIN_SCST_REL_TGT_ID, MAX_SCST_REL_TGT_ID,
                 1, 100, FALSE, FALSE);
         if (!rel_tgt_id) {
             errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
             break;
         }
-        setCDKScaleBackgroundAttrib(rel_tgt_id, COLOR_DIALOG_TEXT);
+        setCDKScaleBackgroundAttrib(rel_tgt_id,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Buttons */
         ok_button = newCDKButton(add_tgt_screen, (window_x + 16),
@@ -698,14 +720,16 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(add_tgt_screen, (window_x + 26),
                 (window_y + 9), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(add_tgt_screen);
@@ -744,7 +768,8 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d",
                     getCDKScaleValue(rel_tgt_id));
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                SAFE_ASPRINTF(&error_msg, SET_REL_TGT_ID_ERR, strerror(temp_int));
+                SAFE_ASPRINTF(&error_msg, SET_REL_TGT_ID_ERR,
+                        strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;

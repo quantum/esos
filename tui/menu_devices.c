@@ -30,6 +30,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
             dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char *swindow_info[MAX_DEV_INFO_LINES] = {NULL};
+    char *swindow_title = NULL;
     int i = 0, line_cnt = 0;
 
     /* Have the user choose a SCST device */
@@ -38,20 +39,22 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Setup scrolling window widget */
+    SAFE_ASPRINTF(&swindow_title, "<C></%d/B>SCST Device Information\n",
+            g_color_dialog_title[g_curr_theme]);
     dev_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
-            (DEV_INFO_ROWS + 2), (DEV_INFO_COLS + 2),
-            "<C></31/B>SCST Device Information\n",
+            (DEV_INFO_ROWS + 2), (DEV_INFO_COLS + 2), swindow_title,
             MAX_DEV_INFO_LINES, TRUE, FALSE);
     if (!dev_info) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(dev_info, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(dev_info, g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(dev_info, g_color_dialog_box[g_curr_theme]);
 
     /* Add device information (common attributes) */
     SAFE_ASPRINTF(&swindow_info[0], "</B>Device Name:<!B>\t\t%s", scst_dev);
-    SAFE_ASPRINTF(&swindow_info[1], "</B>Device Handler:<!B>\t\t%s", scst_hndlr);
+    SAFE_ASPRINTF(&swindow_info[1], "</B>Device Handler:<!B>\t\t%s",
+            scst_hndlr);
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/handlers/%s/%s/threads_num",
             SYSFS_SCST_TGT, scst_hndlr, scst_dev);
     readAttribute(dir_name, tmp_buff);
@@ -105,7 +108,8 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
                 "%s/handlers/%s/%s/write_through",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        SAFE_ASPRINTF(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[12], "</B>Write Through:<!B>\t%s",
+                tmp_buff);
         line_cnt = 13;
 
     } else if (strcmp(scst_hndlr, "vdisk_fileio") == 0) {
@@ -137,7 +141,8 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
                 "%s/handlers/%s/%s/write_through",
                 SYSFS_SCST_TGT, scst_hndlr, scst_dev);
         readAttribute(dir_name, tmp_buff);
-        SAFE_ASPRINTF(&swindow_info[12], "</B>Write Through:<!B>\t%s", tmp_buff);
+        SAFE_ASPRINTF(&swindow_info[12], "</B>Write Through:<!B>\t%s",
+                tmp_buff);
         line_cnt = 13;
 
     } else if (strcmp(scst_hndlr, "vdisk_nullio") == 0) {
@@ -181,6 +186,7 @@ void devInfoDialog(CDKSCREEN *main_cdk_screen) {
     destroyCDKSwindow(dev_info);
 
     /* Done */
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_DEV_INFO_LINES; i++ ) {
         FREE_NULL(swindow_info[i]);
     }
@@ -210,7 +216,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             fs_type[MAX_FS_ATTR_LEN] = {0};
     char *scsi_disk = NULL, *scsi_chgr = NULL, *scsi_tape = NULL,
             *error_msg = NULL, *selected_file = NULL, *iso_file_name = NULL,
-            *block_dev = NULL;
+            *block_dev = NULL, *scroll_title = NULL, *fselect_title = NULL;
     char *dev_info_msg[ADD_DEV_INFO_LINES] = {NULL};
     int dev_window_lines = 0, dev_window_cols = 0, window_y = 0, window_x = 0,
             dev_choice = 0, temp_int = 0, i = 0, traverse_ret = 0,
@@ -218,27 +224,31 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
     boolean mounted = FALSE;
 
     /* Prompt for new device type */
+    SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose a SCST Device Handler\n",
+            g_color_dialog_title[g_curr_theme]);
     dev_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 15, 30,
-            "<C></31/B>Choose a SCST Device Handler\n", g_scst_dev_types,
-            g_scst_dev_types_size(), FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+            scroll_title, g_scst_dev_types, g_scst_dev_types_size(), FALSE,
+            g_color_dialog_select[g_curr_theme], TRUE, FALSE);
     if (!dev_list) {
         errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
         return;
     }
-    setCDKScrollBoxAttribute(dev_list, COLOR_DIALOG_BOX);
-    setCDKScrollBackgroundAttrib(dev_list, COLOR_DIALOG_TEXT);
+    setCDKScrollBoxAttribute(dev_list, g_color_dialog_box[g_curr_theme]);
+    setCDKScrollBackgroundAttrib(dev_list, g_color_dialog_text[g_curr_theme]);
     dev_choice = activateCDKScroll(dev_list, 0);
 
     if (dev_list->exitType == vESCAPE_HIT) {
         /* We're done */
         destroyCDKScroll(dev_list);
         refreshCDKScreen(main_cdk_screen);
+        FREE_NULL(scroll_title);
         return;
 
     } else if (dev_list->exitType == vNORMAL) {
         /* User made a choice, continue on */
         destroyCDKScroll(dev_list);
         refreshCDKScreen(main_cdk_screen);
+        FREE_NULL(scroll_title);
     }
 
     /* Populate the CDK screen based on the handler */
@@ -283,16 +293,21 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         /* vcdrom */
         case 2:
             /* Create the file selector widget */
+            SAFE_ASPRINTF(&fselect_title, "<C></%d/B>Choose an ISO File\n",
+                    g_color_dialog_title[g_curr_theme]);
             file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER,
-                    20, 40, "<C></31/B>Choose an ISO File\n", "File: ",
-                    COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
+                    20, 40, fselect_title, "File: ",
+                    g_color_dialog_input[g_curr_theme], '_' |
+                    g_color_dialog_input[g_curr_theme],
                     A_REVERSE, "</N>", "</B>", "</N>", "</N>", TRUE, FALSE);
             if (!file_select) {
                 errorDialog(main_cdk_screen, FSELECT_ERR_MSG, NULL);
                 break;
             }
-            setCDKFselectBoxAttribute(file_select, COLOR_DIALOG_BOX);
-            setCDKFselectBackgroundAttrib(file_select, COLOR_DIALOG_TEXT);
+            setCDKFselectBoxAttribute(file_select,
+                    g_color_dialog_box[g_curr_theme]);
+            setCDKFselectBackgroundAttrib(file_select,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKFselectDirectory(file_select, "/");
             /* Activate the widget and let the user choose a file */
             selected_file = activateCDKFselect(file_select, 0);
@@ -355,13 +370,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
                 break;
             }
-            boxWindow(dev_window, COLOR_DIALOG_BOX);
-            wbkgd(dev_window, COLOR_DIALOG_TEXT);
+            boxWindow(dev_window, g_color_dialog_box[g_curr_theme]);
+            wbkgd(dev_window, g_color_dialog_text[g_curr_theme]);
             wrefresh(dev_window);
 
             /* Information label */
             SAFE_ASPRINTF(&dev_info_msg[0],
-                    "</31/B>Adding new vdisk_blockio SCST device...");
+                    "</%d/B>Adding new vdisk_blockio SCST device...",
+                    g_color_dialog_title[g_curr_theme]);
             SAFE_ASPRINTF(&dev_info_msg[1], " ");
             SAFE_ASPRINTF(&dev_info_msg[2],
                     "</B>SCSI Block Device:<!B> %.35s", block_dev);
@@ -371,18 +387,21 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 break;
             }
-            setCDKLabelBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
+            setCDKLabelBackgroundAttrib(dev_info,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Device name widget (entry) */
             dev_name_field = newCDKEntry(dev_screen, (window_x + 1),
                     (window_y + 5), NULL, "</B>SCST Device Name (no spaces): ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(dev_name_field, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(dev_name_field,
+                    g_color_dialog_input[g_curr_theme]);
 
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen,
@@ -392,66 +411,72 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
                 break;
             }
-            setCDKItemlistBackgroundAttrib(block_size, COLOR_DIALOG_TEXT);
+            setCDKItemlistBackgroundAttrib(block_size,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Write through widget (radio) */
             write_through = newCDKRadio(dev_screen, (window_x + 1),
                     (window_y + 11), NONE, 3, 10, "</B>Write Through",
-                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!write_through) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(write_through, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(write_through,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(write_through, 0);
 
             /* NV cache widget (radio) */
             nv_cache = newCDKRadio(dev_screen, (window_x + 18), (window_y + 7),
                     NONE, 3, 10, "</B>NV Cache", g_no_yes_opts, 2,
-                    '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!nv_cache) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(nv_cache, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(nv_cache,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(nv_cache, 0);
 
             /* Read only widget (radio) */
             read_only = newCDKRadio(dev_screen, (window_x + 18),
                     (window_y + 11), NONE, 3, 10, "</B>Read Only",
-                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!read_only) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(read_only, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(read_only,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(read_only, 0);
 
             /* Removable widget (radio) */
             removable = newCDKRadio(dev_screen, (window_x + 32), (window_y + 7),
                     NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
-                    '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!removable) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(removable, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(removable,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(removable, 0);
 
             /* Rotational widget (radio) */
             rotational = newCDKRadio(dev_screen, (window_x + 32),
                     (window_y + 11), NONE, 3, 10, "</B>Rotational",
-                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!rotational) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(rotational, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(rotational,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(rotational, 1);
 
             /* Buttons */
@@ -461,7 +486,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(ok_button,
+                    g_color_dialog_input[g_curr_theme]);
             cancel_button = newCDKButton(dev_screen, (window_x + 31),
                     (window_y + 16), g_ok_cancel_msg[1], cancel_cb,
                     FALSE, FALSE);
@@ -469,7 +495,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(cancel_button,
+                    g_color_dialog_input[g_curr_theme]);
 
             /* Allow user to traverse the screen */
             refreshCDKScreen(dev_screen);
@@ -511,15 +538,19 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         /* vdisk_fileio */
         case 4:
             /* Choose block device or file on a file system */
+            SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose a Back-End Type\n",
+                    g_color_dialog_title[g_curr_theme]);
             fio_type_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE,
-                    8, 26, "<C></31/B>Choose a Back-End Type\n", g_fio_types, 2,
-                    FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+                    8, 26, scroll_title, g_fio_types, 2,
+                    FALSE, g_color_dialog_select[g_curr_theme], TRUE, FALSE);
             if (!fio_type_list) {
                 errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
                 break;
             }
-            setCDKScrollBoxAttribute(fio_type_list, COLOR_DIALOG_BOX);
-            setCDKScrollBackgroundAttrib(fio_type_list, COLOR_DIALOG_TEXT);
+            setCDKScrollBoxAttribute(fio_type_list,
+                    g_color_dialog_box[g_curr_theme]);
+            setCDKScrollBackgroundAttrib(fio_type_list,
+                    g_color_dialog_text[g_curr_theme]);
             fio_type_choice = activateCDKScroll(fio_type_list, 0);
 
             /* Check exit from widget */
@@ -545,19 +576,23 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         break;
                     }
                     /* Create the file selector widget */
+                    SAFE_ASPRINTF(&fselect_title,
+                            "<C></%d/B>Choose a Back-End File\n",
+                            g_color_dialog_title[g_curr_theme]);
                     file_select = newCDKFselect(main_cdk_screen, CENTER, CENTER,
-                            20, 40,
-                            "<C></31/B>Choose a Back-End File\n", "File: ",
-                            COLOR_DIALOG_INPUT, '_' | COLOR_DIALOG_INPUT,
+                            20, 40, fselect_title, "File: ",
+                            g_color_dialog_input[g_curr_theme], '_' |
+                            g_color_dialog_input[g_curr_theme],
                             A_REVERSE, "</N>", "</B>", "</N>", "</N>",
                             TRUE, FALSE);
                     if (!file_select) {
                         errorDialog(main_cdk_screen, FSELECT_ERR_MSG, NULL);
                         break;
                     }
-                    setCDKFselectBoxAttribute(file_select, COLOR_DIALOG_BOX);
+                    setCDKFselectBoxAttribute(file_select,
+                            g_color_dialog_box[g_curr_theme]);
                     setCDKFselectBackgroundAttrib(file_select,
-                            COLOR_DIALOG_TEXT);
+                            g_color_dialog_text[g_curr_theme]);
                     setCDKFselectDirectory(file_select, fs_path);
                     /* Activate the widget and let the user choose a file */
                     selected_file = activateCDKFselect(file_select, 0);
@@ -598,13 +633,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
                 break;
             }
-            boxWindow(dev_window, COLOR_DIALOG_BOX);
-            wbkgd(dev_window, COLOR_DIALOG_TEXT);
+            boxWindow(dev_window, g_color_dialog_box[g_curr_theme]);
+            wbkgd(dev_window, g_color_dialog_text[g_curr_theme]);
             wrefresh(dev_window);
 
             /* Information label */
             SAFE_ASPRINTF(&dev_info_msg[0],
-                    "</31/B>Adding new vdisk_fileio SCST device...");
+                    "</%d/B>Adding new vdisk_fileio SCST device...",
+                    g_color_dialog_title[g_curr_theme]);
             SAFE_ASPRINTF(&dev_info_msg[1], " ");
             SAFE_ASPRINTF(&dev_info_msg[2],
                     "</B>Back-End File/Device:<!B> %.35s", fileio_file);
@@ -614,18 +650,21 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 break;
             }
-            setCDKLabelBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
+            setCDKLabelBackgroundAttrib(dev_info,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Device name widget (entry) */
             dev_name_field = newCDKEntry(dev_screen, (window_x + 1),
                     (window_y + 5), NULL, "</B>SCST Device Name (no spaces): ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(dev_name_field, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(dev_name_field,
+                    g_color_dialog_input[g_curr_theme]);
 
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen, (window_x + 1),
@@ -635,66 +674,72 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
                 break;
             }
-            setCDKItemlistBackgroundAttrib(block_size, COLOR_DIALOG_TEXT);
+            setCDKItemlistBackgroundAttrib(block_size,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Write through widget (radio) */
             write_through = newCDKRadio(dev_screen, (window_x + 1),
                     (window_y + 11), NONE, 3, 10, "</B>Write Through",
-                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!write_through) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(write_through, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(write_through,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(write_through, 0);
 
             /* NV cache widget (radio) */
             nv_cache = newCDKRadio(dev_screen, (window_x + 18), (window_y + 7),
                     NONE, 3, 10, "</B>NV Cache", g_no_yes_opts, 2,
-                    '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!nv_cache) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(nv_cache, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(nv_cache,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(nv_cache, 0);
 
             /* Read only widget (radio) */
             read_only = newCDKRadio(dev_screen, (window_x + 18),
                     (window_y + 11), NONE, 3, 10, "</B>Read Only",
-                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!read_only) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(read_only, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(read_only,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(read_only, 0);
 
             /* Removable widget (radio) */
             removable = newCDKRadio(dev_screen, (window_x + 32), (window_y + 7),
                     NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
-                    '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!removable) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(removable, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(removable,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(removable, 0);
 
             /* Rotational widget (radio) */
             rotational = newCDKRadio(dev_screen, (window_x + 32),
                     (window_y + 11), NONE, 3, 10, "</B>Rotational",
-                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!rotational) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(rotational, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(rotational,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(rotational, 1);
 
             /* Buttons */
@@ -704,7 +749,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(ok_button,
+                    g_color_dialog_input[g_curr_theme]);
             cancel_button = newCDKButton(dev_screen, (window_x + 31),
                     (window_y + 16), g_ok_cancel_msg[1], cancel_cb,
                     FALSE, FALSE);
@@ -712,7 +758,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(cancel_button,
+                    g_color_dialog_input[g_curr_theme]);
 
             /* Allow user to traverse the screen */
             refreshCDKScreen(dev_screen);
@@ -769,13 +816,14 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
                 break;
             }
-            boxWindow(dev_window, COLOR_DIALOG_BOX);
-            wbkgd(dev_window, COLOR_DIALOG_TEXT);
+            boxWindow(dev_window, g_color_dialog_box[g_curr_theme]);
+            wbkgd(dev_window, g_color_dialog_text[g_curr_theme]);
             wrefresh(dev_window);
 
             /* Information label */
             SAFE_ASPRINTF(&dev_info_msg[0],
-                    "</31/B>Adding new vdisk_nullio SCST device...");
+                    "</%d/B>Adding new vdisk_nullio SCST device...",
+                    g_color_dialog_title[g_curr_theme]);
             SAFE_ASPRINTF(&dev_info_msg[1], " ");
             dev_info = newCDKLabel(dev_screen, (window_x + 1), (window_y + 1),
                     dev_info_msg, 2, FALSE, FALSE);
@@ -783,18 +831,21 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                 break;
             }
-            setCDKLabelBackgroundAttrib(dev_info, COLOR_DIALOG_TEXT);
+            setCDKLabelBackgroundAttrib(dev_info,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Device name widget (entry) */
             dev_name_field = newCDKEntry(dev_screen, (window_x + 1),
                     (window_y + 3), NULL, "</B>SCST Device Name (no spaces): ",
-                    COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                     SCST_DEV_NAME_LEN, 0, SCST_DEV_NAME_LEN, FALSE, FALSE);
             if (!dev_name_field) {
                 errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
                 break;
             }
-            setCDKEntryBoxAttribute(dev_name_field, COLOR_DIALOG_INPUT);
+            setCDKEntryBoxAttribute(dev_name_field,
+                    g_color_dialog_input[g_curr_theme]);
 
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen, (window_x + 1),
@@ -804,42 +855,46 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, ITEM_LIST_ERR_MSG, NULL);
                 break;
             }
-            setCDKItemlistBackgroundAttrib(block_size, COLOR_DIALOG_TEXT);
+            setCDKItemlistBackgroundAttrib(block_size,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Read only widget (radio) */
             read_only = newCDKRadio(dev_screen, (window_x + 1), (window_y + 9),
                     NONE, 3, 10, "</B>Read Only", g_no_yes_opts, 2,
-                    '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!read_only) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(read_only, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(read_only,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(read_only, 0);
 
             /* Removable widget (radio) */
             removable = newCDKRadio(dev_screen, (window_x + 18), (window_y + 5),
                     NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
-                    '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!removable) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(removable, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(removable,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(removable, 0);
 
             /* Rotational widget (radio) */
             rotational = newCDKRadio(dev_screen, (window_x + 18),
                     (window_y + 9), NONE, 3, 10, "</B>Rotational",
-                    g_no_yes_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
-                    COLOR_DIALOG_SELECT, FALSE, FALSE);
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
             if (!rotational) {
                 errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
                 break;
             }
-            setCDKRadioBackgroundAttrib(rotational, COLOR_DIALOG_TEXT);
+            setCDKRadioBackgroundAttrib(rotational,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(rotational, 1);
 
             /* Buttons */
@@ -849,7 +904,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(ok_button,
+                    g_color_dialog_input[g_curr_theme]);
             cancel_button = newCDKButton(dev_screen, (window_x + 26),
                     (window_y + 16), g_ok_cancel_msg[1], cancel_cb,
                     FALSE, FALSE);
@@ -857,7 +913,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
                 break;
             }
-            setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+            setCDKButtonBackgroundAttrib(cancel_button,
+                    g_color_dialog_input[g_curr_theme]);
 
             /* Allow user to traverse the screen */
             refreshCDKScreen(dev_screen);
@@ -963,6 +1020,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
         destroyCDKScreen(dev_screen);
         delwin(dev_window);
     }
+    FREE_NULL(scroll_title);
+    FREE_NULL(fselect_title);
     /* Using the file selector widget changes the CWD -- fix it */
     if ((chdir(getenv("HOME"))) == -1) {
         SAFE_ASPRINTF(&error_msg, "chdir(): %s", strerror(errno));
@@ -1066,13 +1125,14 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
         return;
     }
-    boxWindow(map_window, COLOR_DIALOG_BOX);
-    wbkgd(map_window, COLOR_DIALOG_TEXT);
+    boxWindow(map_window, g_color_dialog_box[g_curr_theme]);
+    wbkgd(map_window, g_color_dialog_text[g_curr_theme]);
     wrefresh(map_window);
 
     while (1) {
         /* Information label */
-        SAFE_ASPRINTF(&map_info_msg[0], "</31/B>Mapping SCST device...");
+        SAFE_ASPRINTF(&map_info_msg[0], "</%d/B>Mapping SCST device...",
+                g_color_dialog_title[g_curr_theme]);
         SAFE_ASPRINTF(&map_info_msg[1], " ");
         SAFE_ASPRINTF(&map_info_msg[2], "</B>Device:<!B>\t\t%s", scst_dev);
         SAFE_ASPRINTF(&map_info_msg[3], "</B>Handler:<!B>\t%s", scst_hndlr);
@@ -1086,28 +1146,31 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(map_info, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(map_info,
+                g_color_dialog_text[g_curr_theme]);
 
         /* LUN widget (scale) */
         lun = newCDKScale(map_screen, (window_x + 1), (window_y + 10),
-                NULL, "</B>Logical Unit Number (LUN)", COLOR_DIALOG_SELECT,
+                NULL, "</B>Logical Unit Number (LUN)",
+                g_color_dialog_select[g_curr_theme],
                 5, 0, MIN_SCST_LUN_VAL, MAX_SCST_LUN_VAL, 1, 10, FALSE, FALSE);
         if (!lun) {
             errorDialog(main_cdk_screen, SCALE_ERR_MSG, NULL);
             break;
         }
-        setCDKScaleBackgroundAttrib(lun, COLOR_DIALOG_TEXT);
+        setCDKScaleBackgroundAttrib(lun, g_color_dialog_text[g_curr_theme]);
 
         /* Read only widget (radio) */
         read_only = newCDKRadio(map_screen, (window_x + 1), (window_y + 12),
                 NONE, 3, 10, "</B>Read Only", g_no_yes_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!read_only) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(read_only, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(read_only,
+                g_color_dialog_text[g_curr_theme]);
         setCDKRadioCurrentItem(read_only, 0);
 
         /* Buttons */
@@ -1117,14 +1180,16 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(map_screen, (window_x + 26),
                 (window_y + 16), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(map_screen);
@@ -1193,7 +1258,8 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Get a final confirmation from user before removing the LUN mapping */
-    SAFE_ASPRINTF(&confirm_msg, "SCST LUN %d from group '%s'?", lun, group_name);
+    SAFE_ASPRINTF(&confirm_msg, "SCST LUN %d from group '%s'?", lun,
+            group_name);
     confirm = confirmDialog(main_cdk_screen, "Are you sure you want to unmap",
             confirm_msg);
     FREE_NULL(confirm_msg);
@@ -1221,6 +1287,7 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
  */
 void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lun_info = 0;
+    char *swindow_title = NULL;
     char *swindow_info[MAX_LUN_LAYOUT_LINES] = {NULL};
     int i = 0, line_pos = 0, dev_path_size = 0, driver_cnt = 0;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
@@ -1239,16 +1306,17 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Setup scrolling window widget */
+    SAFE_ASPRINTF(&swindow_title, "<C></%d/B>SCST LUN/Group Layout\n",
+            g_color_dialog_title[g_curr_theme]);
     lun_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (LUN_LAYOUT_ROWS + 2), (LUN_LAYOUT_COLS + 2),
-            "<C></31/B>SCST LUN/Group Layout\n",
-            MAX_LUN_LAYOUT_LINES, TRUE, FALSE);
+            swindow_title, MAX_LUN_LAYOUT_LINES, TRUE, FALSE);
     if (!lun_info) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(lun_info, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(lun_info, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(lun_info, g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(lun_info, g_color_dialog_box[g_curr_theme]);
 
     /* Loop over each target driver type */
     line_pos = 0;
@@ -1270,7 +1338,8 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
                     (strcmp(tgt_dir_entry->d_name, ".") != 0) &&
                     (strcmp(tgt_dir_entry->d_name, "..") != 0)) {
                 if (line_pos < MAX_LUN_LAYOUT_LINES) {
-                    SAFE_ASPRINTF(&swindow_info[line_pos], "</B>Target:<!B> %s (%s)",
+                    SAFE_ASPRINTF(&swindow_info[line_pos],
+                            "</B>Target:<!B> %s (%s)",
                             tgt_dir_entry->d_name, tgt_drivers[i]);
                     line_pos++;
                 }
@@ -1408,6 +1477,7 @@ void lunLayoutDialog(CDKSCREEN *main_cdk_screen) {
     destroyCDKSwindow(lun_info);
 
     /* Done */
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_LUN_LAYOUT_LINES; i++ )
         FREE_NULL(swindow_info[i]);
     return;

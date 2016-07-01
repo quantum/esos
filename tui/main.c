@@ -25,12 +25,31 @@
 #include "strings.h"
 
 
+/* A few global variables */
+ThemeNum g_curr_theme;
+chtype g_color_main_text[MAX_TUI_THEMES];
+chtype g_color_main_box[MAX_TUI_THEMES];
+chtype g_color_dialog_text[MAX_TUI_THEMES];
+chtype g_color_dialog_box[MAX_TUI_THEMES];
+chtype g_color_dialog_select[MAX_TUI_THEMES];
+chtype g_color_dialog_input[MAX_TUI_THEMES];
+chtype g_color_error_text[MAX_TUI_THEMES];
+chtype g_color_error_box[MAX_TUI_THEMES];
+chtype g_color_error_select[MAX_TUI_THEMES];
+chtype g_color_menu_text[MAX_TUI_THEMES];
+chtype g_color_status_bar[MAX_TUI_THEMES];
+int g_color_menu_letter[MAX_TUI_THEMES];
+char *g_color_menu_bg[MAX_TUI_THEMES];
+int g_color_info_header[MAX_TUI_THEMES];
+int g_color_dialog_title[MAX_TUI_THEMES];
+
+
 int main(int argc, char** argv) {
     CDKSCREEN *cdk_screen = 0;
     WINDOW *main_window = 0, *sub_window = 0;
     CDKMENU *menu_1 = 0, *menu_2 = 0;
     CDKLABEL *targets_label = 0, *sessions_label = 0;
-    const char *menu_list_1[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}},
+    char *menu_list_1[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}},
             *menu_list_2[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}};
     char *tgt_label_msg[MAX_INFO_LABEL_ROWS] = {NULL},
             *sess_label_msg[MAX_INFO_LABEL_ROWS] = {NULL};
@@ -39,7 +58,8 @@ int main(int argc, char** argv) {
             screen_x = 0, screen_y = 0, latest_scr_y = 0, latest_scr_x = 0,
             i = 0, child_status = 0, proc_status = 0, tty_fd = 0,
             labels_last_scr_y = 0, labels_last_scr_x = 0,
-            last_tgt_lbl_rows = 0, last_sess_lbl_rows = 0;
+            last_tgt_lbl_rows = 0, last_sess_lbl_rows = 0,
+            menu_1_cnt = 0, menu_2_cnt = 0;
     int submenu_size_1[CDK_MENU_MAX_SIZE] = {0},
             menu_loc_1[CDK_MENU_MAX_SIZE] = {0},
             submenu_size_2[CDK_MENU_MAX_SIZE] = {0},
@@ -47,6 +67,40 @@ int main(int argc, char** argv) {
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
     boolean inet_works = FALSE;
+
+    /* The "blue" TUI theme */
+    g_color_main_text[BLUE_TUI]         = COLOR_PAIR(5);
+    g_color_main_box[BLUE_TUI]          = COLOR_PAIR(53);
+    g_color_dialog_text[BLUE_TUI]       = COLOR_PAIR(7);
+    g_color_dialog_box[BLUE_TUI]        = COLOR_PAIR(7);
+    g_color_dialog_select[BLUE_TUI]     = COLOR_PAIR(29) | A_BOLD;
+    g_color_dialog_input[BLUE_TUI]      = COLOR_PAIR(5);
+    g_color_error_text[BLUE_TUI]        = COLOR_PAIR(2);
+    g_color_error_box[BLUE_TUI]         = COLOR_PAIR(2);
+    g_color_error_select[BLUE_TUI]      = COLOR_PAIR(57);
+    g_color_menu_text[BLUE_TUI]         = COLOR_PAIR(31);
+    g_color_status_bar[BLUE_TUI]        = COLOR_PAIR(7);
+    g_color_menu_letter[BLUE_TUI]       = 29;
+    g_color_menu_bg[BLUE_TUI]           = "</5>";
+    g_color_info_header[BLUE_TUI]       = 21;
+    g_color_dialog_title[BLUE_TUI]      = 31;
+
+    /* The "black" TUI theme */
+    g_color_main_text[BLACK_TUI]        = COLOR_PAIR(8);
+    g_color_main_box[BLACK_TUI]         = COLOR_PAIR(24);
+    g_color_dialog_text[BLACK_TUI]      = COLOR_PAIR(3);
+    g_color_dialog_box[BLACK_TUI]       = COLOR_PAIR(3);
+    g_color_dialog_select[BLACK_TUI]    = COLOR_PAIR(32) | A_BOLD;
+    g_color_dialog_input[BLACK_TUI]     = COLOR_PAIR(8);
+    g_color_error_text[BLACK_TUI]       = COLOR_PAIR(2);
+    g_color_error_box[BLACK_TUI]        = COLOR_PAIR(2);
+    g_color_error_select[BLACK_TUI]     = COLOR_PAIR(57);
+    g_color_menu_text[BLACK_TUI]        = COLOR_PAIR(27);
+    g_color_status_bar[BLACK_TUI]       = COLOR_PAIR(3);
+    g_color_menu_letter[BLACK_TUI]      = 32;
+    g_color_menu_bg[BLACK_TUI]          = "</8>";
+    g_color_info_header[BLACK_TUI]      = 40;
+    g_color_dialog_title[BLACK_TUI]     = 27;
 
     /* Make sure the umask is something sane (per the man
      * page, this call always succeeds) */
@@ -58,6 +112,9 @@ int main(int argc, char** argv) {
 
     /* Check if there is Internet access */
     inet_works = checkInetAccess();
+
+    /* Set the TUI interface theme (colors) */
+    setTheme();
 
     /* Initialize screen and check size */
 start:
@@ -72,13 +129,16 @@ start:
     sub_window = newwin((LINES - 2), (COLS - 2), 1, 1);
     latest_scr_y = LINES;
     latest_scr_x = COLS;
-    wbkgd(main_window, COLOR_MAIN_TEXT);
-    wbkgd(sub_window, COLOR_MAIN_TEXT);
+    wbkgd(main_window, g_color_main_text[g_curr_theme]);
+    wbkgd(sub_window, g_color_main_text[g_curr_theme]);
     cdk_screen = initCDKScreen(sub_window);
     initCDKColor();
 
     /* Create the menu lists */
-    menu_list_1[SYSTEM_MENU][0] = "</29/B/U>S<!29><!U>ystem  <!B>";
+    SAFE_ASPRINTF(&menu_list_1[SYSTEM_MENU][0],
+            "</%d/B/U>S<!%d><!U>ystem  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_1[SYSTEM_MENU][SYSTEM_SYNC_CONF] = \
             "</B>Sync Configuration<!B>";
     menu_list_1[SYSTEM_MENU][SYSTEM_NETWORK] = \
@@ -104,7 +164,10 @@ start:
     menu_list_1[SYSTEM_MENU][SYSTEM_DATE_TIME] = \
             "</B>Date/Time Settings<!B>";
 
-    menu_list_1[HW_RAID_MENU][0] = "</B>H</29/U>a<!29><!U>rdware RAID  <!B>";
+    SAFE_ASPRINTF(&menu_list_1[HW_RAID_MENU][0],
+            "</B>H</%d/U>a<!%d><!U>rdware RAID  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_1[HW_RAID_MENU][HW_RAID_ADD_VOL] = \
             "</B>Add Volume      <!B>";
     menu_list_1[HW_RAID_MENU][HW_RAID_REM_VOL] = \
@@ -116,7 +179,10 @@ start:
     menu_list_1[HW_RAID_MENU][HW_RAID_REM_HSP] = \
             "</B>Remove Hot Spare<!B>";
 
-    menu_list_1[SW_RAID_MENU][0] = "</B>S</29/U>o<!29><!U>ftware RAID  <!B>";
+    SAFE_ASPRINTF(&menu_list_1[SW_RAID_MENU][0],
+            "</B>S</%d/U>o<!%d><!U>ftware RAID  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_1[SW_RAID_MENU][SW_RAID_MD_STAT] = \
             "</B>Linux MD Status  <!B>";
     menu_list_1[SW_RAID_MENU][SW_RAID_ADD_ARRAY] = \
@@ -130,23 +196,29 @@ start:
     menu_list_1[SW_RAID_MENU][SW_RAID_REM_DEV] = \
             "</B>Remove Device    <!B>";
 
-    menu_list_1[LVM_MENU][0] = "</29/B/U>L<!29><!U>VM  <!B>";
+    SAFE_ASPRINTF(&menu_list_1[LVM_MENU][0],
+            "</%d/B/U>L<!%d><!U>VM  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_1[LVM_MENU][LVM_LV_LIST] = \
-            "</B>LV List  <!B>";
+            "</B>Logical Volume (LV) List   <!B>";
     menu_list_1[LVM_MENU][LVM_ADD_PV] = \
-            "</B>Add PV   <!B>";
+            "</B>Add Physical Volume (PV)   <!B>";
     menu_list_1[LVM_MENU][LVM_REM_PV] = \
-            "</B>Remove PV<!B>";
+            "</B>Remove Physical Volume (PV)<!B>";
     menu_list_1[LVM_MENU][LVM_ADD_VG] = \
-            "</B>Add VG   <!B>";
+            "</B>Add Volume Group (VG)      <!B>";
     menu_list_1[LVM_MENU][LVM_REM_VG] = \
-            "</B>Remove VG<!B>";
+            "</B>Remove Volume Group (VG)   <!B>";
     menu_list_1[LVM_MENU][LVM_ADD_LV] = \
-            "</B>Add LV   <!B>";
+            "</B>Add Logical Volume (LV)    <!B>";
     menu_list_1[LVM_MENU][LVM_REM_LV] = \
-            "</B>Remove LV<!B>";
+            "</B>Remove Logical Volume (LV) <!B>";
 
-    menu_list_1[FILE_SYS_MENU][0] = "</29/B/U>F<!29><!U>ile Systems  <!B>";
+    SAFE_ASPRINTF(&menu_list_1[FILE_SYS_MENU][0],
+            "</%d/B/U>F<!%d><!U>ile Systems  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_1[FILE_SYS_MENU][FILE_SYS_VDISK_LIST] = \
             "</B>VDisk File List   <!B>";
     menu_list_1[FILE_SYS_MENU][FILE_SYS_ADD_FS] = \
@@ -158,7 +230,10 @@ start:
     menu_list_1[FILE_SYS_MENU][FILE_SYS_REM_VDISK] = \
             "</B>Remove VDisk File <!B>";
 
-    menu_list_2[HOSTS_MENU][0] = "</29/B/U>H<!29><!U>osts  <!B>";
+    SAFE_ASPRINTF(&menu_list_2[HOSTS_MENU][0],
+            "</%d/B/U>H<!%d><!U>osts  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_2[HOSTS_MENU][HOSTS_ADD_GROUP] = \
             "</B>Add Group       <!B>";
     menu_list_2[HOSTS_MENU][HOSTS_REM_GROUP] = \
@@ -168,7 +243,10 @@ start:
     menu_list_2[HOSTS_MENU][HOSTS_REM_INIT] = \
             "</B>Remove Initiator<!B>";
 
-    menu_list_2[DEVICES_MENU][0] = "</29/B/U>D<!29><!U>evices  <!B>";
+    SAFE_ASPRINTF(&menu_list_2[DEVICES_MENU][0],
+            "</%d/B/U>D<!%d><!U>evices  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_2[DEVICES_MENU][DEVICES_LUN_LAYOUT] = \
             "</B>LUN/Group Layout     <!B>";
     menu_list_2[DEVICES_MENU][DEVICES_DEV_INFO] = \
@@ -182,7 +260,10 @@ start:
     menu_list_2[DEVICES_MENU][DEVICES_UNMAP_FROM] = \
             "</B>Unmap from Host Group<!B>";
 
-    menu_list_2[TARGETS_MENU][0] = "</29/B/U>T<!29><!U>argets  <!B>";
+    SAFE_ASPRINTF(&menu_list_2[TARGETS_MENU][0],
+            "</%d/B/U>T<!%d><!U>argets  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_2[TARGETS_MENU][TARGETS_TGT_INFO] = \
             "</B>Target Information    <!B>";
     menu_list_2[TARGETS_MENU][TARGETS_ADD_ISCSI] = \
@@ -196,7 +277,10 @@ start:
     menu_list_2[TARGETS_MENU][TARGETS_SET_REL_TGT_ID] = \
             "</B>Set Relative Target ID<!B>";
 
-    menu_list_2[ALUA_MENU][0] = "</B>AL</29/U>U<!29><!U>A  <!B>";
+    SAFE_ASPRINTF(&menu_list_2[ALUA_MENU][0],
+            "</B>AL</%d/U>U<!%d><!U>A  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_2[ALUA_MENU][ALUA_DEV_GRP_LAYOUT] = \
             "</B>Device/Target Group Layout<!B>";
     menu_list_2[ALUA_MENU][ALUA_ADD_DEV_GRP] = \
@@ -216,7 +300,10 @@ start:
     menu_list_2[ALUA_MENU][ALUA_REM_TGT_FROM_GRP] = \
             "</B>Remove Target from Group  <!B>";
 
-    menu_list_2[INTERFACE_MENU][0] = "</29/B/U>I<!29><!U>nterface  <!B>";
+    SAFE_ASPRINTF(&menu_list_2[INTERFACE_MENU][0],
+            "</%d/B/U>I<!%d><!U>nterface  <!B>",
+            g_color_menu_letter[g_curr_theme],
+            g_color_menu_letter[g_curr_theme]);
     menu_list_2[INTERFACE_MENU][INTERFACE_QUIT] = \
             "</B>Quit          <!B>";
     menu_list_2[INTERFACE_MENU][INTERFACE_SHELL] = \
@@ -255,22 +342,24 @@ start:
     menu_loc_2[INTERFACE_MENU]        = RIGHT;
 
     /* Create the top menu */
-    menu_1 = newCDKMenu(cdk_screen, menu_list_1, 5, submenu_size_1, menu_loc_1,
-            0, A_NORMAL, COLOR_MENU_TEXT);
+    menu_1_cnt = 5;
+    menu_1 = newCDKMenu(cdk_screen, menu_list_1, menu_1_cnt, submenu_size_1,
+            menu_loc_1, 0, A_NORMAL, g_color_menu_text[g_curr_theme]);
     if (!menu_1) {
         errorDialog(cdk_screen, MENU_ERR_MSG, NULL);
         goto quit;
     }
-    setCDKMenuBackgroundColor(menu_1, "</5>");
+    setCDKMenuBackgroundColor(menu_1, g_color_menu_bg[g_curr_theme]);
 
     /* Create the bottom menu */
-    menu_2 = newCDKMenu(cdk_screen, menu_list_2, 5, submenu_size_2, menu_loc_2,
-            1, A_NORMAL, COLOR_MENU_TEXT);
+    menu_2_cnt = 5;
+    menu_2 = newCDKMenu(cdk_screen, menu_list_2, menu_2_cnt, submenu_size_2,
+            menu_loc_2, 1, A_NORMAL, g_color_menu_text[g_curr_theme]);
     if (!menu_2) {
         errorDialog(cdk_screen, MENU_ERR_MSG, NULL);
         goto quit;
     }
-    setCDKMenuBackgroundColor(menu_2, "</5>");
+    setCDKMenuBackgroundColor(menu_2, g_color_menu_bg[g_curr_theme]);
 
     /* We need root privileges; for the short term I don't see any other way
      * around this; long term we can hopefully do something else */
@@ -316,61 +405,71 @@ start:
         if (key_pressed == 's' || key_pressed == 'S') {
             /* Start with the System menu */
             cbreak();
-            setCDKMenu(menu_1, SYSTEM_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_1, SYSTEM_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_1, 0);
 
         } else if (key_pressed == 'a' || key_pressed == 'A') {
             /* Start with the Hardware RAID menu */
             cbreak();
-            setCDKMenu(menu_1, HW_RAID_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_1, HW_RAID_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_1, 0);
 
         } else if (key_pressed == 'o' || key_pressed == 'O') {
             /* Start with the Software RAID menu */
             cbreak();
-            setCDKMenu(menu_1, SW_RAID_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_1, SW_RAID_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_1, 0);
 
         } else if (key_pressed == 'l' || key_pressed == 'L') {
             /* Start with the LVM menu */
             cbreak();
-            setCDKMenu(menu_1, LVM_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_1, LVM_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_1, 0);
 
         } else if (key_pressed == 'f' || key_pressed == 'F') {
             /* Start with the File System menu */
             cbreak();
-            setCDKMenu(menu_1, FILE_SYS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_1, FILE_SYS_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_1, 0);
 
         } else if (key_pressed == 'h' || key_pressed == 'H') {
             /* Start with the Hosts menu */
             cbreak();
-            setCDKMenu(menu_2, HOSTS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_2, HOSTS_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_2, 0);
 
         } else if (key_pressed == 'd' || key_pressed == 'D') {
             /* Start with the Devices menu */
             cbreak();
-            setCDKMenu(menu_2, DEVICES_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_2, DEVICES_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_2, 0);
 
         } else if (key_pressed == 't' || key_pressed == 'T') {
             /* Start with the Targets menu */
             cbreak();
-            setCDKMenu(menu_2, TARGETS_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_2, TARGETS_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_2, 0);
 
         } else if (key_pressed == 'u' || key_pressed == 'U') {
             /* Start with the ALUA menu */
             cbreak();
-            setCDKMenu(menu_2, ALUA_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_2, ALUA_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_2, 0);
 
         } else if (key_pressed == 'i' || key_pressed == 'I') {
             /* Start with the Interface menu */
             cbreak();
-            setCDKMenu(menu_2, INTERFACE_MENU, 0, A_NORMAL, COLOR_MENU_TEXT);
+            setCDKMenu(menu_2, INTERFACE_MENU, 0, A_NORMAL,
+                    g_color_menu_text[g_curr_theme]);
             selection = activateCDKMenu(menu_2, 0);
 
         } else if (key_pressed == KEY_RESIZE) {
@@ -574,7 +673,7 @@ start:
             /* At this point we've finished the dialog, so we make
              * the screen look nice again and reset the menu exit status */
             menu_1->exitType = vNEVER_ACTIVATED;
-            wbkgd(cdk_screen->window, COLOR_MAIN_TEXT);
+            wbkgd(cdk_screen->window, g_color_main_text[g_curr_theme]);
             wrefresh(cdk_screen->window);
             refreshCDKScreen(cdk_screen);
             curs_set(0);
@@ -754,6 +853,10 @@ start:
                     }
                     /* Ending everything and starting fresh seems to work
                      * best when switching between the shell and UI */
+                    for (i = 0; i < menu_1_cnt; i++)
+                        FREE_NULL(menu_list_1[i][0]);
+                    for (i = 0; i < menu_2_cnt; i++)
+                        FREE_NULL(menu_list_2[i][0]);
                     destroyCDKLabel(targets_label);
                     targets_label = NULL;
                     destroyCDKLabel(sessions_label);
@@ -776,7 +879,7 @@ start:
             } else if (menu_choice == INTERFACE_MENU &&
                     submenu_choice == INTERFACE_THEME - 1) {
                 /* Color Theme dialog */
-                //themeDialog(cdk_screen);
+                themeDialog(cdk_screen);
 
             } else if (menu_choice == INTERFACE_MENU &&
                     submenu_choice == INTERFACE_HELP - 1) {
@@ -797,7 +900,7 @@ start:
             /* At this point we've finished the dialog, so we make
              * the screen look nice again and reset the menu exit status */
             menu_2->exitType = vNEVER_ACTIVATED;
-            wbkgd(cdk_screen->window, COLOR_MAIN_TEXT);
+            wbkgd(cdk_screen->window, g_color_main_text[g_curr_theme]);
             wrefresh(cdk_screen->window);
             refreshCDKScreen(cdk_screen);
             curs_set(0);
@@ -818,6 +921,10 @@ quit:
     }
     delwin(sub_window);
     delwin(main_window);
+    for (i = 0; i < menu_1_cnt; i++)
+        FREE_NULL(menu_list_1[i][0]);
+    for (i = 0; i < menu_2_cnt; i++)
+        FREE_NULL(menu_list_2[i][0]);
     for (i = 0; i < MAX_INFO_LABEL_ROWS; i++) {
         FREE_NULL(tgt_label_msg[i]);
         FREE_NULL(sess_label_msg[i]);
@@ -985,12 +1092,12 @@ void statusBar(WINDOW *window) {
     bar_space = (COLS - 2) - 2 - esos_ver_size - username_size;
 
     /* Box the window and make the status bar */
-    boxWindow(window, COLOR_MAIN_BOX);
+    boxWindow(window, g_color_main_box[g_curr_theme]);
     SAFE_ASPRINTF(&status_msg, "</B> %s%*s%s <!B>", esos_ver_str, bar_space,
             "", username_str);
     status_bar = char2Chtype(status_msg, &junk, &junk);
-    writeChtypeAttrib(window, 1, (LINES - 1), status_bar, COLOR_STATUS_BAR,
-            HORIZONTAL, 0, (COLS - 2));
+    writeChtypeAttrib(window, 1, (LINES - 1), status_bar,
+            g_color_status_bar[g_curr_theme], HORIZONTAL, 0, (COLS - 2));
     freeChtype(status_bar);
     wrefresh(window);
 
@@ -1023,7 +1130,8 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
             if (errno == ENOENT) {
                 /* The iniparser_load function expects a file (even empty) */
                 if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR,
+                            strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -1119,8 +1227,10 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                     errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
                     break;
                 }
-                setCDKLabelBackgroundAttrib(transmit_msg, COLOR_DIALOG_TEXT);
-                setCDKLabelBoxAttribute(transmit_msg, COLOR_DIALOG_BOX);
+                setCDKLabelBackgroundAttrib(transmit_msg,
+                        g_color_dialog_text[g_curr_theme]);
+                setCDKLabelBoxAttribute(transmit_msg,
+                        g_color_dialog_box[g_curr_theme]);
                 refreshCDKScreen(main_cdk_screen);
 
                 /* Initialize cURL */
@@ -1166,7 +1276,8 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                 }
                 /* Save the file */
                 if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR,
+                            strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -1185,5 +1296,82 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
         iniparser_freedict(ini_dict);
     destroyCDKLabel(transmit_msg);
     refreshCDKScreen(main_cdk_screen);
+    return;
+}
+
+
+/**
+ * @brief Parse the ESOS configuration file (if any), and set the theme to the
+ * user-set option, or if no configuration file exists, set the default theme.
+ */
+void setTheme() {
+    dictionary *ini_dict = NULL;
+    char *conf_theme = NULL;
+    FILE *ini_file = NULL;
+
+    while (1) {
+        if (access(ESOS_CONF, F_OK) != 0) {
+            if (errno == ENOENT) {
+                /* The iniparser_load function expects a file (even empty) */
+                if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
+                    DEBUG_LOG(ESOS_CONF_WRITE_ERR, strerror(errno));
+                    break;
+                }
+                fclose(ini_file);
+            } else {
+                /* Missing file is okay, but fail otherwise */
+                DEBUG_LOG("access(): %s", strerror(errno));
+                break;
+            }
+        }
+
+        /* Read ESOS configuration file (INI file) */
+        ini_dict = iniparser_load(ESOS_CONF);
+        if (ini_dict == NULL) {
+            DEBUG_LOG("%s %s", ESOS_CONF_READ_ERR_1, ESOS_CONF_READ_ERR_2);
+            break;
+        }
+
+        /* We set the section in every case */
+        if (iniparser_set(ini_dict, "tui", NULL) == -1) {
+            DEBUG_LOG(SET_FILE_VAL_ERR);
+            break;
+        }
+
+        /* Parse INI file values (if any) */
+        conf_theme = iniparser_getstring(ini_dict,
+                "tui:theme", "");
+
+        /* Set the default value if we have nothing for the theme */
+        if (conf_theme[0] == '\0') {
+            if (iniparser_set(ini_dict, "tui:theme", "blue") == -1) {
+                DEBUG_LOG(SET_FILE_VAL_ERR);
+                break;
+            }
+            /* Read the string value again, and save the file */
+            conf_theme = iniparser_getstring(ini_dict, "tui:theme", "");
+            if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
+                DEBUG_LOG(ESOS_CONF_WRITE_ERR, strerror(errno));
+                break;
+            }
+            iniparser_dump_ini(ini_dict, ini_file);
+            fclose(ini_file);
+        }
+
+        if (strcmp(conf_theme, "blue") == 0) {
+            g_curr_theme = BLUE_TUI;
+        } else if (strcmp(conf_theme, "black") == 0) {
+            g_curr_theme = BLACK_TUI;
+        } else {
+            g_curr_theme = BLUE_TUI;
+        }
+
+        /* We got this far successfully, exit the loop */
+        break;
+    }
+
+    /* Done */
+    if (ini_dict != NULL)
+        iniparser_freedict(ini_dict);
     return;
 }

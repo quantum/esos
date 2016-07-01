@@ -23,6 +23,7 @@ void screenResize(CDKSCREEN *cdk, WINDOW *main_screen, WINDOW *sub_screen,
         int *latest_term_y, int *latest_term_x);
 void statusBar(WINDOW *window);
 void reportUsage(CDKSCREEN *main_cdk_screen);
+void setTheme();
 
 /* info_labels.c */
 boolean updateInfoLabels(CDKSCREEN *cdk_screen,
@@ -35,6 +36,7 @@ int readSessionData(char *label_msg[]);
 
 /* menu_common.c */
 void errorDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
+void informDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 void okButtonCB(CDKBUTTON *button);
 void cancelButtonCB(CDKBUTTON *button);
@@ -138,6 +140,7 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen);
 void remTgtFromGrpDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_interface.c */
+void themeDialog(CDKSCREEN *main_cdk_screen);
 void helpDialog(CDKSCREEN *main_cdk_screen);
 void supportArchDialog(CDKSCREEN *main_cdk_screen);
 void aboutDialog(CDKSCREEN *main_cdk_screen);
@@ -155,6 +158,7 @@ boolean listSCSTTgtDrivers(char tgt_drivers[][MISC_STRING_LEN],
 int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]);
 char *prettyFormatBytes(uint64_t size);
 boolean checkInetAccess();
+char *prettyShrinkStr(size_t max_len, char *string);
 
 /* strings.c */
 size_t g_scst_dev_types_size();

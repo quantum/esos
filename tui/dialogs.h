@@ -11,18 +11,47 @@
 extern "C" {
 #endif
 
-/* Color settings */
-#define COLOR_MAIN_TEXT         COLOR_PAIR(5)
-#define COLOR_MAIN_BOX          COLOR_PAIR(53)
-#define COLOR_DIALOG_TEXT       COLOR_PAIR(7)
-#define COLOR_DIALOG_BOX        COLOR_PAIR(7)
-#define COLOR_DIALOG_SELECT     COLOR_PAIR(29)|A_BOLD
-#define COLOR_DIALOG_INPUT      COLOR_PAIR(5)
-#define COLOR_ERROR_TEXT        COLOR_PAIR(2)
-#define COLOR_ERROR_BOX         COLOR_PAIR(2)
-#define COLOR_ERROR_SELECT      COLOR_PAIR(57)
-#define COLOR_MENU_TEXT         COLOR_PAIR(31)
-#define COLOR_STATUS_BAR        COLOR_PAIR(7)
+/**
+ * CDK initCDKColor() Map: PAIR,FOREGROUND,BACKGROUND
+ *
+ * 1,WHITE,WHITE    9,RED,WHITE         17,GREEN,WHITE      25,YELLOW,WHITE
+ * 2,WHITE,RED      10,RED,RED          18,GREEN,RED        26,YELLOW,RED
+ * 3,WHITE,GREEN    11,RED,GREEN        19,GREEN,GREEN      27,YELLOW,GREEN
+ * 4,WHITE,YELLOW   12,RED,YELLOW       20,GREEN,YELLOW     28,YELLOW,YELLOW
+ * 5,WHITE,BLUE     13,RED,BLUE         21,GREEN,BLUE       29,YELLOW,BLUE
+ * 6,WHITE,MAGENTA  14,RED,MAGENTA      22,GREEN,MAGENTA    30,YELLOW,MAGENTA
+ * 7,WHITE,CYAN     15,RED,CYAN         23,GREEN,CYAN       31,YELLOW,CYAN
+ * 8,WHITE,BLACK    16,RED,BLACK        24,GREEN,BLACK      32,YELLOW,BLACK
+ *
+ * 33,BLUE,WHITE    41,MAGENTA,WHITE    49,CYAN,WHITE       57,BLACK,WHITE
+ * 34,BLUE,RED      42,MAGENTA,RED      50,CYAN,RED         58,BLACK,RED
+ * 35,BLUE,GREEN    43,MAGENTA,GREEN    51,CYAN,GREEN       59,BLACK,GREEN
+ * 36,BLUE,YELLOW   44,MAGENTA,YELLOW   52,CYAN,YELLOW      60,BLACK,YELLOW
+ * 37,BLUE,BLUE     45,MAGENTA,BLUE     53,CYAN,BLUE        61,BLACK,BLUE
+ * 38,BLUE,MAGENTA  46,MAGENTA,MAGENTA  54,CYAN,MAGENTA     62,BLACK,MAGENTA
+ * 39,BLUE,CYAN     47,MAGENTA,CYAN     55,CYAN,CYAN        63,BLACK,CYAN
+ * 40,BLUE,BLACK    48,MAGENTA,BLACK    56,CYAN,BLACK       64,BLACK,BLACK
+ */
+
+/* Our color/theme settings and variables */
+#define MAX_TUI_THEMES  10
+typedef enum {BLUE_TUI, BLACK_TUI} ThemeNum;
+extern ThemeNum g_curr_theme;
+extern chtype g_color_main_text[MAX_TUI_THEMES];
+extern chtype g_color_main_box[MAX_TUI_THEMES];
+extern chtype g_color_dialog_text[MAX_TUI_THEMES];
+extern chtype g_color_dialog_box[MAX_TUI_THEMES];
+extern chtype g_color_dialog_select[MAX_TUI_THEMES];
+extern chtype g_color_dialog_input[MAX_TUI_THEMES];
+extern chtype g_color_error_text[MAX_TUI_THEMES];
+extern chtype g_color_error_box[MAX_TUI_THEMES];
+extern chtype g_color_error_select[MAX_TUI_THEMES];
+extern chtype g_color_menu_text[MAX_TUI_THEMES];
+extern chtype g_color_status_bar[MAX_TUI_THEMES];
+extern int g_color_menu_letter[MAX_TUI_THEMES];
+extern char *g_color_menu_bg[MAX_TUI_THEMES];
+extern int g_color_info_header[MAX_TUI_THEMES];
+extern int g_color_dialog_title[MAX_TUI_THEMES];
 
 /* Scrolling window sizing */
 #define ADP_INFO_ROWS                   16
@@ -77,6 +106,7 @@ extern "C" {
 #define ADD_VDISK_INFO_LINES            4
 #define CONFIRM_DIAG_MSG_SIZE           6
 #define ERROR_DIAG_MSG_SIZE             6
+#define INFORM_DIAG_MSG_SIZE            6
 #define QUEST_DIAG_MSG_SIZE             6
 #define MAP_DEV_INFO_LINES              8
 #define CHG_PASSWD_INFO_LINES           1

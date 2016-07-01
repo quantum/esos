@@ -120,8 +120,9 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
                 success = FALSE;
                 break;
             }
-            setCDKLabelBoxAttribute(*tgt_info, COLOR_MAIN_BOX);
-            setCDKLabelBackgroundAttrib(*tgt_info, COLOR_MAIN_TEXT);
+            setCDKLabelBoxAttribute(*tgt_info, g_color_main_box[g_curr_theme]);
+            setCDKLabelBackgroundAttrib(*tgt_info,
+                    g_color_main_text[g_curr_theme]);
         }
         if (*sess_info == NULL) {
             *sess_info = newCDKLabel(cdk_screen, 1, sess_y_start,
@@ -131,8 +132,9 @@ boolean updateInfoLabels(CDKSCREEN *cdk_screen,
                 success = FALSE;
                 break;
             }
-            setCDKLabelBoxAttribute(*sess_info, COLOR_MAIN_BOX);
-            setCDKLabelBackgroundAttrib(*sess_info, COLOR_MAIN_TEXT);
+            setCDKLabelBoxAttribute(*sess_info, g_color_main_box[g_curr_theme]);
+            setCDKLabelBackgroundAttrib(*sess_info,
+                    g_color_main_text[g_curr_theme]);
         }
         break;
     }
@@ -181,10 +183,18 @@ int readTargetData(char *label_msg[]) {
     /* Set the initial label messages; the number of characters
      * controls the label width (using white space as padding for width) */
     SAFE_ASPRINTF(&label_msg[0],
-            "</21/B/U>Target<!21><!B><!U>                            "
-            "</21/B/U>Driver<!21><!B><!U>     "
-            "</21/B/U>State<!21><!B><!U>      "
-            "</21/B/U>Link Speed<!21><!B><!U>          ");
+            "</%d/B/U>Target<!%d><!B><!U>                            "
+            "</%d/B/U>Driver<!%d><!B><!U>     "
+            "</%d/B/U>State<!%d><!B><!U>      "
+            "</%d/B/U>Link Speed<!%d><!B><!U>          ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
 
     /* We start our row 1 down (skip title) */
     row_cnt = 1;
@@ -394,11 +404,21 @@ int readSessionData(char *label_msg[]) {
     /* Set the initial label messages; the number of characters
      * controls the label width (using white space as padding for width) */
     SAFE_ASPRINTF(&label_msg[0],
-            "</21/B/U>Session<!21><!B><!U>                  "
-            "  </21/B/U>LUNs<!21><!B><!U>"
-            "  </21/B/U>Cmds<!21><!B><!U>"
-            "       </21/B/U>Read IO (KB)<!21><!B><!U>"
-            "      </21/B/U>Write IO (KB)<!21><!B><!U> ");
+            "</%d/B/U>Session<!%d><!B><!U>                  "
+            "  </%d/B/U>LUNs<!%d><!B><!U>"
+            "  </%d/B/U>Cmds<!%d><!B><!U>"
+            "       </%d/B/U>Read IO (KB)<!%d><!B><!U>"
+            "      </%d/B/U>Write IO (KB)<!%d><!B><!U> ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
 
     /* We start our row 1 down (skip title) */
     row_cnt = 1;

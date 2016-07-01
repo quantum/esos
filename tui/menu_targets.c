@@ -29,6 +29,7 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
             dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0};
     char *swindow_info[MAX_TGT_INFO_LINES] = {NULL};
+    char *swindow_title = NULL;
     int i = 0, line_pos = 0;
     DIR *dir_stream = NULL;
     struct dirent *dir_entry = NULL;
@@ -39,16 +40,17 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
         return;
 
     /* Setup scrolling window widget */
+    SAFE_ASPRINTF(&swindow_title, "<C></%d/B>SCST Target Information\n",
+            g_color_dialog_title[g_curr_theme]);
     tgt_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (TGT_INFO_ROWS + 2), (TGT_INFO_COLS + 2),
-            "<C></31/B>SCST Target Information\n",
-            MAX_TGT_INFO_LINES, TRUE, FALSE);
+            swindow_title, MAX_TGT_INFO_LINES, TRUE, FALSE);
     if (!tgt_info) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(tgt_info, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(tgt_info, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(tgt_info, g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(tgt_info, g_color_dialog_box[g_curr_theme]);
 
     /* Add target information */
     SAFE_ASPRINTF(&swindow_info[0], "</B>Target Name:<!B>\t%s", scst_tgt);
@@ -69,7 +71,8 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
     snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/targets/%s/%s/ini_groups",
             SYSFS_SCST_TGT, tgt_driver, scst_tgt);
     if ((dir_stream = opendir(dir_name)) == NULL) {
-        SAFE_ASPRINTF(&swindow_info[line_pos], "opendir(): %s", strerror(errno));
+        SAFE_ASPRINTF(&swindow_info[line_pos], "opendir(): %s",
+                strerror(errno));
     } else {
         /* Loop over each entry in the directory */
         while ((dir_entry = readdir(dir_stream)) != NULL) {
@@ -110,6 +113,7 @@ void tgtInfoDialog(CDKSCREEN *main_cdk_screen) {
     destroyCDKSwindow(tgt_info);
 
     /* Done */
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_TGT_INFO_LINES; i++ ) {
         FREE_NULL(swindow_info[i]);
     }
@@ -152,17 +156,21 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Get new target name (entry widget) */
-        SAFE_ASPRINTF(&entry_title, "<C></31/B>Add New iSCSI Target\n");
+        SAFE_ASPRINTF(&entry_title, "<C></%d/B>Add New iSCSI Target\n",
+                g_color_dialog_title[g_curr_theme]);
         tgt_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
                 entry_title, "</B>New Target Name (no spaces): ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 SCST_ISCSI_TGT_LEN, 0, SCST_ISCSI_TGT_LEN, TRUE, FALSE);
         if (!tgt_name_entry) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(tgt_name_entry, COLOR_DIALOG_BOX);
-        setCDKEntryBackgroundAttrib(tgt_name_entry, COLOR_DIALOG_TEXT);
+        setCDKEntryBoxAttribute(tgt_name_entry,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(tgt_name_entry,
+                g_color_dialog_text[g_curr_theme]);
         setCDKEntryValue(tgt_name_entry, def_iqn);
 
         /* Draw the entry widget */
@@ -243,7 +251,7 @@ void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
  */
 void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
     CDKSWINDOW *lip_info = 0;
-    char *error_msg = NULL;
+    char *error_msg = NULL, *swindow_title = NULL;
     char *swindow_msg[MAX_LIP_INFO_LINES] = {NULL};
     char attr_path[MAX_SYSFS_PATH_SIZE] = {0};
     int i = 0, temp_int = 0;
@@ -251,16 +259,18 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
     struct dirent *dir_entry = NULL;
 
     /* Setup scrolling window widget */
+    SAFE_ASPRINTF(&swindow_title,
+            "<C></%d/B>Issuing LIP on Fibre Channel Targets\n",
+            g_color_dialog_title[g_curr_theme]);
     lip_info = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (LIP_INFO_ROWS + 2), (LIP_INFO_COLS + 2),
-            "<C></31/B>Issuing LIP on Fibre Channel Targets\n",
-            MAX_LIP_INFO_LINES, TRUE, FALSE);
+            swindow_title, MAX_LIP_INFO_LINES, TRUE, FALSE);
     if (!lip_info) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(lip_info, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(lip_info, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(lip_info, g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(lip_info, g_color_dialog_box[g_curr_theme]);
 
     /* Draw the widget */
     drawCDKSwindow(lip_info, TRUE);
@@ -288,7 +298,8 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
                 snprintf(attr_path, MAX_SYSFS_PATH_SIZE, "%s/%s/issue_lip",
                         SYSFS_FC_HOST, dir_entry->d_name);
                 if ((temp_int = writeAttribute(attr_path, "1")) != 0) {
-                    SAFE_ASPRINTF(&error_msg, "Couldn't issue LIP on FC host %s: %s",
+                    SAFE_ASPRINTF(&error_msg,
+                            "Couldn't issue LIP on FC host %s: %s",
                             dir_entry->d_name, strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -302,6 +313,7 @@ void issueLIPDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Done */
     destroyCDKSwindow(lip_info);
+    FREE_NULL(swindow_title);
     for (i = 0; i < MAX_LIP_INFO_LINES; i++) {
         FREE_NULL(swindow_msg[i]);
     }
@@ -357,13 +369,14 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
         return;
     }
-    boxWindow(tgt_window, COLOR_DIALOG_BOX);
-    wbkgd(tgt_window, COLOR_DIALOG_TEXT);
+    boxWindow(tgt_window, g_color_dialog_box[g_curr_theme]);
+    wbkgd(tgt_window, g_color_dialog_text[g_curr_theme]);
     wrefresh(tgt_window);
 
     while (1) {
         /* Information label */
-        SAFE_ASPRINTF(&tgt_info_msg[0], "</31/B>Enable/disable target...");
+        SAFE_ASPRINTF(&tgt_info_msg[0], "</%d/B>Enable/disable target...",
+                g_color_dialog_title[g_curr_theme]);
         SAFE_ASPRINTF(&tgt_info_msg[1], " ");
         SAFE_ASPRINTF(&tgt_info_msg[2], "</B>Target:<!B>\t\t%s", scst_tgt);
         SAFE_ASPRINTF(&tgt_info_msg[3], "</B>Driver:<!B>\t\t%s", tgt_driver);
@@ -377,18 +390,20 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(tgt_info, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(tgt_info,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Enable/disable widget (radio) */
         enbl_dsbl_radio = newCDKRadio(tgt_screen, (window_x + 1),
                 (window_y + 7), NONE, 3, 10, "</B>Target", g_dsbl_enbl_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!enbl_dsbl_radio) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(enbl_dsbl_radio, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(enbl_dsbl_radio,
+                g_color_dialog_text[g_curr_theme]);
         setCDKRadioCurrentItem(enbl_dsbl_radio, curr_state);
 
         /* Buttons */
@@ -398,14 +413,16 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(tgt_screen, (window_x + 26),
                 (window_y + 12), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(tgt_screen);
@@ -421,7 +438,8 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
             if (new_state != curr_state) {
                 if (new_state == 0) {
                     /* Enabled -> Disabled (we need a warning) */
-                    SAFE_ASPRINTF(&confirm_msg, "%s (%s)?", scst_tgt, tgt_driver);
+                    SAFE_ASPRINTF(&confirm_msg, "%s (%s)?", scst_tgt,
+                            tgt_driver);
                     confirm = confirmDialog(main_cdk_screen,
                             "Are you sure you want to disable SCST target",
                             confirm_msg);
@@ -451,7 +469,8 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
                         SYSFS_SCST_TGT, tgt_driver, scst_tgt);
                 snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "%d", new_state);
                 if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                    SAFE_ASPRINTF(&error_msg, "Couldn't set SCST target state: %s",
+                    SAFE_ASPRINTF(&error_msg,
+                            "Couldn't set SCST target state: %s",
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -506,18 +525,20 @@ void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
 
     while (1) {
         /* Get the relative target ID (scale widget) */
-        SAFE_ASPRINTF(&scale_title, "<C></31/B>Set Relative Target ID (%s)\n",
-                scst_tgt);
+        SAFE_ASPRINTF(&scale_title, "<C></%d/B>Set Relative Target ID (%s)\n",
+                g_color_dialog_title[g_curr_theme], scst_tgt);
         rel_tgt_id_scale = newCDKScale(main_cdk_screen, CENTER, CENTER,
                 scale_title, "</B>Relative Target ID: ",
-                COLOR_DIALOG_SELECT, 7, curr_rel_tgt_id,
+                g_color_dialog_select[g_curr_theme], 7, curr_rel_tgt_id,
                 MIN_SCST_REL_TGT_ID, MAX_SCST_REL_TGT_ID, 1, 100, TRUE, FALSE);
         if (!rel_tgt_id_scale) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKScaleBoxAttribute(rel_tgt_id_scale, COLOR_DIALOG_BOX);
-        setCDKScaleBackgroundAttrib(rel_tgt_id_scale, COLOR_DIALOG_TEXT);
+        setCDKScaleBoxAttribute(rel_tgt_id_scale,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKScaleBackgroundAttrib(rel_tgt_id_scale,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Draw the scale widget */
         curs_set(1);
@@ -536,7 +557,8 @@ void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE,
                     "%d", new_rel_tgt_id);
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                SAFE_ASPRINTF(&error_msg, SET_REL_TGT_ID_ERR, strerror(temp_int));
+                SAFE_ASPRINTF(&error_msg, SET_REL_TGT_ID_ERR,
+                        strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
             }

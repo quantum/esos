@@ -83,13 +83,14 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
             break;
         }
-        boxWindow(adapter_window, COLOR_DIALOG_BOX);
-        wbkgd(adapter_window, COLOR_DIALOG_TEXT);
+        boxWindow(adapter_window, g_color_dialog_box[g_curr_theme]);
+        wbkgd(adapter_window, g_color_dialog_text[g_curr_theme]);
         wrefresh(adapter_window);
 
         /* Adapter info. label */
         SAFE_ASPRINTF(&adp_info_msg[0],
-                "</31/B>Properties for MegaRAID adapter # %d...", adp_choice);
+                "</%d/B>Properties for MegaRAID adapter # %d...",
+                g_color_dialog_title[g_curr_theme], adp_choice);
         SAFE_ASPRINTF(&adp_info_msg[1], " ");
         SAFE_ASPRINTF(&adp_info_msg[2], "</B>Model:<!B>\t\t\t%-30s",
                 mr_adapters[adp_choice]->prod_name);
@@ -114,52 +115,59 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(adapter_info, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(adapter_info,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Field entry widgets */
         cache_flush = newCDKEntry(adapter_screen, (window_x + 1),
                 (window_y + 12), NULL, "</B>Cache Flush Interval (0 to 255): ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT, 3, 1, 3,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vINT, 3, 1, 3,
                 FALSE, FALSE);
         if (!cache_flush) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(cache_flush, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(cache_flush,
+                g_color_dialog_input[g_curr_theme]);
         snprintf(temp_str, MAX_MR_ATTR_SIZE, "%d", mr_adp_props->cache_flush);
         setCDKEntryValue(cache_flush, temp_str);
         rebuild_rate = newCDKEntry(adapter_screen, (window_x + 1),
                 (window_y + 13), NULL, "</B>Rebuild Rate (0 to 100): ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vINT, 3, 1, 3,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vINT, 3, 1, 3,
                 FALSE, FALSE);
         if (!rebuild_rate) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(rebuild_rate, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(rebuild_rate,
+                g_color_dialog_input[g_curr_theme]);
         snprintf(temp_str, MAX_MR_ATTR_SIZE, "%d", mr_adp_props->rebuild_rate);
         setCDKEntryValue(rebuild_rate, temp_str);
 
         /* Radio lists */
         cluster_radio = newCDKRadio(adapter_screen, (window_x + 1),
                 (window_y + 15), NONE, 3, 10, "</B>Cluster",
-                g_dsbl_enbl_opts, 2, '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                g_dsbl_enbl_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!cluster_radio) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(cluster_radio, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(cluster_radio,
+                g_color_dialog_text[g_curr_theme]);
         setCDKRadioCurrentItem(cluster_radio, (int) mr_adp_props->cluster);
         ncq_radio = newCDKRadio(adapter_screen, (window_x + 20),
                 (window_y + 15), NONE, 3, 10, "</B>NCQ", g_dsbl_enbl_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!ncq_radio) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(ncq_radio, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(ncq_radio,
+                g_color_dialog_text[g_curr_theme]);
         setCDKRadioCurrentItem(ncq_radio, (int) mr_adp_props->ncq);
 
         /* Buttons */
@@ -169,14 +177,16 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(adapter_screen, (window_x + 30),
                 (window_y + 19), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(adapter_screen);
@@ -292,7 +302,8 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
                 mr_disks[i][j] = getMRDisk(adp_choice,
                         mr_enclosures[i]->device_id, j);
                 if (!mr_disks[i][j]) {
-                    SAFE_ASPRINTF(&error_msg, "Couldn't get disk information for "
+                    SAFE_ASPRINTF(&error_msg,
+                            "Couldn't get disk information for "
                             "slot %d, enclosure %d!", j, i);
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
@@ -303,8 +314,8 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Setup scrolling window widget */
-    SAFE_ASPRINTF(&encl_title, "<C></31/B>Enclosures/Slots on MegaRAID "
-            "Adapter # %d\n", adp_choice);
+    SAFE_ASPRINTF(&encl_title, "<C></%d/B>Enclosures/Slots on MegaRAID "
+            "Adapter # %d\n", g_color_dialog_title[g_curr_theme], adp_choice);
     encl_swindow = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
             (ADP_INFO_ROWS + 2), (ADP_INFO_COLS + 2), encl_title,
             MAX_ADP_INFO_LINES, TRUE, FALSE);
@@ -312,8 +323,9 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
         return;
     }
-    setCDKSwindowBackgroundAttrib(encl_swindow, COLOR_DIALOG_TEXT);
-    setCDKSwindowBoxAttribute(encl_swindow, COLOR_DIALOG_BOX);
+    setCDKSwindowBackgroundAttrib(encl_swindow,
+            g_color_dialog_text[g_curr_theme]);
+    setCDKSwindowBoxAttribute(encl_swindow, g_color_dialog_box[g_curr_theme]);
 
     /* Add enclosure/disk information */
     line_pos = 0;
@@ -339,7 +351,8 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
                 SAFE_ASPRINTF(&swindow_info[line_pos],
                         "\tSlot %3d: %s", j, mr_disks[i][j]->inquiry);
             else
-                SAFE_ASPRINTF(&swindow_info[line_pos], "\tSlot %3d: Not Present", j);
+                SAFE_ASPRINTF(&swindow_info[line_pos],
+                        "\tSlot %3d: Not Present", j);
             addCDKSwindow(encl_swindow, swindow_info[line_pos], BOTTOM);
             line_pos++;
         }
@@ -485,17 +498,18 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Selection widget for disks */
     SAFE_ASPRINTF(&dsk_select_title,
-            "<C></31/B>Select Disks for New LD (MegaRAID Adapter # %d)\n",
-            adp_choice);
+            "<C></%d/B>Select Disks for New LD (MegaRAID Adapter # %d)\n",
+            g_color_dialog_title[g_curr_theme], adp_choice);
     disk_select = newCDKSelection(main_cdk_screen, CENTER, CENTER, NONE,
             18, 74, dsk_select_title, selection_list, selection_size,
-            g_choice_char, 2, COLOR_DIALOG_SELECT, TRUE, FALSE);
+            g_choice_char, 2, g_color_dialog_select[g_curr_theme], TRUE, FALSE);
     if (!disk_select) {
         errorDialog(main_cdk_screen, SELECTION_ERR_MSG, NULL);
         break;
     }
-    setCDKSelectionBoxAttribute(disk_select, COLOR_DIALOG_BOX);
-    setCDKSelectionBackgroundAttrib(disk_select, COLOR_DIALOG_TEXT);
+    setCDKSelectionBoxAttribute(disk_select, g_color_dialog_box[g_curr_theme]);
+    setCDKSelectionBackgroundAttrib(disk_select,
+            g_color_dialog_text[g_curr_theme]);
 
     /* Activate the widget */
     activateCDKSelection(disk_select, 0);
@@ -541,8 +555,8 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
         break;
     }
-    boxWindow(new_ld_window, COLOR_DIALOG_BOX);
-    wbkgd(new_ld_window, COLOR_DIALOG_TEXT);
+    boxWindow(new_ld_window, g_color_dialog_box[g_curr_theme]);
+    wbkgd(new_ld_window, g_color_dialog_text[g_curr_theme]);
     wrefresh(new_ld_window);
 
     /* Put selected physical disk "enclosure:slot" information into a string */
@@ -551,8 +565,8 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
             SAFE_ASPRINTF(&temp_pstr, "[%d:%d]", chosen_disks[i]->enclosure_id,
                     chosen_disks[i]->slot_num);
         else
-            SAFE_ASPRINTF(&temp_pstr, "[%d:%d], ", chosen_disks[i]->enclosure_id,
-                chosen_disks[i]->slot_num);
+            SAFE_ASPRINTF(&temp_pstr, "[%d:%d], ",
+                    chosen_disks[i]->enclosure_id, chosen_disks[i]->slot_num);
         /* We add one extra for the null byte */
         pd_info_size = strlen(temp_pstr) + 1;
         pd_info_line_size = pd_info_line_size + pd_info_size;
@@ -572,8 +586,8 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Make a new label for the add-logical-drive screen */
     SAFE_ASPRINTF(&new_ld_msg[0],
-            "</31/B>Creating new MegaRAID LD (on adapter # %d)...",
-            adp_choice);
+            "</%d/B>Creating new MegaRAID LD (on adapter # %d)...",
+            g_color_dialog_title[g_curr_theme], adp_choice);
     /* Using asprintf() for a blank space makes it easier on clean-up (free) */
     SAFE_ASPRINTF(&new_ld_msg[1], " ");
     SAFE_ASPRINTF(&new_ld_msg[2], "Selected Disks [ENCL:SLOT] - %.35s",
@@ -584,78 +598,80 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
         break;
     }
-    setCDKLabelBackgroundAttrib(new_ld_label, COLOR_DIALOG_TEXT);
+    setCDKLabelBackgroundAttrib(new_ld_label,
+            g_color_dialog_text[g_curr_theme]);
 
     /* RAID level radio list */
     raid_lvl = newCDKRadio(new_ld_screen, (window_x + 1), (window_y + 5),
             NONE, 5, 10, "</B>RAID Level", g_raid_opts, 4,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
+            '#' | g_color_dialog_select[g_curr_theme], 1,
+            g_color_dialog_select[g_curr_theme], FALSE, FALSE);
     if (!raid_lvl) {
         errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
         break;
     }
-    setCDKRadioBackgroundAttrib(raid_lvl, COLOR_DIALOG_TEXT);
+    setCDKRadioBackgroundAttrib(raid_lvl, g_color_dialog_text[g_curr_theme]);
     setCDKRadioCurrentItem(raid_lvl, 0);
 
     /* Strip size radio list */
     strip_size = newCDKRadio(new_ld_screen, (window_x + 15), (window_y + 5),
             NONE, 9, 10, "</B>Strip Size", g_strip_opts, 8,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
+            '#' | g_color_dialog_select[g_curr_theme], 1,
+            g_color_dialog_select[g_curr_theme], FALSE, FALSE);
     if (!strip_size) {
         errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
         break;
     }
-    setCDKRadioBackgroundAttrib(strip_size, COLOR_DIALOG_TEXT);
+    setCDKRadioBackgroundAttrib(strip_size, g_color_dialog_text[g_curr_theme]);
     setCDKRadioCurrentItem(strip_size, 3);
 
     /* Write cache radio list */
     write_cache = newCDKRadio(new_ld_screen, (window_x + 30), (window_y + 5),
             NONE, 3, 11, "</B>Write Cache", g_write_opts, 2,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
+            '#' | g_color_dialog_select[g_curr_theme], 1,
+            g_color_dialog_select[g_curr_theme], FALSE, FALSE);
     if (!write_cache) {
         errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
         break;
     }
-    setCDKRadioBackgroundAttrib(write_cache, COLOR_DIALOG_TEXT);
+    setCDKRadioBackgroundAttrib(write_cache, g_color_dialog_text[g_curr_theme]);
     setCDKRadioCurrentItem(write_cache, 1);
 
     /* Read cache radio list */
     read_cache = newCDKRadio(new_ld_screen, (window_x + 30), (window_y + 9),
             NONE, 4, 10, "</B>Read Cache", g_read_opts, 3,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
+            '#' | g_color_dialog_select[g_curr_theme], 1,
+            g_color_dialog_select[g_curr_theme], FALSE, FALSE);
     if (!read_cache) {
         errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
         break;
     }
-    setCDKRadioBackgroundAttrib(read_cache, COLOR_DIALOG_TEXT);
+    setCDKRadioBackgroundAttrib(read_cache, g_color_dialog_text[g_curr_theme]);
     setCDKRadioCurrentItem(read_cache, 2);
 
     /* Cache policy radio list */
     cache_policy = newCDKRadio(new_ld_screen, (window_x + 46), (window_y + 5),
             NONE, 3, 12, "</B>Cache Policy", g_cache_opts, 2,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
+            '#' | g_color_dialog_select[g_curr_theme], 1,
+            g_color_dialog_select[g_curr_theme], FALSE, FALSE);
     if (!cache_policy) {
         errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
         break;
     }
-    setCDKRadioBackgroundAttrib(cache_policy, COLOR_DIALOG_TEXT);
+    setCDKRadioBackgroundAttrib(cache_policy,
+            g_color_dialog_text[g_curr_theme]);
     setCDKRadioCurrentItem(cache_policy, 1);
 
     /* BBU cache policy radio list */
     bbu_cache = newCDKRadio(new_ld_screen, (window_x + 46), (window_y + 9),
             NONE, 3, 16, "</B>BBU Cache Policy", g_bbu_opts, 2,
-            '#' | COLOR_DIALOG_SELECT, 1,
-            COLOR_DIALOG_SELECT, FALSE, FALSE);
+            '#' | g_color_dialog_select[g_curr_theme], 1,
+            g_color_dialog_select[g_curr_theme], FALSE, FALSE);
     if (!bbu_cache) {
         errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
         break;
     }
-    setCDKRadioBackgroundAttrib(bbu_cache, COLOR_DIALOG_TEXT);
+    setCDKRadioBackgroundAttrib(bbu_cache, g_color_dialog_text[g_curr_theme]);
     setCDKRadioCurrentItem(bbu_cache, 1);
 
     /* Buttons */
@@ -665,14 +681,15 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         break;
     }
-    setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+    setCDKButtonBackgroundAttrib(ok_button, g_color_dialog_input[g_curr_theme]);
     cancel_button = newCDKButton(new_ld_screen, (window_x + 36),
             (window_y + 16), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
     if (!cancel_button) {
         errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
         break;
     }
-    setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+    setCDKButtonBackgroundAttrib(cancel_button,
+            g_color_dialog_input[g_curr_theme]);
 
     /* Allow user to traverse the screen */
     refreshCDKScreen(new_ld_screen);
@@ -754,7 +771,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
     MRLDRIVE *mr_ldrives[MAX_MR_LDS] = {NULL};
     CDKSCROLL *ld_list = 0;
     char *logical_drives[MAX_MR_LDS] = {NULL};
-    char *error_msg = NULL, *confirm_msg = NULL;
+    char *error_msg = NULL, *confirm_msg = NULL, *scroll_title = NULL;
     int mr_ld_ids[MAX_MR_LDS] = {0};
     int adp_count = 0, adp_choice = 0, i = 0, ld_count = 0,
             ld_choice = 0, temp_int = 0;
@@ -779,8 +796,8 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, "No logical drives found!", NULL);
             break;
         } else if (ld_count == -1) {
-            SAFE_ASPRINTF(&error_msg, "Error getting LD count for adapter # %d!",
-                    adp_choice);
+            SAFE_ASPRINTF(&error_msg,
+                    "Error getting LD count for adapter # %d!", adp_choice);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -812,15 +829,18 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Get logical drive choice from user */
+        SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose a Logical Drive\n",
+                g_color_dialog_title[g_curr_theme]);
         ld_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 12, 50,
-                "<C></31/B>Choose a Logical Drive\n", logical_drives, ld_count,
-                FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+                scroll_title, logical_drives, ld_count,
+                FALSE, g_color_dialog_select[g_curr_theme], TRUE, FALSE);
         if (!ld_list) {
             errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
             break;
         }
-        setCDKScrollBoxAttribute(ld_list, COLOR_DIALOG_BOX);
-        setCDKScrollBackgroundAttrib(ld_list, COLOR_DIALOG_TEXT);
+        setCDKScrollBoxAttribute(ld_list, g_color_dialog_box[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(ld_list,
+                g_color_dialog_text[g_curr_theme]);
         ld_choice = activateCDKScroll(ld_list, 0);
 
         /* Done with the scroll widget */
@@ -849,6 +869,7 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Done */
+    FREE_NULL(scroll_title);
     for (i = 0; i < MAX_ADAPTERS; i++)
         FREE_NULL(mr_adapters[i]);
     for (i = 0; i < MAX_MR_LDS; i++) {
@@ -882,7 +903,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     int ld_encl_ids[MAX_MR_DISKS] = {0}, ld_slots[MAX_MR_DISKS] = {0},
             mr_ld_ids[MAX_MR_LDS] = {0};
     char pd_info_line_buffer[MAX_PD_INFO_LINE_BUFF] = {0};
-    char *temp_pstr = NULL, *error_msg = NULL;
+    char *temp_pstr = NULL, *error_msg = NULL, *scroll_title = NULL;
     char *logical_drives[MAX_MR_LDS] = {NULL},
             *ld_info_msg[LD_PROPS_INFO_LINES] = {NULL};
     boolean finished = FALSE;
@@ -906,7 +927,8 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, "No logical drives found!", NULL);
             break;
         } else if (ld_count == -1) {
-            SAFE_ASPRINTF(&error_msg, "Error getting LD count for adapter # %d!",
+            SAFE_ASPRINTF(&error_msg,
+                    "Error getting LD count for adapter # %d!",
                     adp_choice);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
@@ -939,15 +961,18 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
         }
 
         /* Get logical drive choice from user */
+        SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose a Logical Drive\n",
+                g_color_dialog_title[g_curr_theme]);
         ld_list = newCDKScroll(main_cdk_screen, CENTER, CENTER, NONE, 12, 50,
-                "<C></31/B>Choose a Logical Drive\n", logical_drives, ld_count,
-                FALSE, COLOR_DIALOG_SELECT, TRUE, FALSE);
+                scroll_title, logical_drives, ld_count,
+                FALSE, g_color_dialog_select[g_curr_theme], TRUE, FALSE);
         if (!ld_list) {
             errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
             break;
         }
-        setCDKScrollBoxAttribute(ld_list, COLOR_DIALOG_BOX);
-        setCDKScrollBackgroundAttrib(ld_list, COLOR_DIALOG_TEXT);
+        setCDKScrollBoxAttribute(ld_list, g_color_dialog_box[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(ld_list,
+                g_color_dialog_text[g_curr_theme]);
         ld_choice = activateCDKScroll(ld_list, 0);
 
         /* Clean up the screen */
@@ -980,8 +1005,8 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, CDK_SCR_ERR_MSG, NULL);
             break;
         }
-        boxWindow(ld_window, COLOR_DIALOG_BOX);
-        wbkgd(ld_window, COLOR_DIALOG_TEXT);
+        boxWindow(ld_window, g_color_dialog_box[g_curr_theme]);
+        wbkgd(ld_window, g_color_dialog_text[g_curr_theme]);
         wrefresh(ld_window);
 
         /* Get enclosure/slot (disk) information for selected LD */
@@ -989,9 +1014,11 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
                 ld_slots);
         for (i = 0; i < mr_ldrives[ld_choice]->drive_cnt; i++) {
             if (i == (mr_ldrives[ld_choice]->drive_cnt - 1))
-                SAFE_ASPRINTF(&temp_pstr, "[%d:%d]", ld_encl_ids[i], ld_slots[i]);
+                SAFE_ASPRINTF(&temp_pstr, "[%d:%d]", ld_encl_ids[i],
+                        ld_slots[i]);
             else
-                SAFE_ASPRINTF(&temp_pstr, "[%d:%d], ", ld_encl_ids[i], ld_slots[i]);
+                SAFE_ASPRINTF(&temp_pstr, "[%d:%d], ", ld_encl_ids[i],
+                        ld_slots[i]);
             /* We add one extra for the null byte */
             pd_info_size = strlen(temp_pstr) + 1;
             pd_info_line_size = pd_info_line_size + pd_info_size;
@@ -1010,8 +1037,8 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             break;
 
         /* Logical drive info. label */
-        SAFE_ASPRINTF(&ld_info_msg[0], "</31/B>Properties for MegaRAID LD # "
-                "%d (on adapter # %d)...",
+        SAFE_ASPRINTF(&ld_info_msg[0], "</%d/B>Properties for MegaRAID LD # "
+                "%d (on adapter # %d)...", g_color_dialog_title[g_curr_theme],
                 mr_ldrives[ld_choice]->ldrive_id, adp_choice);
         SAFE_ASPRINTF(&ld_info_msg[1], " ");
         SAFE_ASPRINTF(&ld_info_msg[2], "</B>RAID Level:<!B>\t%s",
@@ -1033,30 +1060,32 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
             break;
         }
-        setCDKLabelBackgroundAttrib(ld_info, COLOR_DIALOG_TEXT);
+        setCDKLabelBackgroundAttrib(ld_info, g_color_dialog_text[g_curr_theme]);
 
         /* Name field */
         name_field = newCDKEntry(ld_screen, (window_x + 1), (window_y + 11),
                 NULL, "</B>Logical drive name (no spaces): ",
-                COLOR_DIALOG_SELECT, '_' | COLOR_DIALOG_INPUT, vUMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vUMIXED,
                 MAX_LD_NAME, 0, MAX_LD_NAME, FALSE, FALSE);
         if (!name_field) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(name_field, COLOR_DIALOG_INPUT);
+        setCDKEntryBoxAttribute(name_field, g_color_dialog_input[g_curr_theme]);
         setCDKEntryValue(name_field, mr_ld_props->name);
 
         /* Radio lists */
         cache_policy = newCDKRadio(ld_screen, (window_x + 1), (window_y + 13),
                 NONE, 3, 10, "</B>Cache Policy", g_cache_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!cache_policy) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(cache_policy, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(cache_policy,
+                g_color_dialog_text[g_curr_theme]);
         if (strcmp(mr_ld_props->cache_policy, g_cache_opts[0]) == 0)
             setCDKRadioCurrentItem(cache_policy, 0);
         else if (strcmp(mr_ld_props->cache_policy, g_cache_opts[1]) == 0)
@@ -1064,13 +1093,14 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
 
         write_cache = newCDKRadio(ld_screen, (window_x + 16), (window_y + 13),
                 NONE, 3, 10, "</B>Write Cache", g_write_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!write_cache) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(write_cache, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(write_cache,
+                g_color_dialog_text[g_curr_theme]);
         if (strcmp(mr_ld_props->write_policy, g_write_opts[0]) == 0)
             setCDKRadioCurrentItem(write_cache, 0);
         else if (strcmp(mr_ld_props->write_policy, g_write_opts[1]) == 0)
@@ -1078,13 +1108,14 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
 
         read_cache = newCDKRadio(ld_screen, (window_x + 30), (window_y + 13),
                 NONE, 4, 10, "</B>Read Cache", g_read_opts, 3,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!read_cache) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(read_cache, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(read_cache,
+                g_color_dialog_text[g_curr_theme]);
         if (strcmp(mr_ld_props->read_policy, g_read_opts[0]) == 0)
             setCDKRadioCurrentItem(read_cache, 0);
         else if (strcmp(mr_ld_props->read_policy, g_read_opts[1]) == 0)
@@ -1094,13 +1125,14 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
 
         bbu_cache = newCDKRadio(ld_screen, (window_x + 45), (window_y + 13),
                 NONE, 3, 12, "</B>BBU Cache Policy", g_bbu_opts, 2,
-                '#' | COLOR_DIALOG_SELECT, 1,
-                COLOR_DIALOG_SELECT, FALSE, FALSE);
+                '#' | g_color_dialog_select[g_curr_theme], 1,
+                g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!bbu_cache) {
             errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
             break;
         }
-        setCDKRadioBackgroundAttrib(bbu_cache, COLOR_DIALOG_TEXT);
+        setCDKRadioBackgroundAttrib(bbu_cache,
+                g_color_dialog_text[g_curr_theme]);
         if (strcmp(mr_ld_props->bbu_cache_policy, g_bbu_opts[0]) == 0)
             setCDKRadioCurrentItem(bbu_cache, 0);
         else if (strcmp(mr_ld_props->bbu_cache_policy, g_bbu_opts[1]) == 0)
@@ -1113,14 +1145,16 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(ok_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(ok_button,
+                g_color_dialog_input[g_curr_theme]);
         cancel_button = newCDKButton(ld_screen, (window_x + 36),
                 (window_y + 18), g_ok_cancel_msg[1], cancel_cb, FALSE, FALSE);
         if (!cancel_button) {
             errorDialog(main_cdk_screen, BUTTON_ERR_MSG, NULL);
             break;
         }
-        setCDKButtonBackgroundAttrib(cancel_button, COLOR_DIALOG_INPUT);
+        setCDKButtonBackgroundAttrib(cancel_button,
+                g_color_dialog_input[g_curr_theme]);
 
         /* Allow user to traverse the screen */
         refreshCDKScreen(ld_screen);
@@ -1165,6 +1199,7 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
 
     /* Done -- free everything and clean up */
+    FREE_NULL(scroll_title);
     FREE_NULL(mr_ld_props);
     for (i = 0; i < MAX_ADAPTERS; i++)
         FREE_NULL(mr_adapters[i]);
