@@ -1,3 +1,19 @@
+2016-07-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the stubs for new dialogs and uncommented dialog menu actions in main()
+
+	added a simple signal handler in the TUI for INT, TERM, and HUP
+
+	added support for different color "themes" in the TUI (satisfies issue # 51); lots of TUI code cleanup
+
+2016-06-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the iSCSI initiator service (open-iscsi + open-isns) which allows an ESOS host to use remote iSCSI storage (targets)
+
+2016-06-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	lots of TUI code cleanup, file header documentation, and function documentation
+
 2016-06-26  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'dswartz-issue-182'

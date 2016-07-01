@@ -90,9 +90,9 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen);
 /* menu_hardraid.c */
 void adpPropsDialog(CDKSCREEN *main_cdk_screen);
 void adpInfoDialog(CDKSCREEN *main_cdk_screen);
-void addVolumeDialog(CDKSCREEN *main_cdk_screen);
-void delVolumeDialog(CDKSCREEN *main_cdk_screen);
-void volPropsDialog(CDKSCREEN *main_cdk_screen);
+void addVolDialog(CDKSCREEN *main_cdk_screen);
+void remVolDialog(CDKSCREEN *main_cdk_screen);
+void modVolDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_softraid.c */
 void softRAIDStatDialog(CDKSCREEN *main_cdk_screen);

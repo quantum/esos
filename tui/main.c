@@ -560,29 +560,27 @@ start:
             } else if (menu_choice == HW_RAID_MENU &&
                     submenu_choice == HW_RAID_ADD_VOL - 1) {
                 /* Add Volume dialog */
-                addVolumeDialog(cdk_screen);
-                //addVolDialog(cdk_screen);
+                addVolDialog(cdk_screen);
 
             } else if (menu_choice == HW_RAID_MENU &&
                     submenu_choice == HW_RAID_REM_VOL - 1) {
                 /* Remove Volume dialog */
-                delVolumeDialog(cdk_screen);
-                //remVolDialog(cdk_screen);
+                remVolDialog(cdk_screen);
 
             } else if (menu_choice == HW_RAID_MENU &&
                     submenu_choice == HW_RAID_MOD_VOL - 1) {
                 /* Modify Volume dialog */
-                //modVolDialog(cdk_screen);
+                modVolDialog(cdk_screen);
 
             } else if (menu_choice == HW_RAID_MENU &&
                     submenu_choice == HW_RAID_ADD_HSP - 1) {
                 /* Add Hot Spare dialog */
-                //addHSPDialog(cdk_screen);
+                addHSPDialog(cdk_screen);
 
             } else if (menu_choice == HW_RAID_MENU &&
                     submenu_choice == HW_RAID_REM_HSP - 1) {
                 /* Remove Hot Spare dialog */
-                //remHSPDialog(cdk_screen);
+                remHSPDialog(cdk_screen);
 
             } else if (menu_choice == SW_RAID_MENU &&
                     submenu_choice == SW_RAID_MD_STAT - 1) {
@@ -592,27 +590,27 @@ start:
             } else if (menu_choice == SW_RAID_MENU &&
                     submenu_choice == SW_RAID_ADD_ARRAY - 1) {
                 /* Add Array dialog */
-                //addArrayDialog(cdk_screen);
+                addArrayDialog(cdk_screen);
 
             } else if (menu_choice == SW_RAID_MENU &&
                     submenu_choice == SW_RAID_REM_ARRAY - 1) {
                 /* Remove Array dialog */
-                //remArrayDialog(cdk_screen);
+                remArrayDialog(cdk_screen);
 
             } else if (menu_choice == SW_RAID_MENU &&
                     submenu_choice == SW_RAID_FAULT_DEV - 1) {
                 /* Set Device Faulty dialog */
-                //faultDevDialog(cdk_screen);
+                faultDevDialog(cdk_screen);
 
             } else if (menu_choice == SW_RAID_MENU &&
                     submenu_choice == SW_RAID_ADD_DEV - 1) {
                 /* Add Device dialog */
-                //addDevDialog(cdk_screen);
+                addDevDialog(cdk_screen);
 
             } else if (menu_choice == SW_RAID_MENU &&
                     submenu_choice == SW_RAID_REM_DEV - 1) {
                 /* Remove Device dialog */
-                //remDevDialog(cdk_screen);
+                remDevDialog(cdk_screen);
 
             } else if (menu_choice == LVM_MENU &&
                     submenu_choice == LVM_LV_LIST - 1) {
@@ -622,32 +620,32 @@ start:
             } else if (menu_choice == LVM_MENU &&
                     submenu_choice == LVM_ADD_PV - 1) {
                 /* Add PV dialog */
-                //addPVDialog(cdk_screen);
+                addPVDialog(cdk_screen);
 
             } else if (menu_choice == LVM_MENU &&
                     submenu_choice == LVM_REM_PV - 1) {
                 /* Remove PV dialog */
-                //remPVialog(cdk_screen);
+                remPVDialog(cdk_screen);
 
             } else if (menu_choice == LVM_MENU &&
                     submenu_choice == LVM_ADD_VG - 1) {
                 /* Add VG dialog */
-                //addVGDialog(cdk_screen);
+                addVGDialog(cdk_screen);
 
             } else if (menu_choice == LVM_MENU &&
                     submenu_choice == LVM_REM_VG - 1) {
                 /* Remove VG dialog */
-                //remVGDialog(cdk_screen);
+                remVGDialog(cdk_screen);
 
             } else if (menu_choice == LVM_MENU &&
                     submenu_choice == LVM_ADD_LV - 1) {
                 /* Add LV dialog */
-                //addLVDialog(cdk_screen);
+                addLVDialog(cdk_screen);
 
             } else if (menu_choice == LVM_MENU &&
                     submenu_choice == LVM_REM_LV - 1) {
                 /* Remove LV dialog */
-                //remLVDialog(cdk_screen);
+                remLVDialog(cdk_screen);
 
             } else if (menu_choice == FILE_SYS_MENU &&
                     submenu_choice == FILE_SYS_VDISK_LIST - 1) {

@@ -396,7 +396,7 @@ void adpInfoDialog(CDKSCREEN *main_cdk_screen) {
 /**
  * @brief Run the "Add Volume" dialog.
  */
-void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
+void addVolDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
     MRENCL *mr_enclosures[MAX_ENCLOSURES] = {NULL};
     MRDISK *mr_disks[MAX_ENCLOSURES][MAX_DISKS] = {{NULL}, {NULL}},
@@ -764,9 +764,9 @@ void addVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
 
 /**
- * @brief Run the "Delete Volume" dialog.
+ * @brief Run the "Remove Volume" dialog.
  */
-void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
+void remVolDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
     MRLDRIVE *mr_ldrives[MAX_MR_LDS] = {NULL};
     CDKSCROLL *ld_list = 0;
@@ -881,9 +881,9 @@ void delVolumeDialog(CDKSCREEN *main_cdk_screen) {
 
 
 /**
- * @brief Run the "Volume Properties" dialog.
+ * @brief Run the "Modify Volume" dialog.
  */
-void volPropsDialog(CDKSCREEN *main_cdk_screen) {
+void modVolDialog(CDKSCREEN *main_cdk_screen) {
     MRADAPTER *mr_adapters[MAX_ADAPTERS] = {NULL};
     MRLDRIVE *mr_ldrives[MAX_MR_LDS] = {NULL};
     MRLDPROPS *mr_ld_props = NULL;
@@ -1215,4 +1215,22 @@ void volPropsDialog(CDKSCREEN *main_cdk_screen) {
     }
     delwin(ld_window);
     return;
+}
+
+
+/**
+ * @brief Run the "Add Hot Spare" dialog.
+ */
+void addHSPDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Remove Hot Spare" dialog.
+ */
+void remHSPDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
 }

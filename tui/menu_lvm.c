@@ -115,3 +115,57 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
         FREE_NULL(swindow_info[i]);
     return;
 }
+
+
+/**
+ * @brief Run the "Add PV" dialog.
+ */
+void addPVDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Remove PV" dialog.
+ */
+void remPVDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Add VG" dialog.
+ */
+void addVGDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Remove VG" dialog.
+ */
+void remVGDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Add LV" dialog.
+ */
+void addLVDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Remove LV" dialog.
+ */
+void remLVDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}

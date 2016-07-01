@@ -97,3 +97,48 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
         FREE_NULL(swindow_info[i]);
     return;
 }
+
+
+/**
+ * @brief Run the "Add Array" dialog.
+ */
+void addArrayDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Remove Array" dialog.
+ */
+void remArrayDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Set Device Faulty" dialog.
+ */
+void faultDevDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Add Device" dialog.
+ */
+void addDevDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
+
+
+/**
+ * @brief Run the "Remove Device" dialog.
+ */
+void remDevDialog(CDKSCREEN *main_cdk_screen) {
+    informDialog(main_cdk_screen, "TODO: This still needs to be implemented.",
+            NULL);
+}
