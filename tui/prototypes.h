@@ -24,6 +24,7 @@ void screenResize(CDKSCREEN *cdk, WINDOW *main_screen, WINDOW *sub_screen,
 void statusBar(WINDOW *window);
 void reportUsage(CDKSCREEN *main_cdk_screen);
 void setTheme();
+void cleanExit(int signal_num);
 
 /* info_labels.c */
 boolean updateInfoLabels(CDKSCREEN *cdk_screen,

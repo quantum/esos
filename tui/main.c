@@ -102,6 +102,11 @@ int main(int argc, char** argv) {
     g_color_info_header[BLACK_TUI]      = 40;
     g_color_dialog_title[BLACK_TUI]     = 27;
 
+    /* Register our signal handlers */
+    signal(SIGINT, cleanExit);
+    signal(SIGTERM, cleanExit);
+    signal(SIGHUP, cleanExit);
+
     /* Make sure the umask is something sane (per the man
      * page, this call always succeeds) */
     umask(0022);
@@ -1374,4 +1379,20 @@ void setTheme() {
     if (ini_dict != NULL)
         iniparser_freedict(ini_dict);
     return;
+}
+
+
+/**
+ * @brief Signal handler for any quit/interrupt type signals so we can exit
+ * the TUI "cleanly" -- at least exit with zero for now.
+ * TODO: We need to actually cleanup any allocated resources.
+ */
+void cleanExit(int signal_num) {
+    if (signal_num == SIGINT)
+        DEBUG_LOG("Caught a SIGINT, exiting...");
+    else if (signal_num == SIGTERM)
+        DEBUG_LOG("Caught a SIGTERM, exiting...");
+    else if (signal_num == SIGHUP)
+        DEBUG_LOG("Caught a SIGHUP, exiting...");
+    exit(EXIT_SUCCESS);
 }
