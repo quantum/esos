@@ -38,6 +38,7 @@ chtype g_color_error_box[MAX_TUI_THEMES];
 chtype g_color_error_select[MAX_TUI_THEMES];
 chtype g_color_menu_text[MAX_TUI_THEMES];
 chtype g_color_status_bar[MAX_TUI_THEMES];
+chtype g_color_mentry_box[MAX_TUI_THEMES];
 int g_color_menu_letter[MAX_TUI_THEMES];
 char *g_color_menu_bg[MAX_TUI_THEMES];
 int g_color_info_header[MAX_TUI_THEMES];
@@ -80,6 +81,7 @@ int main(int argc, char** argv) {
     g_color_error_select[BLUE_TUI]      = COLOR_PAIR(57);
     g_color_menu_text[BLUE_TUI]         = COLOR_PAIR(31);
     g_color_status_bar[BLUE_TUI]        = COLOR_PAIR(7);
+    g_color_mentry_box[BLUE_TUI]        = COLOR_PAIR(55);
     g_color_menu_letter[BLUE_TUI]       = 29;
     g_color_menu_bg[BLUE_TUI]           = "</5>";
     g_color_info_header[BLUE_TUI]       = 21;
@@ -97,6 +99,7 @@ int main(int argc, char** argv) {
     g_color_error_select[BLACK_TUI]     = COLOR_PAIR(57);
     g_color_menu_text[BLACK_TUI]        = COLOR_PAIR(27);
     g_color_status_bar[BLACK_TUI]       = COLOR_PAIR(3);
+    g_color_mentry_box[BLACK_TUI]       = COLOR_PAIR(19);
     g_color_menu_letter[BLACK_TUI]      = 32;
     g_color_menu_bg[BLACK_TUI]          = "</8>";
     g_color_info_header[BLACK_TUI]      = 40;

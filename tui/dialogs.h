@@ -48,6 +48,7 @@ extern chtype g_color_error_box[MAX_TUI_THEMES];
 extern chtype g_color_error_select[MAX_TUI_THEMES];
 extern chtype g_color_menu_text[MAX_TUI_THEMES];
 extern chtype g_color_status_bar[MAX_TUI_THEMES];
+extern chtype g_color_mentry_box[MAX_TUI_THEMES];
 extern int g_color_menu_letter[MAX_TUI_THEMES];
 extern char *g_color_menu_bg[MAX_TUI_THEMES];
 extern int g_color_info_header[MAX_TUI_THEMES];

@@ -544,7 +544,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 // TODO: Some tweaking to make this widget look like the
                 // others; CDK bug?
-                setCDKMentryBoxAttribute(bond_opts, COLOR_PAIR(55));
+                setCDKMentryBoxAttribute(bond_opts,
+                        g_color_mentry_box[g_curr_theme]);
                 setCDKMentryBackgroundAttrib(bond_opts,
                         g_color_dialog_text[g_curr_theme]);
                 setCDKMentryValue(bond_opts, conf_bondopts);
@@ -609,7 +610,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 // TODO: Some tweaking to make this widget look like the
                 // others; CDK bug?
-                setCDKMentryBoxAttribute(ethtool_opts, COLOR_PAIR(55));
+                setCDKMentryBoxAttribute(ethtool_opts,
+                        g_color_mentry_box[g_curr_theme]);
                 setCDKMentryBackgroundAttrib(ethtool_opts,
                         g_color_dialog_text[g_curr_theme]);
                 setCDKMentryValue(ethtool_opts, conf_ethtoolopts);
