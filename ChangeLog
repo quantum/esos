@@ -1,5 +1,7 @@
 2016-07-01  Marc A. Smith  <marc.smith@parodyne.com>
 
+	fixed a build dep issue for the open-iscsi package; added the coreutils package, but not all of it -- namely just "df" for right now as the Busybox variety is not fully compatible with the standard coreutils binary (resolves issue # 162); removed the df utility from Busybox
+
 	added the stubs for new dialogs and uncommented dialog menu actions in main()
 
 	added a simple signal handler in the TUI for INT, TERM, and HUP
