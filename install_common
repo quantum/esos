@@ -14,7 +14,7 @@ TOOL_URL_arcconf="http://www.adaptec.com/en-us/speed/raid/storage_manager/arccon
 
 TOOL_DESC_hpacucli="HP Smart Array Controllers"
 TOOL_FILE_hpacucli="hpacucli-9.40-12.0.x86_64.rpm"
-TOOL_URL_hpacucli="http://downloads.linux.hp.com/repo/spp/2013.02.0_supspp_rhel6.4_x86_64/hpacucli-9.40-12.0.x86_64.rpm"
+TOOL_URL_hpacucli="http://downloads.linux.hpe.com/repo/spp/2013.02.0_supspp_rhel6.4_x86_64/hpacucli-9.40-12.0.x86_64.rpm"
 
 TOOL_DESC_hpssacli="HP Smart Array Controllers (Gen8+)"
 TOOL_FILE_hpssacli="hpssacli-2.30-6.0.x86_64.rpm"
