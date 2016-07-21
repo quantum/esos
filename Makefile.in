@@ -228,6 +228,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		open-iscsi-master_20160628.tar.gz \
 		open-isns-0.96.tar.gz \
 		coreutils-8.25.tar.xz \
+		open-vm-tools-10.0.7-3227872.tar.gz \
+		libdnet-1.11.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -253,7 +255,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		stunnel sudo rsync eudev gperf multipath-tools archivemount \
 		libarchive mcelog edac-utils sysfsutils sqlite-autoconf \
 		stunnel sudo rsync iperf2 iperf3 libpcap iftop nmon munin-c \
-		open-iscsi open-isns coreutils
+		open-iscsi open-isns coreutils open-vm-tools libdnet
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2600,5 +2602,47 @@ coreutils: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/df $(IMAGE_DIR)/bin/df
+	$(TOUCH) $(@)
+
+open-vm-tools: glibc gcc glib libdnet
+	cd $(tgt_src_dir) && $(SHELL) ./config/missing --run autoconf
+	cd $(tgt_src_dir) && \
+	CUSTOM_GLIB2_CPPFLAGS="-I$(IMAGE_DIR)/usr/include/glib-2.0 \
+	-I$(IMAGE_DIR)/usr/lib/glib-2.0/include" \
+	CUSTOM_GLIB2_LIBS="-L$(IMAGE_DIR)/usr/lib -lglib-2.0" \
+	CUSTOM_GMODULE_CPPFLAGS="-I$(IMAGE_DIR)/usr/include/glib-2.0 \
+	-I$(IMAGE_DIR)/usr/lib/glib-2.0/include" \
+	CUSTOM_GMODULE_LIBS="-L$(IMAGE_DIR)/usr/lib -lgmodule-2.0" \
+	CUSTOM_GOBJECT_CPPFLAGS="-I$(IMAGE_DIR)/usr/include/glib-2.0 \
+	-I$(IMAGE_DIR)/usr/lib/glib-2.0/include" \
+	CUSTOM_GOBJECT_LIBS="-L$(IMAGE_DIR)/usr/lib -lgobject-2.0" \
+	CUSTOM_GTHREAD_CPPFLAGS="-I$(IMAGE_DIR)/usr/include/glib-2.0 \
+	-I$(IMAGE_DIR)/usr/lib/glib-2.0/include -pthread" \
+	CUSTOM_GTHREAD_LIBS="-L$(IMAGE_DIR)/usr/lib -lgthread-2.0 -lpthread" \
+	CUSTOM_FUSE_CPPFLAGS="-I$(IMAGE_DIR)/usr/include" \
+	CUSTOM_FUSE_LIBS="-L$(IMAGE_DIR)/usr/lib -lfuse" \
+	PATH="$$PATH:$(IMAGE_DIR)/usr/bin" \
+	./configure --prefix=/usr --disable-deploypkg --disable-grabbitmqproxy \
+	--disable-vgauth --without-root-privileges --without-kernel-modules \
+	--without-gtk2 --without-gtkmm --without-pam --without-xmlsecurity \
+	--without-xerces --without-procps --without-icu --without-x
+	$(TOUCH) -r $(tgt_src_dir)/Makefile.am $(tgt_src_dir)/aclocal.m4
+	$(MAKE) --directory=$(tgt_src_dir) DNET_CPPFLAGS="" DNET_LIBS="-ldnet" \
+	PATH="$$PATH:$(IMAGE_DIR)/usr/bin"
+	$(SED) -i 's/-$$(LN_S) $$(DESTDIR)$$(sbindir)/-$$(LN_S) $$(sbindir)/g' \
+	$(tgt_src_dir)/hgfsmounter/Makefile
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR) \
+	pamdir=""
+	$(call clean_la_files,libguestlib)
+	$(call clean_la_files,libhgfs)
+	$(call clean_la_files,libvmtools)
+	$(TOUCH) $(@)
+
+libdnet: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man \
+	--with-pic
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files,libdnet)
 	$(TOUCH) $(@)
 

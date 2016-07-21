@@ -169,3 +169,5 @@ munin-c
 open-iscsi
 open-isns
 coreutils
+libdnet
+open-vm-tools
