@@ -1,6 +1,20 @@
-2016-07-01  Marc A. Smith  <marc.smith@parodyne.com>
+2016-07-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added a patch for open-vm-tools so ESOS is recognized as an OS and /etc/esos-release is used like other distros; added an rc script for VMware Tools (rc.vmtoolsd)
+
+	added the open-vm-tools package and required dep libdnet... still needs testing and an rc script
+
+2016-07-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated TOOL_URL_hpacucli for the new HP domain (hpe.com)
+
+2016-07-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	enabled the CONFIG_ISCSI_TCP kernel option (for iSCSI initiator); fixed mismatched element from new theme setup
 
 	fixed a build dep issue for the open-iscsi package; added the coreutils package, but not all of it -- namely just "df" for right now as the Busybox variety is not fully compatible with the standard coreutils binary (resolves issue # 162); removed the df utility from Busybox
+
+2016-07-01  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the stubs for new dialogs and uncommented dialog menu actions in main()
 

@@ -1,0 +1,29 @@
+--- a/lib/include/guest_os.h	2016-02-16 15:06:46.000000000 -0500
++++ b/lib/include/guest_os.h	2016-07-21 16:46:13.742862206 -0400
+@@ -211,6 +211,7 @@
+ #define STR_OS_DEBIAN_7            "debian7"
+ #define STR_OS_DEBIAN_7_1          "debian7"
+ #define STR_OS_DEBIAN_8            "debian8"
++#define STR_OS_ESOS                "ESOS"
+ #define STR_OS_FEDORA              "Fedora"
+ #define STR_OS_GENTOO              "Gentoo"
+ #define STR_OS_IMMUNIX             "Immunix"
+--- a/lib/misc/hostinfoPosix.c	2016-02-16 15:06:46.000000000 -0500
++++ b/lib/misc/hostinfoPosix.c	2016-07-21 16:44:10.523880584 -0400
+@@ -185,6 +185,7 @@
+    {"Conectiva",          "/etc/conectiva-release"},
+    {"Debian",             "/etc/debian_release"},
+    {"Debian",             "/etc/debian_version"},
++   {"ESOS",               "/etc/esos-release"},
+    {"Fedora Core",        "/etc/fedora-release"},
+    {"Gentoo",             "/etc/gentoo-release"},
+    {"Immunix",            "/etc/immunix-release"},
+@@ -605,6 +606,8 @@
+        * Linux". Oh well. It's fixed in 6.0, though.
+        */
+       Str_Strcpy(distroShort, STR_OS_ORACLE, distroShortSize);
++   } else if (strstr(distroLower, "esos")) {
++      Str_Strcpy(distroShort, STR_OS_ESOS, distroShortSize);
+    } else if (strstr(distroLower, "fedora")) {
+       Str_Strcpy(distroShort, STR_OS_FEDORA, distroShortSize);
+    } else if (strstr(distroLower, "gentoo")) {

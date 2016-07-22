@@ -1,0 +1,40 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+VMTOOLSD="/usr/bin/vmtoolsd"
+VMTOOLSD_LOCK="/var/lock/vmtoolsd"
+DFLT_OPTS="-b /var/run/vmtoolsd.pid"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting VMware Tools..."
+    eval ${VMTOOLSD} ${USER_OPTS} || exit 1
+    /bin/touch ${VMTOOLSD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping VMware Tools..."
+    /bin/kill -TERM $(/bin/pidof ${VMTOOLSD}) || exit 1
+    wait_for_stop ${VMTOOLSD} && /bin/rm -f ${VMTOOLSD_LOCK}
+}
+
+status() {
+    /bin/pidof ${VMTOOLSD} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

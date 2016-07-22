@@ -434,6 +434,9 @@ image: $(build_targets)
 	$(FIND) $(STAGING_DIR)/etc -type d -print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/rc.d -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(STAGING_DIR)/etc/vmware-tools -type f -print0 | \
+	$(XARGS) -0 $(CHMOD) 0755
+	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 4755 $(STAGING_DIR)/usr/bin/sudo
 	$(CHMOD) 600 $(STAGING_DIR)/etc/shadow
@@ -2605,6 +2608,8 @@ coreutils: glibc
 	$(TOUCH) $(@)
 
 open-vm-tools: glibc gcc glib libdnet
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && $(SHELL) ./config/missing --run autoconf
 	cd $(tgt_src_dir) && \
 	CUSTOM_GLIB2_CPPFLAGS="-I$(IMAGE_DIR)/usr/include/glib-2.0 \
