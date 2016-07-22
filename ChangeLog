@@ -1,5 +1,7 @@
 2016-07-21  Marc A. Smith  <marc.smith@parodyne.com>
 
+	enabled the CONFIG_VSOCKETS kernel option to support VMCI for vmtoolsd
+
 	added a patch for open-vm-tools so ESOS is recognized as an OS and /etc/esos-release is used like other distros; added an rc script for VMware Tools (rc.vmtoolsd)
 
 	added the open-vm-tools package and required dep libdnet... still needs testing and an rc script
