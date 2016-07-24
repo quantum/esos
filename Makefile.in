@@ -1319,7 +1319,11 @@ drbd-utils: glibc eudev
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-mdadm: glibc
+mdadm: glibc corosync dlm
+	$(SED) -i 's/\/usr\/include\/corosync/$(subst /,\/,$(IMAGE_DIR))\/usr\/include\/corosync/' \
+	$(tgt_src_dir)/Makefile
+	$(SED) -i 's/\/usr\/include\/libdlm.h/$(subst /,\/,$(IMAGE_DIR))\/usr\/include\/libdlm.h/' \
+	$(tgt_src_dir)/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" \
 	MAP_DIR="/var/run/mdadm" RUN_DIR="/var/run/mdadm" \
 	CWFLAGS="-Wall -Wstrict-prototypes -Wextra -Wno-unused-parameter"
