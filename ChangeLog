@@ -1,3 +1,7 @@
+2016-07-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the ceph-rbdnamer script (supports rbd udev rules) and rbd udev rules; several fixes for rc.rbdmap (thanks Frederic); fixed Python ncursesw (curses module) issue from a previous patch; updated default grub.cfg to not include "console=ttyS0" as this may have caused problems with the kernel debugger (keyboard), and doesn't really fit in all situations -- users can specify the console parameter themselves if needed since the grub.cfg now persists between updates; updated getBlockDevChoice() to accept /dev/rbd* devices (untested)
+
 2016-07-26  Marc A. Smith  <marc.smith@parodyne.com>
 
 	removed the ceph package and direct dependencies (keyutils and leveldb) -- we now use the RBD mapping functionality directly from the kernel, so there is no need for the user-space programs; tweaks to rc.network to support VLANs on top of bonding interfaces; updated rc.rbdmap to use the kernel interface instead of the rbd binary (need testing)

@@ -1334,6 +1334,23 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
                                 "Block Size: %s", tmp_buff);
                         dev_cnt++;
                     }
+                } else if ((strstr(dev_node_test, "/dev/rbd")) != NULL) {
+                    /* For RBD (Ceph) block devices */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        SAFE_ASPRINTF(&blk_dev_name[dev_cnt], "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_size[dev_cnt], "%s", tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/%s/queue/logical_block_size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        SAFE_ASPRINTF(&blk_dev_info[dev_cnt],
+                                "Block Size: %s", tmp_buff);
+                        dev_cnt++;
+                    }
                 }
                 // TODO: Still more controller block devices (ida, rd)
                 // need to be added but we need hardware so we can

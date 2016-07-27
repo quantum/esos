@@ -4,6 +4,7 @@ source /etc/rc.d/common
 
 SYSFS_RBD="/sys/bus/rbd"
 RBDMAP_FILE="/etc/ceph/rbdmap"
+CEPHCONF_FILE="/etc/ceph/ceph.conf"
 
 check_args ${@}
 
@@ -27,12 +28,19 @@ start() {
                 dev=rbd/${dev}
                 ;;
         esac
+
         if [ ! -b /dev/rbd/${dev} ]; then
-            mons=$(/bin/egrep 'mon[ _]host' ${RBDMAP_FILE} | \
+            mons=$(/bin/egrep 'mon[ _]host' ${CEPHCONF_FILE} | \
                 /usr/bin/cut -f2 -d'=' | /bin/sed 's/ //g')
-            args=$(/bin/echo ${params} | /bin/sed 's/id/name/g')
-            rbddev=$(/bin/echo ${dev} | tr '/' ' ')
-            /bin/echo "${mons} ${args} ${rbddev}" > ${SYSFS_RBD}/add
+            name=$(/bin/echo ${params} | /bin/grep -o id=.*, | \
+                /usr/bin/cut -d',' -f1 | /usr/bin/cut -d'=' -f2 | \
+                /bin/sed 's/id=/name=/g')
+            keyring=$(/bin/echo ${params} | /bin/grep -o keyring.* | \
+                /usr/bin/cut -d'=' -f2)
+            secret=$(/bin/grep 'key =' ${keyring} | /usr/bin/cut -d' ' -f3)
+            rbddev=$(/bin/echo ${dev} | /usr/bin/tr '/' ' ')
+            /bin/echo "${mons} name=${name},secret=${secret} ${rbddev}" > \
+                ${SYSFS_RBD}/add
         fi
     done < ${RBDMAP_FILE}
 }
