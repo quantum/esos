@@ -81,7 +81,7 @@ if ($ARGV[0] eq "start") {
     # Configure the network interfaces
     foreach my $each (@sections) {
         # For bonding interfaces
-        if ($each =~ /bond\d+/) {
+        if ($each =~ /bond\d+$/) {
             my $bm_file = "$net_if_dir" . "/bonding_masters";
             my $bond_iface_file = "$net_if_dir" . "/" . "$each";
 
@@ -524,7 +524,7 @@ if ($ARGV[0] eq "start") {
         my $iface = (split(/\//, $each))[-1];
 
         # Remove slaves from bond interface
-        if ($iface =~ /bond\d+/) {
+        if ($iface =~ /bond\d+$/) {
             my @raw_bond_slaves = glob($net_if_dir . "/" . $iface . "/slave_*");
             foreach my $raw_slave_iface (@raw_bond_slaves) {
                 my $slave_iface = (split('slave_', $raw_slave_iface))[-1];

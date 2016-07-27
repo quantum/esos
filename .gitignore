@@ -136,10 +136,7 @@ popt
 mtx
 mt-st
 nagios-plugins
-ceph
-keyutils
 libedit
-leveldb
 libmcrypt
 nsca
 btrfs-progs

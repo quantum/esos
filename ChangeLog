@@ -1,3 +1,17 @@
+2016-07-26  Marc A. Smith  <marc.smith@parodyne.com>
+
+	removed the ceph package and direct dependencies (keyutils and leveldb) -- we now use the RBD mapping functionality directly from the kernel, so there is no need for the user-space programs; tweaks to rc.network to support VLANs on top of bonding interfaces; updated rc.rbdmap to use the kernel interface instead of the rbd binary (need testing)
+
+	updated the archivemount and libarchive packages to the latest versions; added ncurses as a dependency for the Python target (crmsh utilizes the curses module)
+
+2016-07-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	enabled several kernel config options for PCIe NTB support, including the virtual Ethernet driver
+
+2016-07-23  Marc A. Smith  <marc.smith@parodyne.com>
+
+	build fix for mdadm which uses static local paths to detect Corosync and DLM
+
 2016-07-21  Marc A. Smith  <marc.smith@parodyne.com>
 
 	enabled the CONFIG_VSOCKETS kernel option to support VMCI for vmtoolsd

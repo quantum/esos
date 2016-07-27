@@ -195,10 +195,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		mtx-1.3.12.tar.gz \
 		mt-st-1.1.tar.gz \
 		nagios-plugins-2.0.3.tar.gz \
-		ceph-0.80.5.tar.gz \
-		keyutils-1.5.9.tar.bz2 \
 		libedit-20140620-3.1.tar.gz \
-		leveldb-1.15.0.tar.gz \
 		libmcrypt-2.5.8.tar.bz2 \
 		nsca-2.7.2.tar.gz \
 		btrfs-progs-v3.16.tar.xz \
@@ -247,15 +244,15 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		sysklogd less irqbalance ethtool postgresql psycopg2 mysql \
 		MySQLdb SQLAlchemy infiniband-diags libibmad lockfile pbr \
 		python-daemon nrpe bcache-tools util-linux \
-		thin-provisioning-tools expat boost librdmacm \
-		sysstat pciutils tar net-snmp nut libusb libusb_compat \
-		freeipmi libgcrypt libgpg-error smartmontools cryptsetup \
-		popt mtx mt-st nagios-plugins ceph keyutils libedit leveldb \
-		libmcrypt nsca btrfs-progs attr acl htop dmidecode xmlrpc-c \
-		stunnel sudo rsync eudev gperf multipath-tools archivemount \
-		libarchive mcelog edac-utils sysfsutils sqlite-autoconf \
-		stunnel sudo rsync iperf2 iperf3 libpcap iftop nmon munin-c \
-		open-iscsi open-isns coreutils open-vm-tools libdnet
+		thin-provisioning-tools expat boost librdmacm sysstat \
+		pciutils tar net-snmp nut libusb libusb_compat freeipmi \
+		libgcrypt libgpg-error smartmontools cryptsetup popt mtx \
+		mt-st nagios-plugins libedit libmcrypt nsca btrfs-progs \
+		attr acl htop dmidecode xmlrpc-c stunnel sudo rsync eudev \
+		gperf multipath-tools archivemount libarchive mcelog \
+		edac-utils sysfsutils sqlite-autoconf iperf2 iperf3 libpcap \
+		iftop nmon munin-c open-iscsi open-isns coreutils \
+		open-vm-tools libdnet
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2312,47 +2309,12 @@ nagios-plugins: glibc
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-ceph: glibc util-linux keyutils libedit snappy leveldb boost Python
-	cd $(tgt_src_dir) && NSS_CFLAGS="-I$(IMAGE_DIR)/usr/include/nss" \
-	NSS_LIBS="-lnss3 -lssl3 -lnssutil3 -lnspr4 -lsmime3" \
-	LIBEDIT_CFLAGS="-I$(IMAGE_DIR)/usr/include/editline" \
-	LIBEDIT_LIBS="-ledit -lncursesw" PYTHON="$(WORK_DIR)/python" \
-	./configure --prefix=/usr \
-	--without-tcmalloc --without-libatomic-ops --without-radosgw \
-	--without-libxfs --without-fuse --with-nss --without-cryptopp
-	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir)/src DESTDIR=$(IMAGE_DIR) \
-	install_sh_PROGRAM="$(tgt_src_dir)/install-sh -c -s" \
-	INSTALL_PROGRAM="$(tgt_src_dir)/install-sh -c -s" \
-	INSTALL_STRIP_FLAG="-s" "INSTALL_PROGRAM_ENV=STRIPPROG='strip'" \
-	bin_PROGRAMS="rbd" install-binPROGRAMS
-	$(call clean_la_files,librados)
-	$(call clean_la_files,librbd)
-	$(call clean_la_files,libcephfs)
-	$(TOUCH) $(@)
-
-keyutils: glibc
-	$(SED) -i 's/$$(LNS) $$(LIBDIR)\//$$(LNS) /' $(tgt_src_dir)/Makefile
-	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" LDFLAGS="$(LDFLAGS)"
-	$(MAKE) --directory=$(tgt_src_dir) LIBDIR=/usr/lib USRLIBDIR=/usr/lib \
-	DESTDIR=$(IMAGE_DIR) install
-	$(TOUCH) $(@)
-
 libedit: glibc ncurses
 	$(SED) -i "/LIBS/s/ncurses/ncursesw/" $(tgt_src_dir)/configure
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libedit)
-	$(TOUCH) $(@)
-
-leveldb: glibc snappy
-	$(MAKE) --directory=$(tgt_src_dir) CC="gcc" CXX="g++"
-	$(INSTALL) -m 0755 $(tgt_src_dir)/libleveldb.so.1.15 \
-        $(IMAGE_DIR)/usr/lib/
-	$(LN) libleveldb.so.1.15 $(IMAGE_DIR)/usr/lib/libleveldb.so.1
-	$(LN) libleveldb.so.1.15 $(IMAGE_DIR)/usr/lib/libleveldb.so
-	$(CP) -R $(tgt_src_dir)/include/leveldb $(IMAGE_DIR)/usr/include/
 	$(TOUCH) $(@)
 
 libmcrypt: glibc gcc

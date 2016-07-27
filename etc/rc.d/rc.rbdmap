@@ -2,7 +2,7 @@
 
 source /etc/rc.d/common
 
-RBD="/usr/bin/rbd"
+SYSFS_RBD="/sys/bus/rbd"
 RBDMAP_FILE="/etc/ceph/rbdmap"
 
 check_args ${@}
@@ -27,23 +27,22 @@ start() {
                 dev=rbd/${dev}
                 ;;
         esac
-        orig_ifs=${IFS}
-        IFS=','
-        for param in ${params}; do
-            cmd_params="${cmd_params} --$(/bin/echo $param | /usr/bin/tr '=' ' ')"
-        done
-        IFS=${orig_ifs}
         if [ ! -b /dev/rbd/${dev} ]; then
-            ${RBD} map ${dev} ${cmd_params} --no-settle
+            mons=$(/bin/egrep 'mon[ _]host' ${RBDMAP_FILE} | \
+                /usr/bin/cut -f2 -d'=' | /bin/sed 's/ //g')
+            args=$(/bin/echo ${params} | /bin/sed 's/id/name/g')
+            rbddev=$(/bin/echo ${dev} | tr '/' ' ')
+            /bin/echo "${mons} ${args} ${rbddev}" > ${SYSFS_RBD}/add
         fi
     done < ${RBDMAP_FILE}
 }
 
 stop() {
     /bin/echo "Unmapping all Ceph RBD images..."
-    if /bin/ls /dev/rbd[0-9]* > /dev/null 2>&1; then
-        for dev in /dev/rbd[0-9]*; do
-            ${RBD} unmap ${dev}
+    cd ${SYSFS_RBD}/devices/
+    if /bin/ls * > /dev/null 2>&1; then
+        for dev in *; do
+            /bin/echo ${dev} > ${SYSFS_RBD}/remove
         done
     fi
 }
