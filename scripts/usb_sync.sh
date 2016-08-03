@@ -25,7 +25,8 @@ done
 mount ${CONF_MNT} || exit 1
 if [ ${INITIAL_SYNC} -eq 1 ]; then
     rsync --archive --exclude "System Volume Information" \
-        --exclude lost+found ${CONF_MNT}/ ${ROOT_PATH} || exit 1
+        --exclude lost+found --exclude etc/esos-release \
+        ${CONF_MNT}/ ${ROOT_PATH} || exit 1
 else
     rsync --archive --exclude /etc/rc.d --relative --delete \
         ${SYNC_DIRS} ${CONF_MNT} || exit 1
