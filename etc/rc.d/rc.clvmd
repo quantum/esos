@@ -4,7 +4,7 @@ source /etc/rc.d/common
 
 CLVMD="/usr/sbin/clvmd"
 CLVMD_LOCK="/var/lock/clvmd"
-DFLT_OPTS="-T5"
+DFLT_OPTS="-T10"
 
 check_args ${@}
 
@@ -21,7 +21,11 @@ fi
 
 start() {
     /bin/echo "Starting clvmd..."
-    eval ${CLVMD} ${USER_OPTS} || exit 1
+    eval ${CLVMD} ${USER_OPTS}
+    exit_val=${?}
+    if [ ${exit_val} -ne 0 -a ${exit_val} -ne 5 ]; then
+        exit 1
+    fi
     /bin/touch ${CLVMD_LOCK}
 }
 

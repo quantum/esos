@@ -5,7 +5,7 @@
 #   for Linux (SCST) and related daemons.
 #
 #   License: GNU General Public License (GPL)
-#   (c) 2012-2014 Marc A. Smith
+#   (c) 2012-2016 Marc A. Smith
 #
 
 # Initialization
@@ -19,6 +19,7 @@ POST_SCST_CONF="/etc/post-scst_xtra_conf"
 SCST_SYSFS="/sys/kernel/scst_tgt"
 ALUA_STATES="active nonoptimized standby unavailable offline transitioning"
 NO_CLOBBER="/tmp/scst_ra-no_clobber"
+REMOTE_INACT_STATE="offline"
 
 # For optional SCST modules
 if [ -f "/lib/modules/$(uname -r)/extra/ocs_fc_scst.ko" ]; then
@@ -90,6 +91,22 @@ scst_start() {
         fi
     fi
 
+    # Enable cluster mode for all SCST devices
+    ocf_log info "Enabling cluster mode for all devices..."
+    for i in ${SCST_SYSFS}/handlers/*/*/; do
+        echo 1 > ${i}/cluster_mode &
+    done
+    ocf_log debug "Waiting for enable-cluster-mode to complete..."
+    wait
+
+    # Now the targets can be enabled (we assume they were disabled)
+    ocf_log info "Enabling all target interfaces..."
+    for i in $(find ${SCST_SYSFS}/targets/ -name enabled); do
+        echo 1 > ${i} &
+    done
+    ocf_log debug "Waiting for enable-targets to complete..."
+    wait
+
     # If our post-SCST file exists, run it
     if [ -f "${POST_SCST_CONF}" ]; then
         ocf_log info "Post-SCST user config. file found; running..."
@@ -155,15 +172,42 @@ scst_stop() {
     # Demote to offline only makes sense if we are using ALUA
     if ocf_is_true ${OCF_RESKEY_alua}; then
         check_alua
-        # Set the local target group to the offline ALUA state
+        # Set the local target group to the offline/unavailable ALUA state
         ocf_log debug "scst_stop() -> Setting target group" \
             "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
-            "'offline'..."
+            "'${REMOTE_INACT_STATE}'..."
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=offline || exit ${OCF_ERR_GENERIC}
+            state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
     fi
+
+    # First we need to disable all target interfaces
+    ocf_log info "Disabling all target interfaces..."
+    for i in $(find ${SCST_SYSFS}/targets/ -name enabled); do
+        echo 0 > ${i} &
+    done
+    ocf_log debug "Waiting for disable-targets to complete..."
+    wait
+
+    # We need to wait for all sessions to complete before continuing
+    ocf_log info "Waiting for all initiators to logout..."
+    while ls -Ad ${SCST_SYSFS}/targets/*/*/sessions/* 2>&1 |
+        grep -vE '${SCST_SYSFS}/targets/(copy_manager|scst_local)/'; do
+        ocf_log debug "Still waiting..."
+        sleep 1
+    done
+
+    # Finally we can release DLM lockspaces (disable cluster mode)
+    ocf_log info "Disabling cluster mode for all devices..."
+    while grep -q '^1$' ${SCST_SYSFS}/devices/*/cluster_mode 2> /dev/null; do
+        for i in ${SCST_SYSFS}/devices/*/cluster_mode; do
+            { [ -e "${i}" ] && echo 0 > "${i}"; } &
+        done
+        ocf_log debug "Waiting for disable-cluster-mode to complete..."
+        wait
+        sleep 1
+    done
 
     # Save the SCST configuration, just in case
     ocf_log info "Saving SCST configuration..."
@@ -236,43 +280,52 @@ scst_monitor() {
     # If we are using ALUA, then we can test if we are Master or not
     if ocf_is_true ${OCF_RESKEY_alua}; then
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
-        tgt_grp_path="${dev_grp_path}/target_groups/${OCF_RESKEY_local_tgt_grp}"
-        tgt_grp_state="$(head -1 ${tgt_grp_path}/state)"
+        l_tgt_grp_path="${dev_grp_path}/target_groups/${OCF_RESKEY_local_tgt_grp}"
+        l_tgt_grp_state="$(head -1 ${l_tgt_grp_path}/state)"
+        r_tgt_grp_path="${dev_grp_path}/target_groups/${OCF_RESKEY_remote_tgt_grp}"
+        r_tgt_grp_state="$(head -1 ${r_tgt_grp_path}/state)"
         ocf_log debug "scst_monitor() -> SCST local target" \
-            "group state: ${tgt_grp_state}"
-        if [ "x${tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
+            "group state: ${l_tgt_grp_state}"
+        if [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
             rc=${OCF_RUNNING_MASTER}
         fi
 
+        # We handle detecting if the remote node is offline/unavailable here
         remote_inactive
         if [ ${?} -eq 0 ]; then
-            # Remote does not exists, so set the remote target group to offline
-            ocf_log debug "scst_promote() -> Setting target group" \
-                "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-                "'offline'..."
-            ocf_run scstadmin -noprompt -set_tgrp_attr \
-                ${OCF_RESKEY_remote_tgt_grp} -dev_group \
-                ${OCF_RESKEY_device_group} -attributes \
-                state\=offline || exit ${OCF_ERR_GENERIC}
+            # Remote does not exist, so set the remote target group to offline
+            if [ "x${r_tgt_grp_state}" != "x${REMOTE_INACT_STATE}" ]; then
+                ocf_log debug "scst_monitor() -> Setting target group" \
+                    "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
+                    "'${REMOTE_INACT_STATE}'..."
+                ocf_run scstadmin -noprompt -set_tgrp_attr \
+                    ${OCF_RESKEY_remote_tgt_grp} -dev_group \
+                    ${OCF_RESKEY_device_group} -attributes \
+                    state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
+            fi
         else
-            if [ "x${tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
-                # Remote exists, so set the remote target group
-                ocf_log debug "scst_promote() -> Setting target group" \
-                    "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-                    "'${OCF_RESKEY_m_alua_state}'..."
-                ocf_run scstadmin -noprompt -set_tgrp_attr \
-                    ${OCF_RESKEY_remote_tgt_grp} -dev_group \
-                    ${OCF_RESKEY_device_group} -attributes \
-                    state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+            if [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
+                # Remote exists and we're Master, so set the remote to Slave
+                if [ "x${r_tgt_grp_state}" != "x${OCF_RESKEY_s_alua_state}" ]; then
+                    ocf_log debug "scst_monitor() -> Setting target group" \
+                        "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
+                        "'${OCF_RESKEY_s_alua_state}'..."
+                    ocf_run scstadmin -noprompt -set_tgrp_attr \
+                        ${OCF_RESKEY_remote_tgt_grp} -dev_group \
+                        ${OCF_RESKEY_device_group} -attributes \
+                        state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+                fi
             else
-                # Remote exists, so set the remote target group
-                ocf_log debug "scst_promote() -> Setting target group" \
-                    "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-                    "'${OCF_RESKEY_s_alua_state}'..."
-                ocf_run scstadmin -noprompt -set_tgrp_attr \
-                    ${OCF_RESKEY_remote_tgt_grp} -dev_group \
-                    ${OCF_RESKEY_device_group} -attributes \
-                    state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+                # Remote exists and we're Slave, so set the remote to Master
+                if [ "x${r_tgt_grp_state}" != "x${OCF_RESKEY_m_alua_state}" ]; then
+                    ocf_log debug "scst_monitor() -> Setting target group" \
+                        "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
+                        "'${OCF_RESKEY_m_alua_state}'..."
+                    ocf_run scstadmin -noprompt -set_tgrp_attr \
+                        ${OCF_RESKEY_remote_tgt_grp} -dev_group \
+                        ${OCF_RESKEY_device_group} -attributes \
+                        state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+                fi
             fi
         fi
     fi
@@ -449,11 +502,11 @@ scst_promote() {
         if [ ${?} -eq 0 ]; then
             ocf_log debug "scst_promote() -> Setting target group" \
                 "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-                "'offline'..."
+                "'${REMOTE_INACT_STATE}'..."
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=offline || exit ${OCF_ERR_GENERIC}
+                state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
         else
             ocf_log debug "scst_promote() -> Setting target group" \
                 "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
