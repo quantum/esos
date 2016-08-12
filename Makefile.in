@@ -106,7 +106,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		linux-4.5.2.tar.xz \
 		iniparser-3.1.tar.gz \
 		cdk-5.0-20120323.tar.gz \
-		scst-3.1.x_r6895.tar.gz \
+		scst-3.1.x_r6933.tar.gz \
 		kexec-tools-2.0.7.tar.gz \
 		drbd-utils-8.9.4.tar.gz \
 		lvm2-2_02_129.tar.xz \
