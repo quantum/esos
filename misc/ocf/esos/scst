@@ -20,6 +20,7 @@ SCST_SYSFS="/sys/kernel/scst_tgt"
 ALUA_STATES="active nonoptimized standby unavailable offline transitioning"
 NO_CLOBBER="/tmp/scst_ra-no_clobber"
 REMOTE_INACT_STATE="offline"
+DLM_CONTROLD_PID="/var/run/dlm_controld/dlm_controld.pid"
 
 # For optional SCST modules
 if [ -f "/lib/modules/$(uname -r)/extra/ocs_fc_scst.ko" ]; then
@@ -91,13 +92,18 @@ scst_start() {
         fi
     fi
 
-    # Enable cluster mode for all SCST devices
-    ocf_log info "Enabling cluster mode for all devices..."
-    for i in ${SCST_SYSFS}/handlers/*/*/; do
-        echo 1 > ${i}/cluster_mode &
-    done
-    ocf_log debug "Waiting for enable-cluster-mode to complete..."
-    wait
+    if kill -s 0 $(${DLM_CONTROLD_PID}); then
+        # Enable cluster mode for all SCST devices
+        ocf_log info "Enabling cluster mode for all devices..."
+        for i in ${SCST_SYSFS}/handlers/*/*/; do
+            echo 1 > ${i}/cluster_mode &
+        done
+        ocf_log debug "Waiting for enable-cluster-mode to complete..."
+        wait
+    else
+        ocf_log info "It appears dlm_controld is not running, skipping" \
+            "enable-cluster-mode..."
+    fi
 
     # Now the targets can be enabled (we assume they were disabled)
     ocf_log info "Enabling all target interfaces..."
@@ -198,16 +204,22 @@ scst_stop() {
         sleep 1
     done
 
-    # Finally we can release DLM lockspaces (disable cluster mode)
-    ocf_log info "Disabling cluster mode for all devices..."
-    while grep -q '^1$' ${SCST_SYSFS}/devices/*/cluster_mode 2> /dev/null; do
-        for i in ${SCST_SYSFS}/devices/*/cluster_mode; do
-            { [ -e "${i}" ] && echo 0 > "${i}"; } &
+    if kill -s 0 $(${DLM_CONTROLD_PID}); then
+        # Finally we can release DLM lockspaces (disable cluster mode)
+        ocf_log info "Disabling cluster mode for all devices..."
+        while grep -q '^1$' ${SCST_SYSFS}/devices/*/cluster_mode \
+            2> /dev/null; do
+            for i in ${SCST_SYSFS}/devices/*/cluster_mode; do
+                { [ -e "${i}" ] && echo 0 > "${i}"; } &
+            done
+            ocf_log debug "Waiting for disable-cluster-mode to complete..."
+            wait
+            sleep 1
         done
-        ocf_log debug "Waiting for disable-cluster-mode to complete..."
-        wait
-        sleep 1
-    done
+    else
+        ocf_log info "It appears dlm_controld is not running, skipping" \
+            "disable-cluster-mode..."
+    fi
 
     # Save the SCST configuration, just in case
     ocf_log info "Saving SCST configuration..."
