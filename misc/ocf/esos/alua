@@ -13,31 +13,30 @@
 . ${OCF_FUNCTIONS_DIR}/ocf-shellfuncs
 SCST_SYSFS="/sys/kernel/scst_tgt"
 ALUA_STATES="active nonoptimized standby unavailable offline transitioning"
-OFFLINE_ALUA_STATE="offline"
-INITIAL_ALUA_STATE="transitioning"
+REMOTE_INACT_STATE="offline"
 
 
-aluastates_start() {
+alua_start() {
     # Exit immediately if configuration is not valid
-    aluastates_validate_all || exit ${?}
+    alua_validate_all || exit ${?}
 
     # If resource is already running, bail out early
-    if aluastates_monitor; then
+    if alua_monitor; then
         ocf_log info "Resource is already running."
         return ${OCF_SUCCESS}
     fi
 
-    # Set the local target group ALUA state to our initial starting value
+    # Set the local target group ALUA state initially to Slave
     check_alua
-    ocf_log debug "aluastates_start() -> Setting target group" \
+    ocf_log debug "alua_start() -> Setting target group" \
         "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
-        "'${INITIAL_ALUA_STATE}'..."
+        "'${OCF_RESKEY_s_alua_state}'..."
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${INITIAL_ALUA_STATE} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
     # For now, we simply assume the other node is the Master
-    ocf_log debug "aluastates_start() -> Setting target group" \
+    ocf_log debug "alua_start() -> Setting target group" \
         "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
         "'${OCF_RESKEY_m_alua_state}'..."
     ocf_run scstadmin -noprompt -set_tgrp_attr \
@@ -46,8 +45,8 @@ aluastates_start() {
         state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
 
     # Make sure the resource started correctly
-    while ! aluastates_monitor; do
-        ocf_log debug "aluastates_start() -> Resource has not" \
+    while ! alua_monitor; do
+        ocf_log debug "alua_start() -> Resource has not" \
             "started yet, waiting..."
         sleep 1
     done
@@ -57,12 +56,12 @@ aluastates_start() {
 }
 
 
-aluastates_stop() {
+alua_stop() {
     # Exit immediately if configuration is not valid
-    aluastates_validate_all || exit ${?}
+    alua_validate_all || exit ${?}
 
     # Check the current resource state
-    aluastates_monitor
+    alua_monitor
     local rc=${?}
     case "${rc}" in
     "${OCF_SUCCESS}")
@@ -72,7 +71,7 @@ aluastates_stop() {
     "${OCF_RUNNING_MASTER}")
         # Running as a Master; need to demote before stopping
         ocf_log info "Resource is currently running as Master."
-        aluastates_demote || ocf_log warn "Demote failed, trying to" \
+        alua_demote || ocf_log warn "Demote failed, trying to" \
             "stop anyway..."
         ;;
     "${OCF_NOT_RUNNING}")
@@ -84,17 +83,17 @@ aluastates_stop() {
 
     # Set the local target group to the offline/unavailable ALUA state
     check_alua
-    ocf_log debug "aluastates_stop() -> Setting target group" \
+    ocf_log debug "alua_stop() -> Setting target group" \
         "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
-        "'${OFFLINE_ALUA_STATE}'..."
+        "'${REMOTE_INACT_STATE}'..."
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${OFFLINE_ALUA_STATE} || exit ${OCF_ERR_GENERIC}
+        state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
 
     # Make sure the resource stopped correctly
-    while aluastates_monitor; do
-        ocf_log debug "aluastates_stop() -> Resource has not" \
+    while alua_monitor; do
+        ocf_log debug "alua_stop() -> Resource has not" \
             "stopped yet, waiting..."
         sleep 1
     done
@@ -104,12 +103,15 @@ aluastates_stop() {
 }
 
 
-aluastates_monitor() {
+alua_monitor() {
     # Exit immediately if configuration is not valid
-    aluastates_validate_all || exit ${?}
+    alua_validate_all || exit ${?}
 
     # Check if SCST is loaded
     check_scst
+
+    # Make sure the ALUA configuration is legit
+    check_alua
 
     # Determine our status using the "local" target group state
     local rc
@@ -118,16 +120,15 @@ aluastates_monitor() {
     l_tgt_grp_state="$(head -1 ${l_tgt_grp_path}/state)"
     r_tgt_grp_path="${dev_grp_path}/target_groups/${OCF_RESKEY_remote_tgt_grp}"
     r_tgt_grp_state="$(head -1 ${r_tgt_grp_path}/state)"
-    ocf_log debug "aluastates_monitor() -> SCST local target" \
+    ocf_log debug "alua_monitor() -> SCST local target" \
         "group state: ${l_tgt_grp_state}"
-    if [ "x${l_tgt_grp_state}" = "x${INITIAL_ALUA_STATE}" ] ||
-        [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ] ||
+    if [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ] ||
         [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_s_alua_state}" ]; then
-        ocf_log debug "aluastates_monitor() -> Resource is running."
+        ocf_log debug "alua_monitor() -> Resource is running."
         crm_master -l reboot -v 100
         rc=${OCF_SUCCESS}
     else
-        ocf_log debug "aluastates_monitor() -> Resource is not running."
+        ocf_log debug "alua_monitor() -> Resource is not running."
         crm_master -l reboot -D
         rc=${OCF_NOT_RUNNING}
         return ${rc}
@@ -142,20 +143,20 @@ aluastates_monitor() {
     remote_inactive
     if [ ${?} -eq 0 ]; then
         # Remote does not exist, so set the remote target group to offline
-        if [ "x${r_tgt_grp_state}" != "x${OFFLINE_ALUA_STATE}" ]; then
-            ocf_log debug "aluastates_monitor() -> Setting target group" \
+        if [ "x${r_tgt_grp_state}" != "x${REMOTE_INACT_STATE}" ]; then
+            ocf_log debug "alua_monitor() -> Setting target group" \
                 "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-                "'${OFFLINE_ALUA_STATE}'..."
+                "'${REMOTE_INACT_STATE}'..."
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=${OFFLINE_ALUA_STATE} || exit ${OCF_ERR_GENERIC}
+                state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
         fi
     else
         if [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
             # Remote exists and we're Master, so set the remote to Slave
             if [ "x${r_tgt_grp_state}" != "x${OCF_RESKEY_s_alua_state}" ]; then
-                ocf_log debug "aluastates_monitor() -> Setting target group" \
+                ocf_log debug "alua_monitor() -> Setting target group" \
                     "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
                     "'${OCF_RESKEY_s_alua_state}'..."
                 ocf_run scstadmin -noprompt -set_tgrp_attr \
@@ -166,7 +167,7 @@ aluastates_monitor() {
         else
             # Remote exists and we're Slave, so set the remote to Master
             if [ "x${r_tgt_grp_state}" != "x${OCF_RESKEY_m_alua_state}" ]; then
-                ocf_log debug "aluastates_monitor() -> Setting target group" \
+                ocf_log debug "alua_monitor() -> Setting target group" \
                     "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
                     "'${OCF_RESKEY_m_alua_state}'..."
                 ocf_run scstadmin -noprompt -set_tgrp_attr \
@@ -181,7 +182,7 @@ aluastates_monitor() {
 }
 
 
-aluastates_validate_all() {
+alua_validate_all() {
     # Test for required binaries
     check_binary scstadmin
 
@@ -229,7 +230,7 @@ aluastates_validate_all() {
 }
 
 
-aluastates_meta_data() {
+alua_meta_data() {
 	cat <<-EOF
 	<?xml version="1.0"?>
 	<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
@@ -281,7 +282,7 @@ aluastates_meta_data() {
 }
 
 
-aluastates_usage() {
+alua_usage() {
     echo "usage: ${0} {start|stop|monitor|validate-all|promote|demote|reload|notify|meta-data}"
     echo ""
     echo "Expects to have a fully populated OCF RA-compliant environment set."
@@ -295,17 +296,17 @@ remote_inactive() {
 }
 
 
-aluastates_promote() {
+alua_promote() {
     # Exit immediately if configuration is not valid
-    aluastates_validate_all || exit ${?}
+    alua_validate_all || exit ${?}
 
     # Test the resource's current state
-    aluastates_monitor
+    alua_monitor
     local rc=${?}
     case "${rc}" in
     "${OCF_SUCCESS}")
         # Running as Slave; normal, expected behavior
-        ocf_log debug "aluastates_promote() -> Resource is" \
+        ocf_log debug "alua_promote() -> Resource is" \
             "currently running as Slave."
         ;;
     "${OCF_RUNNING_MASTER}")
@@ -316,7 +317,7 @@ aluastates_promote() {
     "${OCF_NOT_RUNNING}")
         # Currently not running; need to start before promoting
         ocf_log info "Resource is currently not running."
-        aluastates_start
+        alua_start
         ;;
     *)
         # Failed resource; let the cluster manager recover
@@ -327,7 +328,7 @@ aluastates_promote() {
 
     # Set the local target group to the "Master" ALUA state
     check_alua
-    ocf_log debug "aluastates_promote() -> Setting target group" \
+    ocf_log debug "alua_promote() -> Setting target group" \
         "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
         "'${OCF_RESKEY_m_alua_state}'..."
     ocf_run scstadmin -noprompt -set_tgrp_attr \
@@ -337,15 +338,15 @@ aluastates_promote() {
     # Since there can only be one Master, set the remote target group
     remote_inactive
     if [ ${?} -eq 0 ]; then
-        ocf_log debug "aluastates_promote() -> Setting target group" \
+        ocf_log debug "alua_promote() -> Setting target group" \
             "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-            "'${OFFLINE_ALUA_STATE}'..."
+            "'${REMOTE_INACT_STATE}'..."
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_remote_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OFFLINE_ALUA_STATE} || exit ${OCF_ERR_GENERIC}
+            state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
     else
-        ocf_log debug "aluastates_promote() -> Setting target group" \
+        ocf_log debug "alua_promote() -> Setting target group" \
             "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
             "'${OCF_RESKEY_s_alua_state}'..."
         ocf_run scstadmin -noprompt -set_tgrp_attr \
@@ -356,12 +357,12 @@ aluastates_promote() {
 
     # After the resource has been promoted, check whether the promotion worked
     while true; do
-        aluastates_monitor
+        alua_monitor
         if [ ${?} -eq ${OCF_RUNNING_MASTER} ]; then
             ocf_log info "Resource was promoted successfully."
             break
         else
-            ocf_log debug "aluastates_promote() -> Resource still" \
+            ocf_log debug "alua_promote() -> Resource still" \
                 "awaiting promotion."
             sleep 1
         fi
@@ -372,22 +373,22 @@ aluastates_promote() {
 }
 
 
-aluastates_demote() {
+alua_demote() {
     # Exit immediately if configuration is not valid
-    aluastates_validate_all || exit ${?}
+    alua_validate_all || exit ${?}
 
     # Test the resource's current state
-    aluastates_monitor
+    alua_monitor
     local rc=${?}
     case "${rc}" in
     "${OCF_RUNNING_MASTER}")
         # Running as Master; normal, expected behavior
-        ocf_log debug "aluastates_demote() -> Resource is" \
+        ocf_log debug "alua_demote() -> Resource is" \
             "currently running as Master."
         ;;
     "${OCF_SUCCESS}")
         # Already running as Slave; nothing to do
-        ocf_log debug "aluastates_demote() -> Resource is" \
+        ocf_log debug "alua_demote() -> Resource is" \
             "currently running as Slave."
         return ${OCF_SUCCESS}
         ;;
@@ -405,7 +406,7 @@ aluastates_demote() {
 
     # Set the local target group to the "Slave" ALUA state
     check_alua
-    ocf_log debug "aluastates_demote() -> Setting target group" \
+    ocf_log debug "alua_demote() -> Setting target group" \
         "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
         "'${OCF_RESKEY_s_alua_state}'..."
     ocf_run scstadmin -noprompt -set_tgrp_attr \
@@ -413,7 +414,7 @@ aluastates_demote() {
         ${OCF_RESKEY_device_group} -attributes \
         state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
     # If we're a Slave, we assume the remote side is the Master
-    ocf_log debug "aluastates_demote() -> Setting target group" \
+    ocf_log debug "alua_demote() -> Setting target group" \
         "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
         "'${OCF_RESKEY_m_alua_state}'..."
     ocf_run scstadmin -noprompt -set_tgrp_attr \
@@ -423,9 +424,9 @@ aluastates_demote() {
 
     # After the resource has been demoted, check whether the demotion worked
     while true; do
-        aluastates_monitor
+        alua_monitor
         if [ ${?} -eq ${OCF_RUNNING_MASTER} ]; then
-            ocf_log debug "aluastates_demote() -> Resource still" \
+            ocf_log debug "alua_demote() -> Resource still" \
                 "awaiting demotion."
             sleep 1
         else
@@ -439,9 +440,9 @@ aluastates_demote() {
 }
 
 
-aluastates_notify() {
+alua_notify() {
     # We're currently not using this
-    ocf_log debug "aluastates_notify() -> Received a" \
+    ocf_log debug "alua_notify() -> Received a" \
         "'${OCF_RESKEY_CRM_meta_notify_type}' /" \
         "'${OCF_RESKEY_CRM_meta_notify_operation}' notification."
 
@@ -507,50 +508,50 @@ check_alua() {
 # Make sure meta-data and usage always succeed
 case ${__OCF_ACTION} in
 meta-data)
-    aluastates_meta_data
+    alua_meta_data
     exit ${OCF_SUCCESS}
     ;;
 usage|help)
-    aluastates_usage
+    alua_usage
     exit ${OCF_SUCCESS}
     ;;
 esac
 
 # Anything other than meta-data and usage must pass validation
-aluastates_validate_all || exit ${?}
+alua_validate_all || exit ${?}
 
 # Translate each action into the appropriate function call
 case ${__OCF_ACTION} in
 start)
-    aluastates_start
+    alua_start
     ;;
 stop)
-    aluastates_stop
+    alua_stop
     ;;
 status|monitor)
-    aluastates_monitor
+    alua_monitor
     ;;
 notify)
-    aluastates_notify
+    alua_notify
     ;;
 promote)
-    aluastates_promote
+    alua_promote
     ;;
 demote)
-    aluastates_demote
+    alua_demote
     ;;
 reload)
     ocf_log info "Reloading..."
-    aluastates_start
+    alua_start
     ;;
 validate-all)
     ;;
 migrate_to|migrate_from)
-    aluastates_usage
+    alua_usage
     exit ${OCF_ERR_UNIMPLEMENTED}
     ;;
 *)
-    aluastates_usage
+    alua_usage
     exit ${OCF_ERR_UNIMPLEMENTED}
     ;;
 esac
