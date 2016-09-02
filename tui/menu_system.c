@@ -476,7 +476,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
 
             /* A very small label for instructions */
             SAFE_ASPRINTF(&short_label_msg[0],
-                    "</B>Static IP Settings (leave blank if using DHCP)");
+                    "</B>Static IPv4 Settings (leave blank if using DHCP)");
             short_label = newCDKLabel(net_screen,
                     (window_x + 20), (window_y + 7),
                     short_label_msg, NET_SHORT_INFO_LINES, FALSE, FALSE);

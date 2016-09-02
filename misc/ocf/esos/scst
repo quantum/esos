@@ -20,6 +20,7 @@ SCST_SYSFS="/sys/kernel/scst_tgt"
 ALUA_STATES="active nonoptimized standby unavailable offline transitioning"
 NO_CLOBBER="/tmp/scst_ra-no_clobber"
 REMOTE_INACT_STATE="offline"
+TRANSITION_STATE="transitioning"
 DLM_CONTROLD_PID="/var/run/dlm_controld/dlm_controld.pid"
 
 # For optional SCST modules
@@ -303,8 +304,7 @@ scst_monitor() {
         fi
 
         # We handle detecting if the remote node is offline/unavailable here
-        remote_inactive
-        if [ ${?} -eq 0 ]; then
+        if remote_inactive; then
             # Remote does not exist, so set the remote target group to offline
             if [ "x${r_tgt_grp_state}" != "x${REMOTE_INACT_STATE}" ]; then
                 ocf_log debug "scst_monitor() -> Setting target group" \
@@ -436,6 +436,11 @@ scst_meta_data() {
 	      <shortdesc lang="en">The 's_alua_state' parameter.</shortdesc>
 	      <content type="string" default="nonoptimized" />
 	    </parameter>
+	    <parameter name="use_trans_state" unique="0" required="0">
+	      <longdesc lang="en">Use the "transitioning" ALUA state before changing target group states.</longdesc>
+	      <shortdesc lang="en">The 'use_trans_state' parameter.</shortdesc>
+	      <content type="boolean" default="false" />
+	    </parameter>
 	  </parameters>
 	  <actions>
 	    <action name="meta-data" timeout="5" />
@@ -465,6 +470,28 @@ remote_inactive() {
     # Determine if there is an inactive (stopped) instance
     crm_mon --as-xml | grep "resource.*id=\"${OCF_RESOURCE_INSTANCE}\".*active=\"false\"" > /dev/null 2>&1
     return ${?}
+}
+
+
+block_scst_devs() {
+    # Block all devices that are members of our device group
+    ocf_log info "Blocking all '${OCF_RESKEY_device_group}' devices..."
+    dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+    for i in ${dev_grp_path}/devices/*/; do
+        echo 1 > ${i}/block &
+    done
+    ocf_log debug "Waiting for devices to finish blocking..."
+    wait
+}
+
+
+unblock_scst_devs() {
+    # Unblock all devices that are members of our device group
+    ocf_log info "Unblocking all '${OCF_RESKEY_device_group}' devices..."
+    dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+    for i in ${dev_grp_path}/devices/*/; do
+        echo 0 > ${i}/block
+    done
 }
 
 
@@ -500,8 +527,18 @@ scst_promote() {
 
     # Promote only makes sense if we are using ALUA
     if ocf_is_true ${OCF_RESKEY_alua}; then
-        check_alua
         # Set the local target group to the "Master" ALUA state
+        check_alua
+        block_scst_devs
+        if ocf_is_true ${OCF_RESKEY_use_trans_state}; then
+            ocf_log debug "scst_promote() -> Setting target group" \
+                "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
+                "'${TRANSITION_STATE}'..."
+            ocf_run scstadmin -noprompt -set_tgrp_attr \
+                ${OCF_RESKEY_local_tgt_grp} -dev_group \
+                ${OCF_RESKEY_device_group} -attributes \
+                state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+        fi
         ocf_log debug "scst_promote() -> Setting target group" \
             "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
             "'${OCF_RESKEY_m_alua_state}'..."
@@ -509,9 +546,9 @@ scst_promote() {
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
             state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+        unblock_scst_devs
         # Since there can only be one Master, set the remote target group
-        remote_inactive
-        if [ ${?} -eq 0 ]; then
+        if remote_inactive; then
             ocf_log debug "scst_promote() -> Setting target group" \
                 "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
                 "'${REMOTE_INACT_STATE}'..."
@@ -584,8 +621,18 @@ scst_demote() {
 
     # Demote only makes sense if we are using ALUA
     if ocf_is_true ${OCF_RESKEY_alua}; then
-        check_alua
         # Set the local target group to the "Slave" ALUA state
+        check_alua
+        block_scst_devs
+        if ocf_is_true ${OCF_RESKEY_use_trans_state}; then
+            ocf_log debug "scst_demote() -> Setting target group" \
+                "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
+                "'${TRANSITION_STATE}'..."
+            ocf_run scstadmin -noprompt -set_tgrp_attr \
+                ${OCF_RESKEY_local_tgt_grp} -dev_group \
+                ${OCF_RESKEY_device_group} -attributes \
+                state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+        fi
         ocf_log debug "scst_demote() -> Setting target group" \
             "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
             "'${OCF_RESKEY_s_alua_state}'..."
@@ -593,6 +640,7 @@ scst_demote() {
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
             state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+        unblock_scst_devs
         # If we're a Slave, we assume the remote side is the Master
         ocf_log debug "scst_demote() -> Setting target group" \
             "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
