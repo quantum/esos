@@ -1,3 +1,35 @@
+2016-09-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added a patch for Linux 4.5.2 that allows md-cluster to function when built-in instead of a module
+
+2016-09-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the ocf:esos:scst and ocf:esos:alua resource agents to handle blocking/unlocking SCST devices during the promote/demote actions (per SCST's README recommendation); additionally, added an option to both RA's for the "transitioning" ALUA state (disabled by default); other minor RA tweaks; updated a dialog string in networkDialog() for better clarification
+
+2016-08-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added a new cluster RA for managing Avago/LSI Syncro VD ownership... the RA from 'https://github.com/FZachlod/scst_ocf_ra/blob/master/usr/lib/ocf/resource.d/onesty/syncrovd' was used as inspiration for the ESOS variant (thanks Felix) -- our RA differs in that you can simply supply the name of a SCST device group, and the RA will parse all devices in the group and will attempt VD ownership using a SCSI PR; this new Syncro RA is completely untested, it will likely not work without testing on real hardware, and even then it may have unintended consequences due to the SCSI PR (eg, write issues)
+
+2016-08-17  Marc A. Smith  <marc.smith@parodyne.com>
+
+	more tweaks... renamed the RA to just "alua" and set it so initial state is just Slave's ALUA state
+
+	initial start of new 'aluastates' RA which only handles setting SCST's ALUA states
+
+2016-08-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the SCST RA to only perform the enable-cluster-mode and disable-cluster-mode operations if dlm_controld is running
+
+2016-08-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated SCST to 3.1.x/r6933
+
+	tweaked rc.clvmd and its default options; updated the ESOS SCST RA to handle the proper startup/shutdown sequence for PR sync via DLM (per SCST's README.dlm); fixed several issues with the SCST RA as well
+
+2016-08-03  Marc A. Smith  <marc.smith@parodyne.com>
+
+	don't probe for LV partitions in rc.lvm2 -- a partition on these isn't really needed as magic strings can still be found use wipefs; in usb_sync.sh we should ignore sync'ing /etc/esos-release so we don't clobber the version file on upgrades
+
 2016-07-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the ceph-rbdnamer script (supports rbd udev rules) and rbd udev rules; several fixes for rc.rbdmap (thanks Frederic); fixed Python ncursesw (curses module) issue from a previous patch; updated default grub.cfg to not include "console=ttyS0" as this may have caused problems with the kernel debugger (keyboard), and doesn't really fit in all situations -- users can specify the console parameter themselves if needed since the grub.cfg now persists between updates; updated getBlockDevChoice() to accept /dev/rbd* devices (untested)
