@@ -1399,6 +1399,7 @@ pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	quorum_LIBS="$(LDFLAGS) -lquorum" PYTHON="$(WORK_DIR)/python" \
 	ac_cv_path_PKGCONFIG="pkg-config \
 	--define-variable=prefix=$(IMAGE_DIR)/usr" \
+	ac_cv_path_XSLTPROC="" \
 	CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 	./configure --prefix=/usr --disable-upstart --disable-systemd \
 	--without-heartbeat --without-snmp --without-esmtp \
