@@ -21,6 +21,9 @@ alua_start() {
     # Exit immediately if configuration is not valid
     alua_validate_all || exit ${?}
 
+    # Check if SCST is loaded
+    check_scst
+
     # If resource is already running, bail out early
     if alua_monitor; then
         ocf_log info "Resource is already running."
@@ -82,6 +85,9 @@ alua_stop() {
         ;;
     esac
 
+    # Check if SCST is loaded
+    check_scst
+
     # Set the local target group to the offline/unavailable ALUA state
     check_alua
     ocf_log debug "alua_stop() -> Setting target group" \
@@ -108,8 +114,11 @@ alua_monitor() {
     # Exit immediately if configuration is not valid
     alua_validate_all || exit ${?}
 
-    # Check if SCST is loaded
-    check_scst
+    # If SCST isn't loaded, then we'll just say the resource isn't running
+    if [ ! -d "${SCST_SYSFS}" ]; then
+        ocf_log debug "It appears SCST isn't running/loaded yet..."
+        return ${OCF_NOT_RUNNING}
+    fi
 
     # Make sure the ALUA configuration is legit
     check_alua
@@ -327,6 +336,9 @@ alua_promote() {
     # Exit immediately if configuration is not valid
     alua_validate_all || exit ${?}
 
+    # Check if SCST is loaded
+    check_scst
+
     # Test the resource's current state
     alua_monitor
     local rc=${?}
@@ -413,6 +425,9 @@ alua_promote() {
 alua_demote() {
     # Exit immediately if configuration is not valid
     alua_validate_all || exit ${?}
+
+    # Check if SCST is loaded
+    check_scst
 
     # Test the resource's current state
     alua_monitor

@@ -1,3 +1,7 @@
+2016-09-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	several fixes for the ocf:esos:alua RA
+
 2016-09-15  Marc A. Smith  <marc.smith@parodyne.com>
 
 	build fix for pacemaker (xsltproc/docbook issue)
