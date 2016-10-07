@@ -1292,6 +1292,8 @@ lvm2: glibc corosync dlm thin-provisioning-tools eudev
 	--with-cache=internal --enable-udev_sync --enable-udev_rules \
 	--disable-udev-systemd-background-jobs --enable-lvmetad \
 	--enable-lockd-dlm
+	$(SED) -i 's/Status\[ \\t\]\*available/VG Status[ \\t]*resizable/' \
+	$(tgt_src_dir)/scripts/VolumeGroup.ocf
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install

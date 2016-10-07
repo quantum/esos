@@ -3,8 +3,8 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 MAILTO=root
 HOME=/
 
-# Check all filesystems; we only want emails with output on stderr
-0 0 * * * root /usr/sbin/fsck -A -M -T -p > /dev/null
+# Check all file systems; fsck uses the exit status to indicate a problem
+0 0 * * * root fsck_out=$(/usr/sbin/fsck -A -M -T -p); if [ ${?} -ne 0 ]; then echo ${fsck_out}; fi
 
 # Configuration sync -- we cron this for a few times per day just in case
 10 0,8,16 * * * root /usr/local/sbin/conf_sync.sh
