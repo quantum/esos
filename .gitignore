@@ -37,6 +37,9 @@ scstadmin
 openssh
 vixie-cron
 gcc
+gmp
+mpfr
+mpc
 setuptools
 openssl
 zlib
