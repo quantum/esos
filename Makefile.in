@@ -84,10 +84,10 @@ prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
 dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
-		busybox-1.20.2.tar.bz2 \
-		grub-2.00.tar.gz \
+		busybox-1.25.1.tar.bz2 \
+		grub-2.02~beta3.tar.xz \
 		sysvinit-2.88dsf.tar.bz2 \
-		glibc-2.12.2.tar.bz2 \
+		glibc-2.24.tar.bz2 \
 		vixie-cron-4.1.tar.bz2 \
 		libibumad-1.3.7.tar.gz \
 		libibverbs-1.1.4.tar.gz \
@@ -112,7 +112,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		lvm2-2_02_129.tar.xz \
 		xfsprogs-4.5.0.tar.gz \
 		mdadm-3.4.tar.gz \
-		parted-2.3.tar.gz \
+		parted-3.1.tar.xz \
 		gcc-4.7.4.tar.bz2 \
 		gmp-6.1.0.tar.bz2 \
 		mpfr-3.1.4.tar.bz2 \
@@ -263,7 +263,7 @@ ifeq ($(enable_gdb),yes)
 	build_targets += gdb
 endif
 ifeq ($(enable_valgrind),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.9.0.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.11.0.tar.bz2)
 	build_targets += valgrind
 endif
 ifeq ($(enable_strace),yes)
@@ -959,7 +959,8 @@ busybox: glibc
 	$(WORK_DIR)/initramfs/bin/busybox
 	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) distclean
-	$(CP) $(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).config $(tgt_src_dir)/.config
+	$(CP) $(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).config \
+	$(tgt_src_dir)/.config
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
 	$(INSTALL) $(tgt_src_dir)/busybox_unstripped \
 	$(IMAGE_DIR)/bin/busybox
@@ -1037,13 +1038,12 @@ grub: glibc lvm2
 	$(TOUCH) $(@)
 
 glibc: kernel_headers
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(SRC_DIR)/misc/glibc-2.12.2.patch
 	$(TOUCH) $(IMAGE_DIR)/etc/ld.so.conf
 	$(MKDIR) $(WORK_DIR)/glibc-build
 	cd $(WORK_DIR)/glibc-build BASH_SHELL="/bin/bash" && \
 	CC="" CXX="" CFLAGS="-O2 -U_FORTIFY_SOURCE -fno-stack-protector" \
-	LDFLAGS="" $(tgt_src_dir)/configure --prefix=/usr --without-selinux
+	LDFLAGS="" $(tgt_src_dir)/configure --prefix=/usr --without-selinux \
+	--disable-mathvec --enable-obsolete-rpc
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build LDFLAGS=""
 	$(MAKE) --directory=$(WORK_DIR)/glibc-build \
 	install_root=$(IMAGE_DIR) install
@@ -1366,8 +1366,8 @@ mdadm: glibc corosync dlm
 	$(TOUCH) $(@)
 
 parted: glibc util-linux lvm2
-	cd $(tgt_src_dir) && CFLAGS="-D_BLKID_TYPES_H" ./configure --prefix=/usr \
-	--without-readline
+	cd $(tgt_src_dir) && CFLAGS="-D_BLKID_TYPES_H" ./configure \
+	--prefix=/usr --without-readline
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libparted)
@@ -1933,6 +1933,7 @@ ipmitool: glibc openssl ncurses readline libedit
 	$(TOUCH) $(@)
 
 sysklogd: glibc
+	$(SED) -i 's/union wait status;/int status;/' $(tgt_src_dir)/syslogd.c
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
 	$(MAKE) --directory=$(tgt_src_dir) prefix=$(IMAGE_DIR) install_exec
 	$(INSTALL) -D $(tgt_src_dir)/sysklogd.8 \
@@ -2334,7 +2335,7 @@ mt-st: glibc
 	BINDIR=$(IMAGE_DIR)/usr/bin MANDIR=$(IMAGE_DIR)/usr/share/man install
 	$(TOUCH) $(@)
 
-nagios-plugins: glibc
+nagios-plugins: glibc openssl
 	$(SED) -i -e '/gets is a security/d' $(tgt_src_dir)/gl/stdio.in.h
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-gnutls \
 	--without-pgsql --without-mysql --without-dbi --without-radius \

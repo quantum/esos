@@ -1,3 +1,15 @@
+2016-10-14  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated glibc, grub, parted, busybox, and valgrind to current stable/supported versions; several build fixes for new glibc version
+
+2016-10-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated GCC to version 4.7.4 and split GMP, MPFR, and now MPC into separate targets
+
+2016-10-06  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed /etc/crontab fsck job so instead of relying on stderr, we check the exit status and echo output based on that result; tweaked the VolumeGroup RA (from LVM2) so it checks the "VG Status" line instead of any line matching Status/available
+
 2016-09-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	several fixes for the ocf:esos:alua RA

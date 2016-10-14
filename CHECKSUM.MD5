@@ -11,7 +11,7 @@ c90739bd0178bb568aad3b2ba03bb73a  libibverbs-1.1.4.tar.gz
 f8370ac17c33aa8d6a897064794a7d68  srptools-0.0.4.tar.gz
 c4e36b106624aff78527c54cf08ecbfe  lsscsi-0.25.tar.gz
 8b8cd29385b97616a0f0d96d0951c5bf  groff-1.21.tar.gz
-903fcfa547df2f453476800e0838fe52  glibc-2.12.2.tar.bz2
+3177c254b15eee0d0a81bfe480ea7e80  glibc-2.24.tar.bz2
 4c696da46297de6ae77a82797d2abe28  gcc-4.7.4.tar.bz2
 86ee6e54ebfc4a90b643a65e402c4048  gmp-6.1.0.tar.bz2
 b8a2f6b0e68bef46e53da2ac439e1cf4  mpfr-3.1.4.tar.bz2
@@ -19,8 +19,8 @@ d6a1d5f8ddea3abd2cc3e98f58352d26  mpc-1.0.3.tar.gz
 929969d06ce034e862976bb7d1a36b25  cdk-5.0-20120323.tar.gz
 02e035eea876b86b665a34c43dd6eb26  iniparser-3.1.tar.gz
 fcba94b6c74b726dac956d7a650c0c31  xfsprogs-4.5.0.tar.gz
-e927540b6eda8b024fb0391eeaa4091c  grub-2.00.tar.gz
-30ceb6df7e8681891e865e2fe5a7903d  parted-2.3.tar.gz
+ab399fc6f74a97d66ff77f04b743149c  grub-2.02~beta3.tar.xz
+5d89d64d94bcfefa9ce8f59f4b81bdcb  parted-3.1.tar.xz
 ad4c179c119bbb78be740e33b59746ad  opensm-3.3.15.tar.gz
 7cb3c35048c3f4103aad255d7116c9e3  nss-3.14.1.tar.gz
 daece17e045f1c107610e137ab50c179  libxml2-2.9.3.tar.gz
@@ -51,7 +51,7 @@ b6ee0ce2b3ef844bad7cac2803a90634  libconfig-1.4.9.tar.gz
 1e05be84b3bf238c27a2751ad033bf7b  libnl-1.1.2.tar.gz
 5f6f65bdd17a3c9f0a5f00f62126e593  open-lldp-0.9.45.tar.gz
 399a419ac6a54f0fc07c69c9bdf452dc  libpciaccess-0.13.1.tar.bz2
-e025414bc6cd79579cc7a32a45d3ae1c  busybox-1.20.2.tar.bz2
+4f4c5de50b479b11ff636d7d8eb902a2  busybox-1.25.1.tar.bz2
 cfdfd15b6ee471c19a7a7e6b47233963  ipmitool-1.8.12.tar.bz2
 e053094e8103165f98ddafe828f6ae4b  sysklogd-1.5.tar.gz
 765f082658002b2b46b86af4a0da1842  less-451.tar.gz
@@ -82,7 +82,7 @@ d27d2c0f460aae9a876e4baa49ce760d  net-snmp-5.7.2.1.tar.gz
 a5a5060dc2f80bcac700ab0236ea47dc  libgcrypt-1.6.1.tar.bz2
 8f0eb41a344d19ac2aa9bd101dfb9ce6  libgpg-error-1.12.tar.bz2
 271a18f41858a7e98b28ae4eb91287c9  gdb-7.7.tar.bz2
-0947de8112f946b9ce64764af7be6df2  valgrind-3.9.0.tar.bz2
+4ea62074da73ae82e0162d6550d3f129  valgrind-3.11.0.tar.bz2
 a15d2555a7febb56d00c6e1a51c655dc  strace-4.11.tar.xz
 d44f84081a12cef79cd17f78044351fc  smartmontools-6.2.tar.gz
 f68ce7b7f4be08449f3c8b114ed5accb  cryptsetup-1.6.4.tar.xz
