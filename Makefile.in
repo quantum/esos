@@ -318,12 +318,12 @@ export CPPFLAGS	= -idirafter $(IMAGE_DIR)/usr/include \
 # We use a GCC spec file to override the default library search path; the
 # GCC spec file is created by the 'glibc' target
 spec_file	= $(WORK_DIR)/esos_build.spec
-cc_base		= gcc -specs=$(spec_file) -nostdinc \
+cc_base		= gcc -specs=$(spec_file) -nostdinc -Wl,-nostdlib \
 		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include \
 		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include-fixed
 esos_cc		= $(cc_base) $(CPPFLAGS)
 export CC	= $(esos_cc)
-cxx_base	= g++ -specs=$(spec_file) -nostdinc \
+cxx_base	= g++ -specs=$(spec_file) -nostdinc -Wl,-nostdlib \
 		-idirafter $(dir $(shell g++ -print-libgcc-file-name))include \
 		-idirafter $(dir $(shell g++ -print-libgcc-file-name))include-fixed
 esos_cxx	= $(cxx_base) $(CPPFLAGS) \
@@ -398,7 +398,7 @@ image: $(build_targets)
 	$(wildcard $(IMAGE_DIR)/usr/include/python*))/pyconfig.h
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
 	$(CPIO) -pmdvu $(STAGING_DIR)/etc
-	pkgdatadir=$(WORK_DIR) $(WORK_DIR)/grub-install \
+	$(WORK_DIR)/grub-install --directory=$(IMAGE_DIR)/usr/lib/grub/i386-pc \
 	--grub-setup=$(WORK_DIR)/grub-bios-setup \
 	--grub-mkimage=$(WORK_DIR)/grub-mkimage \
 	--grub-mkrelpath=$(WORK_DIR)/grub-mkrelpath \
@@ -1010,8 +1010,10 @@ grub: glibc lvm2
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/grub-core \
 	DESTDIR=$(IMAGE_DIR) install-platformDATA
-	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' \
-	$(IMAGE_DIR)/usr/sbin/grub-install > $(WORK_DIR)/grub-install
+	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 \
+	--library-path \"$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" \
+	$(IMAGE_DIR)/usr/sbin/grub-install \"\044\0100\"\n" > \
+	$(WORK_DIR)/grub-install
 	$(CHMOD) +x $(WORK_DIR)/grub-install
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' \
 	$(tgt_src_dir)/grub-mkconfig_lib > $(WORK_DIR)/grub-mkconfig_lib

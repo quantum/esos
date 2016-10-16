@@ -1,3 +1,7 @@
+2016-10-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	install/image fix for new GRUB version; added 'Wl,-nostdlib' to cc_base and cxx_base which should fix a lot of build compatibility issues
+
 2016-10-14  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated glibc, grub, parted, busybox, and valgrind to current stable/supported versions; several build fixes for new glibc version
