@@ -8,3 +8,7 @@ init setup (BSD style).
 http://www.sidebranch.com/papers/How%20To%20Install%20GRUB%20into%20a%20disk%20image.pdf
 Lots of information/ideas came from this document when creating the 'image'
 Makefile recipe and the disk imaging process.
+
+The Linux From Scratch (LFS) project has been very helpful with everything from
+specific package build recipes, to cross-compiler setup. Their work is very
+much appreciated!

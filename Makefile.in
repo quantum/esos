@@ -46,13 +46,13 @@ SLEEP		:= @sleep@
 LOSETUP		:= @losetup@
 KPARTX		:= @kpartx@
 XARGS		:= @xargs@
-OPENSSL		:= @openssl@
 ZIP		:= @zip@
 XZ		:= @xz@
 READLINK	:= @readlink@
 STRIP		:= @strip@
 BZIP2		:= @bzip2@
 GIT		:= @git@
+CUT		:= @cut@
 
 enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
@@ -89,147 +89,153 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		sysvinit-2.88dsf.tar.bz2 \
 		glibc-2.24.tar.bz2 \
 		vixie-cron-4.1.tar.bz2 \
-		libibumad-1.3.7.tar.gz \
-		libibverbs-1.1.4.tar.gz \
-		srptools-0.0.4.tar.gz \
-		openssh-5.8p1.tar.gz \
+		libibumad-1.3.10.2.tar.gz \
+		libibverbs-1.2.1.tar.gz \
+		srptools-1.0.3.tar.gz \
+		openssh-7.3p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
-		perl-5.12.4.tar.bz2 \
-		openssl-1.0.1s.tar.gz \
-		e2fsprogs-1.41.14.tar.gz \
+		perl-5.24.0.tar.gz \
+		openssl-1.0.2j.tar.gz \
+		e2fsprogs-1.43.3.tar.gz \
 		zlib-1.2.8.tar.xz \
-		lsscsi-0.25.tar.gz \
-		sg3_utils-1.37.tar.gz \
-		groff-1.21.tar.gz \
-		ncurses-5.7.tar.gz \
+		lsscsi-0.28.tar.gz \
+		sg3_utils-1.42.tar.gz \
+		groff-1.22.3.tar.gz \
+		ncurses-5.9.tar.gz \
 		qlogic_fw-20140928.tar.gz \
 		linux-4.5.2.tar.xz \
-		iniparser-3.1.tar.gz \
-		cdk-5.0-20120323.tar.gz \
+		iniparser-3.2.tar.gz \
+		cdk-5.0-20160131.tar.gz \
 		scst-3.1.x_r6933.tar.gz \
-		kexec-tools-2.0.7.tar.gz \
-		drbd-utils-8.9.4.tar.gz \
-		lvm2-2_02_129.tar.xz \
-		xfsprogs-4.5.0.tar.gz \
+		kexec-tools-2.0.13.tar.gz \
+		drbd-utils-8.9.6.tar.gz \
+		lvm2-2_02_166.tar.gz \
+		xfsprogs-4.7.0.tar.gz \
 		mdadm-3.4.tar.gz \
 		parted-3.1.tar.xz \
 		gcc-4.7.4.tar.bz2 \
 		gmp-6.1.0.tar.bz2 \
 		mpfr-3.1.4.tar.bz2 \
 		mpc-1.0.3.tar.gz \
-		libqb-0.14.4.tar.xz \
-		pacemaker-1.1.12.tar.gz \
-		corosync-2.3.4.tar.gz \
-		nss-3.14.1.tar.gz \
-		glib-2.16.6.tar.bz2 \
-		libxml2-2.9.3.tar.gz \
-		libxslt-1.1.28.tar.gz \
-		libtool-2.4.2.tar.xz \
+		libqb-1.0.tar.xz \
+		pacemaker-1.1.15.tar.gz \
+		corosync-2.4.1.tar.gz \
+		nss-3.27.1.tar.gz \
+		glib-2.50.1.tar.xz \
+		libxml2-2.9.4.tar.gz \
+		libxslt-1.1.29.tar.gz \
+		libtool-2.4.6.tar.gz \
 		bzip2-1.0.6.tar.gz \
-		Python-2.7.3.tar.bz2 \
-		crmsh-master_20160126.tar.gz \
-		lxml-3.4.4.tar.gz \
-		libaio-0.3.109.tar.bz2 \
-		glue-1.0.11.tar.bz2 \
-		readline-6.2.tar.gz \
-		resource-agents-3.9.6.tar.gz \
+		Python-2.7.12.tar.xz \
+		crmsh-2.2.1.tar.gz \
+		lxml-3.6.4.tar.gz \
+		libaio-0.3.110-1.tar.xz \
+		glue-1.0.12.tar.bz2 \
+		readline-6.3.tar.gz \
+		resource-agents-3.9.7.tar.gz \
 		mhvtl-1.5-3_release.tar.gz \
-		lzo-2.06.tar.gz \
+		lzo-2.09.tar.gz \
 		mhash-0.9.9.9.tar.bz2 \
 		lessfs-1.7.0.tar.gz \
 		tokyocabinet-1.4.48.tar.gz \
-		fuse-2.9.2.tar.gz \
-		db-5.3.21.tar.gz \
-		snappy-1.1.0.tar.gz \
-		fence_agents-3.1.12.tar.gz \
-		opensm-3.3.15.tar.gz \
-		pycurl-7.19.0.tar.gz \
-		curl-7.29.0.tar.gz \
-		Net-Telnet-3.03.tar.gz \
+		fuse-2.9.7.tar.gz \
+		db-5.3.28.tar.gz \
+		snappy-1.1.3.tar.gz \
+		fence-agents-4.0.24.tar.gz \
+		opensm-3.3.20.tar.gz \
+		pycurl-7.43.0.tar.gz \
+		curl-7.50.3.tar.bz2 \
+		Net-Telnet-3.04.tar.gz \
 		python-suds-0.4.tar.gz \
-		setuptools-0.6c11.tar.gz \
-		pexpect-2.3.tar.gz \
-		bash-4.3_025.tar.xz \
-		open-fcoe-3.7.tar.bz2 \
-		open-lldp-0.9.45.tar.gz \
-		libconfig-1.4.9.tar.gz \
-		libnl-1.1.2.tar.gz \
-		libpciaccess-0.13.1.tar.bz2 \
+		setuptools-28.6.0.tar.gz \
+		pexpect-4.2.1.tar.gz \
+		bash-4.4.tar.gz \
+		open-fcoe-3.19.tar.gz \
+		open-lldp-0.9.46.tar.gz \
+		libconfig-1.5.tar.gz \
+		libnl-1.1.4.tar.gz \
+		libpciaccess-0.13.4.tar.bz2 \
 		linux_firmware-master_20160209.tar.xz \
-		dlm-4.0.2.tar.xz \
-		sysklogd-1.5.tar.gz \
-		ipmitool-1.8.12.tar.bz2 \
-		less-451.tar.gz \
-		irqbalance-1.0.5.tar.gz \
-		ethtool-3.9.tar.xz \
-		postgresql-9.2.4.tar.bz2 \
-		psycopg2-2.5.1.tar.gz \
+		dlm-4.0.6.tar.xz \
+		sysklogd-1.5.1.tar.gz \
+		ipmitool-1.8.17.tar.bz2 \
+		less-481.tar.gz \
+		irqbalance-1.1.0.tar.gz \
+		ethtool-4.8.tar.xz \
+		postgresql-9.6.0.tar.bz2 \
+		psycopg2-2.6.2.tar.gz \
 		mysql-5.0.96.tar.gz \
-		MySQLdb-1.2.4.tar.gz \
-		SQLAlchemy-0.8.1.tar.gz \
-		infiniband-diags-1.5.13.tar.gz \
-		libibmad-1.3.8.tar.gz \
+		MySQLdb-1.2.5.tar.gz \
+		SQLAlchemy-1.1.1.tar.gz \
+		infiniband-diags-1.6.7.tar.gz \
+		libibmad-1.3.12.tar.gz \
 		lockfile-0.12.2.tar.gz \
-		pbr-1.8.1.tar.gz \
-		python-daemon-2.0.5.tar.gz \
-		bcache-tools-master_20130930.tar.gz \
-		util-linux-2.26.1.tar.gz \
-		nrpe-2.15.tar.gz \
-		thin-provisioning-tools-0.5.6.tar.gz \
-		expat-1.95.8.tar.gz \
-		boost-1_55_0.tar.xz \
-		librdmacm-1.0.15.tar.gz \
-		sysstat-10.2.1.tar.gz \
-		pciutils-3.2.1.tar.gz \
-		tar-1.27.tar.gz \
-		net-snmp-5.7.2.1.tar.gz \
-		nut-2.7.1.tar.gz \
-		libusb-1.0.9.tar.bz2 \
-		libusb_compat-0.1.4.tar.bz2 \
-		freeipmi-1.4.1.tar.gz \
-		libgcrypt-1.6.1.tar.bz2 \
-		libgpg-error-1.12.tar.bz2 \
-		smartmontools-6.2.tar.gz \
-		cryptsetup-1.6.4.tar.xz \
+		pbr-1.10.0.tar.gz \
+		python-daemon-2.1.1.tar.gz \
+		bcache-tools-1.0.8.tar.gz \
+		util-linux-2.28.2.tar.xz \
+		nrpe-3.0.1.tar.gz \
+		thin-provisioning-tools-0.6.3.tar.gz \
+		expat-2.2.0.tar.bz2 \
+		boost-1_62_0.tar.bz2 \
+		librdmacm-1.1.0.tar.gz \
+		sysstat-11.5.1.tar.xz \
+		pciutils-3.5.2.tar.gz \
+		tar-1.29.tar.xz \
+		net-snmp-5.7.3.tar.gz \
+		nut-2.7.4.tar.gz \
+		libusb-1.0.20.tar.bz2 \
+		libusb_compat-0.1.5.tar.bz2 \
+		freeipmi-1.5.4.tar.gz \
+		libgcrypt-1.7.3.tar.bz2 \
+		libgpg-error-1.24.tar.bz2 \
+		smartmontools-6.5.tar.gz \
+		cryptsetup-1.7.2.tar.xz \
 		popt-1.16.tar.gz \
-		makedumpfile-1.5.9.tar.gz \
-		elfutils-0.158.tar.bz2 \
-		fio-2.0.13.tar.bz2 \
+		makedumpfile-1.6.0.tar.gz \
+		elfutils-0.167.tar.bz2 \
+		fio-2.14.tar.gz \
 		mtx-1.3.12.tar.gz \
-		mt-st-1.1.tar.gz \
-		nagios-plugins-2.0.3.tar.gz \
-		libedit-20140620-3.1.tar.gz \
+		mt-st-1.3.tar.gz \
+		nagios-plugins-2.1.2.tar.gz \
+		libedit-20160903-3.1.tar.gz \
 		libmcrypt-2.5.8.tar.bz2 \
 		nsca-2.7.2.tar.gz \
-		btrfs-progs-v3.16.tar.xz \
+		btrfs-progs-v4.8.1.tar.xz \
 		attr-2.4.47.tar.gz \
 		acl-2.2.52.tar.gz \
-		htop-1.0.3.tar.gz \
-		dmidecode-2.12.tar.gz \
-		xmlrpc-c-1.33.15.tar.gz \
-		stunnel-5.10.tar.gz \
-		sudo-1.8.12.tar.gz \
-		rsync-3.1.1.tar.gz \
-		eudev-3.1.2.tar.gz \
+		htop-2.0.2.tar.gz \
+		dmidecode-3.0.tar.xz \
+		xmlrpc-c-1.39.11.tar.gz \
+		stunnel-5.36.tar.gz \
+		sudo-1.8.18p1.tar.gz \
+		rsync-3.1.2.tar.gz \
+		eudev-3.2.tar.gz \
 		gperf-3.0.4.tar.gz \
-		multipath-tools-0.5.0.tar.bz2 \
+		multipath-tools-0.6.3.tar.gz \
 		archivemount-0.8.7.tar.gz \
 		libarchive-3.2.1.tar.gz \
-		mcelog-master_20150731.tar.gz \
-		edac-utils-0.16.tar.bz2 \
+		mcelog-master_20161017.tar.gz \
+		edac-utils-0.18.tar.gz \
 		sysfsutils-2.1.0.tar.gz \
-		sqlite-autoconf-3081101.tar.gz \
-		iperf2-2.0.4.tar.gz \
-		iperf3-3.0.11.tar.gz \
+		sqlite-autoconf-3150000.tar.gz \
+		iperf2-2.0.9.tar.gz \
+		iperf3-3.1.3.tar.gz \
 		libpcap-1.7.4.tar.gz \
 		iftop-1.0pre4.tar.gz \
 		nmon-16c.tar.gz \
 		munin-c-0.0.9.tar.gz \
-		open-iscsi-master_20160628.tar.gz \
+		open-iscsi-2.0.874.tar.gz \
 		open-isns-0.96.tar.gz \
 		coreutils-8.25.tar.xz \
 		open-vm-tools-10.0.7-3227872.tar.gz \
 		libdnet-1.11.tar.gz \
+		libffi-3.2.1.tar.gz \
+		ptyprocess-0.5.1.tar.gz \
+		requests-2.11.1.tar.gz \
+		openwsman-2.6.3.tar.gz \
+		swig-3.0.10.tar.gz \
+		userspace-rcu-0.9.2.tar.bz2 \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -242,7 +248,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		parted opensm libqb pacemaker corosync nss glib libxml2 \
 		libxslt libtool bzip2 crmsh lxml libaio glue readline \
 		resource-agents mhvtl lzo mhash lessfs tokyocabinet fuse db \
-		snappy fence_agents pexpect pycurl curl Net-Telnet fio bash \
+		snappy fence-agents pexpect pycurl curl Net-Telnet fio bash \
 		open-fcoe open-lldp libconfig libnl libpciaccess \
 		linux_firmware dlm ipmitool sysklogd less irqbalance ethtool \
 		postgresql psycopg2 mysql MySQLdb SQLAlchemy infiniband-diags \
@@ -255,7 +261,8 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		gperf multipath-tools archivemount libarchive mcelog \
 		edac-utils sysfsutils sqlite-autoconf iperf2 iperf3 libpcap \
 		iftop nmon munin-c open-iscsi open-isns coreutils \
-		open-vm-tools libdnet
+		open-vm-tools libdnet libffi ptyprocess requests openwsman \
+		swig userspace-rcu
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -330,6 +337,9 @@ esos_cxx	= $(cxx_base) $(CPPFLAGS) \
 		-idirafter $(IMAGE_DIR)/usr/include/c++/$(gcc_ver) \
 		-idirafter $(IMAGE_DIR)/usr/include/c++/$(gcc_ver)/x86_64-unknown-linux-gnu
 export CXX	= $(esos_cxx)
+esos_host	= $(shell $(ECHO) $$MACHTYPE | \
+		$(SED) "s/$(shell $(ECHO) $$MACHTYPE | $(CUT) -d- -f2)/cross/")
+esos_target	= x86_64-esos-linux-gnu
 
 define clean_la_files
 	$(FIND) $(IMAGE_DIR)/usr/lib -type f -iname $1*.la -exec $(RM) {} \;
@@ -1062,18 +1072,17 @@ glibc: kernel_headers
 	$(spec_file)
 	$(TOUCH) $(@)
 
-perl: glibc
+perl: glibc db
 	cd $(tgt_src_dir) && ./configure.gnu --prefix=/usr --verbose \
-	-Dusrinc=$(IMAGE_DIR)/usr/include -Dincpth=$(IMAGE_DIR)/usr/include \
-	-Dlocincpth=$(IMAGE_DIR)/usr/include \
-	-Dlibpth="$(IMAGE_DIR)/lib $(IMAGE_DIR)/usr/lib" \
-	-Dloclibpth="$(IMAGE_DIR)/lib $(IMAGE_DIR)/usr/lib"
+	-Dcc="$(esos_cc)" -Dincpth="$(CPPFLAGS)" -Dlibpth="$(LDFLAGS)" \
+	-Dusrinc=" " -Dlocincpth=" " -Dglibpth=" " -Dloclibpth=" " \
+	-Dplibpth=" " -Dxlibpth=" "
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install.perl \
 	DESTDIR=$(IMAGE_DIR) INSTALLFLAGS="-f -o"
 	$(TOUCH) $(@)
 
-Python: glibc gcc bzip2 readline openssl zlib sqlite-autoconf ncurses
+Python: glibc gcc bzip2 readline openssl zlib sqlite-autoconf ncurses db
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/Python-2.7.3.patch
 	cd $(tgt_src_dir) && LDFLAGS="$(LDFLAGS)" \
@@ -1170,13 +1179,13 @@ setuptools: Python
 	$(TOUCH) $(@)
 
 openssl: glibc gcc
-	cd $(tgt_src_dir) && ./config shared \
-	--prefix=/usr --openssldir=/etc/ssl \
-	-I$(IMAGE_DIR)/usr/include -I$(WORK_DIR)/kernel_headers/include \
-	$(LDFLAGS)
+	cd $(tgt_src_dir) && ./config shared zlib-dynamic \
+	--prefix=/usr --openssldir=/etc/ssl -I$(IMAGE_DIR)/usr/include \
+	-I$(WORK_DIR)/kernel_headers/include $(LDFLAGS)
 	$(SED) -i '/LD_LIBRARY_PATH/d' $(tgt_src_dir)/Makefile.shared
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) INSTALL_PREFIX=$(IMAGE_DIR) install_sw
+	$(MAKE) --directory=$(tgt_src_dir) \
+	INSTALL_PREFIX=$(IMAGE_DIR) install_sw
 	$(TOUCH) $(@)
 
 zlib: glibc
@@ -1186,11 +1195,16 @@ zlib: glibc
 	$(TOUCH) $(@)
 
 ncurses: glibc gcc
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < $(SRC_DIR)/misc/ncurses-5.7.patch
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-shared \
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/ncurses-5.7.patch
+	cd $(tgt_src_dir) && ./configure --build=$(esos_host) \
+	--host=$(esos_target) --prefix=/usr --with-shared \
 	--without-gpm --mandir=/usr/share/man --enable-widec
 	$(MAKE) --directory=$(tgt_src_dir) CXXLIBS="-lstdc++"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' \
+	$(IMAGE_DIR)/usr/bin/ncursesw5-config > $(WORK_DIR)/ncursesw5-config
+	$(CHMOD) +x $(WORK_DIR)/ncursesw5-config
 	$(TOUCH) $(@)
 
 e2fsprogs: glibc util-linux
@@ -1223,15 +1237,19 @@ libibumad: glibc
 	$(call clean_la_files,libibumad)
 	$(TOUCH) $(@)
 
-libibverbs: glibc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+libibverbs: glibc libnl
+	cd $(tgt_src_dir) && \
+	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
+	./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libibverbs)
 	$(TOUCH) $(@)
 
 srptools: glibc libibumad libibverbs
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ac_cv_func_malloc_0_nonnull=yes ./configure \
+	--prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-exec-am
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-man
@@ -1288,8 +1306,7 @@ cdk: glibc ncurses
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/cdk-5.0-20120323.patch
 	cd $(tgt_src_dir) && \
-	NCURSES_CONFIG="$(IMAGE_DIR)/usr/bin/ncursesw5-config \
-	--prefix=$(IMAGE_DIR)/usr --exec-prefix=$(IMAGE_DIR)/usr" \
+	NCURSES_CONFIG="$(WORK_DIR)/ncursesw5-config" \
 	./configure --prefix=/usr --with-ncursesw --with-libtool \
 	--mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir) LIBS="-lncursesw"
@@ -1404,12 +1421,20 @@ libqb: glibc glib
 pacemaker: glibc libqb util-linux glib libxml2 libtool ncurses bzip2 \
 	corosync libxslt glue Python
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
-	  $(SED) -i 's/HAVE_dbus\=1/HAVE_dbus\=0/' $(tgt_src_dir)/configure.ac; \
-	  $(SED) -i 's/^DBUS_LIBS.*/DBUS_LIBS\=\"\$$CFLAGS\"/' $(tgt_src_dir)/configure.ac; \
-	  $(SED) -i 's/ -I\$${prefix}\/include\/heartbeat//' $(tgt_src_dir)/configure.ac; \
-	  $(SED) -i 's/ -I\$${prefix}\/include//g' $(tgt_src_dir)/configure.ac; \
-	  $(SED) -i "/AC_CHECK_LIB/s/ncurses/ncursesw/g" $(tgt_src_dir)/configure.ac; \
-	  $(SED) -i 's/-lncurses/-lncursesw/g' $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/HAVE_dbus\=1/HAVE_dbus\=0/' \
+	  $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/^DBUS_LIBS.*/DBUS_LIBS\=\"\$$CFLAGS\"/' \
+	  $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/ -I\$${prefix}\/include\/heartbeat//' \
+	  $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/ -I\$${prefix}\/include//g' \
+	  $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i "/AC_CHECK_LIB/s/ncurses/ncursesw/g" \
+	  $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/-lncurses/-lncursesw/g' \
+	  $(tgt_src_dir)/configure.ac; \
+	  $(SED) -i 's/--libs ncurses/--libs ncursesw/g' \
+	  $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
 	cd $(tgt_src_dir) && \
@@ -1495,30 +1520,37 @@ corosync: glibc libqb nss librdmacm libibverbs
 	$(TOUCH) $(@)
 
 nss: glibc zlib
-	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)/mozilla/security/nss \
+	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)/nss \
 	BUILD_OPT=1 USE_64=1 USE_SYSTEM_ZLIB=1 \
 	ZLIB_LIBS="-lz" OS_LIBS="-lpthread -ldl -lc -lrt -lz" \
-	CC="$(cc_base) -I$(tgt_src_dir)/mozilla/security/nss/lib/zlib \
-	-I$(tgt_src_dir)/mozilla/security/nss/lib/nss $(CPPFLAGS)" \
-	DSO_CFLAGS="-fPIC -std=gnu99" nss_build_all
-	$(INSTALL) -v -m755 $(tgt_src_dir)/mozilla/dist/Linux*/lib/*.so \
+	CC="$(cc_base) -I$(tgt_src_dir)/nss/lib/zlib \
+	-I$(tgt_src_dir)/nss/lib/nss $(CPPFLAGS)" \
+	CCC="$(cxx_base) $(CPPFLAGS) -idirafter \
+	/usr/include/c++/$(shell gcc -dumpversion) -idirafter \
+	/usr/include/c++/$(shell gcc -dumpversion)/$(shell gcc -dumpmachine) \
+	-L$(dir $(shell g++ -print-libgcc-file-name))" \
+	DSO_CFLAGS="-w -fPIC -std=gnu99" nss_build_all
+	$(INSTALL) -v -m755 $(tgt_src_dir)/dist/Linux*/lib/*.so \
 	$(IMAGE_DIR)/usr/lib
 	$(INSTALL) -v -m644 \
-	$(tgt_src_dir)/mozilla/dist/Linux*/lib/{*.chk,libcrmf.a} \
+	$(tgt_src_dir)/dist/Linux*/lib/{*.chk,libcrmf.a} \
 	$(IMAGE_DIR)/usr/lib
 	$(INSTALL) -v -m755 -d $(IMAGE_DIR)/usr/include/nss
-	$(CP) -v -RL $(tgt_src_dir)/mozilla/dist/{public,private}/nss/* \
+	$(CP) -v -RL $(tgt_src_dir)/dist/{public,private}/nss/* \
 	$(IMAGE_DIR)/usr/include/nss
-	$(CP) -v -RL $(tgt_src_dir)/mozilla/dist/Linux*/include/* \
+	$(CP) -v -RL $(tgt_src_dir)/dist/Linux*/include/* \
 	$(IMAGE_DIR)/usr/include/nss
 	$(CHMOD) 644 $(IMAGE_DIR)/usr/include/nss/*.h
 	$(INSTALL) -v -m755 \
-	$(tgt_src_dir)/mozilla/dist/Linux*/bin/{certutil,pk12util} \
+	$(tgt_src_dir)/dist/Linux*/bin/{certutil,pk12util} \
 	$(IMAGE_DIR)/usr/bin
 	$(TOUCH) $(@)
 
-glib: glibc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+glib: glibc zlib libffi
+	cd $(tgt_src_dir) && \
+	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
+	./configure --prefix=/usr --with-pcre=internal
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libg)
@@ -1583,8 +1615,7 @@ crmsh: glibc Python glue pacemaker lxml
 
 lxml: glibc libxml2 libxslt Python setuptools python-daemon
 	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
-	--with-xml2-config="$(IMAGE_DIR)/usr/bin/xml2-config \
-	--prefix=$(IMAGE_DIR)/usr" \
+	--with-xml2-config="$(WORK_DIR)/xml2-config" \
 	--with-xslt-config="$(IMAGE_DIR)/usr/bin/xslt-config \
 	--prefix=$(IMAGE_DIR)/usr" --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
@@ -1601,8 +1632,7 @@ glue: glibc libaio libxml2 bzip2 curl util-linux
 	cd $(tgt_src_dir) && \
 	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
-	XML2CONFIG="$(IMAGE_DIR)/usr/bin/xml2-config \
-	--prefix=$(IMAGE_DIR)/usr" \
+	XML2CONFIG="$(WORK_DIR)/xml2-config" \
 	ac_cv_path_PKGCONFIG="pkg-config \
 	--define-variable=prefix=$(IMAGE_DIR)/usr" \
 	LIBS="-lz -lm -ldl -lxml2" ./configure --prefix=/usr \
@@ -1744,7 +1774,8 @@ snappy: glibc gcc
 	$(call clean_la_files,libsnappy)
 	$(TOUCH) $(@)
 
-fence_agents: glibc nss Python pexpect pycurl python-suds Net-Telnet
+fence-agents: glibc nss Python pexpect pycurl python-suds Net-Telnet requests
+fence-agents: openwsman
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  $(SED) -i 's/\/log\/cluster/\/log/' $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
@@ -1754,13 +1785,14 @@ fence_agents: glibc nss Python pexpect pycurl python-suds Net-Telnet
 	nss_LIBS="$(LDFLAGS) -lnss3 -lssl3 -lnssutil3" \
 	nspr_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
 	nspr_LIBS="$(LDFLAGS) -lnspr4" \
+	PYTHON="$(WORK_DIR)/python" \
 	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir) PATH="$(WORK_DIR):$$PATH" \
 	PERL5LIB="$(wildcard $(IMAGE_DIR)/usr/lib/perl5/site_perl/5.*)"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-pexpect: Python setuptools python-suds
+pexpect: Python setuptools python-suds ptyprocess
 	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
 	--prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
@@ -1770,13 +1802,13 @@ pycurl: Python curl setuptools pexpect
 	$(SRC_DIR)/misc/pycurl-7.19.0.patch
 	cd $(tgt_src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python \
 	./setup.py install --prefix=$(IMAGE_DIR)/usr \
-	--curl-config=$(IMAGE_DIR)/usr/bin/curl-config
+	--curl-config=$(WORK_DIR)/curl-config
 	$(TOUCH) $(@)
 
 curl: glibc
-	cd $(tgt_src_dir) && LD_LIBRARY_PATH=$(IMAGE_DIR)/usr/lib: \
-	./configure --prefix=/usr \
-	--disable-static --without-libssh2 --without-libidn
+	cd $(tgt_src_dir) && ./configure --build=$(esos_host) \
+	 --host=$(esos_target) --prefix=/usr --disable-static \
+	--without-libssh2 --without-libidn
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libcurl)
@@ -1874,8 +1906,6 @@ open-lldp: glibc libconfig libnl
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	install-lldpad_includeHEADERS
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
-	install-lldpadconfigDATA
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-man 
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	install-pkgconfigDATA
@@ -1915,8 +1945,9 @@ linux_firmware:
 	$(TOUCH) $(@)
 
 dlm: glibc corosync libxml2 pacemaker
+	$(SED) -i 's/`xml2-config/`$(subst /,\/,$(WORK_DIR))\/xml2-config/g' \
+	$(tgt_src_dir)/fence/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" USE_SD_NOTIFY=no
-	$(SED) -i 's/`xml2-config/`$(subst /,\/,$(WORK_DIR))\/xml2-config --prefix=$(subst /,\/,$(IMAGE_DIR))\/usr/g' $(tgt_src_dir)/fence/Makefile
 	$(SED) -e '/$$(INSTALL) -d $$(DESTDIR)\/$$(MANDIR)\/man8/ s/^#*/#/' \
 	-i $(tgt_src_dir)/fence/Makefile
 	$(MAKE) --directory=$(tgt_src_dir)/fence CC="$(esos_cc)"
@@ -1955,6 +1986,9 @@ less: glibc ncurses
 	$(TOUCH) $(@)
 
 irqbalance: glibc
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-glib2
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
@@ -1998,9 +2032,8 @@ mysql: glibc ncurses
 
 MySQLdb: glibc Python mysql setuptools psycopg2
 	$(SED) -i "s/^#mysql_config.*/mysql_config=\
-	$(subst /,\/,$(IMAGE_DIR)/usr/bin/mysql_config)/" $(tgt_src_dir)/site.cfg
-	$(SED) -i "s/sys.executable/'$(subst /,\/,$(WORK_DIR))\/python'/g" \
-	$(tgt_src_dir)/distribute_setup.py
+	$(subst /,\/,$(IMAGE_DIR)/usr/bin/mysql_config)/" \
+	$(tgt_src_dir)/site.cfg
 	cd $(tgt_src_dir) && CC="$(esos_cc)" \
 	LD_LIBRARY_PATH="/lib:/usr/lib:/lib64:/usr/lib64:/lib/x86_64-linux-gnu:\
 	/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib" \
@@ -2014,9 +2047,11 @@ SQLAlchemy: glibc Python psycopg2 MySQLdb setuptools
 	install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
-infiniband-diags: glibc libibumad libibverbs libibmad opensm
+infiniband-diags: glibc libibumad libibverbs libibmad opensm glib
 	cd $(tgt_src_dir) && CPPFLAGS="$(CPPFLAGS) \
 	-idirafter $(IMAGE_DIR)/usr/include/infiniband" \
+	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
 	./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
@@ -2049,21 +2084,31 @@ nrpe: glibc openssl
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--enable-ssl --with-ssl-inc=$(IMAGE_DIR)/usr/include/openssl \
 	--with-ssl-lib=$(IMAGE_DIR)/usr/lib --enable-command-args
-	$(OPENSSL) dhparam -noout -C 512 > $(tgt_src_dir)/include/dh.h
-	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) all
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	NAGIOS_INSTALL_OPTS="" NRPE_INSTALL_OPTS="" install
 	$(TOUCH) $(@)
 
-bcache-tools: glibc util-linux openssl
+bcache-tools: glibc util-linux openssl eudev
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" \
 	LDLIBS="-lssl -lcrypto -ldl -lblkid -luuid" \
-	CFLAGS="-I$(IMAGE_DIR)/usr/include/blkid \
-	-I$(IMAGE_DIR)/usr/include/uuid"
-	$(INSTALL) -m 0755 $(tgt_src_dir)/make-bcache $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) -m 0755 $(tgt_src_dir)/bcache-super-show $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) -m 0755 $(tgt_src_dir)/probe-bcache $(IMAGE_DIR)/usr/sbin/
-	$(INSTALL) -m 0755 $(tgt_src_dir)/bcache-register $(IMAGE_DIR)/usr/libexec/
+	CFLAGS+="-I$(IMAGE_DIR)/usr/include/blkid \
+	-I$(IMAGE_DIR)/usr/include/uuid" make-bcache probe-bcache \
+	bcache-register
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" \
+	LDLIBS="-lssl -lcrypto -ldl -lblkid -luuid" \
+	CFLAGS+="-std=gnu99 -I$(IMAGE_DIR)/usr/include/blkid \
+	-I$(IMAGE_DIR)/usr/include/uuid" bcache-super-show
+	$(INSTALL) -m 0755 $(tgt_src_dir)/make-bcache \
+	$(IMAGE_DIR)/usr/sbin/make-bcache
+	$(INSTALL) -m 0755 $(tgt_src_dir)/bcache-super-show \
+	$(IMAGE_DIR)/usr/sbin/bcache-super-show
+	$(INSTALL) -m 0644 $(tgt_src_dir)/69-bcache.rules \
+	$(IMAGE_DIR)/usr/lib/udev/rules.d/69-bcache.rules
+	$(INSTALL) -m 0755 $(tgt_src_dir)/probe-bcache \
+	$(IMAGE_DIR)/usr/lib/udev/probe-bcache
+	$(INSTALL) -m 0755 $(tgt_src_dir)/bcache-register \
+	$(IMAGE_DIR)/usr/lib/udev/bcache-register
 	$(INSTALL) -m 0644 $(tgt_src_dir)/*.8 $(IMAGE_DIR)/usr/share/man/man8/
 	$(TOUCH) $(@)
 
@@ -2120,7 +2165,7 @@ boost: glibc gcc
 	$(SED) -i 's/# using gcc ;/using gcc : : $(subst /,\/,$(esos_cxx)) : \
 	<compileflags>"$(subst /,\/,$(CPPFLAGS))" \
 	<linkflags>"$(subst /,\/,$(LDFLAGS))" ;/' \
-	$(tgt_src_dir)/tools/build/v2/user-config.jam
+	$(tgt_src_dir)/tools/build/example/user-config.jam
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/b2" ]; then \
 	  cd $(tgt_src_dir) && CC="" CXX="" ./bootstrap.sh \
 	  --prefix=$(IMAGE_DIR)/usr; \
@@ -2167,15 +2212,12 @@ sysstat: glibc
 	$(INSTALL) -m 0755 $(tgt_src_dir)/iostat $(IMAGE_DIR)/usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/mpstat $(IMAGE_DIR)/usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/pidstat $(IMAGE_DIR)/usr/bin/
-	$(INSTALL) -m 0755 $(tgt_src_dir)/nfsiostat $(IMAGE_DIR)/usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/cifsiostat $(IMAGE_DIR)/usr/bin/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/iostat.1 \
 	$(IMAGE_DIR)/usr/share/man/man1/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/mpstat.1 \
 	$(IMAGE_DIR)/usr/share/man/man1/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/pidstat.1 \
-	$(IMAGE_DIR)/usr/share/man/man1/
-	$(INSTALL) -m 0644 $(tgt_src_dir)/man/nfsiostat.1 \
 	$(IMAGE_DIR)/usr/share/man/man1/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/cifsiostat.1 \
 	$(IMAGE_DIR)/usr/share/man/man1/
@@ -2204,7 +2246,7 @@ net-snmp: glibc gcc
 	--without-python-modules --without-mysql --sysconfdir=/etc \
 	--enable-minimalist --disable-deprecated \
 	--with-mib-modules="ucd-snmp/diskio etherlike-mib" --disable-manuals \
-	--disable-scripts --enable-ipv6
+	--disable-scripts --enable-ipv6 --with-features="mib_strings_all"
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libnetsnmp)
@@ -2348,7 +2390,7 @@ nagios-plugins: glibc openssl
 	$(TOUCH) $(@)
 
 libedit: glibc ncurses
-	$(SED) -i "/LIBS/s/ncurses/ncursesw/" $(tgt_src_dir)/configure
+	$(SED) -i '/LIBS/s/"-lncurses /"-lncursesw /' $(tgt_src_dir)/configure
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
@@ -2374,11 +2416,13 @@ nsca: glibc libmcrypt
 	$(TOUCH) $(@)
 
 btrfs-progs: glibc util-linux attr zlib acl e2fsprogs
-	$(SED) -i 's/ build-Documentation//' $(tgt_src_dir)/Makefile
-	$(SED) -i 's/ install-Documentation//' $(tgt_src_dir)/Makefile
-	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)"
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
-	prefix="/usr" install
+	cd $(tgt_src_dir) && \
+	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
+	./configure --build=$(esos_host) -host=$(esos_target) \
+	--prefix=/usr --disable-documentation
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
 attr: glibc
@@ -2400,6 +2444,12 @@ acl: glibc attr
 	$(TOUCH) $(@)
 
 htop: glibc ncurses
+	$(SED) -i 's/"ncursesw6-config"/"false"/g' $(tgt_src_dir)/configure.ac
+	$(SED) -i 's/"ncurses6-config"/"false"/g' $(tgt_src_dir)/configure.ac
+	$(SED) -i 's/"ncurses5-config"/"false"/g' $(tgt_src_dir)/configure.ac
+	$(SED) -i 's/"ncursesw5-config"/"$(subst \
+	/,\/,$(WORK_DIR))\/ncursesw5-config"/g' $(tgt_src_dir)/configure.ac
+	cd $(tgt_src_dir) && ./autogen.sh
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
@@ -2470,13 +2520,14 @@ gperf: glibc gcc
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
 
-multipath-tools: glibc lvm2 readline eudev
-	$(SED) -i '24,28 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
-	$(SED) -i 's/-lreadline/-lreadline -lncursesw/' \
+multipath-tools: glibc lvm2 readline eudev userspace-rcu
+	$(SED) -i '32,40 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
+	$(SED) -i 's/-lreadline$$/-lreadline -lncursesw/' \
 	$(tgt_src_dir)/multipathd/Makefile
-	$(SED) -i '/rcdir/ s/^#*/#/' $(tgt_src_dir)/multipathd/Makefile
-	$(SED) -i 's/ln -sf $$(DESTDIR)/ln -sf /' \
-	$(tgt_src_dir)/libmpathpersist/Makefile
+	$(SED) -i '/\tlibcheckrbd.so$$/d' \
+	$(tgt_src_dir)/libmultipath/checkers/Makefile
+	$(SED) -i 's/\tlibcheckrdac.so \\$$/\tlibcheckrdac.so/' \
+	$(tgt_src_dir)/libmultipath/checkers/Makefile
 	$(SED) -i 's/\/etc\/udev\/rules.d$$/\/usr\/lib\/udev\/rules.d/' \
 	$(tgt_src_dir)/kpartx/Makefile
 	$(SED) -i 's/\/etc\/udev\/rules.d\/$$/\/usr\/lib\/udev\/rules.d\/66-kpartx.rules/' \
@@ -2484,8 +2535,6 @@ multipath-tools: glibc lvm2 readline eudev
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" LIB="usr/lib"
 	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib" bindir=/usr/sbin \
 	libudevdir=/usr/lib/udev DESTDIR=$(IMAGE_DIR) install
-	$(INSTALL) -D -m 0644 $(tgt_src_dir)/multipath.conf.annotated \
-	$(IMAGE_DIR)/etc/multipath.conf
 	$(SED) -i 's/"\/sbin\//"\/usr\/sbin\//' \
 	$(IMAGE_DIR)/usr/lib/udev/rules.d/66-kpartx.rules
 	$(TOUCH) $(@)
@@ -2653,5 +2702,62 @@ libdnet: glibc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(call clean_la_files,libdnet)
+	$(TOUCH) $(@)
+
+libffi: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libffi)
+	$(TOUCH) $(@)
+
+ptyprocess: Python setuptools
+	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
+	--prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+requests: Python setuptools
+	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
+	--prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+openwsman: glibc gcc Python setuptools libxml2 openssl swig
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autoconfiscate.sh \
+	  --ignore-deprecation-warning; \
+	fi
+	$(SED) -i "s/\$$EGREP/egrep/g" $(tgt_src_dir)/configure
+	cd $(tgt_src_dir) && \
+	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
+	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
+	CURL_CONFIG="$(WORK_DIR)/curl-config" \
+	PYTHON="$(WORK_DIR)/python" \
+	ac_cv_path_SWIG="$(IMAGE_DIR)/usr/bin/swig \
+	-I$(IMAGE_DIR)/usr/share/swig/3.0.10/python \
+	-I$(IMAGE_DIR)/usr/share/swig/3.0.10" \
+	CPPFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/python2.7" \
+	./configure --prefix=/usr --disable-pam --enable-python=yes \
+	--disable-server --disable-plugins --disable-more-warnings \
+	--disable-silent-rules
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir)/include DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/src DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/doc DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/bindings DESTDIR=$(IMAGE_DIR) install
+	$(call clean_la_files,libwsman)
+	$(TOUCH) $(@)
+
+swig: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-popen \
+	--without-pcre --without-maximum-compile-warnings --without-alllang
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(TOUCH) $(@)
+
+userspace-rcu: glibc gcc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files,liburcu)
 	$(TOUCH) $(@)
 

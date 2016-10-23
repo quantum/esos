@@ -1,3 +1,11 @@
+2016-10-23  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated just about every package that had a new version released; lots of build fixes/changes to go along with the new package versions; added the AUTHORS file to acknowledge the ESOS authors; added new packages libffi, ptyprocess, requests, openwsman, swig, and userspace-rcu, which are dependencies for the updated packages; misc documentation fixes in the root source directory; added the esos_host and esos_target variables so we can start enabling a cross-compiler configuration for packages
+
+2016-10-18  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the pkg_update.sh script to assist ESOS developers in updating packages
+
 2016-10-15  Marc A. Smith  <marc.smith@parodyne.com>
 
 	install/image fix for new GRUB version; added 'Wl,-nostdlib' to cc_base and cxx_base which should fix a lot of build compatibility issues

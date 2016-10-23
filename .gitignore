@@ -85,7 +85,7 @@ tokyocabinet
 fuse
 db
 snappy
-fence_agents
+fence-agents
 pexpect
 pycurl
 curl
@@ -171,3 +171,9 @@ open-isns
 coreutils
 libdnet
 open-vm-tools
+libffi
+ptyprocess
+requests
+openwsman
+swig
+userspace-rcu

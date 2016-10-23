@@ -1,5 +1,5 @@
 The ESOS project is comprised of a Makefile that puts all of the pieces
-together, scripts, config. files, and a text user interface (TUI) for system
+together, scripts, config files, and a text user interface (TUI) for system
 management and storage provisioning functions. The Makefile fetches all
 required distribution files, and then extracts and compiles everything.
 The 'image' target will build a disk image suitable for writing to a USB flash
@@ -10,9 +10,9 @@ Building ESOS:
 In order to build ESOS, you need a recent release of a modern Linux
 distribution that has the software development packages installed. Please
 visit the ESOS project home page for all of the prerequisites and detailed
-build instructions: http://code.google.com/p/enterprise-storage-os/
+build instructions: http://www.esos-project.com/
 
-If this source is coming from svn/trunk then you will need to generate the
+If this source is coming from GitHub then you will need to generate the
 configure script, otherwise if this is a release, it should already be present.
 
 The following should work in most cases:
@@ -31,11 +31,12 @@ have downloaded/extracted a binary distribution package, run the following
 script from the ESOS source/package root directory:
 ./install.sh
 
-This script will walk you through writing the ESOS disk image to a USB flash drive
-and adding any desired RAID controller management utilities.
+This script will walk you through writing the ESOS disk image to a USB flash
+drive and adding any desired RAID controller management utilities.
 
 
 Help:
 If you're still having trouble building/installing ESOS, even after reading the
 detailed documentation on the project home page, please use the Google Group
 for support: http://groups.google.com/group/esos-users
+

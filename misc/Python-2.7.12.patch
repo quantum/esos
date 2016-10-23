@@ -1,0 +1,24 @@
+--- a/setup.py	2013-06-14 09:34:50.330076551 -0400
++++ b/setup.py	2013-06-14 10:02:08.751921349 -0400
+@@ -278,6 +278,11 @@
+                           (ext.name, sys.exc_info()[1]))
+             self.failed.append(ext.name)
+             return
++
++        # Don't check imports
++        self.announce('WARNING: skipping import check for "%s" (ESOS patch)' % ext.name)
++        return
++
+         # Workaround for Mac OS X: The Carbon-based modules cannot be
+         # reliably imported into a command-line Python
+         if 'Carbon' in ext.extra_link_args:
+--- a/setup.py	2015-08-19 16:51:39.364687224 -0400
++++ b/setup.py	2015-08-19 16:52:16.832361428 -0400
+@@ -1096,7 +1096,6 @@
+                                   include_dirs=["Modules/_sqlite",
+                                                 sqlite_incdir],
+                                   library_dirs=sqlite_libdir,
+-                                  runtime_library_dirs=sqlite_libdir,
+                                   extra_link_args=sqlite_extra_link_args,
+                                   libraries=["sqlite3",]))
+         else:

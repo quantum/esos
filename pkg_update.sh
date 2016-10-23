@@ -31,10 +31,11 @@ while read line; do
     cd ${2} || exit 1
     md5_line=$(md5sum ${new_pkg}) || exit 1
     sha256_line=$(sha256sum ${new_pkg}) || exit 1
+    cd - > /dev/null
     # Replace the old checksum lines with the new
-    sed -i '/${old_pkg}/c\${md5_line}' ./CHECKSUM.MD5 || exit 1
-    sed -i '/${old_pkg}/c\${sha256_line}' ./CHECKSUM.SHA256 || exit 1
+    sed -i "/${old_pkg}/c\\${md5_line}" ./CHECKSUM.MD5 || exit 1
+    sed -i "/${old_pkg}/c\\${sha256_line}" ./CHECKSUM.SHA256 || exit 1
     # Do the Makefile.in file too
-    sed -i 's/${old_pkg}/${new_pkg}/' ./Makefile.in || exit 1
+    sed -i "s/${old_pkg}/${new_pkg}/" ./Makefile.in || exit 1
 done < ${1}
 
