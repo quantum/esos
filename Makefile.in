@@ -1546,7 +1546,7 @@ nss: glibc zlib
 	$(IMAGE_DIR)/usr/bin
 	$(TOUCH) $(@)
 
-glib: glibc zlib libffi
+glib: glibc zlib libffi util-linux
 	cd $(tgt_src_dir) && \
 	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
@@ -1625,7 +1625,7 @@ libaio: glibc
 	$(MAKE) --directory=$(tgt_src_dir) prefix=$(IMAGE_DIR)/usr install
 	$(TOUCH) $(@)
 
-glue: glibc libaio libxml2 bzip2 curl util-linux
+glue: glibc libaio libxml2 bzip2 curl util-linux glib
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
@@ -2080,7 +2080,7 @@ python-daemon: glibc Python lockfile setuptools
 	install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
-nrpe: glibc openssl
+nrpe: glibc openssl e2fsprogs
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--enable-ssl --with-ssl-inc=$(IMAGE_DIR)/usr/include/openssl \
 	--with-ssl-lib=$(IMAGE_DIR)/usr/lib --enable-command-args
@@ -2271,7 +2271,7 @@ nut: glibc net-snmp libusb_compat freeipmi
 	$(call clean_la_files,libupsclient)
 	$(TOUCH) $(@)
 
-libusb: glibc
+libusb: glibc eudev
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install

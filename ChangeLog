@@ -1,5 +1,7 @@
 2016-10-23  Marc A. Smith  <marc.smith@parodyne.com>
 
+	more build dependency issues discovered, and fixed when using parallel make
+
 	updated just about every package that had a new version released; lots of build fixes/changes to go along with the new package versions; added the AUTHORS file to acknowledge the ESOS authors; added new packages libffi, ptyprocess, requests, openwsman, swig, and userspace-rcu, which are dependencies for the updated packages; misc documentation fixes in the root source directory; added the esos_host and esos_target variables so we can start enabling a cross-compiler configuration for packages
 
 2016-10-18  Marc A. Smith  <marc.smith@parodyne.com>
