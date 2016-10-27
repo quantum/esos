@@ -1,5 +1,7 @@
 2016-10-27  Marc A. Smith  <marc.smith@parodyne.com>
 
+	re-enabled the ib_qib driver; removed un-needed ib_srpt module option in modprobe.conf
+
 	updated Linux to 4.9.0-rc2; updated the ZFS, SPL, and SCST packages to support the new Linux version; more build fixes from the recent round of package updates
 
 2016-10-24  Marc A. Smith  <marc.smith@parodyne.com>
