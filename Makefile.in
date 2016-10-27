@@ -103,10 +103,10 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		groff-1.22.3.tar.gz \
 		ncurses-5.9.tar.gz \
 		qlogic_fw-20140928.tar.gz \
-		linux-4.5.2.tar.xz \
+		linux-4.9.0-rc2.tar.xz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20160131.tar.gz \
-		scst-3.1.x_r6933.tar.gz \
+		scst-trunk_r7021.tar.gz \
 		kexec-tools-2.0.13.tar.gz \
 		drbd-utils-8.9.6.tar.gz \
 		lvm2-2_02_166.tar.gz \
@@ -282,8 +282,8 @@ ifeq ($(enable_qla),yes)
 	build_targets += scst_qla2xxx
 endif
 ifeq ($(enable_zfs),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.6.5.7.tar.gz)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.6.5.7.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-master_20161026.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-master_20161026.tar.gz)
 	build_targets += spl
 	build_targets += zfs
 endif
@@ -617,9 +617,8 @@ esos_kernels: eio_src = $(wildcard $(PKG_SRC_DIR)/EnhanceIO-*)
 esos_kernels: btier_src = $(wildcard $(PKG_SRC_DIR)/btier-*)
 esos_kernels: spl_src = $(wildcard $(PKG_SRC_DIR)/spl-*)
 esos_kernels: zfs_src = $(wildcard $(PKG_SRC_DIR)/zfs-*)
-esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux,)
-	- $(PATCH) -r - -N -d $(linux_src) -p1 < \
-	$(SRC_DIR)/misc/$(notdir $(linux_src)).patch
+esos_kernels: kernel_headers
+esos_kernels: $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux attr,)
 	if [ "$(enable_qla)" != "yes" ]; then \
 	  $(RM) $(linux_src)/drivers/scsi/qla2xxx; \
 	  $(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx; \
@@ -705,6 +704,7 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	  $(MAKE) --directory=$(linux_src); \
 	  $(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage \
 	  $(IMAGE_DIR)/boot/PRIMARY-bzImage$$i; \
+	  $(ECHO) "### Compressing 'vmlinux' for later use..."; \
 	  $(XZ) -z -c $(linux_src)/vmlinux > $(WORK_DIR)/vmlinux$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) \
 	  INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install; \
@@ -827,13 +827,19 @@ esos_kernels: kernel_headers $(if $(findstring yes,$(enable_zfs)),glibc gcc util
 	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ]; then \
 	    $(ECHO) "### Building the SPL and ZFS modules..."; \
+	    if [ ! -f "$(spl_src)/configure" ]; then \
+	      cd $(spl_src) && ./autogen.sh; \
+	    fi; \
 	    cd $(spl_src) && ./configure --prefix=/usr --sysconfdir=/etc \
 	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src); \
 	    $(MAKE) --directory=$(spl_src)/module modules; \
 	    $(MAKE) --directory=$(spl_src)/module modules_install \
 	    DESTDIR=$(IMAGE_DIR); \
-	    cd $(zfs_src) && $(SED) -i 's/CDDL/GPL/' META && ./configure \
-	    --prefix=/usr --sysconfdir=/etc \
+	    if [ ! -f "$(zfs_src)/configure" ]; then \
+	      cd $(zfs_src) && ./autogen.sh; \
+	    fi; \
+	    $(SED) -i 's/CDDL/GPL/' $(zfs_src)/META; \
+	    cd $(zfs_src) && ./configure --prefix=/usr --sysconfdir=/etc \
 	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src) \
 	    --with-spl=$(spl_src) --with-spl-obj=$(spl_src) \
 	    --with-udevdir="/usr/lib/udev"; \
@@ -1519,16 +1525,12 @@ corosync: glibc libqb nss librdmacm libibverbs
 	$(call clean_la_files,libcorosync_common)
 	$(TOUCH) $(@)
 
-nss: glibc zlib
+nss: glibc gcc zlib
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)/nss \
 	BUILD_OPT=1 USE_64=1 USE_SYSTEM_ZLIB=1 \
 	ZLIB_LIBS="-lz" OS_LIBS="-lpthread -ldl -lc -lrt -lz" \
 	CC="$(cc_base) -I$(tgt_src_dir)/nss/lib/zlib \
-	-I$(tgt_src_dir)/nss/lib/nss $(CPPFLAGS)" \
-	CCC="$(cxx_base) $(CPPFLAGS) -idirafter \
-	/usr/include/c++/$(shell gcc -dumpversion) -idirafter \
-	/usr/include/c++/$(shell gcc -dumpversion)/$(shell gcc -dumpmachine) \
-	-L$(dir $(shell g++ -print-libgcc-file-name))" \
+	-I$(tgt_src_dir)/nss/lib/nss $(CPPFLAGS)" CCC="$(esos_cxx)" \
 	DSO_CFLAGS="-w -fPIC -std=gnu99" nss_build_all
 	$(INSTALL) -v -m755 $(tgt_src_dir)/dist/Linux*/lib/*.so \
 	$(IMAGE_DIR)/usr/lib
@@ -1786,7 +1788,11 @@ fence-agents: openwsman
 	nspr_CFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/nss" \
 	nspr_LIBS="$(LDFLAGS) -lnspr4" \
 	PYTHON="$(WORK_DIR)/python" \
-	./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
+	./configure --build=$(esos_host) --host=$(esos_target) \
+	--prefix=/usr --localstatedir=/var --sysconfdir=/etc
+	$(SED) -i 's/\#\!$(subst /,\/,/usr/bin/python)/'\
+	'\#\!$(subst /,\/,$(WORK_DIR)/python)/' \
+	$(tgt_src_dir)/fence/agents/lib/check_used_options.py
 	$(MAKE) --directory=$(tgt_src_dir) PATH="$(WORK_DIR):$$PATH" \
 	PERL5LIB="$(wildcard $(IMAGE_DIR)/usr/lib/perl5/site_perl/5.*)"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
