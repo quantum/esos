@@ -266,15 +266,15 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,gdb-7.7.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,gdb-7.12.tar.xz)
 	build_targets += gdb
 endif
 ifeq ($(enable_valgrind),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.11.0.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.12.0.tar.bz2)
 	build_targets += valgrind
 endif
 ifeq ($(enable_strace),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,strace-4.11.tar.xz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,strace-4.14.tar.xz)
 	build_targets += strace
 endif
 ifeq ($(enable_qla),yes)
@@ -894,11 +894,13 @@ scst_qla2xxx:
 	qscst.sh $(IMAGE_DIR)/usr/sbin/qscst.sh
 	$(TOUCH) $(@)
 
-gdb: glibc ncurses
-	$(SED) -i "/for ac_lib/s/ncurses/ncursesw/" \
+gdb: glibc ncurses zlib readline
+	$(SED) -i "/for ac_lib/s/ncurses /ncursesw /" \
+	$(tgt_src_dir)/gdb/configure
+	$(SED) -i "/for ac_lib/s/ncurses;/ncursesw;/" \
 	$(tgt_src_dir)/gdb/configure
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-python \
-	--with-curses
+	--with-curses --with-system-zlib --with-system-readline
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libopcodes)
@@ -966,6 +968,10 @@ uwire: glibc
 	$(TOUCH) $(@)
 
 busybox: glibc
+	$(SED) -i 's/\/\/if (--loop_on_fail == 0)/if (--loop_on_fail == 0)/' \
+	$(tgt_src_dir)/networking/ntpd.c
+	$(SED) -i 's/\/\/\txfunc_die();/\txfunc_die();/' \
+	$(tgt_src_dir)/networking/ntpd.c
 	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \

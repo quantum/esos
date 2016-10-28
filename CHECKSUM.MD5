@@ -81,9 +81,9 @@ d4a3459e1577d0efa8d96ca70a885e53  net-snmp-5.7.3.tar.gz
 2714e1eb8eb75786a51f0a2afcc6f5db  freeipmi-1.5.4.tar.gz
 c869e542cc13a1c28d8055487bf7f5c4  libgcrypt-1.7.3.tar.bz2
 feb42198c0aaf3b28eabe8f41a34b983  libgpg-error-1.24.tar.bz2
-271a18f41858a7e98b28ae4eb91287c9  gdb-7.7.tar.bz2
-4ea62074da73ae82e0162d6550d3f129  valgrind-3.11.0.tar.bz2
-a15d2555a7febb56d00c6e1a51c655dc  strace-4.11.tar.xz
+a0a3a00f7499b0c5278ba8676745d180  gdb-7.12.tar.xz
+6eb03c0c10ea917013a7622e483d61bb  valgrind-3.12.0.tar.bz2
+1e39b5f7583256d7dc21170b9da529ae  strace-4.14.tar.xz
 093aeec3f8f39fa9a37593c4012d3156  smartmontools-6.5.tar.gz
 a11a140cea496961222170944db01fc1  cryptsetup-1.7.2.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
