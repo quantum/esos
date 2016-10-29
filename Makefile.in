@@ -1135,8 +1135,9 @@ openssh: glibc zlib openssl
 	--sysconfdir=/etc/ssh --datarootdir=/usr/share \
 	--without-openssl-header-check
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-files
-	$(INSTALL) -D -m 644 $(tgt_src_dir)/moduli.out $(IMAGE_DIR)/etc/ssh/moduli
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	$(SED) -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' \
+	$(IMAGE_DIR)/etc/ssh/sshd_config
 	$(TOUCH) $(@)
 
 vixie-cron: glibc

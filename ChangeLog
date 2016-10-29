@@ -1,5 +1,7 @@
 2016-10-28  Marc A. Smith  <marc.smith@parodyne.com>
 
+	a couple tweaks for the new OpenSSH version; removed default ssh_* files from /etc since we now let the make recipe install these; some more binary path changes (TUI)
+
 	updated a few more optional packages (gdb, valgrind, and strace); fix for ntpd to keep it from entering an endless loop; updated new path for the ip utility in the rc.network script
 
 2016-10-27  Marc A. Smith  <marc.smith@parodyne.com>

@@ -21,7 +21,7 @@ fi
 
 start() {
     # Generate keys if necessary
-    for i in ecdsa dsa rsa; do
+    for i in ed25519 ecdsa dsa rsa; do
         key_file="/etc/ssh/ssh_host_${i}_key"
         if [ ! -e "${key_file}" ]; then
             /bin/echo "Generating ${i} host key..."
