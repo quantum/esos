@@ -1,3 +1,7 @@
+2016-10-31  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added a temporary bug fix for Busybox 1.25.1 (cpio); updated Linux to 4.9.0-rc3
+
 2016-10-28  Marc A. Smith  <marc.smith@parodyne.com>
 
 	a couple tweaks for the new OpenSSH version; removed default ssh_* files from /etc since we now let the make recipe install these; some more binary path changes (TUI)
