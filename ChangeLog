@@ -1,3 +1,7 @@
+2016-11-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the linux_firmware package to the latest available; added the docutils package (new dependency of python-daemon); more build fixes; we now include all of /lib/firmware in the initramfs image so dependent inline drivers work correctly (eg, bnx2); implemented flock for Python module targets to hopefully avoid build issues when using parallel make (eg, keep easy-install.pth from getting clobbered)
+
 2016-10-31  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added a temporary bug fix for Busybox 1.25.1 (cpio); updated Linux to 4.9.0-rc3

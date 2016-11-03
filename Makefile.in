@@ -53,6 +53,7 @@ STRIP		:= @strip@
 BZIP2		:= @bzip2@
 GIT		:= @git@
 CUT		:= @cut@
+FLOCK		:= @flock@
 
 enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
@@ -155,7 +156,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libconfig-1.5.tar.gz \
 		libnl-1.1.4.tar.gz \
 		libpciaccess-0.13.4.tar.bz2 \
-		linux_firmware-master_20160209.tar.xz \
+		linux_firmware-master_20161101.tar.xz \
 		dlm-4.0.6.tar.xz \
 		sysklogd-1.5.1.tar.gz \
 		ipmitool-1.8.17.tar.bz2 \
@@ -236,6 +237,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		openwsman-2.6.3.tar.gz \
 		swig-3.0.10.tar.gz \
 		userspace-rcu-0.9.2.tar.bz2 \
+		docutils-0.12.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -262,7 +264,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		edac-utils sysfsutils sqlite-autoconf iperf2 iperf3 libpcap \
 		iftop nmon munin-c open-iscsi open-isns coreutils \
 		open-vm-tools libdnet libffi ptyprocess requests openwsman \
-		swig userspace-rcu
+		swig userspace-rcu docutils
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -313,6 +315,7 @@ tarball_src_dirs	= $(addprefix $(PKG_SRC_DIR)/,$(subst .tar.xz,,\
 			$(notdir $(dist_files))))))
 img_file		:= $(BUILD_DIR)/esos-$(esos_ver).img
 bz2_img_file		:= $(img_file).bz2
+py_module_lock		:= $(WORK_DIR)/py_module_lock
 
 # The ld scripts (eg, libc.so) are modified in-place and then
 # fixed after installing
@@ -368,6 +371,7 @@ image: $(build_targets)
 	$(MKNOD) $(INITRAMFS_DIR)/dev/tty c 5 0
 	$(INSTALL) $(SRC_DIR)/misc/initramfs_init $(INITRAMFS_DIR)/init
 	$(LN) busybox $(INITRAMFS_DIR)/bin/sh
+	$(CP) -Rp $(IMAGE_DIR)/lib/firmware/* $(INITRAMFS_DIR)/lib/firmware/
 	cd $(INITRAMFS_DIR) && $(FIND) . -print0 | \
 	$(CPIO) --null -ov --format=newc | \
 	$(GZIP) > $(IMAGE_DIR)/boot/PRIMARY-initramfs.cpio.gz
@@ -1190,8 +1194,8 @@ mpc: glibc gmp mpfr
 	$(TOUCH) $(@)
 
 setuptools: Python
-	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
-	--prefix=$(IMAGE_DIR)/usr
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 openssl: glibc gcc
@@ -1298,7 +1302,8 @@ python-suds: Python setuptools
 	LD_LIBRARY_PATH="/lib:/usr/lib:/lib64:/usr/lib64:\
 	/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:\
 	$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib" \
-	$(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(FLOCK) $(py_module_lock) $(WORK_DIR)/python ./setup.py install \
+	--prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 kexec-tools: glibc
@@ -1353,8 +1358,6 @@ lvm2: glibc corosync dlm thin-provisioning-tools eudev
 	--with-cache=internal --enable-udev_sync --enable-udev_rules \
 	--disable-udev-systemd-background-jobs --enable-lvmetad \
 	--enable-lockd-dlm
-	$(SED) -i 's/Status\[ \\t\]\*available/VG Status[ \\t]*resizable/' \
-	$(tgt_src_dir)/scripts/VolumeGroup.ocf
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
@@ -1626,8 +1629,8 @@ crmsh: glibc Python glue pacemaker lxml
 	$(TOUCH) $(@)
 
 lxml: glibc libxml2 libxslt Python setuptools python-daemon
-	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
-	--with-xml2-config="$(WORK_DIR)/xml2-config" \
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --with-xml2-config="$(WORK_DIR)/xml2-config" \
 	--with-xslt-config="$(IMAGE_DIR)/usr/bin/xslt-config \
 	--prefix=$(IMAGE_DIR)/usr" --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
@@ -1809,15 +1812,15 @@ fence-agents: openwsman
 	$(TOUCH) $(@)
 
 pexpect: Python setuptools python-suds ptyprocess
-	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
-	--prefix=$(IMAGE_DIR)/usr
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 pycurl: Python curl setuptools pexpect
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/pycurl-7.19.0.patch
-	cd $(tgt_src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python \
-	./setup.py install --prefix=$(IMAGE_DIR)/usr \
+	cd $(tgt_src_dir) && CC="$(esos_cc)" $(FLOCK) $(py_module_lock) \
+	$(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr \
 	--curl-config=$(WORK_DIR)/curl-config
 	$(TOUCH) $(@)
 
@@ -2026,8 +2029,9 @@ postgresql: glibc zlib
 	$(TOUCH) $(@)
 
 psycopg2: glibc Python postgresql setuptools pycurl
-	cd $(tgt_src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python ./setup.py \
-	build_ext --pg-config=$(IMAGE_DIR)/usr/bin/pg_config install \
+	cd $(tgt_src_dir) && CC="$(esos_cc)" $(FLOCK) $(py_module_lock) \
+	$(WORK_DIR)/python ./setup.py build_ext \
+	--pg-config=$(IMAGE_DIR)/usr/bin/pg_config install \
 	--prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
@@ -2053,17 +2057,17 @@ MySQLdb: glibc Python mysql setuptools psycopg2
 	cd $(tgt_src_dir) && CC="$(esos_cc)" \
 	LD_LIBRARY_PATH="/lib:/usr/lib:/lib64:/usr/lib64:/lib/x86_64-linux-gnu:\
 	/usr/lib/x86_64-linux-gnu:$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib" \
-	$(WORK_DIR)/python ./setup.py build
+	$(FLOCK) $(py_module_lock) $(WORK_DIR)/python ./setup.py build
 	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
 	--prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 SQLAlchemy: glibc Python psycopg2 MySQLdb setuptools
-	cd $(tgt_src_dir) && CC="$(esos_cc)" $(WORK_DIR)/python ./setup.py \
-	install --prefix=$(IMAGE_DIR)/usr
+	cd $(tgt_src_dir) && CC="$(esos_cc)" $(FLOCK) $(py_module_lock) \
+	$(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
-infiniband-diags: glibc libibumad libibverbs libibmad opensm glib
+infiniband-diags: glibc libibumad libibverbs libibmad opensm glib eudev
 	cd $(tgt_src_dir) && CPPFLAGS="$(CPPFLAGS) \
 	-idirafter $(IMAGE_DIR)/usr/include/infiniband" \
 	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
@@ -2082,18 +2086,18 @@ libibmad: glibc libibumad libibverbs
 	$(TOUCH) $(@)
 
 lockfile: glibc Python setuptools SQLAlchemy pbr
-	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py \
-	install --prefix=$(IMAGE_DIR)/usr
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 pbr: glibc Python setuptools
-	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py \
-	install --prefix=$(IMAGE_DIR)/usr
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
-python-daemon: glibc Python lockfile setuptools
-	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py \
-	install --prefix=$(IMAGE_DIR)/usr
+python-daemon: glibc Python lockfile setuptools docutils
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 nrpe: glibc openssl e2fsprogs
@@ -2289,7 +2293,7 @@ nut: glibc net-snmp libusb_compat freeipmi
 
 libusb: glibc eudev
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libusb-1.0)
 	$(TOUCH) $(@)
@@ -2728,13 +2732,13 @@ libffi: glibc
 	$(TOUCH) $(@)
 
 ptyprocess: Python setuptools
-	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
-	--prefix=$(IMAGE_DIR)/usr
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 requests: Python setuptools
-	cd $(tgt_src_dir) && $(WORK_DIR)/python ./setup.py install \
-	--prefix=$(IMAGE_DIR)/usr
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 
 openwsman: glibc gcc Python setuptools libxml2 openssl swig
@@ -2775,5 +2779,10 @@ userspace-rcu: glibc gcc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(call clean_la_files,liburcu)
+	$(TOUCH) $(@)
+
+docutils: glibc Python setuptools
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 

@@ -61,6 +61,7 @@ MY_PATH_PROG([strip])
 MY_PATH_PROG([bzip2])
 MY_PATH_PROG([git])
 MY_PATH_PROG([cut])
+MY_PATH_PROG([flock])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
@@ -121,6 +122,7 @@ if test -d "${image_dir}"; then
 	${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
 	${mkdir} -p ${initramfs_dir}/mnt/{root,tmp} || exit 1
 	${mkdir} -p ${initramfs_dir}/usr/{bin,sbin} || exit 1
+	${mkdir} -p ${initramfs_dir}/lib/firmware || exit 1
 else
 	AC_MSG_ERROR([the image directory does not exist])
 fi

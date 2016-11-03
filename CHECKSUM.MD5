@@ -145,7 +145,7 @@ bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
 28b352363ea7eb6698ad2efcd7d8c2ae  thin-provisioning-tools-0.6.3.tar.gz
 81f8e4595fa53f9f220a7500e3759e6c  crmsh-2.2.1.tar.gz
 7ab813b2e8921fc4e9f2f92cd5271b30  nmon-16c.tar.gz
-f0ed8036a25ea6a3cd9a1f553e6897fa  linux_firmware-master_20160209.tar.xz
+c8590c6a06cb846fc13f3ed10058755a  linux_firmware-master_20161101.tar.xz
 8669bd05fe496276d64e40550db1e6b3  scst-trunk_r7021.tar.gz
 f1e2f97e100e80e00ce3ead797538290  munin-c-0.0.9.tar.gz
 caf2c92bfe58c07f781ab74942e4b9f2  open-iscsi-2.0.874.tar.gz
@@ -159,3 +159,4 @@ ad5f9c47b5c5dfdb28363ad7546b0763  requests-2.11.1.tar.gz
 a14cec2a892a30e055edac36071d8972  openwsman-2.6.3.tar.gz
 bb4ab8047159469add7d00910e203124  swig-3.0.10.tar.gz
 49f86e68c1e2f41d303381a271b791d1  userspace-rcu-0.9.2.tar.bz2
+4622263b62c5c771c03502afa3157768  docutils-0.12.tar.gz
