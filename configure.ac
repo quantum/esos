@@ -62,6 +62,7 @@ MY_PATH_PROG([bzip2])
 MY_PATH_PROG([git])
 MY_PATH_PROG([cut])
 MY_PATH_PROG([flock])
+MY_PATH_PROG([zic])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then

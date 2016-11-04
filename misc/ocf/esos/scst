@@ -93,7 +93,7 @@ scst_start() {
         fi
     fi
 
-    if kill -s 0 $(${DLM_CONTROLD_PID}); then
+    if kill -s 0 $(cat ${DLM_CONTROLD_PID}) > /dev/null 2>&1; then
         # Enable cluster mode for all SCST devices
         ocf_log info "Enabling cluster mode for all devices..."
         for i in ${SCST_SYSFS}/handlers/*/*/; do
@@ -205,7 +205,7 @@ scst_stop() {
         sleep 1
     done
 
-    if kill -s 0 $(${DLM_CONTROLD_PID}); then
+    if kill -s 0 $(cat ${DLM_CONTROLD_PID}) > /dev/null 2>&1; then
         # Finally we can release DLM lockspaces (disable cluster mode)
         ocf_log info "Disabling cluster mode for all devices..."
         while grep -q '^1$' ${SCST_SYSFS}/devices/*/cluster_mode \

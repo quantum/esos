@@ -1,3 +1,7 @@
+2016-11-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the tzdata package for time zone information (not part of glibc anymore); renamed the btier OCF RA (location); include the dd utility from the coreutils package since Busybox's dd doesn't work for the 'Raid1' RA and disable Busybox dd; fixed an issue in the ESOS SCST RA with detecting dlm_controld; added a patch for the Raid1 RA so it works correctly with the udev-provided MD array sym link
+
 2016-11-02  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated the linux_firmware package to the latest available; added the docutils package (new dependency of python-daemon); more build fixes; we now include all of /lib/firmware in the initramfs image so dependent inline drivers work correctly (eg, bnx2); implemented flock for Python module targets to hopefully avoid build issues when using parallel make (eg, keep easy-install.pth from getting clobbered)

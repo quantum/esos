@@ -54,6 +54,7 @@ BZIP2		:= @bzip2@
 GIT		:= @git@
 CUT		:= @cut@
 FLOCK		:= @flock@
+ZIC		:= @zic@
 
 enable_debug	:= @enable_debug@
 enable_gdb	:= @enable_gdb@
@@ -238,6 +239,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		swig-3.0.10.tar.gz \
 		userspace-rcu-0.9.2.tar.bz2 \
 		docutils-0.12.tar.gz \
+		tzdata-2016i.tar.gz \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -264,7 +266,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		edac-utils sysfsutils sqlite-autoconf iperf2 iperf3 libpcap \
 		iftop nmon munin-c open-iscsi open-isns coreutils \
 		open-vm-tools libdnet libffi ptyprocess requests openwsman \
-		swig userspace-rcu docutils
+		swig userspace-rcu docutils tzdata
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -420,18 +422,31 @@ image: $(build_targets)
 	--root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
 	$(INSTALL) $(SRC_DIR)/misc/grub.cfg $(MOUNT_DIR)/boot/grub/
 	$(ECHO) "set slot_ver=$(esos_ver)" > $(MOUNT_DIR)/boot/PRIMARY-version
-	$(INSTALL) $(SRC_DIR)/scripts/conf_sync.sh $(STAGING_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/usb_sync.sh $(STAGING_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/archive_logs.sh $(STAGING_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/startup.sh $(STAGING_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/health_chk.sh $(STAGING_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/crm_mon_email.sh $(STAGING_DIR)/usr/local/bin/
-	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py $(STAGING_DIR)/usr/local/bin/
-	$(INSTALL) $(SRC_DIR)/scripts/hw_raid_cli.py $(STAGING_DIR)/usr/local/sbin/
-	$(INSTALL) $(SRC_DIR)/scripts/support_pkg.sh $(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/conf_sync.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/usb_sync.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/archive_logs.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/startup.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/health_chk.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/crm_mon_email.sh \
+	$(STAGING_DIR)/usr/local/bin/
+	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py \
+	$(STAGING_DIR)/usr/local/bin/
+	$(INSTALL) $(SRC_DIR)/scripts/hw_raid_cli.py \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/support_pkg.sh \
+	$(STAGING_DIR)/usr/local/sbin/
 	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d
-	$(CP) -R $(SRC_DIR)/misc/ocf/esos $(STAGING_DIR)/usr/lib/ocf/resource.d/
-	$(CP) -R $(SRC_DIR)/misc/ocf/onesty $(STAGING_DIR)/usr/lib/ocf/resource.d/
+	$(CP) -R $(SRC_DIR)/misc/ocf/esos \
+	$(STAGING_DIR)/usr/lib/ocf/resource.d/
+	$(CP) -R $(SRC_DIR)/misc/ocf/brick \
+	$(STAGING_DIR)/usr/lib/ocf/resource.d/
+	$(CP) -R $(SRC_DIR)/misc/ocf/onesty \
+	$(STAGING_DIR)/usr/lib/ocf/resource.d/
 	$(INSTALL) -D -m 0755 $(SRC_DIR)/misc/drbd_xsltproc/drbd-xmlproc \
 	$(STAGING_DIR)/usr/local/bin/drbd-xmlproc
 	$(INSTALL) -D -m 0644 $(SRC_DIR)/misc/drbd_xsltproc/xml2conf.xsl \
@@ -507,10 +522,10 @@ image: $(build_targets)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Compressing image file..."
 	$(BZIP2) -z -9 -c $(img_file) > $(bz2_img_file)
-	cd $(dir $(bz2_img_file)) && $(MD5SUM) -b $(notdir $(bz2_img_file)) > \
-	$(BUILD_DIR)/dist_md5sum.txt
-	cd $(dir $(bz2_img_file)) && $(SHA256SUM) -b $(notdir $(bz2_img_file)) > \
-	$(BUILD_DIR)/dist_sha256sum.txt
+	cd $(dir $(bz2_img_file)) && $(MD5SUM) -b \
+	$(notdir $(bz2_img_file)) > $(BUILD_DIR)/dist_md5sum.txt
+	cd $(dir $(bz2_img_file)) && $(SHA256SUM) -b \
+	$(notdir $(bz2_img_file)) > $(BUILD_DIR)/dist_sha256sum.txt
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Clearing the staging directory..."
 	$(RM) $(STAGING_DIR)/*
@@ -1103,7 +1118,7 @@ perl: glibc db
 
 Python: glibc gcc bzip2 readline openssl zlib sqlite-autoconf ncurses db
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(SRC_DIR)/misc/Python-2.7.3.patch
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && LDFLAGS="$(LDFLAGS)" \
 	CPPFLAGS="-I$(IMAGE_DIR)/usr/include \
 	-I$(WORK_DIR)/kernel_headers/include" \
@@ -1216,7 +1231,7 @@ zlib: glibc
 
 ncurses: glibc gcc
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(SRC_DIR)/misc/ncurses-5.7.patch
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && ./configure --build=$(esos_host) \
 	--host=$(esos_target) --prefix=/usr --with-shared \
 	--without-gpm --mandir=/usr/share/man --enable-widec
@@ -1325,7 +1340,7 @@ iniparser: glibc
 
 cdk: glibc ncurses
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(SRC_DIR)/misc/cdk-5.0-20120323.patch
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && \
 	NCURSES_CONFIG="$(WORK_DIR)/ncursesw5-config" \
 	./configure --prefix=/usr --with-ncursesw --with-libtool \
@@ -1678,6 +1693,8 @@ readline: glibc
 	$(TOUCH) $(@)
 
 resource-agents: glib glue
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
@@ -1818,7 +1835,7 @@ pexpect: Python setuptools python-suds ptyprocess
 
 pycurl: Python curl setuptools pexpect
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(SRC_DIR)/misc/pycurl-7.19.0.patch
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && CC="$(esos_cc)" $(FLOCK) $(py_module_lock) \
 	$(WORK_DIR)/python ./setup.py install --prefix=$(IMAGE_DIR)/usr \
 	--curl-config=$(WORK_DIR)/curl-config
@@ -2678,6 +2695,7 @@ coreutils: glibc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/df $(IMAGE_DIR)/bin/df
+	$(INSTALL) -m 0755 $(tgt_src_dir)/src/dd $(IMAGE_DIR)/bin/dd
 	$(TOUCH) $(@)
 
 open-vm-tools: glibc gcc glib libdnet
@@ -2784,5 +2802,23 @@ userspace-rcu: glibc gcc
 docutils: glibc Python setuptools
 	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
 	./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+tzdata: zoneinfo = $(IMAGE_DIR)/usr/share/zoneinfo
+tzdata: glibc
+	$(MKDIR) -pv $(zoneinfo)/{posix,right}
+	$(QUIET) cd $(tgt_src_dir) && for tz in etcetera southamerica \
+	  northamerica europe africa antarctica asia australasia \
+	  backward pacificnew systemv; do \
+	  $(ZIC) -L /dev/null -d $(zoneinfo) -y "sh yearistype.sh" $${tz}; \
+	  $(ZIC) -L /dev/null -d $(zoneinfo)/posix \
+	  -y "sh yearistype.sh" $${tz}; \
+	  $(ZIC) -L leapseconds -d $(zoneinfo)/right \
+	  -y "sh yearistype.sh" $${tz}; \
+	done
+	$(CP) -v $(tgt_src_dir)/zone.tab $(zoneinfo)/
+	$(CP) -v $(tgt_src_dir)/zone1970.tab $(zoneinfo)/
+	$(CP) -v $(tgt_src_dir)/iso3166.tab $(zoneinfo)/
+	$(ZIC) -d $(zoneinfo) -p America/New_York
 	$(TOUCH) $(@)
 
