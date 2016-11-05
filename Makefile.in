@@ -2809,7 +2809,7 @@ tzdata: glibc
 	$(MKDIR) -pv $(zoneinfo)/{posix,right}
 	$(QUIET) cd $(tgt_src_dir) && for tz in etcetera southamerica \
 	  northamerica europe africa antarctica asia australasia \
-	  backward pacificnew systemv; do \
+	  backward pacificnew systemv factory; do \
 	  $(ZIC) -L /dev/null -d $(zoneinfo) -y "sh yearistype.sh" $${tz}; \
 	  $(ZIC) -L /dev/null -d $(zoneinfo)/posix \
 	  -y "sh yearistype.sh" $${tz}; \

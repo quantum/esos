@@ -96,8 +96,8 @@ scst_start() {
     if kill -s 0 $(cat ${DLM_CONTROLD_PID}) > /dev/null 2>&1; then
         # Enable cluster mode for all SCST devices
         ocf_log info "Enabling cluster mode for all devices..."
-        for i in ${SCST_SYSFS}/handlers/*/*/; do
-            echo 1 > ${i}/cluster_mode &
+        for i in $(find ${SCST_SYSFS}/handlers -name cluster_mode -type f); do
+            echo 1 > ${i} &
         done
         ocf_log debug "Waiting for enable-cluster-mode to complete..."
         wait
@@ -200,7 +200,7 @@ scst_stop() {
     # We need to wait for all sessions to complete before continuing
     ocf_log info "Waiting for all initiators to logout..."
     while ls -Ad ${SCST_SYSFS}/targets/*/*/sessions/* 2>&1 |
-        grep -vE '${SCST_SYSFS}/targets/(copy_manager|scst_local)/'; do
+        grep -vE "${SCST_SYSFS}"'/targets/(copy_manager|scst_local)/'; do
         ocf_log debug "Still waiting..."
         sleep 1
     done
@@ -477,7 +477,7 @@ block_scst_devs() {
     # Block all devices that are members of our device group
     ocf_log info "Blocking all '${OCF_RESKEY_device_group}' devices..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
-    for i in ${dev_grp_path}/devices/*/; do
+    for i in $(find ${dev_grp_path}/devices -type l -maxdepth 1); do
         echo 1 > ${i}/block &
     done
     ocf_log debug "Waiting for devices to finish blocking..."
@@ -489,7 +489,7 @@ unblock_scst_devs() {
     # Unblock all devices that are members of our device group
     ocf_log info "Unblocking all '${OCF_RESKEY_device_group}' devices..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
-    for i in ${dev_grp_path}/devices/*/; do
+    for i in $(find ${dev_grp_path}/devices -type l -maxdepth 1); do
         echo 0 > ${i}/block
     done
 }

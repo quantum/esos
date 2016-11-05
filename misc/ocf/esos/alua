@@ -314,7 +314,7 @@ block_scst_devs() {
     # Block all devices that are members of our device group
     ocf_log info "Blocking all '${OCF_RESKEY_device_group}' devices..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
-    for i in ${dev_grp_path}/devices/*/; do
+    for i in $(find ${dev_grp_path}/devices -type l -maxdepth 1); do
         echo 1 > ${i}/block &
     done
     ocf_log debug "Waiting for devices to finish blocking..."
@@ -326,7 +326,7 @@ unblock_scst_devs() {
     # Unblock all devices that are members of our device group
     ocf_log info "Unblocking all '${OCF_RESKEY_device_group}' devices..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
-    for i in ${dev_grp_path}/devices/*/; do
+    for i in $(find ${dev_grp_path}/devices -type l -maxdepth 1); do
         echo 0 > ${i}/block
     done
 }

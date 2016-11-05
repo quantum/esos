@@ -1,3 +1,7 @@
+2016-11-05  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the tzdata target to include the "factory" timezone data files; more bug fixes in the ESOS 'scst' and 'alua' resource agents; bug fix in the TUI's dateTimeDialog() function
+
 2016-11-04  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the tzdata package for time zone information (not part of glibc anymore); renamed the btier OCF RA (location); include the dd utility from the coreutils package since Busybox's dd doesn't work for the 'Raid1' RA and disable Busybox dd; fixed an issue in the ESOS SCST RA with detecting dlm_controld; added a patch for the Raid1 RA so it works correctly with the udev-provided MD array sym link

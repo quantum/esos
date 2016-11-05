@@ -2245,7 +2245,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             strstr_result = strstr_result + (sizeof (ZONEINFO) - 1);
             if (*strstr_result == '/')
                 strstr_result++;
-            for (i = 0; i < MAX_TZ_FILES; i++) {
+            for (i = 0; i < file_cnt; i++) {
                 if (strcmp(tz_files[i], strstr_result) == 0) {
                     setCDKRadioCurrentItem(tz_select, i);
                     curr_tz_item = i;
