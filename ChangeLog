@@ -1,3 +1,7 @@
+2016-11-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	tweaked a couple variable lines in the Makefile; added a sed-patch for ocf:lvm2:VolumeGroup so OCF_ERR_GENERIC is not returned when attempting a probe operation (eg, before clvmd is started)
+
 2016-11-05  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated the tzdata target to include the "factory" timezone data files; more bug fixes in the ESOS 'scst' and 'alua' resource agents; bug fix in the TUI's dateTimeDialog() function

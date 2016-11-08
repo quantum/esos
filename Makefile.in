@@ -330,17 +330,21 @@ export CPPFLAGS	= -idirafter $(IMAGE_DIR)/usr/include \
 # We use a GCC spec file to override the default library search path; the
 # GCC spec file is created by the 'glibc' target
 spec_file	= $(WORK_DIR)/esos_build.spec
+libgcc_path	= $(dir $(shell gcc -print-libgcc-file-name))
+esos_cxx_inc	= $(IMAGE_DIR)/usr/include/c++/$(gcc_ver)
 cc_base		= gcc -specs=$(spec_file) -nostdinc -Wl,-nostdlib \
-		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include \
-		-idirafter $(dir $(shell gcc -print-libgcc-file-name))include-fixed
-esos_cc		= $(cc_base) $(CPPFLAGS)
-export CC	= $(esos_cc)
+		-idirafter $(libgcc_path)include
 cxx_base	= g++ -specs=$(spec_file) -nostdinc -Wl,-nostdlib \
-		-idirafter $(dir $(shell g++ -print-libgcc-file-name))include \
-		-idirafter $(dir $(shell g++ -print-libgcc-file-name))include-fixed
+		-idirafter $(libgcc_path)include
+ifneq ($(wildcard $(libgcc_path)include-fixed/.),)
+	cc_base		+= -idirafter $(libgcc_path)include-fixed
+	cxx_base	+= -idirafter $(libgcc_path)include-fixed
+endif
+esos_cc		= $(cc_base) $(CPPFLAGS)
 esos_cxx	= $(cxx_base) $(CPPFLAGS) \
-		-idirafter $(IMAGE_DIR)/usr/include/c++/$(gcc_ver) \
-		-idirafter $(IMAGE_DIR)/usr/include/c++/$(gcc_ver)/x86_64-unknown-linux-gnu
+		-idirafter $(esos_cxx_inc) \
+		-idirafter $(esos_cxx_inc)/x86_64-unknown-linux-gnu
+export CC	= $(esos_cc)
 export CXX	= $(esos_cxx)
 esos_host	= $(shell $(ECHO) $$MACHTYPE | \
 		$(SED) "s/$(shell $(ECHO) $$MACHTYPE | $(CUT) -d- -f2)/cross/")
@@ -1373,6 +1377,8 @@ lvm2: glibc corosync dlm thin-provisioning-tools eudev
 	--with-cache=internal --enable-udev_sync --enable-udev_rules \
 	--disable-udev-systemd-background-jobs --enable-lvmetad \
 	--enable-lockd-dlm
+	$(SED) -i "/VGOUT=/s/OCF_ERR_GENERIC/OCF_NOT_RUNNING/" \
+	$(tgt_src_dir)/scripts/VolumeGroup.ocf
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
