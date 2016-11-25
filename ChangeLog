@@ -1,3 +1,7 @@
+2016-11-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated mdadm to the latest GH master commit; added the nvme-cli package
+
 2016-11-08  Marc A. Smith  <marc.smith@parodyne.com>
 
 	tweaked a couple variable lines in the Makefile; added a sed-patch for ocf:lvm2:VolumeGroup so OCF_ERR_GENERIC is not returned when attempting a probe operation (eg, before clvmd is started)
