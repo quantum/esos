@@ -54,7 +54,7 @@ root_fs_dev="$(findfs LABEL=esos_root)" || \
 (echo "Error resolving the root device node!"; rescue_shell)
 
 # Mount up
-mount -t tmpfs -o size=1536m tmpfs /mnt/root || rescue_shell
+mount -t tmpfs -o size=@@root_size@@ tmpfs /mnt/root || rescue_shell
 mount -o ro ${root_fs_dev} /mnt/tmp || rescue_shell
 
 # Get the slot kernel parameter

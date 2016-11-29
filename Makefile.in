@@ -376,7 +376,14 @@ image: $(build_targets)
 	$(MKNOD) $(INITRAMFS_DIR)/dev/null c 1 3
 	$(MKNOD) $(INITRAMFS_DIR)/dev/console c 5 1
 	$(MKNOD) $(INITRAMFS_DIR)/dev/tty c 5 0
-	$(INSTALL) $(SRC_DIR)/misc/initramfs_init $(INITRAMFS_DIR)/init
+	$(QUIET) if [ "x$(enable_debug)" != "xyes" ]; then \
+	  $(SED) 's/@@root_size@@/1536m/' $(SRC_DIR)/misc/initramfs_init > \
+	  $(INITRAMFS_DIR)/init; \
+	else \
+	  $(SED) 's/@@root_size@@/2048m/' $(SRC_DIR)/misc/initramfs_init > \
+	  $(INITRAMFS_DIR)/init; \
+	fi
+	$(CHMOD) +x $(INITRAMFS_DIR)/init
 	$(LN) busybox $(INITRAMFS_DIR)/bin/sh
 	$(CP) -Rp $(IMAGE_DIR)/lib/firmware/* $(INITRAMFS_DIR)/lib/firmware/
 	cd $(INITRAMFS_DIR) && $(FIND) . -print0 | \

@@ -1,5 +1,7 @@
 2016-11-29  Marc A. Smith  <marc.smith@parodyne.com>
 
+	updated the initramfs init script and Makefile to change the size of the root tmpfs FS based on the '--enable-debug' build option (debug gets 2 GiB, non-debug gets 1.5 GiB)
+
 	updated mdadm to the latest GH master commit; added the nvme-cli package
 
 2016-11-08  Marc A. Smith  <marc.smith@parodyne.com>
