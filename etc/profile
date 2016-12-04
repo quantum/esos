@@ -10,6 +10,9 @@ fi
 ulimit -c unlimited
 source /etc/bashrc
 
+# Make the line characters display correctly for certain emulators
+export NCURSES_NO_UTF8_ACS=1
+
 if [[ $(tty) =~ /dev/ttyS[0-9] ]]; then
     # Don't run the TUI if we're connected via serial
     echo "Connected via serial ($(tty))..."

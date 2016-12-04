@@ -18,6 +18,7 @@
 #include <uuid/uuid.h>
 #include <curl/curl.h>
 #include <assert.h>
+#include <locale.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -126,6 +127,7 @@ int main(int argc, char** argv) {
 
     /* Initialize screen and check size */
 start:
+    setlocale(LC_ALL, "");
     main_window = initscr();
     curs_set(0);
     noecho();
