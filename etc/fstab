@@ -4,7 +4,7 @@ sysfs /sys sysfs defaults 0 0
 devpts /dev/pts devpts gid=5,mode=620 0 0
 tmpfs /dev/shm tmpfs size=128m,mode=1777 0 0
 tmpfs /tmp tmpfs mode=1777,nosuid,noatime 0 0
-LABEL=esos_boot /boot ext2 sync,noauto 1 1
+LABEL=esos_boot /boot vfat sync,noauto 1 1
 LABEL=esos_root /mnt/root ext2	sync,noauto 1 1
 LABEL=esos_conf /mnt/conf ext2	sync,noauto 1 1
 LABEL=esos_logs /mnt/logs ext2	sync,noauto 1 1
