@@ -396,8 +396,8 @@ image: $(build_targets)
 	# 4000000000 B
 	# 4000000000 B / 512 B = 7812500 sectors
 	$(DD) if=/dev/zero of=$(img_file) bs=512 count=0 seek=7812500
-	$(ECHO) -e "2048,409600,EF,*\n411648,4096000,L\n4507648,409600,L\n\
-	4917248,2048000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
+	$(ECHO) -e "2048,819200,EF,*\n821248,4096000,L\n4917248,409600,L\n\
+	5326848,2048000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
 	$(KPARTX) -a -s $(loop_dev)
 	$(SLEEP) 1
