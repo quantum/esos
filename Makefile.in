@@ -29,7 +29,7 @@ CAT		:= @cat@
 TEST		:= @test@
 GREP		:= @grep@
 DD		:= @dd@
-MKE2FS		:= @mke2fs@
+MKFS		:= @mkfs@
 LN		:= @ln@ -sf
 MOUNT		:= @mount@
 UMOUNT		:= @umount@
@@ -241,6 +241,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		docutils-0.12.tar.gz \
 		tzdata-2016i.tar.gz \
 		nvme-cli-1.0.tar.gz \
+		freetype-2.7.tar.bz2 \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -267,7 +268,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		edac-utils sysfsutils sqlite-autoconf iperf2 iperf3 libpcap \
 		iftop nmon munin-c open-iscsi open-isns coreutils \
 		open-vm-tools libdnet libffi ptyprocess requests openwsman \
-		swig userspace-rcu docutils tzdata nvme-cli
+		swig userspace-rcu docutils tzdata nvme-cli freetype
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -395,18 +396,18 @@ image: $(build_targets)
 	# 4000000000 B
 	# 4000000000 B / 512 B = 7812500 sectors
 	$(DD) if=/dev/zero of=$(img_file) bs=512 count=0 seek=7812500
-	$(ECHO) -e "2048,409600,L,*\n411648,4096000,L\n4507648,409600,L\n\
-	4917248,2048000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
+	$(ECHO) -e "2048,819200,EF,*\n821248,4096000,L\n4917248,409600,L\n\
+	5326848,2048000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
 	$(KPARTX) -a -s $(loop_dev)
 	$(SLEEP) 1
-	$(MKE2FS) -L esos_boot $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t vfat -F 32 -n esos_boot $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p1
-	$(MKE2FS) -L esos_root $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t ext2 -L esos_root $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p2
-	$(MKE2FS) -L esos_conf $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t ext2 -L esos_conf $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p3
-	$(MKE2FS) -L esos_logs $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t ext2 -L esos_logs $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p4
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Installing image (staging)..."
@@ -426,12 +427,21 @@ image: $(build_targets)
 	$(wildcard $(IMAGE_DIR)/usr/include/python*))/pyconfig.h
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
 	$(CPIO) -pmdvu $(STAGING_DIR)/etc
-	$(WORK_DIR)/grub-install --directory=$(IMAGE_DIR)/usr/lib/grub/i386-pc \
+	$(WORK_DIR)/grub-install \
+	--directory=$(IMAGE_DIR)/usr/lib/grub/i386-pc \
 	--grub-setup=$(WORK_DIR)/grub-bios-setup \
 	--grub-mkimage=$(WORK_DIR)/grub-mkimage \
 	--grub-mkrelpath=$(WORK_DIR)/grub-mkrelpath \
 	--grub-probe=$(WORK_DIR)/grub-probe \
-	--root-directory=$(MOUNT_DIR) --no-floppy $(loop_dev)
+	--root-directory=$(MOUNT_DIR) --debug --no-floppy $(loop_dev)
+	$(WORK_DIR)/grub-install \
+	--directory=$(IMAGE_DIR)/usr/lib/grub/x86_64-efi \
+	--grub-setup=$(WORK_DIR)/grub-bios-setup \
+	--grub-mkimage=$(WORK_DIR)/grub-mkimage \
+	--grub-mkrelpath=$(WORK_DIR)/grub-mkrelpath \
+	--grub-probe=$(WORK_DIR)/grub-probe \
+	--efi-directory=$(MOUNT_DIR)/boot --root-directory=$(MOUNT_DIR) \
+	--no-nvram --removable --recheck --debug
 	$(INSTALL) $(SRC_DIR)/misc/grub.cfg $(MOUNT_DIR)/boot/grub/
 	$(ECHO) "set slot_ver=$(esos_ver)" > $(MOUNT_DIR)/boot/PRIMARY-version
 	$(INSTALL) $(SRC_DIR)/scripts/conf_sync.sh \
@@ -1059,13 +1069,26 @@ sysvinit: glibc
 	$(MAKE) --directory=$(tgt_src_dir)/src ROOT=$(IMAGE_DIR) install
 	$(TOUCH) $(@)
 
-grub: glibc lvm2
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-grub-mkfont \
-	--enable-device-mapper --disable-werror
+grub: glibc lvm2 freetype
+	cd $(tgt_src_dir) && \
+	FREETYPE="$(IMAGE_DIR)/usr/bin/freetype-config \
+	--prefix=$(IMAGE_DIR)/usr" \
+	./configure --prefix=/usr --enable-grub-mkfont --enable-device-mapper \
+	--disable-efiemu --with-platform=pc --target=i386 --disable-werror
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)"
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/grub-core \
 	DESTDIR=$(IMAGE_DIR) install-platformDATA
+	$(MAKE) --directory=$(tgt_src_dir) clean
+	$(MAKE) --directory=$(tgt_src_dir) distclean
+	cd $(tgt_src_dir) && \
+	FREETYPE="$(IMAGE_DIR)/usr/bin/freetype-config \
+	--prefix=$(IMAGE_DIR)/usr" \
+	./configure --prefix=/usr --enable-grub-mkfont --enable-device-mapper \
+	--disable-efiemu --with-platform=efi --target=x86_64 --disable-werror
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)"
+	$(MAKE) --directory=$(tgt_src_dir)/grub-core \
+	DESTDIR=$(IMAGE_DIR) install-platformDATA
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 \
 	--library-path \"$(IMAGE_DIR)/lib:$(IMAGE_DIR)/usr/lib\" \
 	$(IMAGE_DIR)/usr/sbin/grub-install \"\044\0100\"\n" > \
@@ -1093,6 +1116,8 @@ grub: glibc lvm2
 	$(IMAGE_DIR)/usr/sbin/grub-probe \"\044\0100\"\n" > \
 	$(WORK_DIR)/grub-probe
 	$(CHMOD) +x $(WORK_DIR)/grub-probe
+	$(MAKE) --directory=$(tgt_src_dir) clean
+	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 
 glibc: kernel_headers
@@ -2842,5 +2867,12 @@ nvme-cli: glibc eudev
 	DESTDIR=$(IMAGE_DIR)
 	$(MAKE) --directory=$(tgt_src_dir) install-bin PREFIX=/usr \
 	DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+freetype: glibc bzip2
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(call clean_la_files,libfreetype)
 	$(TOUCH) $(@)
 

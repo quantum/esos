@@ -1,3 +1,17 @@
+2016-12-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'add_efi_boot'
+
+	many fixes for the ocf:esos:syncro resource agent
+
+2016-12-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	increased the esos_boot partition size to 400 MiB
+
+2016-12-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	initial update to support for EFI booting (and still support legacy BIOS booting): added the freetype package for GRUB; use the mkfs binary instead of individual mkfs.xxx commands so we can control the type with a parameter; tweaked the disk label and file system so the first partition (esos_boot) is a FAT32 FS and is type 0xEF (EFI); added a second grub-install line in the image target for adding the EFI stuff; updated the grub target to enable grub-mkfont and configure/build a second time for EFI; tweaked the kernel config for EFI booting; updates to grub.cfg
+
 2016-12-03  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added a call to setlocale() in main() and use NCURSES_NO_UTF8_ACS=1 in the environment, which when combined, fixes the line character issue with PuTTY
