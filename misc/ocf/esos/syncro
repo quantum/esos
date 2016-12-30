@@ -71,8 +71,18 @@ syncro_monitor() {
     # Exit immediately if configuration is not valid
     syncro_validate_all || exit ${?}
 
-    # Check if SCST is loaded
-    check_scst
+    # If SCST isn't loaded, then we'll just say the resource isn't running
+    if [ ! -d "${SCST_SYSFS}" ]; then
+        ocf_log debug "It appears SCST isn't running/loaded yet..."
+        return ${OCF_NOT_RUNNING}
+    fi
+
+    # Make sure the directory exists in the SCST sysfs structure
+    if [ ! -d "${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}" ]; then
+        ocf_log err "The '${OCF_RESKEY_device_group}' device group" \
+            "does not exist!"
+        exit ${OCF_ERR_INSTALLED}
+    fi
 
     # We also check that all VD's are owned by us
     own_syncro_vds || return ${?}
@@ -104,13 +114,6 @@ syncro_validate_all() {
     if [ -z "${OCF_RESKEY_device_group}" ]; then
         ocf_log err "The 'device_group' parameter is not set!"
         exit ${OCF_ERR_CONFIGURED}
-    fi
-
-    # Make sure the directory exists in the SCST sysfs structure
-    if [ ! -d "${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}" ]; then
-        ocf_log err "The '${OCF_RESKEY_device_group}' device group" \
-            "does not exist!"
-        exit ${OCF_ERR_INSTALLED}
     fi
 
     # It must be good
@@ -164,12 +167,14 @@ get_syncro_devs() {
             filename="$(head -1 ${scst_dev_grp_base}/devices/${i}/filename)"
             blk_dev_path="$(readlink -f ${filename})"
             blk_dev_name="$(basename ${blk_dev_path})"
+            ocf_log debug "Found a block device: ${blk_dev_name}"
             # For now, lets only look at SCSI disks
-            if [ "${blk_dev_name}" =~ "^sd[a-z].*" ]; then
+            if [[ ${blk_dev_name}" =~ "^sd[a-z].* ]]; then
                 blk_dev_sysfs="${BLOCK_SYSFS}/${blk_dev_name}"
                 sd_model="$(head -1 ${blk_dev_sysfs}/device/model)"
+                ocf_log debug "SCSI disk model: ${sd_model}"
                 # And finally, only Syncro controllers (eg, MR9286-8eHA)
-                if [ "${sd_model}" =~ "^MR.*HA" ]; then
+                if [[ ${sd_model} =~ ^MR.*HA ]]; then
                     hctl_val="$(ls ${blk_dev_sysfs}/device/scsi_disk/ | \
                         head -1)"
                     syncro_devs="${syncro_devs} ${hctl_val}"
@@ -186,14 +191,16 @@ get_ctrlr_id() {
     ctrlr_cnt=$(${STORCLI_BIN} show ctrlcount | grep "Controller Count = " |
         cut -d= -f2 | tr -d ' ')
     # These controllers always start at 0
-    for i in $(seq 0 $(expr ${ctrlr_cnt} - 1)); do
-        bus_num=$(${STORCLI_BIN} /c${i} show | grep "Bus Number = " |
+    for j in $(seq 0 $(expr ${ctrlr_cnt} - 1)); do
+        bus_num=$(${STORCLI_BIN} /c${j} show | grep "Bus Number = " |
             cut -d= -f2 | tr -d ' ')
+        ocf_log debug "StorCLI bus number: ${bus_num}"
         host_num_str="$(ls /sys/bus/pci/devices/0000:0${bus_num}:00.0/ |
             grep host)"
+        ocf_log debug "Linux host string: ${host_num_str}"
         if [ "x${host_num_str}" = "xhost${host_num}" ]; then
             # We found a match, we're done
-            return ${i}
+            return ${j}
         fi
     done
     # If we got this far, we didn't find it
@@ -207,9 +214,11 @@ is_vd_owned() {
     show_vd_output="$(${STORCLI_BIN} /c${ctrlr}/v${vdrive} show)"
     stat_line=$(echo "${show_vd_output}" | grep "Status = " | \
         cut -d= -f2 | tr -d ' ')
+    ocf_log debug "StorCLI status line: ${stat_line}"
     desc_line=$(echo "${show_vd_output}" | grep "Description = " | \
         cut -d= -f2 | tr -d ' ')
-    if [ "x${stat_line}" != "xSuccess" -a "x${desc_line}" != "xNone" ]; then
+    ocf_log debug "StorCLI description line: ${desc_line}"
+    if [ "x${stat_line}" != "xSuccess" -a "x${desc_line}" = "xNone" ]; then
         # Not currently the owner
         return 1
     else
@@ -221,43 +230,39 @@ is_vd_owned() {
 
 own_syncro_vds() {
     # Loop over all of the Syncro VD H:C:T:L values
-    for i in get_syncro_devs; do
-        if [ -n "${i}" ]; then
-            ocf_log debug "Checking SCSI disk ${i}..."
-            host="$(echo ${i} | cut -d: -f1)"
-            channel="$(echo ${i} | cut -d: -f2)"
-            target="$(echo ${i} | cut -d: -f3)"
-            lun="$(echo ${i} | cut -d: -f4)"
+    for k in $(get_syncro_devs); do
+        if [ -n "${k}" ]; then
+            ocf_log debug "Checking SCSI disk ${k}..."
+            host="$(echo ${k} | cut -d: -f1)"
+            channel="$(echo ${k} | cut -d: -f2)"
+            target="$(echo ${k} | cut -d: -f3)"
+            lun="$(echo ${k} | cut -d: -f4)"
             # Get the controller ID
             get_ctrlr_id ${host}
             ctrlr_id=${?}
             ocf_log debug "Controller ID: ${ctrlr_id}"
             if [ ${ctrlr_id} -ne -1 ]; then
-                if [ is_vd_owned ${ctrlr_id} ${target} ]; then
+                if ! is_vd_owned ${ctrlr_id} ${target}; then
                     # It appears this VD is not owned by this node, fix it
                     ocf_log info "Attempting to own VD ${target} for" \
                         "controller ${ctrlr_id}..."
-                    sd_blk_dev="$(lsscsi ${i} | awk '{print $7}')"
-                    ocf_log debug "${i} -> ${sd_blk_dev}"
-                    if [ -z "$(${SG_PERSIST_BIN} -k ${sd_blk_dev} | \
-                        grep follow -A 10 | \
-                        egrep '0x${LOCAL_NODE_ID}\$')" ]; then
-                        # Add a new registration
-                        ${SG_PERSIST_BIN} --out --register \
-                            --param-sark=${LOCAL_NODE_ID} \
-                            ${sd_blk_dev} 1> /dev/null
-                    fi
+                    sd_blk_dev="$(lsscsi ${k} | awk '{print $6}')"
+                    ocf_log debug "${k} -> ${sd_blk_dev}"
+                    # Add a new registration (and ignore existing key)
+                    ${SG_PERSIST_BIN} --no-inquiry --out --register-ignore \
+                        --param-sark=${LOCAL_NODE_ID} \
+                        ${sd_blk_dev} 1> /dev/null
                     # Attempt to create a new PR
-                    ${SG_PERSIST_BIN} --out --reserve \
+                    ${SG_PERSIST_BIN} --no-inquiry --out --reserve \
                         --param-rk=${LOCAL_NODE_ID} --prout-type=1 \
                         ${sd_blk_dev} &> /dev/null || return ${OCF_ERR_GENERIC}
                     # Keep the PR in-place until we are the VD owner
                     timer=0
                     while true; do
-                        if [ is_vd_owned ${ctrlr_id} ${target} ]; then
+                        if is_vd_owned ${ctrlr_id} ${target}; then
                             break
                         fi
-                        if [ ${timer} -gt ${VD_PR_TIMEOUT} ];
+                        if [ ${timer} -gt ${VD_PR_TIMEOUT} ]; then
                             ocf_log err "The VD PR timeout (${VD_PR_TIMEOUT})" \
                                 "for '${sd_blk_dev}' was hit!"
                             return ${OCF_ERR_GENERIC}
@@ -267,24 +272,16 @@ own_syncro_vds() {
                         sleep 2
                     done
                     # Success (it appears), release the PR
-                    ${SG_PERSIST_BIN} --out --release \
+                    ${SG_PERSIST_BIN} --no-inquiry --out --release \
                         --param-rk=${LOCAL_NODE_ID} --prout-type=1 \
                         ${sd_blk_dev} &> /dev/null
+                    # Get rid of the registration key
+                    ${SG_PERSIST_BIN} --no-inquiry --out --register \
+                        --param-sark=0 ${sd_blk_dev} 1> /dev/null
                 fi
             fi
         fi
     done
-}
-
-
-check_scst() {
-    # Make sure is SCST is actually loaded and running
-    if [ -e "${SCST_SYSFS}/version" ]; then
-        ocf_log debug "Detected SCST version: $(cat ${SCST_SYSFS}/version)"
-    else
-        ocf_log err "SCST is not running! We're done..."
-        exit ${OCF_ERR_INSTALLED}
-    fi
 }
 
 
@@ -296,10 +293,10 @@ check_scst() {
 # Setup the state file stuff here
 if [ -z "${OCF_RESKEY_state}" ]; then
     if [ "x${OCF_RESKEY_CRM_meta_globally_unique}" = "xfalse" ]; then
-        state="${HA_VARRUN}/syncro-${OCF_RESOURCE_INSTANCE}.state"
+        state="${HA_VARRUN}syncro-${OCF_RESOURCE_INSTANCE}.state"
         OCF_RESKEY_state=$(echo ${state} | sed s/:[0-9][0-9]*\.state/.state/)
     else
-        OCF_RESKEY_state="${HA_VARRUN}/syncro-${OCF_RESOURCE_INSTANCE}.state"
+        OCF_RESKEY_state="${HA_VARRUN}syncro-${OCF_RESOURCE_INSTANCE}.state"
     fi
 fi
 
