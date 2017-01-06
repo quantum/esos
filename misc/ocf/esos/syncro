@@ -84,11 +84,10 @@ syncro_monitor() {
         exit ${OCF_ERR_INSTALLED}
     fi
 
-    # We also check that all VD's are owned by us
-    own_syncro_vds || return ${?}
-
     # Determine our status using the state file
     if [ -f "${OCF_RESKEY_state}" ]; then
+        # We also check that all VD's are owned by us (if running)
+        own_syncro_vds || return ${?}
         return ${OCF_SUCCESS}
     else
         return ${OCF_NOT_RUNNING}
@@ -248,11 +247,15 @@ own_syncro_vds() {
                         "controller ${ctrlr_id}..."
                     sd_blk_dev="$(lsscsi ${k} | awk '{print $6}')"
                     ocf_log debug "${k} -> ${sd_blk_dev}"
-                    # Add a new registration (and ignore existing key)
-                    ${SG_PERSIST_BIN} --no-inquiry --out --register-ignore \
-                        --param-sark=${LOCAL_NODE_ID} \
+                    # Add a new registration
+                    ocf_log debug "Calling the sg_persist new-registration" \
+                        "command..."
+                    ${SG_PERSIST_BIN} --no-inquiry --out --register \
+                        --param-rk=0 --param-sark=${LOCAL_NODE_ID} \
                         ${sd_blk_dev} 1> /dev/null
                     # Attempt to create a new PR
+                    ocf_log debug "Calling the sg_persist add-reservation" \
+                        "command..."
                     ${SG_PERSIST_BIN} --no-inquiry --out --reserve \
                         --param-rk=${LOCAL_NODE_ID} --prout-type=1 \
                         ${sd_blk_dev} &> /dev/null || return ${OCF_ERR_GENERIC}
@@ -272,12 +275,17 @@ own_syncro_vds() {
                         sleep 2
                     done
                     # Success (it appears), release the PR
+                    ocf_log debug "Calling the sg_persist release-reservation" \
+                        "command..."
                     ${SG_PERSIST_BIN} --no-inquiry --out --release \
                         --param-rk=${LOCAL_NODE_ID} --prout-type=1 \
-                        ${sd_blk_dev} &> /dev/null
+                        ${sd_blk_dev} 1> /dev/null
                     # Get rid of the registration key
+                    ocf_log debug "Calling the sg_persist remove-registration" \
+                        "command..."
                     ${SG_PERSIST_BIN} --no-inquiry --out --register \
-                        --param-sark=0 ${sd_blk_dev} 1> /dev/null
+                        --param-rk=${LOCAL_NODE_ID} --param-sark=0 \
+                        ${sd_blk_dev} 1> /dev/null
                 fi
             fi
         fi
