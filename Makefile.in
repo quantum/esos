@@ -105,15 +105,15 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		groff-1.22.3.tar.gz \
 		ncurses-5.9.tar.gz \
 		qlogic_fw-20140928.tar.gz \
-		linux-4.9.0-rc3.tar.xz \
+		linux-4.9.8.tar.xz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20160131.tar.gz \
-		scst-trunk_r7021.tar.gz \
+		scst-3.2.x_r7092.tar.gz \
 		kexec-tools-2.0.13.tar.gz \
 		drbd-utils-8.9.6.tar.gz \
 		lvm2-2_02_166.tar.gz \
 		xfsprogs-4.7.0.tar.gz \
-		mdadm-master_20161129.tar.gz \
+		mdadm-4.0.tar.xz \
 		parted-3.1.tar.xz \
 		gcc-4.7.4.tar.bz2 \
 		gmp-6.1.0.tar.bz2 \
@@ -288,8 +288,8 @@ ifeq ($(enable_qla),yes)
 	build_targets += scst_qla2xxx
 endif
 ifeq ($(enable_zfs),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-master_20161026.tar.gz)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-master_20161026.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.6.5.9.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.6.5.9.tar.gz)
 	build_targets += spl
 	build_targets += zfs
 endif
@@ -1627,7 +1627,7 @@ glib: glibc zlib libffi util-linux
 
 libxml2: glibc zlib
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-python \
-	--with-threads
+	--with-threads --without-lzma
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libxml2)
