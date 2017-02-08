@@ -401,7 +401,7 @@ image: $(build_targets)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
 	$(KPARTX) -a -s $(loop_dev)
 	$(SLEEP) 1
-	$(MKFS) -t vfat -F 32 -n esos_boot $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t vfat -F 32 -n ESOS_BOOT $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p1
 	$(MKFS) -t ext2 -L esos_root $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p2

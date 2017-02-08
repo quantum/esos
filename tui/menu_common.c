@@ -500,7 +500,7 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
     while (1) {
         /* Get the ESOS boot device node */
         if ((boot_dev_node = blkid_get_devname(NULL, "LABEL",
-                ESOS_BOOT_PART)) == NULL) {
+                ESOS_ROOT_PART)) == NULL) {
             /* The function above returns NULL if the device isn't found */
             SAFE_ASPRINTF(&boot_dev_node, " ");
         }
@@ -1189,7 +1189,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     while (1) {
         /* Get the ESOS boot device node */
         if ((boot_dev_node = blkid_get_devname(NULL, "LABEL",
-                ESOS_BOOT_PART)) == NULL) {
+                ESOS_ROOT_PART)) == NULL) {
             /* The function above returns NULL if the device isn't found */
             SAFE_ASPRINTF(&boot_dev_node, " ");
         } else {

@@ -1,3 +1,15 @@
+2017-02-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the Makefile and fstab file to use ESOS_BOOT (uppercase) as the volume/label value as it seems when installing ESOS using Windows, the FAT32 file system gets converted to uppercase even though we created it in lowercase -- this causes problems obviously, so just keep it uppercase; in the TUI code, instead of using LABEL=esos_boot we now search for LABEL=esos_root when filtering the ESOS boot device in dialogs; in the install.sh script we also search for LABEL=esos_root now, and also updated several of the input prompts to be clearer in what input is accepted, and also make the input checks more forgiving
+
+2017-02-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.9.8; updated SCST to the latest 3.2.x (stable) revision; updated mdadm to version 4.0; updated ZFS/SPL to version 0.6.5.9; fixed a build dep issue with the libxml2 package
+
+2017-01-05  Marc A. Smith  <marc.smith@parodyne.com>
+
+	a couple more tweaks to the ocf:esos:syncro RA -- the resource agent itself does work, however, the Syncro behaves strangely with >1 VD and reserving/releasing PR's, more testing is needed...
+
 2016-12-29  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'add_efi_boot'

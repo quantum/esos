@@ -26,7 +26,7 @@ extern "C" {
 #define MAX_USERS               32
 #define MAX_UNAME_LEN           20
 #define MAX_PASSWD_LEN          64
-#define ESOS_BOOT_PART          "esos_boot"
+#define ESOS_ROOT_PART          "esos_root"
 #define DEFAULT_ETH_MTU         "1500"
 #define DEFAULT_IB_MTU          "65520"
 #define TEMP_DIR                "/tmp"

@@ -75,11 +75,12 @@ image_file="$(ls esos-*.img.bz2)" || exit 1
 if [ -f "/etc/esos-release" ]; then
     while true; do
         # Look up the ESOS block device node
-        esos_boot="$(findfs LABEL=esos_boot)"
+        esos_root="$(findfs LABEL=esos_root)"
         if [ ${?} -ne 0 ]; then
+            echo "ERROR: We couldn't find the LABEL=esos_root file system!"
             exit 1
         fi
-        esos_blk_dev="$(echo ${esos_boot} | sed -e 's/1//')"
+        esos_blk_dev="$(echo ${esos_root} | sed -e 's/2//')"
         # Make sure the image disk label and the ESOS USB drive match
         image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
         disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
@@ -99,11 +100,12 @@ if [ -f "/etc/esos-release" ]; then
         fi
         # Get confirmation for an upgrade
         echo "### This installation script is running on a live ESOS host." \
-            "Okay to perform an in-place upgrade? Log file system data will" \
-            "persist and you will not be prompted to install propietary" \
-            "CLI tools." && read confirm
+            "Okay to perform an in-place upgrade (yes/no)? Log file system" \
+            "data will persist and you will not be prompted to install" \
+            "propietary CLI tools. If you decline, a full installation will" \
+            "continue." && read confirm
             echo
-        if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
+        if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
             echo "### Increasing the /tmp file system..."
             mount -o remount,size=5G /tmp || exit 1
             echo
@@ -184,14 +186,16 @@ fi
 echo
 
 # Get desired USB drive device node and perform a few checks
-echo "### Please type the full path of your USB drive device node (eg, /dev/sdz):" && read dev_node
+echo "### Please type the full path of your USB drive device node" \
+    "(eg, /dev/sdz):" && read dev_node
 echo
 if [ "${dev_node}" = "" ] || [ ! -e ${dev_node} ]; then
     echo "ERROR: That device node doesn't seem to exist."
     exit 1
 fi
 if mount | grep ${dev_node} > /dev/null; then
-    echo "ERROR: It looks like that device is mounted; unmount it and try again."
+    echo "ERROR: It looks like that device is mounted; unmount it" \
+        "and try again."
     exit 1
 fi
 if [ "${this_os}" = "${LINUX}" ]; then
@@ -218,16 +222,19 @@ elif [ "${this_os}" = "${MACOSX}" ]; then
 fi
 
 # Get a final confirmation before writing the image
-echo "### Proceeding will completely wipe the '${real_dev_node}' device. Are you sure?" && read confirm
+echo "### Proceeding will completely wipe the '${real_dev_node}' device." \
+    "Are you sure (yes/no)?" && read confirm
 echo
-if [ "${confirm}" = "yes" ] || [ "${confirm}" = "y" ]; then
-    echo "### Writing ${image_file} to ${real_dev_node}; this may take a while..."
+if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
+    echo "### Writing ${image_file} to ${real_dev_node}; this may" \
+        "take a while..."
     bunzip2 -d -c ${image_file} | dd of=${real_dev_node} bs=1${suffix} || exit 1
     if [ "${this_os}" = "${LINUX}" ]; then
         blockdev --rereadpt ${dev_node} || exit 1
     fi
     echo
-    echo "### It appears the image was successfully written to disk (no errors reported)!"
+    echo "### It appears the image was successfully written to disk" \
+        "(no errors reported)!"
 else
     exit 0
 fi
