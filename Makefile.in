@@ -86,7 +86,7 @@ prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 
 dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
-		busybox-1.25.1.tar.bz2 \
+		busybox-1.26.2.tar.bz2 \
 		grub-2.02~beta3.tar.xz \
 		sysvinit-2.88dsf.tar.bz2 \
 		glibc-2.24.tar.bz2 \
@@ -94,10 +94,10 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libibumad-1.3.10.2.tar.gz \
 		libibverbs-1.2.1.tar.gz \
 		srptools-1.0.3.tar.gz \
-		openssh-7.3p1.tar.gz \
+		openssh-7.4p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
 		perl-5.24.0.tar.gz \
-		openssl-1.0.2j.tar.gz \
+		openssl-1.0.2k.tar.gz \
 		e2fsprogs-1.43.3.tar.gz \
 		zlib-1.2.8.tar.xz \
 		lsscsi-0.28.tar.gz \
@@ -107,7 +107,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20140928.tar.gz \
 		linux-4.9.8.tar.xz \
 		iniparser-3.2.tar.gz \
-		cdk-5.0-20160131.tar.gz \
+		cdk-5.0-20161210.tar.gz \
 		scst-3.2.x_r7092.tar.gz \
 		kexec-tools-2.0.13.tar.gz \
 		drbd-utils-8.9.6.tar.gz \
@@ -119,9 +119,9 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.0.tar.bz2 \
 		mpfr-3.1.4.tar.bz2 \
 		mpc-1.0.3.tar.gz \
-		libqb-1.0.tar.xz \
-		pacemaker-1.1.15.tar.gz \
-		corosync-2.4.1.tar.gz \
+		libqb-1.0.1.tar.xz \
+		pacemaker-1.1.16.tar.gz \
+		corosync-2.4.2.tar.gz \
 		nss-3.27.1.tar.gz \
 		glib-2.50.1.tar.xz \
 		libxml2-2.9.4.tar.gz \
@@ -158,7 +158,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libnl-1.1.4.tar.gz \
 		libpciaccess-0.13.4.tar.bz2 \
 		linux_firmware-master_20161101.tar.xz \
-		dlm-4.0.6.tar.xz \
+		dlm-4.0.7.tar.xz \
 		sysklogd-1.5.1.tar.gz \
 		ipmitool-1.8.17.tar.bz2 \
 		less-481.tar.gz \
@@ -209,14 +209,14 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		htop-2.0.2.tar.gz \
 		dmidecode-3.0.tar.xz \
 		xmlrpc-c-1.39.11.tar.gz \
-		stunnel-5.36.tar.gz \
+		stunnel-5.40.tar.gz \
 		sudo-1.8.18p1.tar.gz \
 		rsync-3.1.2.tar.gz \
-		eudev-3.2.tar.gz \
+		eudev-3.2.1.tar.gz \
 		gperf-3.0.4.tar.gz \
 		multipath-tools-0.6.3.tar.gz \
 		archivemount-0.8.7.tar.gz \
-		libarchive-3.2.1.tar.gz \
+		libarchive-3.2.2.tar.gz \
 		mcelog-master_20161017.tar.gz \
 		edac-utils-0.18.tar.gz \
 		sysfsutils-2.1.0.tar.gz \
@@ -229,7 +229,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		munin-c-0.0.9.tar.gz \
 		open-iscsi-2.0.874.tar.gz \
 		open-isns-0.96.tar.gz \
-		coreutils-8.25.tar.xz \
+		coreutils-8.26.tar.xz \
 		open-vm-tools-10.0.7-3227872.tar.gz \
 		libdnet-1.11.tar.gz \
 		libffi-3.2.1.tar.gz \
@@ -240,7 +240,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		userspace-rcu-0.9.2.tar.bz2 \
 		docutils-0.12.tar.gz \
 		tzdata-2016i.tar.gz \
-		nvme-cli-1.0.tar.gz \
+		nvme-cli-1.1.tar.gz \
 		freetype-2.7.tar.bz2 \
 		win_binaries-20140704.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
@@ -1013,9 +1013,6 @@ busybox: glibc
 	$(tgt_src_dir)/networking/ntpd.c
 	$(SED) -i 's/\/\/\txfunc_die();/\txfunc_die();/' \
 	$(tgt_src_dir)/networking/ntpd.c
-	$(SED) -i '386 s/^$$/\tarchive_handle->cpio__owner.uid = -1L;\n'\
-	'\tarchive_handle->cpio__owner.gid = -1L;\n/' \
-	$(tgt_src_dir)/archival/cpio.c
 	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
@@ -1323,7 +1320,10 @@ srptools: glibc libibumad libibverbs
 	cd $(tgt_src_dir) && ac_cv_func_malloc_0_nonnull=yes ./configure \
 	--prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-exec-am
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	install-sbinPROGRAMS
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	install-sbinSCRIPTS
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-man
 	$(TOUCH) $(@)
 

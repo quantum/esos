@@ -1,5 +1,7 @@
 2017-02-08  Marc A. Smith  <marc.smith@parodyne.com>
 
+	updated the openssh, cdk, busybox, libqb, openssl, stunnel, dlm, corosync, pacemaker, libarchive, eudev, coreutils, and nvme-cli packages to the latest stable versions; updated the srptools recipe to not install an init.d script; updated and tested links of propietary CLI tool locations / file names (install_common)
+
 	updated the Makefile and fstab file to use ESOS_BOOT (uppercase) as the volume/label value as it seems when installing ESOS using Windows, the FAT32 file system gets converted to uppercase even though we created it in lowercase -- this causes problems obviously, so just keep it uppercase; in the TUI code, instead of using LABEL=esos_boot we now search for LABEL=esos_root when filtering the ESOS boot device in dialogs; in the install.sh script we also search for LABEL=esos_root now, and also updated several of the input prompts to be clearer in what input is accepted, and also make the input checks more forgiving
 
 2017-02-07  Marc A. Smith  <marc.smith@parodyne.com>

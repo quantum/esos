@@ -10,7 +10,7 @@ TOOL_URL_StorCLI="http://docs.avagotech.com/docs/12354905"
 
 TOOL_DESC_arcconf="Adaptec AACRAID Controllers"
 TOOL_FILE_arcconf="arcconf_v1_8_21375.zip"
-TOOL_URL_arcconf="http://www.adaptec.com/en-us/speed/raid/storage_manager/arcconf_v1_8_21375_zip.php"
+TOOL_URL_arcconf="https://storage.microsemi.com/en-us/speed/raid/storage_manager/arcconf_v1_8_21375_zip.php"
 
 TOOL_DESC_hpacucli="HP Smart Array Controllers"
 TOOL_FILE_hpacucli="hpacucli-9.40-12.0.x86_64.rpm"
@@ -21,10 +21,10 @@ TOOL_FILE_hpssacli="hpssacli-2.30-6.0.x86_64.rpm"
 TOOL_URL_hpssacli="http://downloads.linux.hpe.com/SDR/repo/spp/2015.10.0_supspp_rhel7.2_x86_64/hpssacli-2.30-6.0.x86_64.rpm"
 
 TOOL_DESC_linuxcli="Areca RAID Controllers"
-TOOL_FILE_linuxcli="linuxcli_V1.14.2_140528.zip"
-TOOL_URL_linuxcli="http://www.areca.us/support/s_linux/cli/linuxcli_V1.14.2_140528.zip"
+TOOL_FILE_linuxcli="linuxcli_V1.50.0_170105.zip"
+TOOL_URL_linuxcli="http://www.areca.us/support/s_linux/driver/cli/linuxcli_V1.50.0_170105.zip"
 
 TOOL_DESC_3DM2_CLI="3ware SATA/SAS RAID Controllers"
-TOOL_FILE_3DM2_CLI="SW_3DM2_CLI_linux_v10.2.2.1_9.5.5.1_20121221.zip"
+TOOL_FILE_3DM2_CLI="3DM2_CLI-linux_10-2-2-1_9-5-5-1.zip"
 TOOL_URL_3DM2_CLI="http://docs.avagotech.com/docs/12353043"
 

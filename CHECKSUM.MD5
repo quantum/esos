@@ -1,6 +1,6 @@
 81cc39c98c918fa60aaa47887445400c  e2fsprogs-1.43.3.tar.gz
 8cb9c412e5f2d96bc6f459aa8c6282a1  ncurses-5.9.tar.gz
-dfadd9f035d38ce5d58a3bf130b86d08  openssh-7.3p1.tar.gz
+b2db2a83caf66a208bb78d6d287cdaa3  openssh-7.4p1.tar.gz
 c5bf7f3285439a2d3b6a488e14503701  perl-5.24.0.tar.gz
 65b4e0df4934a6cd08c506cabcbe584f  ssmtp-2.64.tar.bz2
 6eda8a97b86e0a6f59dabbf25202aa6f  sysvinit-2.88dsf.tar.bz2
@@ -16,7 +16,7 @@ cc825fa64bc7306a885f2fb2268d3ec5  groff-1.22.3.tar.gz
 86ee6e54ebfc4a90b643a65e402c4048  gmp-6.1.0.tar.bz2
 b8a2f6b0e68bef46e53da2ac439e1cf4  mpfr-3.1.4.tar.bz2
 d6a1d5f8ddea3abd2cc3e98f58352d26  mpc-1.0.3.tar.gz
-3a519980fd3c5d04ecfc82259586d7c4  cdk-5.0-20160131.tar.gz
+fbacdf194d097d73a61f9556bb2dbe27  cdk-5.0-20161210.tar.gz
 9befdf522f8792cb1c736215260a5122  iniparser-3.2.tar.gz
 ae82b0ab63e89cfda52fb9859855bafa  xfsprogs-4.7.0.tar.gz
 ab399fc6f74a97d66ff77f04b743149c  grub-2.02~beta3.tar.xz
@@ -51,11 +51,11 @@ a939c4990d74e6fc1ee62be05716f633  libconfig-1.5.tar.gz
 580cb878be536804daca87fb75ae46cc  libnl-1.1.4.tar.gz
 15ca4c1f6ce3023f7134ab7d784986c3  open-lldp-0.9.46.tar.gz
 ace78aec799b1cf6dfaea55d3879ed9f  libpciaccess-0.13.4.tar.bz2
-4f4c5de50b479b11ff636d7d8eb902a2  busybox-1.25.1.tar.bz2
+bb59d25ee2643db20f212eec539429f1  busybox-1.26.2.tar.bz2
 f7408aa2b40333db0413d4aab6bbe978  ipmitool-1.8.17.tar.bz2
 c70599ab0d037fde724f7210c2c8d7f8  sysklogd-1.5.1.tar.gz
 50ef46065c65257141a7340123527767  less-481.tar.gz
-abaf84a0bd7ee637163aa6d9008a4f6e  libqb-1.0.tar.xz
+62c93482bfc0d8b61af7910cffdf3609  libqb-1.0.1.tar.xz
 b15d975336080bcac4be0c1752d43cf3  irqbalance-1.1.0.tar.gz
 e9e7286178f172c9f21bafbfb978d6de  ethtool-4.8.tar.xz
 4a392949ba31a378a18ed3e775a4693f  psycopg2-2.6.2.tar.gz
@@ -89,7 +89,7 @@ a11a140cea496961222170944db01fc1  cryptsetup-1.7.2.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
 28080de5bf2222f8b55a29093bec8aea  sg3_utils-1.42.tar.gz
 efc6c2067dfad5646777e93e85222e8f  elfutils-0.167.tar.bz2
-96322138f0b69e61b7212bc53d5e912b  openssl-1.0.2j.tar.gz
+f965fc0bf01bf882b31314b61391ae65  openssl-1.0.2k.tar.gz
 1b63f02d9623ccc0b2c83e0bce93d562  libusb_compat-0.1.5.tar.bz2
 4f981c3fdbbb7184b2718afaa21f974b  win_binaries-20140704.tar.xz
 ce8f0e44671fb0c7d9ec30bb0bfa8b5c  mtx-1.3.12.tar.gz
@@ -109,7 +109,7 @@ b7595eb4705e482ee6fc1121a5b6131b  kexec-tools-2.0.13.tar.gz
 7d354d904bad591a931ad57e99fea84a  htop-2.0.2.tar.gz
 281ee572d45c78eca73a14834c495ffd  dmidecode-3.0.tar.xz
 503651550379ed72f7c6923a4c3551bd  xmlrpc-c-1.39.11.tar.gz
-b3c002c312e757d9a40caf95363800b3  stunnel-5.36.tar.gz
+4125b7c7f0f8c46266b4fa245ee8cda6  stunnel-5.40.tar.gz
 28f5214d5bcb5af5710decb95184a0a6  sudo-1.8.18p1.tar.gz
 0f758d7e000c0f7f7d3792610fad70cb  rsync-3.1.2.tar.gz
 72e2acf2c3d69c7fa75a6625d06adfd0  python-daemon-2.1.1.tar.gz
@@ -119,17 +119,17 @@ c59096b1bacc704e8a5a285f15729109  resource-agents-3.9.7.tar.gz
 65aa71b8d4cd4b927a7ec69b5d53ecc7  btier-1.3.11.tar.gz
 c1f1db32fb6598d6a93e6e88796a8632  gperf-3.0.4.tar.gz
 46a232a37bce45371a86d19300edc47a  util-linux-2.28.2.tar.xz
-809ae130c5a29a7344078da8015754d3  dlm-4.0.6.tar.xz
-211a18722c9e98c35c421f32e719adb4  corosync-2.4.1.tar.gz
-13fa04fa86f451d336407a433741f81a  pacemaker-1.1.15.tar.gz
+8be6ada0220faabef513e365c10449cc  dlm-4.0.7.tar.xz
+547fa78704da53aa35912be58d31035f  corosync-2.4.2.tar.gz
+e73949b47f080dbe4093207d043754e5  pacemaker-1.1.16.tar.gz
 6dd7314233029d9dab0156e7b1c7830b  lxml-3.6.4.tar.gz
 4f6e54897f277309b48fc98faa31f9a4  multipath-tools-0.6.3.tar.gz
 f95928e6a21681feb768132e23064815  scst_qla2xxx-20150625.tar.gz
 7fee322a4b1d960e19a64870ca78924b  archivemount-0.8.7.tar.gz
-afa257047d1941a565216edbf0171e72  libarchive-3.2.1.tar.gz
+1ec00b7dcaf969dd2a5712f85f23c764  libarchive-3.2.2.tar.gz
 127a715fc1850888203880f48114d678  mcelog-master_20161017.tar.gz
 45cae2703256013617fd2363ac6585c1  edac-utils-0.18.tar.gz
-9eb477cc8718db272b5d24dff1126b04  eudev-3.2.tar.gz
+49f71f6c271ffa95b3c20d757d45c2e5  eudev-3.2.1.tar.gz
 14e7dcd0436d2f49aa403f67e1ef7ddc  sysfsutils-2.1.0.tar.gz
 51e6b0a07bf90f084d8766794d8e8a7c  sqlite-autoconf-3150000.tar.gz
 72953733f513680b6b114bd8bd0ed651  lvm2-2_02_166.tar.gz
@@ -150,7 +150,7 @@ b8e8aada24d9be62ac861918d05cf5ab  scst-3.2.x_r7092.tar.gz
 f1e2f97e100e80e00ce3ead797538290  munin-c-0.0.9.tar.gz
 caf2c92bfe58c07f781ab74942e4b9f2  open-iscsi-2.0.874.tar.gz
 e0047d68b4d7a0b6104f67851b8b6475  open-isns-0.96.tar.gz
-070e43ba7f618d747414ef56ab248a48  coreutils-8.25.tar.xz
+d5aa2072f662d4118b9f4c63b94601a6  coreutils-8.26.tar.xz
 cd98443f74ddf678a2f5d368bed39285  open-vm-tools-10.0.7-3227872.tar.gz
 04c394ed8e1e7fc455456e79e908916d  libdnet-1.11.tar.gz
 83b89587607e3eb65c70d361f13bab43  libffi-3.2.1.tar.gz
@@ -161,5 +161,5 @@ bb4ab8047159469add7d00910e203124  swig-3.0.10.tar.gz
 49f86e68c1e2f41d303381a271b791d1  userspace-rcu-0.9.2.tar.bz2
 4622263b62c5c771c03502afa3157768  docutils-0.12.tar.gz
 b5bfa8e658de7b481c001c1f6b330bcb  tzdata-2016i.tar.gz
-5a68c67f69f94d4859020a9a33d12eeb  nvme-cli-1.0.tar.gz
+450b5c381c83df8f117824e7d0fe0076  nvme-cli-1.1.tar.gz
 be4601619827b7935e1d861745923a68  freetype-2.7.tar.bz2

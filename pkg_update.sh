@@ -13,7 +13,7 @@
 # Make sure we got what we need
 if [ ${#} -ne 2 ]; then
     echo "This script takes two arguments:"
-    echo "PKG_DATA_FILE PATH_TO_NEW_FIELS"
+    echo "PKG_DATA_FILE PATH_TO_NEW_FILES"
     exit 1
 fi
 
