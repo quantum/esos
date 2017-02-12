@@ -1567,21 +1567,32 @@ corosync: glibc libqb nss librdmacm libibverbs
 	-I$(IMAGE_DIR)/usr/include/rdma" \
 	rdmacm_LIBS="$(LDFLAGS) -lrdmacm" ibverbs_CFLAGS="$(CPPFLAGS) \
 	-I$(IMAGE_DIR)/usr/include/infiniband" \
-	ibverbs_LIBS="$(LDFLAGS) -libverbs" ./configure --prefix=/usr \
-	--sysconfdir=/etc --localstatedir=/var --enable-xmlconf --enable-rdma
+	ibverbs_LIBS="$(LDFLAGS) -libverbs" BASHPATH="/bin/bash" \
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+	--enable-xmlconf --enable-rdma
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir)/include DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/common_lib DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/lib DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/exec DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/tools DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/test DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/cts DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/pkgconfig DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/man DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/qdevices DESTDIR=$(IMAGE_DIR) install
-	$(MAKE) --directory=$(tgt_src_dir)/conf DESTDIR=$(IMAGE_DIR) \
-	install-corosysxmlxsltDATA
+	$(MAKE) --directory=$(tgt_src_dir)/include \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/common_lib \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/lib \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/exec \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/tools \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/test \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/cts \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/pkgconfig \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/man \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/qdevices \
+	DESTDIR=$(IMAGE_DIR) install
+	$(MAKE) --directory=$(tgt_src_dir)/conf \
+	DESTDIR=$(IMAGE_DIR) install-corosysxmlxsltDATA
 	$(call clean_la_files,libtotem_pg)
 	$(call clean_la_files,libcfg)
 	$(call clean_la_files,libsam)

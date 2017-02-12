@@ -389,6 +389,8 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(grp_name, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(grp_name,
+                    g_color_dialog_text[g_curr_theme]);
 
         /* Target group ID (scale) */
         group_id = newCDKScale(tgt_grp_screen, (window_x + 1), (window_y + 6),
@@ -699,6 +701,8 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(tgt_name, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(tgt_name,
+                    g_color_dialog_text[g_curr_theme]);
 
         /* Relative target ID (scale) */
         rel_tgt_id = newCDKScale(add_tgt_screen, (window_x + 1), (window_y + 7),

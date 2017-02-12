@@ -1,3 +1,7 @@
+2017-02-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	build fix (wrong path for bash detected) in the corosync recipe; fixed broken patch for cdk-5.0-20161210; updated grub.cfg to detect if using BIOS or EFI mode and only load modules that are for each platform, and fixed unicode.pf2 font location; updated the TUI code to call setCDKEntryBackgroundAttrib() for all CDKENTRY widgets
+
 2017-02-08  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated the openssh, cdk, busybox, libqb, openssl, stunnel, dlm, corosync, pacemaker, libarchive, eudev, coreutils, and nvme-cli packages to the latest stable versions; updated the srptools recipe to not install an init.d script; updated and tested links of propietary CLI tool locations / file names (install_common)

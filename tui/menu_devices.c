@@ -402,6 +402,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(dev_name_field,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(dev_name_field,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen,
@@ -665,6 +667,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(dev_name_field,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(dev_name_field,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen, (window_x + 1),
@@ -846,6 +850,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(dev_name_field,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(dev_name_field,
+                    g_color_dialog_text[g_curr_theme]);
 
             /* Block size widget (item list) */
             block_size = newCDKItemlist(dev_screen, (window_x + 1),

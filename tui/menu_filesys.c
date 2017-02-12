@@ -230,6 +230,8 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(fs_label, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(fs_label,
+                    g_color_dialog_text[g_curr_theme]);
 
         /* FS type radio list */
         fs_type = newCDKRadio(fs_screen, (window_x + 22), (window_y + 13),
@@ -780,6 +782,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(vdisk_name, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(vdisk_name,
+                    g_color_dialog_text[g_curr_theme]);
 
         /* Virtual disk size */
         vdisk_size = newCDKEntry(vdisk_screen, (window_x + 30), (window_y + 6),
@@ -792,6 +796,8 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(vdisk_size, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(vdisk_size,
+                    g_color_dialog_text[g_curr_theme]);
 
         /* Buttons */
         ok_button = newCDKButton(vdisk_screen, (window_x + 26), (window_y + 10),

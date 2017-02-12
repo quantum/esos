@@ -44,14 +44,17 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
                 g_color_dialog_title[g_curr_theme], scst_tgt, tgt_driver);
         grp_name_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
                 entry_title, "</B>New Group Name (no spaces): ",
-                g_color_dialog_select[g_curr_theme], '_' | g_color_dialog_input[g_curr_theme], vMIXED,
+                g_color_dialog_select[g_curr_theme],
+                '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                 SCST_SEC_GRP_NAME_LEN, 0, SCST_SEC_GRP_NAME_LEN, TRUE, FALSE);
         if (!grp_name_entry) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
         }
-        setCDKEntryBoxAttribute(grp_name_entry, g_color_dialog_box[g_curr_theme]);
-        setCDKEntryBackgroundAttrib(grp_name_entry, g_color_dialog_text[g_curr_theme]);
+        setCDKEntryBoxAttribute(grp_name_entry,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(grp_name_entry,
+                g_color_dialog_text[g_curr_theme]);
 
         /* Draw the entry widget */
         curs_set(1);
@@ -69,7 +72,8 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
                     SYSFS_SCST_TGT, tgt_driver, scst_tgt);
             snprintf(attr_value, MAX_SYSFS_ATTR_SIZE, "create %s", group_name);
             if ((temp_int = writeAttribute(attr_path, attr_value)) != 0) {
-                SAFE_ASPRINTF(&error_msg, "Couldn't add SCST security group: %s",
+                SAFE_ASPRINTF(&error_msg,
+                        "Couldn't add SCST security group: %s",
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
@@ -223,8 +227,10 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
             errorDialog(main_cdk_screen, SCROLL_ERR_MSG, NULL);
             break;
         }
-        setCDKScrollBoxAttribute(scst_init_list, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(scst_init_list, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBoxAttribute(scst_init_list,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(scst_init_list,
+                g_color_dialog_text[g_curr_theme]);
         init_choice = activateCDKScroll(scst_init_list, 0);
 
         /* Check exit from widget */
@@ -245,15 +251,18 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                         scst_tgt);
                 init_entry = newCDKEntry(main_cdk_screen, CENTER, CENTER,
                         entry_title, "</B>Initiator Name (no spaces): ",
-                        g_color_dialog_select[g_curr_theme], '_' | g_color_dialog_input[g_curr_theme], vMIXED,
+                        g_color_dialog_select[g_curr_theme],
+                        '_' | g_color_dialog_input[g_curr_theme], vMIXED,
                         30, 0, SCST_INITIATOR_LEN, TRUE, FALSE);
                 if (!init_entry) {
                     errorDialog(main_cdk_screen, ENTRY_ERR_MSG,
                             NULL);
                     break;
                 }
-                setCDKEntryBoxAttribute(init_entry, g_color_dialog_box[g_curr_theme]);
-                setCDKEntryBackgroundAttrib(init_entry, g_color_dialog_text[g_curr_theme]);
+                setCDKEntryBoxAttribute(init_entry,
+                        g_color_dialog_box[g_curr_theme]);
+                setCDKEntryBackgroundAttrib(init_entry,
+                        g_color_dialog_text[g_curr_theme]);
 
                 /* Draw the entry widget */
                 curs_set(1);

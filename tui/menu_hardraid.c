@@ -130,6 +130,8 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
         }
         setCDKEntryBoxAttribute(cache_flush,
                 g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(cache_flush,
+                    g_color_dialog_text[g_curr_theme]);
         snprintf(temp_str, MAX_MR_ATTR_SIZE, "%d", mr_adp_props->cache_flush);
         setCDKEntryValue(cache_flush, temp_str);
         rebuild_rate = newCDKEntry(adapter_screen, (window_x + 1),
@@ -143,6 +145,8 @@ void adpPropsDialog(CDKSCREEN *main_cdk_screen) {
         }
         setCDKEntryBoxAttribute(rebuild_rate,
                 g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(rebuild_rate,
+                    g_color_dialog_text[g_curr_theme]);
         snprintf(temp_str, MAX_MR_ATTR_SIZE, "%d", mr_adp_props->rebuild_rate);
         setCDKEntryValue(rebuild_rate, temp_str);
 
@@ -1073,6 +1077,8 @@ void modVolDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(name_field, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(name_field,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryValue(name_field, mr_ld_props->name);
 
         /* Radio lists */

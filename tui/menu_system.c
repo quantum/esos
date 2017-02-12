@@ -142,6 +142,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(host_name,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(host_name,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(host_name, conf_hostname);
 
             /* Domain name field */
@@ -156,6 +158,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(domain_name,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(domain_name,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(domain_name, conf_domainname);
 
             /* Default gateway field */
@@ -170,6 +174,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(default_gw,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(default_gw,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(default_gw, conf_defaultgw);
 
             /* A very small label for instructions */
@@ -197,6 +203,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(name_server_1,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(name_server_1,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(name_server_1, conf_nameserver1);
 
             /* Secondary name server field */
@@ -211,6 +219,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(name_server_2,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(name_server_2,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(name_server_2, conf_nameserver2);
 
             /* Buttons */
@@ -454,6 +464,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(iface_mtu,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(iface_mtu,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(iface_mtu, conf_if_mtu);
 
             /* IP settings radio */
@@ -499,6 +511,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(ip_addy,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(ip_addy,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(ip_addy, conf_ipaddr);
 
             /* Netmask field */
@@ -513,6 +527,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(netmask,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(netmask,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(netmask, conf_netmask);
 
             /* Broadcast field */
@@ -527,6 +543,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             }
             setCDKEntryBoxAttribute(broadcast,
                     g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(broadcast,
+                    g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(broadcast, conf_broadcast);
 
             // TODO: For now, bridging and bonding are mutually exclusive.
@@ -1111,6 +1129,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(email_addr, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(email_addr,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryValue(email_addr, conf_root);
 
         /* Split up mailhub string from configuration */
@@ -1131,6 +1151,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(smtp_host, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(smtp_host,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryValue(smtp_host, mailhub_host);
 
         /* SMTP port field */
@@ -1144,6 +1166,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(smtp_port, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(smtp_port,
+                    g_color_dialog_text[g_curr_theme]);
         if (mailhub_port != NULL)
             setCDKEntryValue(smtp_port, mailhub_port);
 
@@ -1207,6 +1231,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(auth_user, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(auth_user,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryValue(auth_user, conf_authuser);
 
         /* Auth. Password field */
@@ -1220,6 +1246,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(auth_pass, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(auth_pass,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryValue(auth_pass, conf_authpass);
 
         /* Buttons */
@@ -1541,6 +1569,8 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         }
         setCDKEntryBoxAttribute(uname_field,
                 g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(uname_field,
+                    g_color_dialog_text[g_curr_theme]);
 
         /* Password field (1) */
         pass_1_field = newCDKEntry(add_user_screen, (window_x + 1),
@@ -1554,6 +1584,8 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         }
         setCDKEntryBoxAttribute(pass_1_field,
                 g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(pass_1_field,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryHiddenChar(pass_1_field,
                 '*' | g_color_dialog_select[g_curr_theme]);
 
@@ -1569,6 +1601,8 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
         }
         setCDKEntryBoxAttribute(pass_2_field,
                 g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(pass_2_field,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryHiddenChar(pass_2_field,
                 '*' | g_color_dialog_select[g_curr_theme]);
 
@@ -1799,6 +1833,8 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
         }
         setCDKEntryBoxAttribute(new_pass_1,
                 g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(new_pass_1,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryHiddenChar(new_pass_1,
                 '*' | g_color_dialog_select[g_curr_theme]);
 
@@ -1814,6 +1850,8 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
         }
         setCDKEntryBoxAttribute(new_pass_2,
                 g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(new_pass_2,
+                    g_color_dialog_text[g_curr_theme]);
         setCDKEntryHiddenChar(new_pass_2,
                 '*' | g_color_dialog_select[g_curr_theme]);
 
@@ -2267,6 +2305,8 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             break;
         }
         setCDKEntryBoxAttribute(ntp_server, g_color_dialog_input[g_curr_theme]);
+        setCDKEntryBackgroundAttrib(ntp_server,
+                    g_color_dialog_text[g_curr_theme]);
 
         /* Get the current NTP server setting (if any) and set widget */
         if ((ntp_server_file = fopen(NTP_SERVER, "r")) == NULL) {
