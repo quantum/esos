@@ -1,7 +1,7 @@
 /**
  * @file dialogs.h
  * @brief Settings related to the TUI dialogs.
- * @author Copyright (c) 2012-2016 Marc A. Smith
+ * @author Copyright (c) 2012-2017 Marc A. Smith
  */
 
 #ifndef _DIALOGS_H
@@ -97,6 +97,9 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define ALUA_LAYOUT_ROWS                12
 #define ALUA_LAYOUT_COLS                72
 #define MAX_ALUA_LAYOUT_LINES           128
+#define ESOS_LICENSE_ROWS               10
+#define ESOS_LICENSE_COLS               76
+#define MAX_ESOS_LICENSE_LINES          768
 
 /* Other window/screen/label/etc. sizing limits */
 #define MAX_FS_DIALOG_INFO_LINES        11
@@ -118,7 +121,7 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define NET_SHORT_INFO_LINES            1
 #define HELP_MSG_SIZE                   17
 #define SUPPORT_PKG_MSG_SIZE            7
-#define ABOUT_MSG_SIZE                  12
+#define ABOUT_MSG_SIZE                  14
 
 /* Field/entry/name/value sizing limits */
 #define MAX_EMAIL_LEN           32

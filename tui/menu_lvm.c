@@ -1,7 +1,7 @@
 /**
  * @file menu_lvm.c
  * @brief Contains the menu actions for the 'LVM' menu.
- * @author Copyright (c) 2012-2016 Marc A. Smith
+ * @author Copyright (c) 2012-2017 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE

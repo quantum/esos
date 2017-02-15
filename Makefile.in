@@ -425,6 +425,11 @@ image: $(build_targets)
 	$(INSTALL) -D $(wildcard $(IMAGE_DIR)/usr/include/python*/pyconfig.h) \
 	$(STAGING_DIR)/usr/include/$(notdir \
 	$(wildcard $(IMAGE_DIR)/usr/include/python*))/pyconfig.h
+	$(MKDIR) $(STAGING_DIR)/usr/share/doc/esos
+	$(SED) -n '/END OF TERMS AND CONDITIONS/q;p' $(SRC_DIR)/COPYING > \
+	$(STAGING_DIR)/usr/share/doc/esos/LICENSE
+	$(INSTALL) -m 0644 $(SRC_DIR)/ChangeLog \
+	$(STAGING_DIR)/usr/share/doc/esos/ChangeLog
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
 	$(CPIO) -pmdvu $(STAGING_DIR)/etc
 	$(WORK_DIR)/grub-install \

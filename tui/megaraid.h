@@ -1,7 +1,7 @@
 /**
  * @file megaraid.h
  * @brief Macros and structure definitions for MegaRAID functions.
- * @author Copyright (c) 2012-2016 Marc A. Smith
+ * @author Copyright (c) 2012-2017 Marc A. Smith
  */
 
 #ifndef _MEGARAID_H

@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @brief Contains the main() implementation and supporting functions.
- * @author Copyright (c) 2012-2016 Marc A. Smith
+ * @author Copyright (c) 2012-2017 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -385,12 +385,20 @@ start:
     statusBar(main_window);
     refreshCDKScreen(cdk_screen);
 
+    /* Check if license has been accepted */
+    if (!acceptLicense(cdk_screen)) {
+        errorDialog(cdk_screen,
+                "You must accept the Enterprise Storage OS (ESOS) license",
+                "agreement to use this software. Hit ENTER to exit.");
+        goto quit;
+    }
+
     /* Usage count (only if we have Internet) */
     if (inet_works)
         reportUsage(cdk_screen);
 
     /* Check and see if SCST is loaded */
-    if (! isSCSTLoaded()) {
+    if (!isSCSTLoaded()) {
         errorDialog(cdk_screen,
                 "It appears SCST is not loaded; a number of the TUI",
                 "functions will not work. Check the '/var/log/boot' file.");
@@ -1112,6 +1120,169 @@ void statusBar(WINDOW *window) {
     /* Done */
     FREE_NULL(status_msg);
     return;
+}
+
+
+/**
+ * @brief Check the ESOS configuration file, and if the EULA has already been
+ * accepted, return TRUE. If the EULA was declined or no value exists in the
+ * configuration file, then display the EULA and ask if they accept. If they
+ * accept, write the configuration file and return TRUE, and if not then
+ * return FALSE.
+ */
+boolean acceptLicense(CDKSCREEN *main_cdk_screen) {
+    boolean eula_accepted = FALSE;
+    dictionary *ini_dict = NULL;
+    CDKLABEL *transmit_msg = 0;
+    char *error_msg = NULL, *conf_accept_eula = NULL, *swindow_title = NULL;
+    char *swindow_info[MAX_ESOS_LICENSE_LINES] = {NULL};
+    char line[ESOS_LICENSE_COLS] = {0};
+    FILE *ini_file = NULL, *license_file = NULL;
+    CDKSWINDOW *esos_license = 0;
+    int i = 0, line_pos = 0;
+
+    while (1) {
+        if (access(ESOS_CONF, F_OK) != 0) {
+            if (errno == ENOENT) {
+                /* The iniparser_load function expects a file (even empty) */
+                if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
+                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR,
+                            strerror(errno));
+                    errorDialog(main_cdk_screen, error_msg, NULL);
+                    FREE_NULL(error_msg);
+                    break;
+                }
+                fclose(ini_file);
+            } else {
+                /* Missing file is okay, but fail otherwise */
+                SAFE_ASPRINTF(&error_msg, "access(): %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+                break;
+            }
+        }
+
+        /* Read ESOS configuration file (INI file) */
+        ini_dict = iniparser_load(ESOS_CONF);
+        if (ini_dict == NULL) {
+            errorDialog(main_cdk_screen, ESOS_CONF_READ_ERR_1,
+                    ESOS_CONF_READ_ERR_2);
+            break;
+        }
+
+        /* We set the section in every case */
+        if (iniparser_set(ini_dict, "general", NULL) == -1) {
+            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+            break;
+        }
+
+        /* Parse INI file values (if any) */
+        conf_accept_eula = iniparser_getstring(ini_dict,
+                "general:accept_eula", "");
+
+        if ((conf_accept_eula[0] == '\0') ||
+                (strcmp(conf_accept_eula, "no") == 0)) {
+            /* A new configuration file, or user previously declined */
+            if ((license_file = fopen(ESOS_LICENSE, "r")) == NULL) {
+                SAFE_ASPRINTF(&error_msg, "fopen(): %s", strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+                break;
+            } else {
+                /* Setup scrolling window widget */
+                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>Enterprise Storage "
+                        "OS (ESOS) License\n",
+                        g_color_dialog_title[g_curr_theme]);
+                esos_license = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
+                        (ESOS_LICENSE_ROWS + 2), (ESOS_LICENSE_COLS + 2),
+                        swindow_title, MAX_ESOS_LICENSE_LINES, TRUE, FALSE);
+                if (!esos_license) {
+                    errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
+                    break;
+                }
+                setCDKSwindowBackgroundAttrib(esos_license,
+                        g_color_dialog_text[g_curr_theme]);
+                setCDKSwindowBoxAttribute(esos_license,
+                        g_color_dialog_box[g_curr_theme]);
+
+                /* Add the contents to the scrolling window widget */
+                line_pos = 0;
+                while (fgets(line, sizeof (line), license_file) != NULL) {
+                    if (line_pos < MAX_ESOS_LICENSE_LINES) {
+                        SAFE_ASPRINTF(&swindow_info[line_pos], "%s", line);
+                        line_pos++;
+                    }
+                }
+                fclose(license_file);
+
+                /* Add a message to the bottom explaining how to
+                 * close the dialog */
+                if (line_pos < MAX_ESOS_LICENSE_LINES) {
+                    SAFE_ASPRINTF(&swindow_info[line_pos], " ");
+                    line_pos++;
+                }
+                if (line_pos < MAX_ESOS_LICENSE_LINES) {
+                    SAFE_ASPRINTF(&swindow_info[line_pos], CONTINUE_MSG);
+                    line_pos++;
+                }
+
+                /* Set the scrolling window content */
+                setCDKSwindowContents(esos_license, swindow_info, line_pos);
+
+                /* The 'g' makes the swindow widget scroll to the top,
+                 * then activate */
+                injectCDKSwindow(esos_license, 'g');
+                activateCDKSwindow(esos_license, 0);
+
+                /* We fell through -- the user exited the widget, but
+                 * we don't care how */
+                destroyCDKSwindow(esos_license);
+            }
+
+            /* We're done with displaying the license file */
+            FREE_NULL(swindow_title);
+            for (i = 0; i < MAX_DRBD_INFO_LINES; i++)
+                FREE_NULL(swindow_info[i]);
+            refreshCDKScreen(main_cdk_screen);
+
+            /* Ask the user to accept the license */
+            eula_accepted = questionDialog(main_cdk_screen,
+                    "Do you accept the Enterprise Storage OS",
+                    "(ESOS) license agreement?");
+            if (iniparser_set(ini_dict, "general:accept_eula",
+                    (eula_accepted ? "yes" : "no")) == -1) {
+                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                break;
+            }
+            /* Read the string value again, and save the file */
+            conf_accept_eula = iniparser_getstring(ini_dict,
+                    "general:accept_eula", "");
+            if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
+                SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
+                errorDialog(main_cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+                break;
+            }
+            iniparser_dump_ini(ini_dict, ini_file);
+            fclose(ini_file);
+            break;
+
+        } else if (strcmp(conf_accept_eula, "yes") == 0) {
+            /* Nothing to do */
+            eula_accepted = TRUE;
+            break;
+        }
+
+        /* We got this far successfully, exit the loop */
+        break;
+    }
+
+    /* Done */
+    if (ini_dict != NULL)
+        iniparser_freedict(ini_dict);
+    destroyCDKLabel(transmit_msg);
+    refreshCDKScreen(main_cdk_screen);
+    return eula_accepted;
 }
 
 

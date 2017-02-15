@@ -1,7 +1,7 @@
 /**
  * @file strings.c
  * @brief Common string variables used throughout the entire program.
- * @author Copyright (c) 2012-2016 Marc A. Smith
+ * @author Copyright (c) 2012-2017 Marc A. Smith
  */
 
 #include <stddef.h>

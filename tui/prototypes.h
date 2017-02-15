@@ -1,7 +1,7 @@
 /**
  * @file prototypes.h
  * @brief Contains the function prototypes for just about everything.
- * @author Copyright (c) 2012-2016 Marc A. Smith
+ * @author Copyright (c) 2012-2017 Marc A. Smith
  */
 
 #ifndef _PROTOTYPES_H
@@ -22,6 +22,7 @@ void termSize(WINDOW *screen);
 void screenResize(CDKSCREEN *cdk, WINDOW *main_screen, WINDOW *sub_screen,
         int *latest_term_y, int *latest_term_x);
 void statusBar(WINDOW *window);
+boolean acceptLicense(CDKSCREEN *main_cdk_screen);
 void reportUsage(CDKSCREEN *main_cdk_screen);
 void setTheme();
 void cleanExit(int signal_num);

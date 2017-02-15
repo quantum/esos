@@ -1,7 +1,7 @@
 /**
  * @file menu_interface.c
  * @brief Contains the menu actions for the 'Interface' menu.
- * @author Copyright (c) 2012-2016 Marc A. Smith
+ * @author Copyright (c) 2012-2017 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -266,13 +266,17 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     SAFE_ASPRINTF(&message[4], " ");
     SAFE_ASPRINTF(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
     SAFE_ASPRINTF(&message[6], " ");
-    SAFE_ASPRINTF(&message[7], "</B>License Information");
-    SAFE_ASPRINTF(&message[8], "ESOS is released under the GNU General Public "
-            "License, version 3.");
-    SAFE_ASPRINTF(&message[9], "QLogic Binary Firmware License: %s",
-            QLA_FW_LICENSE);
-    SAFE_ASPRINTF(&message[10], " ");
-    SAFE_ASPRINTF(&message[11], " ");
+    SAFE_ASPRINTF(&message[7], "</B>ESOS Copyright (C) 2017 Marc A. Smith");
+    SAFE_ASPRINTF(&message[8], "This program comes with ABSOLUTELY NO "
+            "WARRANTY; for details view");
+    SAFE_ASPRINTF(&message[9], "the ESOS license file. This is free software, "
+            "and you are welcome to");
+    SAFE_ASPRINTF(&message[10], "redistribute it under certain conditions; "
+            "view the ESOS license file");
+    SAFE_ASPRINTF(&message[11], "for details. ESOS license file: %s",
+            ESOS_LICENSE);
+    SAFE_ASPRINTF(&message[12], " ");
+    SAFE_ASPRINTF(&message[13], " ");
 
     while (1) {
         /* Display the dialog box */

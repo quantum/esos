@@ -1,7 +1,7 @@
 /**
  * @file system.h
  * @brief System settings and configuration options for the program.
- * @author Copyright (c) 2012-2016 Marc A. Smith
+ * @author Copyright (c) 2012-2017 Marc A. Smith
  */
 
 #ifndef _SYSTEM_H
@@ -190,7 +190,7 @@ extern "C" {
 #define FSTAB           "/etc/fstab"
 #define FSTAB_TMP       "/etc/fstab.new"
 #define MTAB            "/proc/mounts"
-#define QLA_FW_LICENSE  "/lib/firmware/QLOGIC_FW_LICENSE"
+#define ESOS_LICENSE    "/usr/share/doc/esos/LICENSE"
 #define GLOBAL_BASHRC   "/etc/bashrc"
 #define ESOS_CONF       "/etc/esos.conf"
 
