@@ -720,68 +720,6 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
 
 
 /**
- * @brief Present a list of adapters to the user and return the adapter number
- * (ID) selected. Currently only MegaRAID adapters. This function will also
- * fill the adapter array.
- */
-int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]) {
-    CDKSCROLL *adapter_list = 0;
-    int adp_count = 0, adp_choice = 0, i = 0;
-    char *adapters[MAX_ADAPTERS] = {NULL};
-    char *scroll_title = NULL, *error_msg = NULL;
-
-    /* Get MegaRAID adapters */
-    adp_count = getMRAdapterCount();
-    if (adp_count == -1) {
-        errorDialog(cdk_screen,
-                "The MegaCLI tool isn't working (or is not installed).", NULL);
-        return -1;
-    } else if (adp_count == 0) {
-        errorDialog(cdk_screen, "No adapters found!", NULL);
-        return -1;
-    } else {
-        for (i = 0; i < adp_count; i++) {
-            mr_adapters[i] = getMRAdapter(i);
-            if (!mr_adapters[i]) {
-                SAFE_ASPRINTF(&error_msg,
-                        "Couldn't get data from MegaRAID adapter # %d!", i);
-                errorDialog(cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
-                return -1;
-            } else {
-                if (i < MAX_ADAPTERS)
-                    SAFE_ASPRINTF(&adapters[i], "<C>MegaRAID Adapter # %d: %s",
-                            i, mr_adapters[i]->prod_name);
-            }
-        }
-    }
-
-    /* Get adapter choice from user */
-    SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose an Adapter\n",
-            g_color_dialog_title[g_curr_theme]);
-    adapter_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 8, 50,
-            scroll_title, adapters, adp_count, FALSE,
-            g_color_dialog_select[g_curr_theme], TRUE, FALSE);
-    setCDKScrollBoxAttribute(adapter_list, g_color_dialog_box[g_curr_theme]);
-    setCDKScrollBackgroundAttrib(adapter_list, g_color_dialog_text[g_curr_theme]);
-    adp_choice = activateCDKScroll(adapter_list, 0);
-
-    /* If the user hit escape, return -1 */
-    if (adapter_list->exitType == vESCAPE_HIT)
-        adp_choice = -1;
-
-    /* Done */
-    destroyCDKScroll(adapter_list);
-    refreshCDKScreen(cdk_screen);
-    FREE_NULL(scroll_title);
-    for (i = 0; i < MAX_ADAPTERS; i++) {
-        FREE_NULL(adapters[i]);
-    }
-    return adp_choice;
-}
-
-
-/**
  * @brief Present the user with a list of SCST initiators for a particular
  * group and have them choose one. The driver / target / group name combination
  * is passed in and we fill the initiator char array.
@@ -1044,7 +982,7 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
     char *fs_names[MAX_FILE_SYSTEMS] = {NULL},
             *fs_paths[MAX_FILE_SYSTEMS] = {NULL},
             *fs_types[MAX_FILE_SYSTEMS] = {NULL},
-            *scroll_list[MAX_USERS] = {NULL};
+            *scroll_list[MAX_FILE_SYSTEMS] = {NULL};
     char *error_msg = NULL, *scroll_title = NULL;
     char mnt_line_buffer[MAX_MNT_LINE_BUFFER] = {0};
     int i = 0, fs_cnt = 0, user_choice = 0, mnt_line_size = 0, mnt_dir_size = 0;

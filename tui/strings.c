@@ -5,6 +5,7 @@
  */
 
 #include <stddef.h>
+#include <cdk.h>
 
 #include "prototypes.h"
 
@@ -12,12 +13,9 @@
 char *g_no_yes_opts[] = {"No", "Yes"},
         *g_auth_meth_opts[] = {"None", "Plain Text", "CRAM-MD5"},
         *g_ip_opts[] = {"Disabled", "Static", "DHCP"},
-        *g_cache_opts[] = {"Cached", "Direct"},
-        *g_write_opts[] = {"WT", "WB"},
-        *g_read_opts[] = {"NORA", "RA", "ADRA"},
-        *g_bbu_opts[] = {"CachedBadBBU", "NoCachedBadBBU"},
-        *g_raid_opts[] = {"0", "1", "5", "6"},
-        *g_strip_opts[] = {"8", "16", "32", "64", "128", "256", "512", "1024"},
+        *g_hw_write_opts[] = {"Write Through", "Write Back"},
+        *g_hw_read_opts[] = {"No Read-ahead", "Use Read-ahead"},
+        *g_hw_raid_opts[] = {"0", "1", "5", "6"},
         *g_dsbl_enbl_opts[] = {"Disabled (0)", "Enabled (1)"},
         *g_fs_type_opts[] = {"xfs", "btrfs", "ext3", "ext4"};
 
@@ -31,6 +29,8 @@ char *g_choice_char[] = {"[ ] ", "[*] "},
         *g_fio_types[] = {"<C>File System", "<C>Block Device"},
         *g_sync_label_msg[] = {"", "",
         "</B>   Synchronizing ESOS configuration...   ", "", ""},
+        *g_add_ld_label_msg[] = {"", "",
+        "</B>   Adding the new logical drive...   ", "", ""},
         *g_usage_label_msg[] = {"", "",
         "</B>   Transmitting ESOS usage count...   ", "", ""};
 
@@ -55,6 +55,9 @@ size_t g_scst_handlers_size() {
 }
 size_t g_sync_label_msg_size() {
     return (sizeof g_sync_label_msg) / (sizeof g_sync_label_msg[0]);
+}
+size_t g_add_ld_label_msg_size() {
+    return (sizeof g_add_ld_label_msg) / (sizeof g_add_ld_label_msg[0]);
 }
 size_t g_usage_label_msg_size() {
     return (sizeof g_usage_label_msg) / (sizeof g_usage_label_msg[0]);

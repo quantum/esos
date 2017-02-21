@@ -55,9 +55,6 @@ extern int g_color_info_header[MAX_TUI_THEMES];
 extern int g_color_dialog_title[MAX_TUI_THEMES];
 
 /* Scrolling window sizing */
-#define ADP_INFO_ROWS                   16
-#define ADP_INFO_COLS                   72
-#define MAX_ADP_INFO_LINES              256
 #define DRBD_INFO_ROWS                  10
 #define DRBD_INFO_COLS                  70
 #define MAX_DRBD_INFO_LINES             256
@@ -104,9 +101,7 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 /* Other window/screen/label/etc. sizing limits */
 #define MAX_FS_DIALOG_INFO_LINES        11
 #define ADD_DEV_INFO_LINES              3
-#define LD_PROPS_INFO_LINES             9
 #define NEW_LD_INFO_LINES               3
-#define ADP_PROP_INFO_LINES             10
 #define ADD_VDISK_INFO_LINES            4
 #define CONFIRM_DIAG_MSG_SIZE           6
 #define ERROR_DIAG_MSG_SIZE             6
@@ -150,6 +145,9 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define MAX_BR_MEMBERS_LIST_BUFF        512
 #define MAX_BOND_OPTS_BUFF              512
 #define MAX_ETHTOOL_OPTS_BUFF           512
+#define MAX_HWRAID_CTRLRS               64
+#define MAX_HWRAID_PDRVS                256
+#define MAX_HWRAID_LDRVS                128
 
 /* Character validation */
 typedef enum {

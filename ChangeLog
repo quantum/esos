@@ -1,3 +1,11 @@
+2017-02-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed an issue with extracting the CLI tool for 3DM2 controllers in both installer scripts; fixed a bug in the hw_raid_cli.py script (invalid StorCLI syntax); updated all of the Hardware RAID dialogs in the TUI to use the new hw_raid_cli.py script and removed other MegaRAID specific items (and other TUI code cleanup)
+
+2017-02-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	we now include the ESOS license file and change log in the image (/usr/share/doc/esos/); updated the copyright notice in all source files; added the acceptLicense() function which displays the ESOS license to the user, and asks them to accept; updated the aboutDialog() to include the copyright notice and warranty disclaimer
+
 2017-02-12  Marc A. Smith  <marc.smith@parodyne.com>
 
 	build fix (wrong path for bash detected) in the corosync recipe; fixed broken patch for cdk-5.0-20161210; updated grub.cfg to detect if using BIOS or EFI mode and only load modules that are for each platform, and fixed unicode.pf2 font location; updated the TUI code to call setCDKEntryBackgroundAttrib() for all CDKENTRY widgets

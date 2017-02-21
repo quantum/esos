@@ -12,6 +12,7 @@
 #include <syslog.h>
 #include <inttypes.h>
 #include <netdb.h>
+#include <cdk.h>
 
 #include "prototypes.h"
 #include "system.h"

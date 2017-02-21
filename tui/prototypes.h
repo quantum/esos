@@ -14,8 +14,8 @@ extern "C" {
 #include <inttypes.h>
 
 #include "system.h"
-#include "megaraid.h"
 #include "dialogs.h"
+
 
 /* main.c */
 void termSize(WINDOW *screen);
@@ -51,7 +51,6 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
 char *getSCSIDiskChoice(CDKSCREEN *cdk_screen);
 void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
         char dev_handler[]);
-int getAdpChoice(CDKSCREEN *cdk_screen, MRADAPTER *mr_adapters[]);
 void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         char tgt_driver[], char tgt_group[], char initiator[]);
 void syncConfig(CDKSCREEN *main_cdk_screen);
@@ -89,11 +88,20 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen);
 void drbdStatDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_hardraid.c */
-void adpPropsDialog(CDKSCREEN *main_cdk_screen);
-void adpInfoDialog(CDKSCREEN *main_cdk_screen);
+int getCtrlrChoice(CDKSCREEN *cdk_screen, char type[], char id_num[],
+        char model[], char serial[]);
+int getPDSelection(CDKSCREEN *cdk_screen, boolean avail_only, char type[],
+        char id_num[], char encl_slot_list[MAX_HWRAID_PDRVS][MISC_STRING_LEN]);
+int getPDChoice(CDKSCREEN *cdk_screen, boolean avail_only, char type[],
+        char id_num[], char encl_id[], char slot_num[], char state[],
+        char size[], char model[]);
+int getLDChoice(CDKSCREEN *cdk_screen, char type[], char id_num[],
+        char ld_id[], char raid_lvl[], char state[], char size[],
+        char name[]);
 void addVolDialog(CDKSCREEN *main_cdk_screen);
 void remVolDialog(CDKSCREEN *main_cdk_screen);
-void modVolDialog(CDKSCREEN *main_cdk_screen);
+void addHSPDialog(CDKSCREEN *main_cdk_screen);
+void remHSPDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_softraid.c */
 void softRAIDStatDialog(CDKSCREEN *main_cdk_screen);

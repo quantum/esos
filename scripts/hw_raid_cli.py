@@ -132,7 +132,7 @@ class MegaRAID():
 
     def add_log_drive(self, ctrlr_id, raid_lvl, phys_drives):
         # All arguments are required, so build the command and execute it
-        command = STORCLI_BIN + ' /c' + str(ctrlr_id) + ' add vd type=' + raid_lvl + ' drives=' + phys_drives + ' 2>&1'
+        command = STORCLI_BIN + ' /c' + str(ctrlr_id) + ' add vd r' + raid_lvl + ' drives=' + phys_drives + ' 2>&1'
         process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode

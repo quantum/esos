@@ -54,9 +54,8 @@ extern "C" {
 #define HW_RAID_MENU            1
 #define HW_RAID_ADD_VOL         1
 #define HW_RAID_REM_VOL         2
-#define HW_RAID_MOD_VOL         3
-#define HW_RAID_ADD_HSP         4
-#define HW_RAID_REM_HSP         5
+#define HW_RAID_ADD_HSP         3
+#define HW_RAID_REM_HSP         4
 
 /* Software RAID menu layout */
 #define SW_RAID_MENU            2
@@ -139,6 +138,7 @@ extern "C" {
 #define MISC_STRING_LEN         128
 #define UUID_STR_SIZE           64
 #define MAX_TUI_STR_LEN         256
+#define MAX_CMD_LINE_LEN        128
 
 /* Main screen information labels */
 #define MAX_INFO_LABEL_ROWS     512
@@ -166,6 +166,7 @@ extern "C" {
 #define TAR_BIN         "/usr/bin/tar"
 #define CRM_TOOL        "/usr/sbin/crm"
 #define SUPPORT_TOOL    "/usr/local/sbin/support_pkg.sh"
+#define HWRAID_CLI_TOOL "/usr/local/sbin/hw_raid_cli.py"
 
 /* A few sysfs settings */
 #define SYSFS_FC_HOST           "/sys/class/fc_host"

@@ -182,8 +182,6 @@ start:
             "</B>Add Volume      <!B>";
     menu_list_1[HW_RAID_MENU][HW_RAID_REM_VOL] = \
             "</B>Remove Volume   <!B>";
-    menu_list_1[HW_RAID_MENU][HW_RAID_MOD_VOL] = \
-            "</B>Modify Volume   <!B>";
     menu_list_1[HW_RAID_MENU][HW_RAID_ADD_HSP] = \
             "</B>Add Hot Spare   <!B>";
     menu_list_1[HW_RAID_MENU][HW_RAID_REM_HSP] = \
@@ -330,7 +328,7 @@ start:
     /* Set top menu sizes and locations */
     submenu_size_1[SYSTEM_MENU]       = 13;
     menu_loc_1[SYSTEM_MENU]           = LEFT;
-    submenu_size_1[HW_RAID_MENU]      = 6;
+    submenu_size_1[HW_RAID_MENU]      = 5;
     menu_loc_1[HW_RAID_MENU]          = LEFT;
     submenu_size_1[SW_RAID_MENU]      = 7;
     menu_loc_1[SW_RAID_MENU]          = LEFT;
@@ -579,11 +577,6 @@ start:
                     submenu_choice == HW_RAID_REM_VOL - 1) {
                 /* Remove Volume dialog */
                 remVolDialog(cdk_screen);
-
-            } else if (menu_choice == HW_RAID_MENU &&
-                    submenu_choice == HW_RAID_MOD_VOL - 1) {
-                /* Modify Volume dialog */
-                modVolDialog(cdk_screen);
 
             } else if (menu_choice == HW_RAID_MENU &&
                     submenu_choice == HW_RAID_ADD_HSP - 1) {
