@@ -51,7 +51,7 @@ int getCtrlrChoice(CDKSCREEN *cdk_screen, char type[], char id_num[],
 
     while (1) {
         /* Put the command string together and execute it */
-        snprintf(command_str, MAX_SHELL_CMD_LEN, "%s --list-controllers",
+        snprintf(command_str, MAX_SHELL_CMD_LEN, "%s --list-controllers 2>&1",
                 HWRAID_CLI_TOOL);
         shell_cmd = popen(command_str, "r");
         if (!shell_cmd) {
@@ -182,7 +182,7 @@ int getPDSelection(CDKSCREEN *cdk_screen, boolean avail_only, char type[],
     while (1) {
         /* Put the command string together and execute it */
         snprintf(command_str, MAX_SHELL_CMD_LEN,
-                "%s --list-physical-drives --type=%s --ctrlr-id=%s %s",
+                "%s --list-physical-drives --type=%s --ctrlr-id=%s %s 2>&1",
                 HWRAID_CLI_TOOL, type, id_num,
                 (avail_only ? "--avail-only" : ""));
         shell_cmd = popen(command_str, "r");
@@ -341,7 +341,7 @@ int getPDChoice(CDKSCREEN *cdk_screen, boolean avail_only, char type[],
     while (1) {
         /* Put the command string together and execute it */
         snprintf(command_str, MAX_SHELL_CMD_LEN,
-                "%s --list-physical-drives --type=%s --ctrlr-id=%s %s",
+                "%s --list-physical-drives --type=%s --ctrlr-id=%s %s 2>&1",
                 HWRAID_CLI_TOOL, type, id_num,
                 (avail_only ? "--avail-only" : ""));
         shell_cmd = popen(command_str, "r");
@@ -486,7 +486,7 @@ int getLDChoice(CDKSCREEN *cdk_screen, char type[], char id_num[],
     while (1) {
         /* Put the command string together and execute it */
         snprintf(command_str, MAX_SHELL_CMD_LEN,
-                "%s --list-logical-drives --type=%s --ctrlr-id=%s",
+                "%s --list-logical-drives --type=%s --ctrlr-id=%s 2>&1",
                 HWRAID_CLI_TOOL, type, id_num);
         shell_cmd = popen(command_str, "r");
         if (!shell_cmd) {
@@ -549,7 +549,7 @@ int getLDChoice(CDKSCREEN *cdk_screen, char type[], char id_num[],
             break;
         }
 
-        /* Get file system choice */
+        /* Get logical drive choice */
         SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose a Logical Drive\n",
                 g_color_dialog_title[g_curr_theme]);
         ld_scroll = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 70,
@@ -784,7 +784,7 @@ void addVolDialog(CDKSCREEN *main_cdk_screen) {
         /* Turn the cursor off (pretty) */
         curs_set(0);
 
-        /* Display a label message while adding the LD (it may take a while) */
+        /* Display a label message while adding the logical drive */
         add_ld_msg = newCDKLabel(main_cdk_screen, CENTER, CENTER,
                 g_add_ld_label_msg, g_add_ld_label_msg_size(), TRUE, FALSE);
         if (!add_ld_msg) {
@@ -835,7 +835,7 @@ void remVolDialog(CDKSCREEN *main_cdk_screen) {
             ld_size[MISC_STRING_LEN] = {0},
             ld_name[MISC_STRING_LEN] = {0},
             command_str[MAX_SHELL_CMD_LEN] = {0};
-    int ctrlr_cnt = 0, ld_cnt = 0, i = 0, ret_val = 0, exit_stat = 0;
+    int ctrlr_cnt = 0, ld_cnt = 0, ret_val = 0, exit_stat = 0;
     boolean confirm = FALSE;
 
     /* Have the user pick a RAID controller */
@@ -858,7 +858,7 @@ void remVolDialog(CDKSCREEN *main_cdk_screen) {
                 "Are you sure you want to delete logical", confirm_msg);
         FREE_NULL(confirm_msg);
         if (confirm) {
-            /* Add the new logical drive */
+            /* Remove the existing logical drive */
             snprintf(command_str, MAX_SHELL_CMD_LEN, "%s --rem-logical-drive "
                     "--type=%s --ctrlr-id=%s --rem-ld-id=%s > /dev/null 2>&1",
                     HWRAID_CLI_TOOL, ctrlr_type, ctrlr_id_num, ld_id);
@@ -894,7 +894,7 @@ void addHSPDialog(CDKSCREEN *main_cdk_screen) {
             pd_size[MISC_STRING_LEN] = {0},
             pd_model[MISC_STRING_LEN] = {0},
             command_str[MAX_SHELL_CMD_LEN] = {0};
-    int ctrlr_cnt = 0, pd_cnt = 0, i = 0, ret_val = 0, exit_stat = 0;
+    int ctrlr_cnt = 0, pd_cnt = 0, ret_val = 0, exit_stat = 0;
 
     /* Have the user pick a RAID controller */
     if ((ctrlr_cnt = getCtrlrChoice(main_cdk_screen, ctrlr_type, ctrlr_id_num,
@@ -945,7 +945,7 @@ void remHSPDialog(CDKSCREEN *main_cdk_screen) {
             pd_size[MISC_STRING_LEN] = {0},
             pd_model[MISC_STRING_LEN] = {0},
             command_str[MAX_SHELL_CMD_LEN] = {0};
-    int ctrlr_cnt = 0, pd_cnt = 0, i = 0, ret_val = 0, exit_stat = 0;
+    int ctrlr_cnt = 0, pd_cnt = 0, ret_val = 0, exit_stat = 0;
 
     /* Have the user pick a RAID controller */
     if ((ctrlr_cnt = getCtrlrChoice(main_cdk_screen, ctrlr_type, ctrlr_id_num,

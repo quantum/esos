@@ -17,7 +17,10 @@ char *g_no_yes_opts[] = {"No", "Yes"},
         *g_hw_read_opts[] = {"No Read-ahead", "Use Read-ahead"},
         *g_hw_raid_opts[] = {"0", "1", "5", "6"},
         *g_dsbl_enbl_opts[] = {"Disabled (0)", "Enabled (1)"},
-        *g_fs_type_opts[] = {"xfs", "btrfs", "ext3", "ext4"};
+        *g_fs_type_opts[] = {"xfs", "btrfs", "ext3", "ext4"},
+        *g_md_level_opts[] = {"raid0", "raid1", "raid10",
+        "raid6", "raid5", "raid4"},
+        *g_md_chunk_opts[] = {"8K", "16K", "32K", "64K", "128K", "512K"};
 
 /* Misc. widget related strings */
 char *g_choice_char[] = {"[ ] ", "[*] "},
@@ -31,6 +34,8 @@ char *g_choice_char[] = {"[ ] ", "[*] "},
         "</B>   Synchronizing ESOS configuration...   ", "", ""},
         *g_add_ld_label_msg[] = {"", "",
         "</B>   Adding the new logical drive...   ", "", ""},
+        *g_add_array_label_msg[] = {"", "",
+        "</B>   Adding the new MD array...   ", "", ""},
         *g_usage_label_msg[] = {"", "",
         "</B>   Transmitting ESOS usage count...   ", "", ""};
 
@@ -58,6 +63,9 @@ size_t g_sync_label_msg_size() {
 }
 size_t g_add_ld_label_msg_size() {
     return (sizeof g_add_ld_label_msg) / (sizeof g_add_ld_label_msg[0]);
+}
+size_t g_add_array_label_msg_size() {
+    return (sizeof g_add_array_label_msg) / (sizeof g_add_array_label_msg[0]);
 }
 size_t g_usage_label_msg_size() {
     return (sizeof g_usage_label_msg) / (sizeof g_usage_label_msg[0]);

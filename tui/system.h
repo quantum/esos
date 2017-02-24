@@ -167,6 +167,7 @@ extern "C" {
 #define CRM_TOOL        "/usr/sbin/crm"
 #define SUPPORT_TOOL    "/usr/local/sbin/support_pkg.sh"
 #define HWRAID_CLI_TOOL "/usr/local/sbin/hw_raid_cli.py"
+#define MDADM_BIN       "/sbin/mdadm"
 
 /* A few sysfs settings */
 #define SYSFS_FC_HOST           "/sys/class/fc_host"

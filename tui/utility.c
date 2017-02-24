@@ -13,6 +13,9 @@
 #include <inttypes.h>
 #include <netdb.h>
 #include <cdk.h>
+#include <blkid/blkid.h>
+#include <assert.h>
+#include <fcntl.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -415,4 +418,237 @@ char *prettyShrinkStr(size_t max_len, char *string) {
         *curr_pos = '\0';
         return ret_buff;
     }
+}
+
+
+/**
+ * @brief Get all of the "usable" (eg, not the ESOS boot device, and other
+ * block devices that appear to be in use) on the system, and fill the arrays
+ * (by reference) with that information. We return the number of block devices
+ * found (even zero) or -1 if an error occurred. This function will display
+ * any error information to the screen itself.
+ */
+int getUsableBlockDevs(CDKSCREEN *cdk_screen,
+        char blk_dev_name[MAX_BLOCK_DEVS][MISC_STRING_LEN],
+        char blk_dev_info[MAX_BLOCK_DEVS][MISC_STRING_LEN],
+        char blk_dev_size[MAX_BLOCK_DEVS][MISC_STRING_LEN]) {
+    int dev_cnt = 0, blk_dev_fd = 0;
+    char *error_msg = NULL, *boot_dev_node = NULL;
+    char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
+            tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0},
+            dev_node_test[MISC_STRING_LEN] = {0};
+    DIR *dir_stream = NULL;
+    struct dirent *dir_entry = NULL;
+    boolean finished = FALSE;
+
+    while (1) {
+        /* Get the ESOS boot device node */
+        if ((boot_dev_node = blkid_get_devname(NULL, "LABEL",
+                ESOS_ROOT_PART)) == NULL) {
+            /* The function above returns NULL if the device isn't found */
+            SAFE_ASPRINTF(&boot_dev_node, " ");
+        } else {
+            /* Found the device so chop off the partition number */
+            *(boot_dev_node + strlen(boot_dev_node) - 1) = '\0';
+        }
+
+        /* Open the directory to get block devices */
+        if ((dir_stream = opendir(SYSFS_BLOCK)) == NULL) {
+            SAFE_ASPRINTF(&error_msg, "opendir(): %s", strerror(errno));
+            errorDialog(cdk_screen, error_msg, NULL);
+            FREE_NULL(error_msg);
+            break;
+        }
+
+        /* Loop over each entry in the directory (block devices) */
+        while ((dir_entry = readdir(dir_stream)) != NULL) {
+            if (dir_entry->d_type == DT_LNK) {
+                snprintf(dev_node_test, MISC_STRING_LEN,
+                        "/dev/%s", dir_entry->d_name);
+                /* Test to see if the block device is already open */
+                if ((blk_dev_fd = open(dev_node_test, O_EXCL)) == -1) {
+                    continue;
+                } else {
+                    if (close(blk_dev_fd) == -1) {
+                        SAFE_ASPRINTF(&error_msg, "close(): %s",
+                                strerror(errno));
+                        errorDialog(cdk_screen, error_msg, NULL);
+                        FREE_NULL(error_msg);
+                        finished = TRUE;
+                        break;
+                    }
+                }
+
+                if (strcmp(boot_dev_node, dev_node_test) == 0) {
+                    /* We don't want to show the ESOS boot block
+                     * device (USB drive) */
+                    continue;
+
+                } else if ((strstr(dev_node_test, "/dev/drbd")) != NULL) {
+                    /* For DRBD block devices (not sure if the /dev/drbdX
+                     * format is forced when using drbdadm, so this may
+                     * be a problem */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
+                                tmp_buff);
+                        /* Nothing extra for DRBD... yet */
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "DRBD Device");
+                        dev_cnt++;
+                    }
+
+                } else if ((strstr(dev_node_test, "/dev/md")) != NULL) {
+                    /* For software RAID (md) devices; it appears the mdadm
+                     * tool forces the /dev/mdX device node name format */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
+                                tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/%s/md/level", SYSFS_BLOCK,
+                                blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "Level: %s", tmp_buff);
+                        dev_cnt++;
+                    }
+
+                } else if ((strstr(dev_node_test, "/dev/sd")) != NULL) {
+                    /* For normal SCSI block devices */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
+                                tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/%s/device/model",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "Model: %s", tmp_buff);
+                        dev_cnt++;
+                    }
+
+                } else if ((strstr(dev_node_test, "/dev/dm-")) != NULL) {
+                    /* For device mapper (eg, LVM2) block devices */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
+                                tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/dm/name",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "Name: %s", tmp_buff);
+                        dev_cnt++;
+                    }
+
+                } else if ((strstr(dev_node_test, "/dev/cciss")) != NULL) {
+                    /* For Compaq SMART array controllers */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
+                                tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/%s/device/raid_level",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "RAID Level: %s", tmp_buff);
+                        dev_cnt++;
+                    }
+
+                } else if ((strstr(dev_node_test, "/dev/zd")) != NULL) {
+                    /* For ZFS block devices */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], "%s", MISC_STRING_LEN,
+                                tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/%s/queue/logical_block_size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "Block Size: %s", tmp_buff);
+                        dev_cnt++;
+                    }
+
+                } else if ((strstr(dev_node_test, "/dev/rbd")) != NULL) {
+                    /* For RBD (Ceph) block devices */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], "%s", MISC_STRING_LEN,
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
+                                tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/%s/queue/logical_block_size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "Block Size: %s", tmp_buff);
+                        dev_cnt++;
+                    }
+
+                } else if ((strstr(dev_node_test, "/dev/nvme")) != NULL) {
+                    /* For NVMe block devices */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
+                                tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/%s/queue/logical_block_size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "Block Size: %s", tmp_buff);
+                        dev_cnt++;
+                    }
+                }
+                // TODO: Still more controller block devices (ida, rd)
+                // need to be added but we need hardware so we can
+                // confirm sysfs attributes.
+            }
+        }
+        if (finished)
+            break;
+
+        /* Close the directory stream, we're done */
+        closedir(dir_stream);
+        break;
+    }
+
+    /* Done */
+    FREE_NULL(boot_dev_node);
+    return dev_cnt;
 }

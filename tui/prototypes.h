@@ -104,7 +104,18 @@ void addHSPDialog(CDKSCREEN *main_cdk_screen);
 void remHSPDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_softraid.c */
+int getBlockDevSelection(CDKSCREEN *cdk_screen,
+        char blk_dev_list[MAX_BLOCK_DEVS][MISC_STRING_LEN]);
+int getMDArrayChoice(CDKSCREEN *cdk_screen, char level[], char dev_cnt[],
+        char metadata[], char dev_path[]);
+int getMDMemberDevChoice(CDKSCREEN *cdk_screen, char dev_path[],
+        char member_dev[], char member_role[]);
 void softRAIDStatDialog(CDKSCREEN *main_cdk_screen);
+void addArrayDialog(CDKSCREEN *main_cdk_screen);
+void remArrayDialog(CDKSCREEN *main_cdk_screen);
+void faultDevDialog(CDKSCREEN *main_cdk_screen);
+void addDevDialog(CDKSCREEN *main_cdk_screen);
+void remDevDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_lvm.c */
 void lvm2InfoDialog(CDKSCREEN *main_cdk_screen);
@@ -169,6 +180,10 @@ int countSCSTSessLUNs(char tgt_name[], char tgt_driver[], char init_name[]);
 char *prettyFormatBytes(uint64_t size);
 boolean checkInetAccess();
 char *prettyShrinkStr(size_t max_len, char *string);
+int getUsableBlockDevs(CDKSCREEN *cdk_screen,
+        char blk_dev_name[MAX_BLOCK_DEVS][MISC_STRING_LEN],
+        char blk_dev_info[MAX_BLOCK_DEVS][MISC_STRING_LEN],
+        char blk_dev_size[MAX_BLOCK_DEVS][MISC_STRING_LEN]);
 
 /* strings.c */
 size_t g_scst_dev_types_size();

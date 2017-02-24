@@ -242,7 +242,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		tzdata-2016i.tar.gz \
 		nvme-cli-1.1.tar.gz \
 		freetype-2.7.tar.bz2 \
-		win_binaries-20140704.tar.xz)
+		win_binaries-20170222.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
 build_targets	:= esos_kernels kernel_headers esos_tui scst \

@@ -87,12 +87,12 @@ extern "C" {
 extern char *g_no_yes_opts[], *g_auth_meth_opts[], *g_ip_opts[],
         *g_cache_opts[], *g_hw_write_opts[], *g_hw_read_opts[], *g_bbu_opts[],
         *g_hw_raid_opts[], *g_strip_opts[], *g_dsbl_enbl_opts[],
-        *g_fs_type_opts[];
+        *g_fs_type_opts[], *g_md_level_opts[], *g_md_chunk_opts[];
 
 /* Misc. widget related strings */
 extern char *g_choice_char[], *g_bonding_map[], *g_scst_dev_types[],
         *g_scst_bs_list[], *g_fio_types[], *g_sync_label_msg[],
-        *g_add_ld_label_msg[], *g_usage_label_msg[];
+        *g_add_ld_label_msg[], *g_add_array_label_msg[], *g_usage_label_msg[];
 
 /* Button strings */
 extern char *g_ok_msg[], *g_ok_cancel_msg[], *g_yes_no_msg[];
