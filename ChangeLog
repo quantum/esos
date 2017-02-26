@@ -1,3 +1,7 @@
+2017-02-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	implemented all of the LVM dialogs in the TUI; tweaks/fixes in several other TUI dialogs
+
 2017-02-23  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed the setup.bat script to handle Windows 10 in the win_binaries package (ext2fsd); added the dialogs and helper functions for the Software RAID menu... needs more testing; several fixes/tweaks in other TUI code

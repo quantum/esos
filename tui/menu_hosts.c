@@ -59,6 +59,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
         /* Draw the entry widget */
         curs_set(1);
         group_name = activateCDKEntry(grp_name_entry, 0);
+        curs_set(0);
 
         /* Check exit from widget */
         if (grp_name_entry->exitType == vNORMAL) {
@@ -84,8 +85,7 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
 
     /* Done */
     FREE_NULL(entry_title);
-    if (grp_name_entry)
-        destroyCDKEntry(grp_name_entry);
+    destroyCDKEntry(grp_name_entry);
     return;
 }
 
@@ -267,6 +267,7 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                 /* Draw the entry widget */
                 curs_set(1);
                 entry_init_name = activateCDKEntry(init_entry, 0);
+                curs_set(0);
 
                 /* Check exit from widget */
                 if (init_entry->exitType == vNORMAL) {

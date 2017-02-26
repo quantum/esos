@@ -245,6 +245,7 @@ void addDevGrpDialog(CDKSCREEN *main_cdk_screen) {
         /* Draw the entry widget */
         curs_set(1);
         dev_grp_name = activateCDKEntry(dev_grp_name_entry, 0);
+        curs_set(0);
 
         /* Check exit from widget */
         if (dev_grp_name_entry->exitType == vNORMAL) {

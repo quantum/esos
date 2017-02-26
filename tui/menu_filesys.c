@@ -668,7 +668,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
     tButtonCallback ok_cb = &okButtonCB, cancel_cb = &cancelButtonCB;
     char fs_name[MAX_FS_ATTR_LEN] = {0}, fs_path[MAX_FS_ATTR_LEN] = {0},
             fs_type[MAX_FS_ATTR_LEN] = {0}, mount_cmd[MAX_SHELL_CMD_LEN] = {0},
-            vdisk_name_buff[MAX_VDISK_NAME] = {0},
+            vdisk_name_buff[MAX_VDISK_NAME_LEN] = {0},
             gib_free_str[MISC_STRING_LEN] = {0},
             gib_total_str[MISC_STRING_LEN] = {0},
             zero_buff[VDISK_WRITE_SIZE] = {0},
@@ -776,7 +776,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
                 "</B>Virtual Disk File Name", NULL,
                 g_color_dialog_select[g_curr_theme],
                 '_' | g_color_dialog_input[g_curr_theme], vLMIXED,
-                20, 0, MAX_VDISK_NAME, FALSE, FALSE);
+                20, 0, MAX_VDISK_NAME_LEN, FALSE, FALSE);
         if (!vdisk_name) {
             errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
             break;
@@ -828,7 +828,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Check virtual disk name value (field entry) */
             strncpy(vdisk_name_buff, getCDKEntryValue(vdisk_name),
-                    MAX_VDISK_NAME);
+                    MAX_VDISK_NAME_LEN);
             if (!checkInputStr(main_cdk_screen, NAME_CHARS, vdisk_name_buff))
                 break;
 

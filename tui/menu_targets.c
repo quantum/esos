@@ -176,6 +176,7 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
         /* Draw the entry widget */
         curs_set(1);
         target_name = activateCDKEntry(tgt_name_entry, 0);
+        curs_set(0);
 
         /* Check exit from widget */
         if (tgt_name_entry->exitType == vNORMAL) {
@@ -543,6 +544,7 @@ void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
         /* Draw the scale widget */
         curs_set(1);
         new_rel_tgt_id = activateCDKScale(rel_tgt_id_scale, 0);
+        curs_set(0);
 
         /* Check exit from widget */
         if (rel_tgt_id_scale->exitType == vNORMAL) {

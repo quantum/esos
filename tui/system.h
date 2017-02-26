@@ -168,6 +168,15 @@ extern "C" {
 #define SUPPORT_TOOL    "/usr/local/sbin/support_pkg.sh"
 #define HWRAID_CLI_TOOL "/usr/local/sbin/hw_raid_cli.py"
 #define MDADM_BIN       "/sbin/mdadm"
+#define PVS_BIN         "/usr/sbin/pvs"
+#define VGS_BIN         "/usr/sbin/vgs"
+#define LVS_BIN         "/usr/sbin/lvs"
+#define PVCREATE_BIN    "/usr/sbin/pvcreate"
+#define PVREMOVE_BIN    "/usr/sbin/pvremove"
+#define VGCREATE_BIN    "/usr/sbin/vgcreate"
+#define VGREMOVE_BIN    "/usr/sbin/vgremove"
+#define LVCREATE_BIN    "/usr/sbin/lvcreate"
+#define LVREMOVE_BIN    "/usr/sbin/lvremove"
 
 /* A few sysfs settings */
 #define SYSFS_FC_HOST           "/sys/class/fc_host"
@@ -231,6 +240,8 @@ extern "C" {
 #define MAX_SCST_TGT_GRP_NAME_LEN   SCST_TGT_GRP_NAME_LEN + 1
 #define SCST_TGT_NAME_LEN           64
 #define MAX_SCST_TGT_NAME_LEN       SCST_TGT_NAME_LEN + 1
+#define LVM_VOL_GRP_NAME_LEN        16
+#define MAX_LVM_VOL_GRP_NAME_LEN    LVM_VOL_GRP_NAME_LEN + 1
 #define MAX_SCSI_DEVICES            256
 #define MIN_SCST_REL_TGT_ID         0
 #define MAX_SCST_REL_TGT_ID         65535

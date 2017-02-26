@@ -36,6 +36,8 @@ char *g_choice_char[] = {"[ ] ", "[*] "},
         "</B>   Adding the new logical drive...   ", "", ""},
         *g_add_array_label_msg[] = {"", "",
         "</B>   Adding the new MD array...   ", "", ""},
+        *g_add_lv_label_msg[] = {"", "",
+        "</B>   Adding the new LVM LV...   ", "", ""},
         *g_usage_label_msg[] = {"", "",
         "</B>   Transmitting ESOS usage count...   ", "", ""};
 
@@ -66,6 +68,9 @@ size_t g_add_ld_label_msg_size() {
 }
 size_t g_add_array_label_msg_size() {
     return (sizeof g_add_array_label_msg) / (sizeof g_add_array_label_msg[0]);
+}
+size_t g_add_lv_label_msg_size() {
+    return (sizeof g_add_lv_label_msg) / (sizeof g_add_lv_label_msg[0]);
 }
 size_t g_usage_label_msg_size() {
     return (sizeof g_usage_label_msg) / (sizeof g_usage_label_msg[0]);

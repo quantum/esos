@@ -73,6 +73,8 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
         char iface_name[], char iface_mac[], char iface_speed[],
         char iface_duplex[], bonding_t *iface_bonding, boolean *iface_bridge,
         char **slaves, int *slave_cnt, char **br_members, int *br_member_cnt);
+int getBlockDevSelection(CDKSCREEN *cdk_screen,
+        char blk_dev_list[MAX_BLOCK_DEVS][MISC_STRING_LEN]);
 
 /* menu_system.c */
 void networkDialog(CDKSCREEN *main_cdk_screen);
@@ -104,8 +106,6 @@ void addHSPDialog(CDKSCREEN *main_cdk_screen);
 void remHSPDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_softraid.c */
-int getBlockDevSelection(CDKSCREEN *cdk_screen,
-        char blk_dev_list[MAX_BLOCK_DEVS][MISC_STRING_LEN]);
 int getMDArrayChoice(CDKSCREEN *cdk_screen, char level[], char dev_cnt[],
         char metadata[], char dev_path[]);
 int getMDMemberDevChoice(CDKSCREEN *cdk_screen, char dev_path[],
@@ -118,7 +118,18 @@ void addDevDialog(CDKSCREEN *main_cdk_screen);
 void remDevDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_lvm.c */
+int getPVSelection(CDKSCREEN *cdk_screen, boolean avail_only,
+        char pv_name_list[MAX_LVM_PVS][MISC_STRING_LEN]);
+int getVGChoice(CDKSCREEN *cdk_screen, char name[], char size[],
+        char free_space[], char pv_cnt[], char lv_cnt[]);
+int getLVChoice(CDKSCREEN *cdk_screen, char path[], char size[], char attr[]);
 void lvm2InfoDialog(CDKSCREEN *main_cdk_screen);
+void addPVDialog(CDKSCREEN *main_cdk_screen);
+void remPVDialog(CDKSCREEN *main_cdk_screen);
+void addVGDialog(CDKSCREEN *main_cdk_screen);
+void remVGDialog(CDKSCREEN *main_cdk_screen);
+void addLVDialog(CDKSCREEN *main_cdk_screen);
+void remLVDialog(CDKSCREEN *main_cdk_screen);
 
 /* menu_filesys.c */
 void createFSDialog(CDKSCREEN *main_cdk_screen);

@@ -2019,3 +2019,103 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
     }
     return;
 }
+
+
+/**
+ * @brief Present the user with a list of usable block devices detected on
+ * the system, and let them select any number of devices. The list of selected
+ * block devices are passed by reference as a single list of strings and this
+ * value is set after a selection is made. We return the number of block
+ * devices selected on success, and -1 if an error occurred. This function will
+ * handle displaying any errors that are encountered.
+ */
+int getBlockDevSelection(CDKSCREEN *cdk_screen,
+        char blk_dev_list[MAX_BLOCK_DEVS][MISC_STRING_LEN]) {
+    CDKSELECTION *blk_dev_select = 0;
+    char *blk_dev_select_title = NULL;
+    char blk_dev_name[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {{0}, {0}},
+            blk_dev_info[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {{0}, {0}},
+            blk_dev_size[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {{0}, {0}};
+    char *selection_list[MAX_HWRAID_PDRVS] = {NULL};
+    int dev_cnt, i = 0, chosen_dev_cnt = 0;
+    boolean user_quit = FALSE;
+
+    /* Get the usable block devices on this system */
+    if ((dev_cnt = getUsableBlockDevs(cdk_screen, blk_dev_name,
+            blk_dev_info, blk_dev_size)) == -1)
+        return -1;
+
+    /* Make sure we actually have something to present */
+    if (dev_cnt == 0) {
+        errorDialog(cdk_screen, "No block devices found!", NULL);
+        return -1;
+    }
+
+    /* Fill the list (pretty) for our CDK label with block devices */
+    for (i = 0; i < dev_cnt; i++) {
+        if (i < MAX_BLOCK_DEVS) {
+            SAFE_ASPRINTF(&selection_list[i],
+                    "<C>%-8.8s %-26.26s Size: %-14.14s",
+                    blk_dev_name[i], blk_dev_info[i], blk_dev_size[i]);
+        }
+    }
+
+    while (1) {
+        /* Selection widget for block devices */
+        SAFE_ASPRINTF(&blk_dev_select_title, "<C></%d/B>Select Block Devices\n",
+                g_color_dialog_title[g_curr_theme]);
+        blk_dev_select = newCDKSelection(cdk_screen, CENTER, CENTER, NONE,
+                14, 64, blk_dev_select_title, selection_list, dev_cnt,
+                g_choice_char, 2, g_color_dialog_select[g_curr_theme],
+                TRUE, FALSE);
+        if (!blk_dev_select) {
+            errorDialog(cdk_screen, SELECTION_ERR_MSG, NULL);
+            break;
+        }
+        setCDKSelectionBoxAttribute(blk_dev_select,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKSelectionBackgroundAttrib(blk_dev_select,
+                g_color_dialog_text[g_curr_theme]);
+
+        /* Activate the widget */
+        activateCDKSelection(blk_dev_select, 0);
+
+        /* User hit escape, so we get out of this */
+        if (blk_dev_select->exitType == vESCAPE_HIT) {
+            user_quit = TRUE;
+            destroyCDKSelection(blk_dev_select);
+            refreshCDKScreen(cdk_screen);
+            break;
+
+        /* User hit return/tab so we can continue on
+         * and get what was selected */
+        } else if (blk_dev_select->exitType == vNORMAL) {
+            chosen_dev_cnt = 0;
+            for (i = 0; i < dev_cnt; i++) {
+                if (blk_dev_select->selections[i] == 1) {
+                    snprintf(blk_dev_list[chosen_dev_cnt], MISC_STRING_LEN,
+                            "%s", blk_dev_name[i]);
+                    chosen_dev_cnt++;
+                }
+            }
+            destroyCDKSelection(blk_dev_select);
+            refreshCDKScreen(cdk_screen);
+        }
+
+        /* Check and make sure some devices were actually selected */
+        if (chosen_dev_cnt == 0) {
+            errorDialog(cdk_screen, "No block devices selected!", NULL);
+            break;
+        }
+        break;
+    }
+
+    /* Done */
+    FREE_NULL(blk_dev_select_title);
+    for (i = 0; i < dev_cnt; i++)
+        FREE_NULL(selection_list[i]);
+    if (!user_quit && chosen_dev_cnt > 0)
+        return chosen_dev_cnt;
+    else
+        return -1;
+}

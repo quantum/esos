@@ -104,6 +104,7 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define NEW_LD_INFO_LINES               3
 #define NEW_ARRAY_INFO_LINES            3
 #define ADD_VDISK_INFO_LINES            4
+#define NEW_LV_INFO_LINES               4
 #define CONFIRM_DIAG_MSG_SIZE           6
 #define ERROR_DIAG_MSG_SIZE             6
 #define INFORM_DIAG_MSG_SIZE            6
@@ -132,8 +133,9 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define MAX_NTP_LEN             32
 #define MAX_FS_LABEL            12
 #define MAX_VDISK_PATH_LEN      256
-#define MAX_VDISK_NAME          32
+#define MAX_VDISK_NAME_LEN      32
 #define MAX_ARRAY_NAME_LEN      32
+#define MAX_LV_NAME_LEN         32
 
 /* Misc. limits */
 #define MAX_FILE_SYSTEMS                128
@@ -153,6 +155,9 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define MAX_HWRAID_LDRVS                128
 #define MAX_MD_ARRAYS                   64
 #define MAX_MD_MEMBERS                  128
+#define MAX_LVM_PVS                     256
+#define MAX_LVM_VGS                     128
+#define MAX_LVM_LVS                     512
 
 /* Character validation */
 typedef enum {
