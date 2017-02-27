@@ -1,12 +1,12 @@
-PROP_TOOLS="MegaCLI StorCLI arcconf hpacucli hpssacli linuxcli 3DM2_CLI"
+PROP_TOOLS="StorCLI perccli arcconf hpacucli hpssacli linuxcli 3DM2_CLI MegaCLI"
 
-TOOL_DESC_MegaCLI="Avago/LSI Logic MegaRAID Controllers (MegaCLI)"
-TOOL_FILE_MegaCLI="8-07-14_MegaCLI.zip"
-TOOL_URL_MegaCLI="http://docs.avagotech.com/docs/12351587"
-
-TOOL_DESC_StorCLI="Avago/LSI Logic Syncro/MegaRAID Controllers (StorCLI)"
+TOOL_DESC_StorCLI="Broadcom/Avago/LSI Syncro/MegaRAID Controllers"
 TOOL_FILE_StorCLI="MR_SAS_StorCLI_6-7-1-15-12-SCGCQ00852539.zip"
 TOOL_URL_StorCLI="http://docs.avagotech.com/docs/12354905"
+
+TOOL_DESC_perccli="Dell PERC Hardware RAID Controllers"
+TOOL_FILE_perccli="perccli-1.11.03-1_Linux_A00.tar.gz"
+TOOL_URL_perccli="https://downloads.dell.com/FOLDER02444760M/1/perccli-1.11.03-1_Linux_A00.tar.gz"
 
 TOOL_DESC_arcconf="Adaptec AACRAID Controllers"
 TOOL_FILE_arcconf="arcconf_v1_8_21375.zip"
@@ -27,4 +27,8 @@ TOOL_URL_linuxcli="http://www.areca.us/support/s_linux/driver/cli/linuxcli_V1.50
 TOOL_DESC_3DM2_CLI="3ware SATA/SAS RAID Controllers"
 TOOL_FILE_3DM2_CLI="3DM2_CLI-linux_10-2-2-1_9-5-5-1.zip"
 TOOL_URL_3DM2_CLI="http://docs.avagotech.com/docs/12353043"
+
+TOOL_DESC_MegaCLI="Legacy Broadcom/Avago/LSI MegaCLI Tool (Special Use Only)"
+TOOL_FILE_MegaCLI="8-07-14_MegaCLI.zip"
+TOOL_URL_MegaCLI="http://docs.avagotech.com/docs/12351587"
 

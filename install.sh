@@ -302,19 +302,25 @@ else
     mkdir -p ${MNT_DIR}/opt/{sbin,lib} || exit 1
     cd ${TEMP_DIR}
     for i in ${install_list}; do
-        if [ "${i}" = "MegaCLI" ]; then
-            unzip -o ${PKG_DIR}/*_MegaCLI.zip && ${rpm2cpio} Linux/MegaCli-*.rpm | \
-            cpio -idmv && cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/
-        elif [ "${i}" = "StorCLI" ]; then
-            unzip -o ${PKG_DIR}/*_StorCLI*.zip && unzip -o versionChangeSet/univ_viva_cli_rel/storcli_all_os.zip && ${rpm2cpio} storcli_all_os/Linux/storcli-*.rpm | \
-            cpio -idmv && cp opt/MegaRAID/storcli/storcli64 ${MNT_DIR}/opt/sbin/ && \
-            cp opt/MegaRAID/storcli/libstorelibir* ${MNT_DIR}/opt/lib/
+        if [ "${i}" = "StorCLI" ]; then
+            unzip -o ${PKG_DIR}/*_StorCLI*.zip && unzip -o \
+            versionChangeSet/univ_viva_cli_rel/storcli_all_os.zip && \
+            ${rpm2cpio} storcli_all_os/Linux/storcli-*.rpm | \
+            cpio -idmv && cp opt/MegaRAID/storcli/storcli64 \
+            ${MNT_DIR}/opt/sbin/ && cp opt/MegaRAID/storcli/libstorelibir* \
+            ${MNT_DIR}/opt/lib/
+        elif [ "${i}" = "perccli" ]; then
+            tar xvfz ${PKG_DIR}/perccli-*.tar.gz && \
+            ${rpm2cpio} perccli-*.noarch.rpm | cpio -idmv && \
+            cp opt/MegaRAID/perccli/perccli64 ${MNT_DIR}/opt/sbin/ && \
+            cp opt/MegaRAID/perccli/libstorelibir* ${MNT_DIR}/opt/lib/
         elif [ "${i}" = "arcconf" ]; then
-            unzip -o ${PKG_DIR}/arcconf_*.zip && cp linux_x64/cmdline/arcconf ${MNT_DIR}/opt/sbin/
+            unzip -o ${PKG_DIR}/arcconf_*.zip && cp linux_x64/cmdline/arcconf \
+            ${MNT_DIR}/opt/sbin/
         elif [ "${i}" = "hpacucli" ]; then
             ${rpm2cpio} ${PKG_DIR}/hpacucli-*.x86_64.rpm | cpio -idmv && \
-            cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli && \
-            cp opt/compaq/hpacucli/bld/*.so ${MNT_DIR}/opt/lib/
+            cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli \
+            && cp opt/compaq/hpacucli/bld/*.so ${MNT_DIR}/opt/lib/
         elif [ "${i}" = "hpssacli" ]; then
             ${rpm2cpio} ${PKG_DIR}/hpssacli-*.x86_64.rpm | cpio -idmv && \
             cp opt/hp/hpssacli/bld/hpssacli ${MNT_DIR}/opt/sbin/
@@ -324,6 +330,10 @@ else
         elif [ "${i}" = "3DM2_CLI" ]; then
             unzip -o ${PKG_DIR}/3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && \
             cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/
+        elif [ "${i}" = "MegaCLI" ]; then
+            unzip -o ${PKG_DIR}/*_MegaCLI.zip && ${rpm2cpio} \
+            Linux/MegaCli-*.rpm | cpio -idmv && \
+            cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/
         fi
     done
 

@@ -1,3 +1,7 @@
+2017-02-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added support for Dell PERC RAID controllers in the hw_raid_cli tool, and in the installation scripts (perccli tool); some code formatting and cleanup in the hw_raid_cli script
+
 2017-02-25  Marc A. Smith  <marc.smith@parodyne.com>
 
 	implemented all of the LVM dialogs in the TUI; tweaks/fixes in several other TUI dialogs
