@@ -1,4 +1,8 @@
-2017-02-27  Marc A. Smith  <marc.smith@parodyne.com>
+2017-03-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed issue with the perccli extraction in Windows installer script; added the ledmon package
+
+2017-02-28  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added support for Dell PERC RAID controllers in the hw_raid_cli tool, and in the installation scripts (perccli tool); some code formatting and cleanup in the hw_raid_cli script
 

@@ -242,6 +242,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		tzdata-2016i.tar.gz \
 		nvme-cli-1.1.tar.gz \
 		freetype-2.7.tar.bz2 \
+		ledmon-0.80.tar.gz \
 		win_binaries-20170222.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -268,7 +269,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		edac-utils sysfsutils sqlite-autoconf iperf2 iperf3 libpcap \
 		iftop nmon munin-c open-iscsi open-isns coreutils \
 		open-vm-tools libdnet libffi ptyprocess requests openwsman \
-		swig userspace-rcu docutils tzdata nvme-cli freetype
+		swig userspace-rcu docutils tzdata nvme-cli freetype ledmon
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2890,5 +2891,10 @@ freetype: glibc bzip2
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(call clean_la_files,libfreetype)
+	$(TOUCH) $(@)
+
+ledmon: glibc
+	$(MAKE) --directory=$(tgt_src_dir) LDFLAGS="$(LDFLAGS)"
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
 
