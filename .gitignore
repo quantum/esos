@@ -182,3 +182,7 @@ tzdata
 nvme-cli
 freetype
 ledmon
+nvmetcli
+configshell-fb
+six
+pyparsing

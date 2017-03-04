@@ -243,6 +243,10 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		nvme-cli-1.1.tar.gz \
 		freetype-2.7.tar.bz2 \
 		ledmon-0.80.tar.gz \
+		nvmetcli-ec76995.tar.gz \
+		configshell-fb-1.1.fb23.tar.gz \
+		six-1.10.0.tar.gz \
+		pyparsing-2.1.10.tar.gz \
 		win_binaries-20170222.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -269,7 +273,8 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		edac-utils sysfsutils sqlite-autoconf iperf2 iperf3 libpcap \
 		iftop nmon munin-c open-iscsi open-isns coreutils \
 		open-vm-tools libdnet libffi ptyprocess requests openwsman \
-		swig userspace-rcu docutils tzdata nvme-cli freetype ledmon
+		swig userspace-rcu docutils tzdata nvme-cli freetype ledmon \
+		nvmetcli configshell-fb six pyparsing
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -1047,7 +1052,7 @@ makedumpfile: glibc elfutils bzip2
 	${WORK_DIR}/initramfs/usr/sbin/makedumpfile
 	$(TOUCH) $(@)
 
-elfutils: glibc
+elfutils: glibc zlib
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MKDIR) $(IMAGE_DIR)/usr/include/elfutils
@@ -1632,7 +1637,7 @@ nss: glibc gcc zlib
 	$(IMAGE_DIR)/usr/bin
 	$(TOUCH) $(@)
 
-glib: glibc zlib libffi util-linux
+glib: glibc zlib libffi util-linux elfutils
 	cd $(tgt_src_dir) && \
 	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
@@ -2748,7 +2753,7 @@ open-isns: glibc openssl
 	$(TOUCH) $(@)
 
 coreutils: glibc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/df $(IMAGE_DIR)/bin/df
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/dd $(IMAGE_DIR)/bin/dd
@@ -2896,5 +2901,26 @@ freetype: glibc bzip2
 ledmon: glibc
 	$(MAKE) --directory=$(tgt_src_dir) LDFLAGS="$(LDFLAGS)"
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
+	$(TOUCH) $(@)
+
+nvmetcli: Python setuptools configshell-fb six pyparsing
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(INSTALL) -m 0755 $(tgt_src_dir)/nvmetcli $(IMAGE_DIR)/usr/sbin/
+	$(TOUCH) $(@)
+
+configshell-fb: Python setuptools
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+six: Python setuptools
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+pyparsing: Python setuptools
+	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
+	./setup.py install --prefix=$(IMAGE_DIR)/usr
 	$(TOUCH) $(@)
 

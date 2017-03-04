@@ -1,3 +1,7 @@
+2017-03-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the nvmtecli utility for NVMe target support and required dependencies (configshell-fb, six, pyparsing); fixed several build issues (resolves GH issue #191); enabled additional NVMe features in the kernel configuration (Fabrics, RDMA, and target support)
+
 2017-03-02  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed issue with the perccli extraction in Windows installer script; added the ledmon package
