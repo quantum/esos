@@ -294,12 +294,17 @@ else
     fi
     # Mount it and inject all (if any) of the tools
     if [ "${this_os}" = "${LINUX}" ]; then
-        mount ${esos_conf} ${MNT_DIR} || exit 1
+        if [ -f "/etc/esos-release" ]; then
+            MNT_DIR=""
+        else
+            mount ${esos_conf} ${MNT_DIR} || exit 1
+            mkdir -p ${MNT_DIR}/opt/{sbin,lib} || exit 1
+        fi
     elif [ "${this_os}" = "${MACOSX}" ]; then
         fuse-ext2 -o force ${dev_node}s3 ${MNT_DIR} || exit 1
         sleep 5
+        mkdir -p ${MNT_DIR}/opt/{sbin,lib} || exit 1
     fi
-    mkdir -p ${MNT_DIR}/opt/{sbin,lib} || exit 1
     cd ${TEMP_DIR}
     for i in ${install_list}; do
         if [ "${i}" = "StorCLI" ]; then
@@ -338,7 +343,9 @@ else
     done
 
     cd -
-    umount ${MNT_DIR}
+    if [ ! -f "/etc/esos-release" ]; then
+        umount ${MNT_DIR}
+    fi
     echo
     echo "### ESOS USB drive installation complete!"
     echo "### You may now remove and use your ESOS USB drive."

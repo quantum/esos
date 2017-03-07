@@ -1887,6 +1887,10 @@ fence-agents: openwsman
 	$(MAKE) --directory=$(tgt_src_dir) PATH="$(WORK_DIR):$$PATH" \
 	PERL5LIB="$(wildcard $(IMAGE_DIR)/usr/lib/perl5/site_perl/5.*)"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
+	for i in $$(ls $(IMAGE_DIR)/usr/sbin/fence_*); do \
+	  $(SED) -i 's/$(subst /,\/,$(WORK_DIR))\/python/\/usr\/bin\/python/' \
+	  $$i; \
+	done
 	$(TOUCH) $(@)
 
 pexpect: Python setuptools python-suds ptyprocess
@@ -2150,7 +2154,7 @@ infiniband-diags: glibc libibumad libibverbs libibmad opensm glib eudev
 	-idirafter $(IMAGE_DIR)/usr/include/infiniband" \
 	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
-	./configure --prefix=/usr --sysconfdir=/etc
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libibnetdisc)

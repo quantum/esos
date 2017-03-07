@@ -8,6 +8,7 @@
 /bin/mount /dev/pts
 /bin/mkdir /dev/shm
 /bin/mount /dev/shm
+/bin/mount -t configfs none /sys/kernel/config
 
 /sbin/bootlogd -c
 

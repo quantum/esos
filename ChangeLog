@@ -1,3 +1,7 @@
+2017-03-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed issue with the fence-agents Python scripts using our temporary Python wrapper instead of the local Python path when installed; fixed infiniband-diags recipe which was creating an extraneous /usr/var/run directory when installing; resolved issue in the init_crypto() helper (/etc/rc.d/common) where parameters were not accepted for LUKS partitions; mount configfs early in rc.sysinit instead of rc.dlm; updated the install.sh script to install propietary CLI tools correctly when used on a running ESOS host; updated the kernel config to include the null test block driver; updated health_chk.sh to use new the hw_raid_cli.py script for detecting failed physical/logical drives on hardware RAID controllers
+
 2017-03-04  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the nvmtecli utility for NVMe target support and required dependencies (configshell-fb, six, pyparsing); fixed several build issues (resolves GH issue #191); enabled additional NVMe features in the kernel configuration (Fabrics, RDMA, and target support)

@@ -20,8 +20,6 @@ else
 fi
 
 start() {
-    /bin/echo "Setting up for DLM..."
-    /bin/mount -t configfs none /sys/kernel/config > /dev/null 2>&1
     /bin/echo "Starting dlm_controld..."
     eval ${DLM_CONTROLD} ${USER_OPTS} || exit 1
     /bin/touch ${DLM_CONTROLD_LOCK}
