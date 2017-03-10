@@ -2902,7 +2902,7 @@ freetype: glibc bzip2
 	$(call clean_la_files,libfreetype)
 	$(TOUCH) $(@)
 
-ledmon: glibc
+ledmon: glibc sg3_utils
 	$(MAKE) --directory=$(tgt_src_dir) LDFLAGS="$(LDFLAGS)"
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)

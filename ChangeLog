@@ -1,5 +1,7 @@
 2017-03-10  Marc A. Smith  <marc.smith@parodyne.com>
 
+	fixed build issue for the ledmon package (missing sg3_utils dep)
+
 	updated several packages to the latest version: grub, xfsprogs, fio, kexec-tools, lvm2, linux, makedumpfile, scst; cleaned up (removed) a lot of obsolete config/patch files from the misc/ directory; updated the rc.network script so udhcpc waits in the background for a lease instead of exiting immediately
 
 2017-03-07  Marc A. Smith  <marc.smith@parodyne.com>
