@@ -87,7 +87,7 @@ debug_suffix	:= -esos.debug
 
 dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		busybox-1.26.2.tar.bz2 \
-		grub-2.02~beta3.tar.xz \
+		grub-2.02~rc1.tar.xz \
 		sysvinit-2.88dsf.tar.bz2 \
 		glibc-2.24.tar.bz2 \
 		vixie-cron-4.1.tar.bz2 \
@@ -105,14 +105,14 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		groff-1.22.3.tar.gz \
 		ncurses-5.9.tar.gz \
 		qlogic_fw-20140928.tar.gz \
-		linux-4.9.8.tar.xz \
+		linux-4.9.13.tar.xz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.2.x_r7092.tar.gz \
-		kexec-tools-2.0.13.tar.gz \
+		scst-3.2.x_r7105.tar.gz \
+		kexec-tools-2.0.14.tar.xz \
 		drbd-utils-8.9.6.tar.gz \
-		lvm2-2_02_166.tar.gz \
-		xfsprogs-4.7.0.tar.gz \
+		lvm2-2_02_168.tar.gz \
+		xfsprogs-4.10.0.tar.xz \
 		mdadm-4.0.tar.xz \
 		parted-3.1.tar.xz \
 		gcc-4.7.4.tar.bz2 \
@@ -194,9 +194,9 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		smartmontools-6.5.tar.gz \
 		cryptsetup-1.7.2.tar.xz \
 		popt-1.16.tar.gz \
-		makedumpfile-1.6.0.tar.gz \
+		makedumpfile-1.6.1.tar.gz \
 		elfutils-0.167.tar.bz2 \
-		fio-2.14.tar.gz \
+		fio-2.18.tar.gz \
 		mtx-1.3.12.tar.gz \
 		mt-st-1.3.tar.gz \
 		nagios-plugins-2.1.2.tar.gz \

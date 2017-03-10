@@ -1,3 +1,7 @@
+2017-03-10  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated several packages to the latest version: grub, xfsprogs, fio, kexec-tools, lvm2, linux, makedumpfile, scst; cleaned up (removed) a lot of obsolete config/patch files from the misc/ directory; updated the rc.network script so udhcpc waits in the background for a lease instead of exiting immediately
+
 2017-03-07  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed issue with the fence-agents Python scripts using our temporary Python wrapper instead of the local Python path when installed; fixed infiniband-diags recipe which was creating an extraneous /usr/var/run directory when installing; resolved issue in the init_crypto() helper (/etc/rc.d/common) where parameters were not accepted for LUKS partitions; mount configfs early in rc.sysinit instead of rc.dlm; updated the install.sh script to install propietary CLI tools correctly when used on a running ESOS host; updated the kernel config to include the null test block driver; updated health_chk.sh to use new the hw_raid_cli.py script for detecting failed physical/logical drives on hardware RAID controllers
