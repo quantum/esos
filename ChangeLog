@@ -1,3 +1,7 @@
+2017-03-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed nrpe recipe which was creating an extraneous /usr/var directory when installing
+
 2017-03-10  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed build issue for the ledmon package (missing sg3_utils dep)

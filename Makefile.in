@@ -2185,7 +2185,8 @@ python-daemon: glibc Python lockfile setuptools docutils
 nrpe: glibc openssl e2fsprogs
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--enable-ssl --with-ssl-inc=$(IMAGE_DIR)/usr/include/openssl \
-	--with-ssl-lib=$(IMAGE_DIR)/usr/lib --enable-command-args
+	--with-ssl-lib=$(IMAGE_DIR)/usr/lib --enable-command-args \
+	--with-piddir=/var/run
 	$(MAKE) --directory=$(tgt_src_dir) all
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	NAGIOS_INSTALL_OPTS="" NRPE_INSTALL_OPTS="" install
