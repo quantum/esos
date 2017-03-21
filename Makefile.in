@@ -704,12 +704,25 @@ esos_kernels: $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux attr,)
 	    $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
 	  fi; \
 	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
-	    $(MAKE) --directory=$(linux_src) \
-	    M=$(celerity_16_32_dir)/src clean; \
+	    $(SED) -i 's, /usr/lib, $(IMAGE_DIR)/usr/lib,g' \
+	    $(celerity_16_32_dir)/src/Makefile; \
+	    $(SED) -i 's, /etc, $(IMAGE_DIR)/etc,g' \
+	    $(celerity_16_32_dir)/src/Makefile; \
+	    $(SED) -i 's/-m 0744 -o root -g root/-m 0644/g' \
+	    $(celerity_16_32_dir)/src/Makefile; \
+	    $(SED) -i 's/@depmod/#depmod/' \
+	    $(celerity_16_32_dir)/src/Makefile; \
+	    $(MAKE) --directory=$(celerity_16_32_dir)/src \
+	    DRIVER_NAME=celerity16fc clean; \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
-	    $(MAKE) --directory=$(linux_src) \
-	    M=$(atto_scst_dir) clean; \
+	    $(SED) -i 's,/usr/local/include/scst,$(scst_src)/scst/include,g' \
+	    $(atto_scst_dir)/Makefile; \
+	    $(SED) -i 's/-m 0744 -o root -g root/-m 0644/g' \
+	    $(atto_scst_dir)/Makefile; \
+	    $(SED) -i 's/depmod/#depmod/' \
+	    $(atto_scst_dir)/Makefile; \
+	    $(MAKE) --directory=$(atto_scst_dir) clean; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(MAKE) --directory=$(linux_src) \
@@ -843,19 +856,20 @@ esos_kernels: $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux attr,)
 	  fi; \
 	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
 	    $(ECHO) "### Building the ATTO Celerity 16/32 HBA module..."; \
-	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
-	    M=$(celerity_16_32_dir)/src modules; \
-	    $(INSTALL) -D -m 0644 \
-	    $(celerity_16_32_dir)/src/celerity16fc.ko \
-	    $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/celerity16fc.ko; \
+	    $(MAKE) --directory=$(celerity_16_32_dir)/src \
+	    KERNELRELEASE=$(kernel_ver)$$i KDIR=$(linux_src) \
+	    MODULE_ROOT=$(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers \
+	    DRIVER_NAME=celerity16fc PWD=$(celerity_16_32_dir)/src install; \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
 	    $(ECHO) "### Building the ATTO SCST Target module..."; \
 	    $(CAT) $(celerity_16_32_dir)/src/Module.symvers \
 	    $(IMAGE_DIR)/usr/include/scst/Module.symvers > \
 	    $(atto_scst_dir)/Module.symvers; \
-	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
-	    M=$(atto_scst_dir) atto_scst_16fc; \
+	    $(MAKE) --directory=$(atto_scst_dir) KDIR=$(linux_src) \
+	    FULL_KERNEL_VERSION=$(kernel_ver)$$i PWD=$(atto_scst_dir) \
+	    MODULE_ROOT=$(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra \
+	    atto_scst_16fc; \
 	    $(INSTALL) -D -m 0644 \
 	    $(atto_scst_dir)/atto_scst_16fc.ko \
 	    $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/atto_scst_16fc.ko; \

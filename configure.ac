@@ -212,7 +212,7 @@ if test  "x${with_celerity_16_32}" = "xyes"; then
 		AC_MSG_NOTICE([extracting the celerity_16_32 package file...])
 		celerity_16_32_dir="${work_dir}/celerity_16_32"
 		${mkdir} -p ${celerity_16_32_dir} || exit 1
-		${tar} xfz ${celerity_16_32_file} -C ${celerity_16_32_dir} || exit 1
+		${tar} xfz ${celerity_16_32_file} --strip-components=1 -C ${celerity_16_32_dir} || exit 1
 	else
 		AC_MSG_ERROR([unable to access the celerity_16_32 file: ${celerity_16_32_file}])
 	fi
@@ -229,12 +229,16 @@ AC_ARG_WITH(atto_scst,
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
 	[atto_scst_file="${withval}"; with_atto_scst="yes"],
 	[with_atto_scst="no"]), with_atto_scst="no")
+if test  "x${with_celerity_16_32}" != "xyes"; then
+	AC_MSG_ERROR([the ATTO SCST driver requires the Celerity 16/32 build option])
+fi
 if test  "x${with_atto_scst}" = "xyes"; then
 	if test -f "${atto_scst_file}"; then
 		AC_MSG_NOTICE([extracting the atto_scst package file...])
 		atto_scst_dir="${work_dir}/atto_scst"
 		${mkdir} -p ${atto_scst_dir} || exit 1
-		${tar} xfz ${atto_scst_file} -C ${atto_scst_dir} || exit 1
+		${tar} xfz ${atto_scst_file} --strip-components=1 -C ${atto_scst_dir} || exit 1
+		${find} ${atto_scst_dir} -type f -exec ${chmod} 0644 {} \; || exit 1
 	else
 		AC_MSG_ERROR([unable to access the atto_scst file: ${atto_scst_file}])
 	fi
