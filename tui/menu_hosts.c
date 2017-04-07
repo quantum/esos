@@ -275,6 +275,8 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                     if (!checkInputStr(main_cdk_screen, INIT_CHARS,
                             entry_init_name))
                         break;
+                } else {
+                    break;
                 }
             }
         }
