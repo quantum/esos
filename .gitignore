@@ -22,6 +22,8 @@ valgrind
 strace
 spl
 zfs
+celerity_16_32
+atto_scst
 ocs_sdk
 uwire
 busybox

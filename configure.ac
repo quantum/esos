@@ -200,6 +200,54 @@ AS_IF([test "x$enable_btier" = "xyes"], [build_opts="${build_opts} btier"])
 AC_SUBST(enable_btier, ${enable_btier})
 AC_MSG_NOTICE([btier: ${enable_btier}])
 
+dnl Optional package celerity_16_32 (user provides package file)
+AC_ARG_WITH(celerity_16_32,
+	AS_HELP_STRING([--with-celerity_16_32=PATH],
+	[build and include celerity_16_32; PATH is the celerity_16_32 package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[celerity_16_32_file="${withval}"; with_celerity_16_32="yes"],
+	[with_celerity_16_32="no"]), with_celerity_16_32="no")
+if test  "x${with_celerity_16_32}" = "xyes"; then
+	if test -f "${celerity_16_32_file}"; then
+		AC_MSG_NOTICE([extracting the celerity_16_32 package file...])
+		celerity_16_32_dir="${work_dir}/celerity_16_32"
+		${mkdir} -p ${celerity_16_32_dir} || exit 1
+		${tar} xfz ${celerity_16_32_file} --strip-components=1 -C ${celerity_16_32_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the celerity_16_32 file: ${celerity_16_32_file}])
+	fi
+fi
+AS_IF([test "x$with_celerity_16_32" = "xyes"], [build_opts="${build_opts} celerity_16_32"])
+AC_SUBST(celerity_16_32_dir, ${celerity_16_32_dir})
+AC_SUBST(with_celerity_16_32, ${with_celerity_16_32})
+AC_MSG_NOTICE([celerity_16_32: ${with_celerity_16_32}])
+
+dnl Optional package atto_scst (user provides package file)
+AC_ARG_WITH(atto_scst,
+	AS_HELP_STRING([--with-atto_scst=PATH],
+	[build and include atto_scst; PATH is the atto_scst package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[atto_scst_file="${withval}"; with_atto_scst="yes"],
+	[with_atto_scst="no"]), with_atto_scst="no")
+if test  "x${with_celerity_16_32}" != "xyes"; then
+	AC_MSG_ERROR([the ATTO SCST driver requires the Celerity 16/32 build option])
+fi
+if test  "x${with_atto_scst}" = "xyes"; then
+	if test -f "${atto_scst_file}"; then
+		AC_MSG_NOTICE([extracting the atto_scst package file...])
+		atto_scst_dir="${work_dir}/atto_scst"
+		${mkdir} -p ${atto_scst_dir} || exit 1
+		${tar} xfz ${atto_scst_file} --strip-components=1 -C ${atto_scst_dir} || exit 1
+		${find} ${atto_scst_dir} -type f -exec ${chmod} 0644 {} \; || exit 1
+	else
+		AC_MSG_ERROR([unable to access the atto_scst file: ${atto_scst_file}])
+	fi
+fi
+AS_IF([test "x$with_atto_scst" = "xyes"], [build_opts="${build_opts} atto_scst"])
+AC_SUBST(atto_scst_dir, ${atto_scst_dir})
+AC_SUBST(with_atto_scst, ${with_atto_scst})
+AC_MSG_NOTICE([atto_scst: ${with_atto_scst}])
+
 dnl Optional package ocs_sdk (user provides package file)
 AC_ARG_WITH(ocs_sdk,
 	AS_HELP_STRING([--with-ocs_sdk=PATH],

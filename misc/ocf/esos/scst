@@ -24,6 +24,9 @@ TRANSITION_STATE="transitioning"
 DLM_CONTROLD_PID="/var/run/dlm_controld/dlm_controld.pid"
 
 # For optional SCST modules
+if [ -f "/lib/modules/$(uname -r)/extra/atto_scst_16fc.ko" ]; then
+    MODULES="${MODULES} atto_scst_16fc"
+fi
 if [ -f "/lib/modules/$(uname -r)/extra/ocs_fc_scst.ko" ]; then
     MODULES="${MODULES} ocs_fc_scst"
 fi

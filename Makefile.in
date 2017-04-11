@@ -56,19 +56,23 @@ CUT		:= @cut@
 FLOCK		:= @flock@
 ZIC		:= @zic@
 
-enable_debug	:= @enable_debug@
-enable_gdb	:= @enable_gdb@
-enable_valgrind	:= @enable_valgrind@
-enable_strace	:= @enable_strace@
-enable_qla	:= @enable_qla@
-enable_zfs	:= @enable_zfs@
-enable_eio	:= @enable_eio@
-enable_btier	:= @enable_btier@
-with_ocs_sdk	:= @with_ocs_sdk@
-ocs_sdk_dir	:= @ocs_sdk_dir@
-with_uwire	:= @with_uwire@
-uwire_dir	:= @uwire_dir@
-build_opts	:= @build_opts@
+enable_debug		:= @enable_debug@
+enable_gdb		:= @enable_gdb@
+enable_valgrind		:= @enable_valgrind@
+enable_strace		:= @enable_strace@
+enable_qla		:= @enable_qla@
+enable_zfs		:= @enable_zfs@
+enable_eio		:= @enable_eio@
+enable_btier		:= @enable_btier@
+with_celerity_16_32	:= @with_celerity_16_32@
+celerity_16_32_dir	:= @celerity_16_32_dir@
+with_atto_scst		:= @with_atto_scst@
+atto_scst_dir		:= @atto_scst_dir@
+with_ocs_sdk		:= @with_ocs_sdk@
+ocs_sdk_dir		:= @ocs_sdk_dir@
+with_uwire		:= @with_uwire@
+uwire_dir		:= @uwire_dir@
+build_opts		:= @build_opts@
 
 git_branch	:= $(shell if branch="$$($(GIT) --git-dir=$(SRC_DIR)/.git rev-parse \
 		--symbolic-full-name --abbrev-ref HEAD 2>&1)"; \
@@ -306,6 +310,12 @@ endif
 ifeq ($(enable_btier),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,btier-1.3.11.tar.gz)
 	build_targets += btier
+endif
+ifeq ($(with_celerity_16_32),yes)
+	build_targets += celerity_16_32
+endif
+ifeq ($(with_atto_scst),yes)
+	build_targets += atto_scst
 endif
 ifeq ($(with_ocs_sdk),yes)
 	build_targets += ocs_sdk
@@ -693,6 +703,27 @@ esos_kernels: $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux attr,)
 	  if [ "$(enable_btier)" = "yes" ]; then \
 	    $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
 	  fi; \
+	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
+	    $(SED) -i 's, /usr/lib, $(IMAGE_DIR)/usr/lib,g' \
+	    $(celerity_16_32_dir)/src/Makefile; \
+	    $(SED) -i 's, /etc, $(IMAGE_DIR)/etc,g' \
+	    $(celerity_16_32_dir)/src/Makefile; \
+	    $(SED) -i 's/-m 0744 -o root -g root/-m 0644/g' \
+	    $(celerity_16_32_dir)/src/Makefile; \
+	    $(SED) -i 's/@depmod/#depmod/' \
+	    $(celerity_16_32_dir)/src/Makefile; \
+	    $(MAKE) --directory=$(celerity_16_32_dir)/src \
+	    DRIVER_NAME=celerity16fc clean; \
+	  fi; \
+	  if [ "$(with_atto_scst)" = "yes" ]; then \
+	    $(SED) -i 's,/usr/local/include/scst,$(scst_src)/scst/include,g' \
+	    $(atto_scst_dir)/Makefile; \
+	    $(SED) -i 's/-m 0744 -o root -g root/-m 0644/g' \
+	    $(atto_scst_dir)/Makefile; \
+	    $(SED) -i 's/depmod/#depmod/' \
+	    $(atto_scst_dir)/Makefile; \
+	    $(MAKE) --directory=$(atto_scst_dir) clean; \
+	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(MAKE) --directory=$(linux_src) \
 	    M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst clean; \
@@ -822,6 +853,26 @@ esos_kernels: $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux attr,)
 	    M=$(btier_src)/kernel/btier modules; \
 	    $(INSTALL) -D -m 0644 $(btier_src)/kernel/btier/btier.ko \
 	    $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers/block/btier.ko; \
+	  fi; \
+	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
+	    $(ECHO) "### Building the ATTO Celerity 16/32 HBA module..."; \
+	    $(MAKE) --directory=$(celerity_16_32_dir)/src \
+	    KERNELRELEASE=$(kernel_ver)$$i KDIR=$(linux_src) \
+	    MODULE_ROOT=$(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/kernel/drivers \
+	    DRIVER_NAME=celerity16fc PWD=$(celerity_16_32_dir)/src install; \
+	  fi; \
+	  if [ "$(with_atto_scst)" = "yes" ]; then \
+	    $(ECHO) "### Building the ATTO SCST Target module..."; \
+	    $(CAT) $(celerity_16_32_dir)/src/Module.symvers \
+	    $(IMAGE_DIR)/usr/include/scst/Module.symvers > \
+	    $(atto_scst_dir)/Module.symvers; \
+	    $(MAKE) --directory=$(atto_scst_dir) KDIR=$(linux_src) \
+	    FULL_KERNEL_VERSION=$(kernel_ver)$$i PWD=$(atto_scst_dir) \
+	    MODULE_ROOT=$(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra \
+	    atto_scst_16fc; \
+	    $(INSTALL) -D -m 0644 \
+	    $(atto_scst_dir)/atto_scst_16fc.ko \
+	    $(IMAGE_DIR)/lib/modules/$(kernel_ver)$$i/extra/atto_scst_16fc.ko; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(ECHO) "### Building the Emulex OCS SCST module..."; \
@@ -993,6 +1044,18 @@ zfs: esos_kernels eudev
 	$(call clean_la_files,libzpool)
 	$(call clean_la_files,libzfs_core)
 	$(call clean_la_files,libzfs)
+	$(TOUCH) $(@)
+
+celerity_16_32:
+	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/atfcnvr_x64 \
+	$(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/atflash_x64 \
+	$(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/atinfo_x64 \
+	$(IMAGE_DIR)/usr/sbin/
+	$(TOUCH) $(@)
+
+atto_scst:
 	$(TOUCH) $(@)
 
 ocs_sdk: glibc libxml2
