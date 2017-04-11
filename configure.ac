@@ -229,10 +229,10 @@ AC_ARG_WITH(atto_scst,
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
 	[atto_scst_file="${withval}"; with_atto_scst="yes"],
 	[with_atto_scst="no"]), with_atto_scst="no")
-if test  "x${with_celerity_16_32}" != "xyes"; then
-	AC_MSG_ERROR([the ATTO SCST driver requires the Celerity 16/32 build option])
-fi
 if test  "x${with_atto_scst}" = "xyes"; then
+	if test  "x${with_celerity_16_32}" != "xyes"; then
+		AC_MSG_ERROR([the ATTO SCST driver requires the Celerity 16/32 build option])
+	fi
 	if test -f "${atto_scst_file}"; then
 		AC_MSG_NOTICE([extracting the atto_scst package file...])
 		atto_scst_dir="${work_dir}/atto_scst"

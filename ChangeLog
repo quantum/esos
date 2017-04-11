@@ -1,5 +1,9 @@
 2017-04-10  Marc A. Smith  <marc.smith@parodyne.com>
 
+	Merge branch 'atto_conf_fix' into 1.x.x
+
+	fixed autoconf script issue with the ATTO SCST target driver requirement
+
 	Merge branch 'tui_tweaks' into 1.x.x
 
 	Merge branch 'add_i40e' into 1.x.x
