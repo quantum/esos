@@ -14,6 +14,9 @@ FCOEMON="/usr/sbin/fcoemon"
 FCOEMON_LOCK="/var/lock/fcoemon"
 
 # For optional SCST modules
+if [ -f "/lib/modules/$(/bin/uname -r)/extra/atto_scst_16fc.ko" ]; then
+    SCST_MODS="${SCST_MODS} atto_scst_16fc"
+fi
 if [ -f "/lib/modules/$(/bin/uname -r)/extra/ocs_fc_scst.ko" ]; then
     SCST_MODS="${SCST_MODS} ocs_fc_scst"
 fi
