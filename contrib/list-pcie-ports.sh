@@ -20,8 +20,8 @@ declare -a Port
 DMIDECODE=/usr/sbin/dmidecode
 
 # Minimum dmidecode version required
-majreq=2
-minreq=10
+majreq=3
+minreq=0
 
 usage() {
    echo "Usage: `basename $0` [options]"
