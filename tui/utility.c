@@ -586,7 +586,7 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
-                        snprintf(blk_dev_size[dev_cnt], "%s", MISC_STRING_LEN,
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
                                 tmp_buff);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
                                 "%s/%s/queue/logical_block_size",
