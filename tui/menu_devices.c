@@ -416,19 +416,6 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             setCDKItemlistBackgroundAttrib(block_size,
                     g_color_dialog_text[g_curr_theme]);
 
-            /* Write through widget (radio) */
-            write_through = newCDKRadio(dev_screen, (window_x + 1),
-                    (window_y + 11), NONE, 3, 10, "</B>Write Through",
-                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
-                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
-            if (!write_through) {
-                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-                break;
-            }
-            setCDKRadioBackgroundAttrib(write_through,
-                    g_color_dialog_text[g_curr_theme]);
-            setCDKRadioCurrentItem(write_through, 0);
-
             /* NV cache widget (radio) */
             nv_cache = newCDKRadio(dev_screen, (window_x + 18), (window_y + 7),
                     NONE, 3, 10, "</B>NV Cache", g_no_yes_opts, 2,
@@ -441,6 +428,32 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             setCDKRadioBackgroundAttrib(nv_cache,
                     g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(nv_cache, 0);
+
+            /* Removable widget (radio) */
+            removable = newCDKRadio(dev_screen, (window_x + 33), (window_y + 7),
+                    NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
+            if (!removable) {
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+                break;
+            }
+            setCDKRadioBackgroundAttrib(removable,
+                    g_color_dialog_text[g_curr_theme]);
+            setCDKRadioCurrentItem(removable, 0);
+
+            /* Write through widget (radio) */
+            write_through = newCDKRadio(dev_screen, (window_x + 1),
+                    (window_y + 11), NONE, 3, 10, "</B>Write Through",
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
+            if (!write_through) {
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+                break;
+            }
+            setCDKRadioBackgroundAttrib(write_through,
+                    g_color_dialog_text[g_curr_theme]);
+            setCDKRadioCurrentItem(write_through, 0);
 
             /* Read only widget (radio) */
             read_only = newCDKRadio(dev_screen, (window_x + 18),
@@ -455,21 +468,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(read_only, 0);
 
-            /* Removable widget (radio) */
-            removable = newCDKRadio(dev_screen, (window_x + 32), (window_y + 7),
-                    NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
-                    '#' | g_color_dialog_select[g_curr_theme], 1,
-                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
-            if (!removable) {
-                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-                break;
-            }
-            setCDKRadioBackgroundAttrib(removable,
-                    g_color_dialog_text[g_curr_theme]);
-            setCDKRadioCurrentItem(removable, 0);
-
             /* Rotational widget (radio) */
-            rotational = newCDKRadio(dev_screen, (window_x + 32),
+            rotational = newCDKRadio(dev_screen, (window_x + 33),
                     (window_y + 11), NONE, 3, 10, "</B>Rotational",
                     g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
                     1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
@@ -681,19 +681,6 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             setCDKItemlistBackgroundAttrib(block_size,
                     g_color_dialog_text[g_curr_theme]);
 
-            /* Write through widget (radio) */
-            write_through = newCDKRadio(dev_screen, (window_x + 1),
-                    (window_y + 11), NONE, 3, 10, "</B>Write Through",
-                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
-                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
-            if (!write_through) {
-                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-                break;
-            }
-            setCDKRadioBackgroundAttrib(write_through,
-                    g_color_dialog_text[g_curr_theme]);
-            setCDKRadioCurrentItem(write_through, 0);
-
             /* NV cache widget (radio) */
             nv_cache = newCDKRadio(dev_screen, (window_x + 18), (window_y + 7),
                     NONE, 3, 10, "</B>NV Cache", g_no_yes_opts, 2,
@@ -706,6 +693,32 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             setCDKRadioBackgroundAttrib(nv_cache,
                     g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(nv_cache, 0);
+
+            /* Removable widget (radio) */
+            removable = newCDKRadio(dev_screen, (window_x + 33), (window_y + 7),
+                    NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
+            if (!removable) {
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+                break;
+            }
+            setCDKRadioBackgroundAttrib(removable,
+                    g_color_dialog_text[g_curr_theme]);
+            setCDKRadioCurrentItem(removable, 0);
+
+            /* Write through widget (radio) */
+            write_through = newCDKRadio(dev_screen, (window_x + 1),
+                    (window_y + 11), NONE, 3, 10, "</B>Write Through",
+                    g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
+                    1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
+            if (!write_through) {
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+                break;
+            }
+            setCDKRadioBackgroundAttrib(write_through,
+                    g_color_dialog_text[g_curr_theme]);
+            setCDKRadioCurrentItem(write_through, 0);
 
             /* Read only widget (radio) */
             read_only = newCDKRadio(dev_screen, (window_x + 18),
@@ -720,21 +733,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(read_only, 0);
 
-            /* Removable widget (radio) */
-            removable = newCDKRadio(dev_screen, (window_x + 32), (window_y + 7),
-                    NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
-                    '#' | g_color_dialog_select[g_curr_theme], 1,
-                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
-            if (!removable) {
-                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-                break;
-            }
-            setCDKRadioBackgroundAttrib(removable,
-                    g_color_dialog_text[g_curr_theme]);
-            setCDKRadioCurrentItem(removable, 0);
-
             /* Rotational widget (radio) */
-            rotational = newCDKRadio(dev_screen, (window_x + 32),
+            rotational = newCDKRadio(dev_screen, (window_x + 33),
                     (window_y + 11), NONE, 3, 10, "</B>Rotational",
                     g_no_yes_opts, 2, '#' | g_color_dialog_select[g_curr_theme],
                     1, g_color_dialog_select[g_curr_theme], FALSE, FALSE);
@@ -864,19 +864,6 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             setCDKItemlistBackgroundAttrib(block_size,
                     g_color_dialog_text[g_curr_theme]);
 
-            /* Read only widget (radio) */
-            read_only = newCDKRadio(dev_screen, (window_x + 1), (window_y + 9),
-                    NONE, 3, 10, "</B>Read Only", g_no_yes_opts, 2,
-                    '#' | g_color_dialog_select[g_curr_theme], 1,
-                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
-            if (!read_only) {
-                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
-                break;
-            }
-            setCDKRadioBackgroundAttrib(read_only,
-                    g_color_dialog_text[g_curr_theme]);
-            setCDKRadioCurrentItem(read_only, 0);
-
             /* Removable widget (radio) */
             removable = newCDKRadio(dev_screen, (window_x + 18), (window_y + 5),
                     NONE, 3, 10, "</B>Removable", g_no_yes_opts, 2,
@@ -889,6 +876,19 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
             setCDKRadioBackgroundAttrib(removable,
                     g_color_dialog_text[g_curr_theme]);
             setCDKRadioCurrentItem(removable, 0);
+
+            /* Read only widget (radio) */
+            read_only = newCDKRadio(dev_screen, (window_x + 1), (window_y + 9),
+                    NONE, 3, 10, "</B>Read Only", g_no_yes_opts, 2,
+                    '#' | g_color_dialog_select[g_curr_theme], 1,
+                    g_color_dialog_select[g_curr_theme], FALSE, FALSE);
+            if (!read_only) {
+                errorDialog(main_cdk_screen, RADIO_ERR_MSG, NULL);
+                break;
+            }
+            setCDKRadioBackgroundAttrib(read_only,
+                    g_color_dialog_text[g_curr_theme]);
+            setCDKRadioCurrentItem(read_only, 0);
 
             /* Rotational widget (radio) */
             rotational = newCDKRadio(dev_screen, (window_x + 18),

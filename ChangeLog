@@ -1,4 +1,44 @@
+2017-04-10  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'tui_tweaks' into 1.x.x
+
+	Merge branch 'add_i40e' into 1.x.x
+
+	Merge branch 'fix_tui_segfault' into 1.x.x
+
+	Merge branch 'fix_list_pcie' into 1.x.x
+
+	Merge branch 'atto_fc_supp' into 1.x.x
+
+2017-04-06  Marc A. Smith  <marc.smith@parodyne.com>
+
+	changed the tab ordering in addDeviceDialog() for the vdisk_blockio, vdisk_fileio, and vdisk_nullio dialog variants; fixed widget spacing in addDeviceDialog(); fixed issue when hitting escape in addInitDialog() for manual initiator name entry, it added a "(null)" initiator name
+
+2017-04-05  Marc A. Smith  <marc.smith@parodyne.com>
+
+	enabled the Intel i40e driver (XL710 and X710)
+
+2017-03-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed a segfault in the TUI when ZFS volumes exist on a system (resolves GH issue # 192)
+
+2017-03-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed dmidecode requirements (version 3.0) in the list-pcie-ports.sh script
+
+2017-03-22  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated modprobe.conf to enable target mode by default for the celerity16fc module; updated the rc.2 script to load the ATTO 16/32 FC HBA module on boot (if it exists); updated rc.scst and the ocf:esos:scst RA to load the ATTO target driver if it exists
+
+2017-03-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	several build fixes for the ATTO Celerity driver and ATTO SCST target driver; updated the autoconf script to require --with-celerity_16_32 when using --with-atto_scst (its required for building and actual use)
+
+	added initial support for the ATTO Celerity 16/32 FC driver and ATTO SCST target driver as build-time options
+
 2017-03-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed issue with the 'esos_ver' make variable not using the tagged version
 
 	fixed nrpe recipe which was creating an extraneous /usr/var directory when installing
 
