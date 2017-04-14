@@ -1158,8 +1158,10 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
         if (block_dev_list->exitType == vNORMAL) {
             /* Return a unique block device node */
             SAFE_ASPRINTF(&block_dev, "/dev/%s", blk_dev_name[blk_dev_choice]);
-            if ((strstr(block_dev, "/dev/sd")) != NULL) {
-                /* Get a unique symbolic link to the SCSI disk */
+            if ((strstr(block_dev, "/dev/sd") != NULL) ||
+                    (strstr(block_dev, "/dev/md") != NULL) ||
+                    (strstr(block_dev, "/dev/zd") != NULL)) {
+                /* Get a unique symbolic link to the block device */
                 SAFE_ASPRINTF(&cmd_str,
                         "%s info --root --query symlink --name %s 2>&1",
                         UDEVADM_BIN, block_dev);
