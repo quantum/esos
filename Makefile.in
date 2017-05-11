@@ -109,7 +109,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		groff-1.22.3.tar.gz \
 		ncurses-5.9.tar.gz \
 		qlogic_fw-20140928.tar.gz \
-		linux-4.9.13.tar.xz \
+		linux-4.9.27.tar.xz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20161210.tar.gz \
 		scst-3.2.x_r7105.tar.gz \
@@ -681,6 +681,8 @@ esos_kernels: spl_src = $(wildcard $(PKG_SRC_DIR)/spl-*)
 esos_kernels: zfs_src = $(wildcard $(PKG_SRC_DIR)/zfs-*)
 esos_kernels: kernel_headers
 esos_kernels: $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux attr,)
+	- $(PATCH) -r - -N -d $(linux_src) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(linux_src)).patch
 	if [ "$(enable_qla)" != "yes" ]; then \
 	  $(RM) $(linux_src)/drivers/scsi/qla2xxx; \
 	  $(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx; \
