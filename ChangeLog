@@ -1,3 +1,41 @@
+2017-05-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'linux_kern_update'
+
+	Merge branch 'fix_freetype_build_err'
+
+	Merge branch 'add_taskset'
+
+	Merge branch 'scst_qla2xxx_update'
+
+	Merge branch 'extend_init_len'
+
+	Merge branch 'update_irqbalance'
+
+2017-05-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated to Linux 4.9.27; added a kernel patch to resolve a bug in 4.9.x which is exhibited when stopping an md-cluster array during a rebuild operation (http://www.spinics.net/lists/raid/msg56932.html)
+
+2017-05-09  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fix build issue with the freetype package by disabling harfbuzz and png support
+
+2017-05-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	include the 'taskset' utility from the util-linux package
+
+2017-04-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the QLogic-provided ("Git") driver to the latest version
+
+2017-04-23  Marc A. Smith  <marc.smith@parodyne.com>
+
+	increased the maximum length allowed (64 -> 128) when entering an initiator name string in the TUI (resolves GH issue # 199)
+
+2017-04-20  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated irqbalance to version 1.2.0
+
 2017-04-14  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'unique_dev_paths' into 1.x.x
@@ -8,6 +46,10 @@
 
 	Merge branch 'fix_scst_modprobe' into 1.x.x
 
+	Merge branch 'unique_dev_paths'
+
+	Merge branch 'intel_vf_mods'
+
 	updated getBlockDevChoice() so it provides a unique block device path for ZFS volumes, MD arrays, and SCSI disks
 
 2017-04-13  Marc A. Smith  <marc.smith@parodyne.com>
@@ -16,11 +58,19 @@
 
 2017-04-12  Marc A. Smith  <marc.smith@parodyne.com>
 
+	Merge branch 'fix_atto_modprobe'
+
+	Merge branch 'fix_scst_modprobe'
+
 	explicitly return 0 in the helper functions of rc.scst; when unloading optional modules in rc.scst, make sure the module is actually loaded before attempting to call rmmod
 
 	the celerity16fc module is noisy when using modprobe in rc.2 if no ATTO FC HBA's exist, so use the '-s' flag with modprobe to log to syslog
 
 2017-04-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'fix_scst_modprobe'
+	Conflicts:
+		ChangeLog
 
 	updated rc.scst and ocf:esos:scst to split the SCST kernel modules into two different variables (core, and optional) since some of the optional target drivers (eg, the ATTO drivers) won't load the module if no hardware exists which results in SCST not fully loading/configuring -- we fixed this by not checking the exit status when using modprobe on the optional modules, and log to syslog to keep the screen/output pretty
 
@@ -29,6 +79,8 @@
 	Merge branch 'atto_conf_fix'
 	Conflicts:
 		ChangeLog
+
+	Merge branch 'atto_conf_fix' into 1.x.x
 
 	fixed autoconf script issue with the ATTO SCST target driver requirement
 
@@ -41,6 +93,16 @@
 	Merge branch 'fix_list_pcie'
 
 	Merge branch 'atto_fc_supp'
+
+	Merge branch 'tui_tweaks' into 1.x.x
+
+	Merge branch 'add_i40e' into 1.x.x
+
+	Merge branch 'fix_tui_segfault' into 1.x.x
+
+	Merge branch 'fix_list_pcie' into 1.x.x
+
+	Merge branch 'atto_fc_supp' into 1.x.x
 
 2017-04-06  Marc A. Smith  <marc.smith@parodyne.com>
 
