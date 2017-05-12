@@ -2970,7 +2970,8 @@ nvme-cli: glibc eudev
 	$(TOUCH) $(@)
 
 freetype: glibc bzip2
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-harfbuzz=no \
+	--with-png=no
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(call clean_la_files,libfreetype)
