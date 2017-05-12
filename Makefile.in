@@ -294,7 +294,7 @@ ifeq ($(enable_strace),yes)
 	build_targets += strace
 endif
 ifeq ($(enable_qla),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,scst_qla2xxx-20150625.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,scst_qla2xxx-20170424.tar.gz)
 	build_targets += scst_qla2xxx
 endif
 ifeq ($(enable_zfs),yes)
