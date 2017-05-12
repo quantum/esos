@@ -2310,6 +2310,7 @@ util-linux: glibc ncurses zlib
 	DESTDIR=$(IMAGE_DIR)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/blkid $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/wipefs $(IMAGE_DIR)/usr/sbin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/taskset $(IMAGE_DIR)/usr/bin/
 	$(call clean_la_files,libcommon)
 	$(call clean_la_files,libuuid)
 	$(call clean_la_files,libmount)
