@@ -27,3 +27,79 @@
     } else if (strstr(distroLower, "fedora")) {
        Str_Strcpy(distroShort, STR_OS_FEDORA, distroShortSize);
     } else if (strstr(distroLower, "gentoo")) {
+
+From bbacfa56d7777be76c32f351b32383d1906f18cf Mon Sep 17 00:00:00 2001
+From: Paul Wise <pabs3@bonedaddy.net>
+Date: Sun, 17 Jul 2016 16:08:58 +0800
+Subject: [PATCH] Fix build failure with GCC 6
+
+This is due to the new -Wshift-overflow and -Wunused-const-variable options.
+
+Fixes: https://github.com/vmware/open-vm-tools/issues/67
+Fixes: https://bugs.debian.org/812046
+Fixes: https://bugzilla.redhat.com/show_bug.cgi?id=1305108
+---
+ open-vm-tools/lib/include/x86cpuid.h         |  2 +-
+ open-vm-tools/libDeployPkg/linuxDeployment.c | 13 +++++++++----
+ 2 files changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/lib/include/x86cpuid.h b/lib/include/x86cpuid.h
+index 161a8ac..f57099f 100644
+--- a/lib/include/x86cpuid.h
++++ b/lib/include/x86cpuid.h
+@@ -909,7 +909,7 @@ FIELD(81E,  0, ECX,  8,  3, NODES_PER_PKG,                         NA,  FALSE)
+  * Note: The MASK definitions must use some gymnastics to get
+  * around a warning when shifting left by 32.
+  */
+-#define VMW_BIT_MASK(shift)  (((1 << (shift - 1)) << 1) - 1)
++#define VMW_BIT_MASK(shift)  (((1u << (shift - 1)) << 1) - 1)
+ 
+ #define FIELD(lvl, ecxIn, reg, bitpos, size, name, s, c3)      \
+    CPUID_##name##_SHIFT        = bitpos,                       \
+diff --git a/libDeployPkg/linuxDeployment.c b/libDeployPkg/linuxDeployment.c
+index 951258e..48b8db2 100644
+--- a/libDeployPkg/linuxDeployment.c
++++ b/libDeployPkg/linuxDeployment.c
+@@ -67,7 +67,6 @@
+  * Constant definitions
+  */
+ 
+-static const char  ENDOFLINEMARKER = '\n';
+ static const char  SPACECHAR       = ' ';
+ static const char  TABCHAR         = '\t';
+ static const char  QUOTECHAR       = '"';
+@@ -913,22 +912,28 @@ Deploy(const char* packageName)
+    deploymentResult = ForkExecAndWaitCommand(command);
+    free (command);
+ 
+-   if (deploymentResult != 0) {
++   if (deploymentResult != CUST_SUCCESS) {
+       sLog(log_error, "Customization process returned with error. \n");
+       sLog(log_debug, "Deployment result = %d \n", deploymentResult);
+ 
+-      if (deploymentResult == CUST_NETWORK_ERROR || deploymentResult == CUST_NIC_ERROR) {
++      if (deploymentResult == CUST_NETWORK_ERROR || deploymentResult == CUST_NIC_ERROR || deploymentResult == CUST_DNS_ERROR) {
+          // Network specific error in the guest
+          sLog(log_info, "Setting network error status in vmx. \n");
+          SetCustomizationStatusInVmx(TOOLSDEPLOYPKG_RUNNING,
+                                      GUESTCUST_EVENT_NETWORK_SETUP_FAILED,
+                                      NULL);
+-      } else {
++      } else if (deploymentResult == CUST_GENERIC_ERROR) {
+          // Generic error in the guest
+          sLog(log_info, "Setting generic error status in vmx. \n");
+          SetCustomizationStatusInVmx(TOOLSDEPLOYPKG_RUNNING,
+                                      GUESTCUST_EVENT_CUSTOMIZE_FAILED,
+                                      NULL);
++      } else {
++         // Unknown error in the guest
++         sLog(log_info, "Setting unknown error status in vmx. \n");
++         SetCustomizationStatusInVmx(TOOLSDEPLOYPKG_RUNNING,
++                                     GUESTCUST_EVENT_CUSTOMIZE_FAILED,
++                                     NULL);
+       }
+ 
+       // Move to ERROR state
+-- 
+2.8.1
+
