@@ -52,44 +52,11 @@ scst_start() {
         ocf_run -warn sh "${PRE_SCST_CONF}"
     fi
 
-    # Load all modules
-    ocf_log info "Loading kernel modules..."
-    # The core SCST modules first
-    for i in ${SCST_MODS}; do
-        ocf_log debug "scst_start() -> Module: ${i}"
-        if [ -d /sys/module/${i} ]; then
-            ocf_log warn "The ${i} module is already loaded!"
-        else
-            ocf_run modprobe ${i} || exit ${OCF_ERR_GENERIC}
-        fi
-    done
-    # The optional driver modules next (don't check exit status)
-    for i in ${OPTL_MODS}; do
-        ocf_log debug "scst_start() -> Module: ${i}"
-        if [ -d /sys/module/${i} ]; then
-            ocf_log warn "The ${i} module is already loaded!"
-        else
-            ocf_run modprobe -s ${i}
-        fi
-    done
+    # Load SCST modules
+    load_scst_modules
 
-    # Start the daemons
-    ocf_log info "Starting daemons..."
-    if pidof iscsi-scstd > /dev/null 2>&1; then
-        ocf_log warn "The iscsi-scstd daemon is already running!"
-    else
-        ocf_run iscsi-scstd || exit ${OCF_ERR_GENERIC}
-    fi
-    if pidof lldpad > /dev/null 2>&1; then
-        ocf_log warn "The lldpad daemon is already running!"
-    else
-        ocf_run lldpad -d || exit ${OCF_ERR_GENERIC}
-    fi
-    if pidof fcoemon > /dev/null 2>&1; then
-        ocf_log warn "The fcoemon daemon is already running!"
-    else
-        ocf_run fcoemon -s || exit ${OCF_ERR_GENERIC}
-    fi
+    # Start SCST daemons
+    start_scst_daemons
 
     # Configure SCST
     if [ -f "${SCST_CFG}" ]; then
@@ -98,6 +65,8 @@ scst_start() {
         # Prevent scst_stop() from clobbering the configuration file
         if [ ${?} -ne 0 ]; then
             ocf_log err "Something is wrong with the SCST configuration!"
+            stop_scst_daemons
+            unload_scst_modules
             ocf_run touch "${NO_CLOBBER}"
             exit ${OCF_ERR_GENERIC}
         else
@@ -110,7 +79,8 @@ scst_start() {
     if kill -s 0 $(cat ${DLM_CONTROLD_PID}) > /dev/null 2>&1; then
         # Enable cluster mode for all SCST devices
         ocf_log info "Enabling cluster mode for all devices..."
-        for i in $(find ${SCST_SYSFS}/handlers -name cluster_mode -type f); do
+        for i in $(find ${SCST_SYSFS}/handlers -name cluster_mode -type f \
+            -follow -maxdepth 3); do
             echo 1 > ${i} &
         done
         ocf_log debug "Waiting for enable-cluster-mode to complete..."
@@ -211,6 +181,12 @@ scst_stop() {
     ocf_log debug "Waiting for disable-targets to complete..."
     wait
 
+    # Disabling an iSCSI target interface does not close sessions
+    ocf_log info "Closing any iSCSI sessions..."
+    for i in $(find ${SCST_SYSFS}/targets/iscsi/ -name force_close); do
+        echo 1 > ${i}
+    done
+
     # We need to wait for all sessions to complete before continuing
     ocf_log info "Waiting for all initiators to logout..."
     while ls -Ad ${SCST_SYSFS}/targets/*/*/sessions/* 2>&1 |
@@ -246,43 +222,11 @@ scst_stop() {
             ${SCST_CFG} || exit ${OCF_ERR_GENERIC}
     fi
 
-    # Stop all of the daemons and wait for each
-    ocf_log info "Stopping daemons..."
-    for i in "fcoemon lldpad iscsi-scstd"; do
-        pidof ${i} > /dev/null 2>&1
-        if [ ${?} -ne 0 ]; then
-            ocf_log warn "The ${i} daemon is not running!"
-            continue
-        fi
-        ocf_log debug "scst_stop() -> Sending the TERM signal to ${i}..."
-        ocf_run killall -TERM ${i} || exit ${OCF_ERR_GENERIC}
-        while pidof ${i} > /dev/null 2>&1; do
-            ocf_log debug "scst_stop() -> The ${i} daemon is" \
-                "still running, waiting..."
-            sleep 1
-        done
-    done
+    # Stop SCST daemons
+    stop_scst_daemons
 
-    # Unload the modules (in reverse)
-    ocf_log info "Unloading kernel modules..."
-    # The optional driver modules first (don't check exit status)
-    for i in $(echo ${OPTL_MODS} | tr ' ' '\n' | tac | tr '\n' ' '); do
-        ocf_log debug "scst_stop() -> Module: ${i}"
-        if [ -d /sys/module/${i} ]; then
-            ocf_run rmmod -w ${i}
-        else
-            ocf_log warn "The ${i} module is not loaded!"
-        fi
-    done
-    # The core SCST modules next
-    for i in $(echo ${SCST_MODS} | tr ' ' '\n' | tac | tr '\n' ' '); do
-        ocf_log debug "scst_stop() -> Module: ${i}"
-        if [ -d /sys/module/${i} ]; then
-            ocf_run rmmod -w ${i} || exit ${OCF_ERR_GENERIC}
-        else
-            ocf_log warn "The ${i} module is not loaded!"
-        fi
-    done
+    # Unload SCST modules
+    unload_scst_modules
 
     # Make sure the resource stopped correctly
     while scst_monitor; do
@@ -487,6 +431,95 @@ scst_usage() {
     echo "usage: ${0} {start|stop|monitor|validate-all|promote|demote|reload|notify|meta-data}"
     echo ""
     echo "Expects to have a fully populated OCF RA-compliant environment set."
+}
+
+
+load_scst_modules() {
+    # Load all modules
+    ocf_log info "Loading kernel modules..."
+    # The core SCST modules first
+    for i in ${SCST_MODS}; do
+        ocf_log debug "scst_start() -> Module: ${i}"
+        if [ -d /sys/module/${i} ]; then
+            ocf_log warn "The ${i} module is already loaded!"
+        else
+            ocf_run modprobe ${i} || exit ${OCF_ERR_GENERIC}
+        fi
+    done
+    # The optional driver modules next (don't check exit status)
+    for i in ${OPTL_MODS}; do
+        ocf_log debug "scst_start() -> Module: ${i}"
+        if [ -d /sys/module/${i} ]; then
+            ocf_log warn "The ${i} module is already loaded!"
+        else
+            ocf_run modprobe -s ${i}
+        fi
+    done
+}
+
+
+unload_scst_modules() {
+    # Unload the modules (in reverse)
+    ocf_log info "Unloading kernel modules..."
+    # The optional driver modules first (don't check exit status)
+    for i in $(echo ${OPTL_MODS} | tr ' ' '\n' | tac | tr '\n' ' '); do
+        ocf_log debug "scst_stop() -> Module: ${i}"
+        if [ -d /sys/module/${i} ]; then
+            ocf_run rmmod -w ${i}
+        else
+            ocf_log warn "The ${i} module is not loaded!"
+        fi
+    done
+    # The core SCST modules next
+    for i in $(echo ${SCST_MODS} | tr ' ' '\n' | tac | tr '\n' ' '); do
+        ocf_log debug "scst_stop() -> Module: ${i}"
+        if [ -d /sys/module/${i} ]; then
+            ocf_run rmmod -w ${i} || exit ${OCF_ERR_GENERIC}
+        else
+            ocf_log warn "The ${i} module is not loaded!"
+        fi
+    done
+}
+
+
+start_scst_daemons() {
+    # Start the daemons
+    ocf_log info "Starting daemons..."
+    if pidof iscsi-scstd > /dev/null 2>&1; then
+        ocf_log warn "The iscsi-scstd daemon is already running!"
+    else
+        ocf_run iscsi-scstd || exit ${OCF_ERR_GENERIC}
+    fi
+    if pidof lldpad > /dev/null 2>&1; then
+        ocf_log warn "The lldpad daemon is already running!"
+    else
+        ocf_run lldpad -d || exit ${OCF_ERR_GENERIC}
+    fi
+    if pidof fcoemon > /dev/null 2>&1; then
+        ocf_log warn "The fcoemon daemon is already running!"
+    else
+        ocf_run fcoemon -s || exit ${OCF_ERR_GENERIC}
+    fi
+}
+
+
+stop_scst_daemons() {
+    # Stop all of the daemons and wait for each
+    ocf_log info "Stopping daemons..."
+    for i in "fcoemon lldpad iscsi-scstd"; do
+        pidof ${i} > /dev/null 2>&1
+        if [ ${?} -ne 0 ]; then
+            ocf_log warn "The ${i} daemon is not running!"
+            continue
+        fi
+        ocf_log debug "scst_stop() -> Sending the TERM signal to ${i}..."
+        ocf_run killall -TERM ${i} || exit ${OCF_ERR_GENERIC}
+        while pidof ${i} > /dev/null 2>&1; do
+            ocf_log debug "scst_stop() -> The ${i} daemon is" \
+                "still running, waiting..."
+            sleep 1
+        done
+    done
 }
 
 
