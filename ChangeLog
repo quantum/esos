@@ -1,3 +1,31 @@
+2017-06-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'linux_update'
+
+	Merge branch 'scst_ra_tweaks'
+
+	Merge branch 'gitignore_tweaks'
+
+	Merge branch 'drbd_ra_fix'
+
+	update Linux to version 4.9.34
+
+2017-06-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'fedora_25_fixes'
+
+	split loading/unloading modules and starting/stopping daemons into individual functions (load_scst_modules, unload_scst_modules, start_scst_daemons, stop_scst_daemons) which allows us to stop/unload SCST when loading the configuration fails; fixed an issue where the cluster_mode attribute was not being enabled (1) due to improper find statement; disabling iSCSI target interfaces does not close iSCSI sessions, so we use the force_close attribute after disabling the target interface in scst_stop()
+
+	updated .gitignore to use more specific matching (/...)
+
+2017-06-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated/added patches, and updated make recipies for various packages to support GCC 6 (tested on Fedora 25)
+
+2017-06-06  Marc A. Smith  <marc.smith@parodyne.com>
+
+	removed the Busybox 'sed' and 'flock' variants and replaced with the real GNU sed, and used flock from the util-linux package
+
 2017-05-12  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'linux_kern_update'
@@ -11,6 +39,18 @@
 	Merge branch 'extend_init_len'
 
 	Merge branch 'update_irqbalance'
+
+	Merge branch 'linux_kern_update' into 1.x.x
+
+	Merge branch 'fix_freetype_build_err' into 1.x.x
+
+	Merge branch 'add_taskset' into 1.x.x
+
+	Merge branch 'scst_qla2xxx_update' into 1.x.x
+
+	Merge branch 'extend_init_len' into 1.x.x
+
+	Merge branch 'update_irqbalance' into 1.x.x
 
 2017-05-11  Marc A. Smith  <marc.smith@parodyne.com>
 
