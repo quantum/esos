@@ -1279,6 +1279,8 @@ vixie-cron: glibc
 	$(TOUCH) $(@)
 
 gcc: glibc gmp mpfr mpc
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	$(MKDIR) $(WORK_DIR)/gcc-build
 	cd $(WORK_DIR)/gcc-build && $(tgt_src_dir)/configure --prefix=/usr \
 	--disable-multilib --disable-nls --disable-bootstrap \
@@ -1342,9 +1344,10 @@ zlib: glibc
 ncurses: glibc gcc
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
-	cd $(tgt_src_dir) && ./configure --build=$(esos_host) \
-	--host=$(esos_target) --prefix=/usr --with-shared \
-	--without-gpm --mandir=/usr/share/man --enable-widec
+	cd $(tgt_src_dir) && CPPFLAGS="-P $(CPPFLAGS)" \
+	CXX="$(esos_cxx) -std=c++98" ./configure --build=$(esos_host) \
+	--host=$(esos_target) --prefix=/usr --with-shared --without-gpm \
+	--mandir=/usr/share/man --enable-widec
 	$(MAKE) --directory=$(tgt_src_dir) CXXLIBS="-lstdc++"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(SED) 's/^prefix=.*/prefix=$(subst /,\/,$(IMAGE_DIR)/usr)/' \
@@ -1419,7 +1422,8 @@ sg3_utils: glibc
 groff: glibc gcc
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)" \
-	CCC="$(cxx_base) -I$(wildcard $(IMAGE_DIR)/usr/include/c++/*) \
+	CCC="$(cxx_base) -std=c++98 \
+	-I$(wildcard $(IMAGE_DIR)/usr/include/c++/*) \
 	-I$(wildcard $(IMAGE_DIR)/usr/include/c++/*/x86_64-unknown-linux-gnu)"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(LN) tbl $(IMAGE_DIR)/usr/bin/gtbl
@@ -1706,7 +1710,9 @@ glib: glibc zlib libffi util-linux elfutils
 	cd $(tgt_src_dir) && \
 	PKG_CONFIG="pkg-config --define-variable=prefix=$(IMAGE_DIR)/usr" \
 	PKG_CONFIG_PATH="$(IMAGE_DIR)/usr/lib/pkgconfig" \
-	./configure --prefix=/usr --with-pcre=internal
+	LIBMOUNT_CFLAGS="-I$(IMAGE_DIR)/usr/include/libmount \
+	-I$(IMAGE_DIR)/usr/include/blkid -I$(IMAGE_DIR)/usr/include/uuid" \
+	LIBMOUNT_LIBS="-lmount" ./configure --prefix=/usr --with-pcre=internal
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libg)
@@ -1926,7 +1932,8 @@ db: glibc
 	$(TOUCH) $(@)
 
 snappy: glibc gcc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && CXX="$(esos_cxx) -std=c++98" \
+	./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libsnappy)
@@ -2068,7 +2075,7 @@ open-lldp: glibc libconfig libnl
 	LIBCONFIG_LIBS="$(LDFLAGS) -lconfig" \
 	LIBNL_CFLAGS="-I$(IMAGE_DIR)/usr/include/netlink" \
 	LIBNL_LIBS="$(LDFLAGS) -lnl" ./configure --prefix=/usr
-	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)"
+	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base) -fgnu89-inline"
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-exec
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
 	install-lldpad_includeHEADERS
@@ -2079,7 +2086,8 @@ open-lldp: glibc libconfig libnl
 	$(TOUCH) $(@)
 
 libconfig: glibc gcc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && CXX="$(esos_cxx) -std=c++98" \
+	./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install
 	$(call clean_la_files,libconfig)
@@ -2192,8 +2200,9 @@ psycopg2: glibc Python postgresql setuptools pycurl
 	$(TOUCH) $(@)
 
 mysql: glibc ncurses
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-server \
-	--without-bench --enable-thread-safe-client
+	cd $(tgt_src_dir) && CXX="$(esos_cxx) -std=c++98" \
+	./configure --prefix=/usr --without-server --without-bench \
+	--enable-thread-safe-client
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/libmysql \
 	DESTDIR=$(IMAGE_DIR) install
@@ -2267,6 +2276,8 @@ nrpe: glibc openssl e2fsprogs
 	$(TOUCH) $(@)
 
 bcache-tools: glibc util-linux openssl eudev
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(esos_cc)" \
 	LDLIBS="-lssl -lcrypto -ldl -lblkid -luuid" \
 	CFLAGS+="-I$(IMAGE_DIR)/usr/include/blkid \
@@ -2325,8 +2336,9 @@ thin-provisioning-tools: glibc gcc expat boost
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && autoconf; \
 	fi
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(tgt_src_dir) V="" CXX="$(esos_cxx) -D_GLIBCXX_BITSET"
+	cd $(tgt_src_dir) && CXX="$(esos_cxx) -std=c++98 -D_GLIBCXX_BITSET" \
+	./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir) V=""
 	$(MAKE) --directory=$(tgt_src_dir) install MANDIR=/usr/share/man \
 	DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
@@ -2431,7 +2443,8 @@ net-snmp: glibc gcc
 	$(TOUCH) $(@)
 
 nut: glibc net-snmp libusb_compat freeipmi
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	cd $(tgt_src_dir) && CXX="$(esos_cxx) -std=c++98" \
+	./configure --prefix=/usr --sysconfdir=/etc \
 	--without-dev --with-serial --with-usb --with-snmp --without-cgi \
 	--with-user=nutmon --with-group=nut --without-avahi \
 	--with-usb-libs="-lusb" --with-snmp-libs="-lnetsnmp" \
@@ -2521,11 +2534,13 @@ libgpg-error: glibc
 	$(TOUCH) $(@)
 
 smartmontools: glibc gcc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
-	--with-initscriptdir=no
+	cd $(tgt_src_dir) && CXX="$(esos_cxx) -std=c++98" \
+	./configure --prefix=/usr --sysconfdir=/etc --with-initscriptdir=no
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-sbinPROGRAMS
-	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-sbinSCRIPTS
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	install-sbinPROGRAMS
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) \
+	install-sbinSCRIPTS
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=$(IMAGE_DIR) install-data
 	$(TOUCH) $(@)
 
@@ -2642,9 +2657,9 @@ dmidecode: glibc
 
 xmlrpc-c: glibc gcc curl libxml2
 	cd $(tgt_src_dir) && PATH="$$PATH:$(WORK_DIR)" \
-	./configure --prefix=/usr --disable-wininet-client \
-	--disable-libwww-client --disable-cgi-server --enable-curl-client \
-	--enable-libxml2-backend
+	CXX="$(esos_cxx) -std=c++98" ./configure --prefix=/usr \
+	--disable-wininet-client --disable-libwww-client \
+	--disable-cgi-server --enable-curl-client --enable-libxml2-backend
 	PATH="$$PATH:$(WORK_DIR)" $(MAKE) -j1 --directory=$(tgt_src_dir)
 	PATH="$$PATH:$(WORK_DIR)" $(MAKE) --directory=$(tgt_src_dir) \
 	DESTDIR=$(IMAGE_DIR) install
@@ -2693,7 +2708,8 @@ eudev: glibc util-linux gperf
 	$(TOUCH) $(@)
 
 gperf: glibc gcc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && CXX="$(esos_cxx) -std=c++98" \
+	./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
@@ -2775,7 +2791,8 @@ iftop: glibc libpcap ncurses
 	$(TOUCH) $(@)
 
 iperf2: glibc gcc
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && CXX="$(esos_cxx) -std=c++98" \
+	./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
@@ -2915,9 +2932,9 @@ openwsman: glibc gcc Python setuptools libxml2 openssl swig
 	-I$(IMAGE_DIR)/usr/share/swig/3.0.10/python \
 	-I$(IMAGE_DIR)/usr/share/swig/3.0.10" \
 	CPPFLAGS="$(CPPFLAGS) -I$(IMAGE_DIR)/usr/include/python2.7" \
-	./configure --prefix=/usr --disable-pam --enable-python=yes \
-	--disable-server --disable-plugins --disable-more-warnings \
-	--disable-silent-rules
+	CXX="$(esos_cxx) -std=c++98" ./configure --prefix=/usr --disable-pam \
+	--enable-python=yes --disable-server --disable-plugins \
+	--disable-more-warnings --disable-silent-rules
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/include DESTDIR=$(IMAGE_DIR) install
 	$(MAKE) --directory=$(tgt_src_dir)/src DESTDIR=$(IMAGE_DIR) install
