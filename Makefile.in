@@ -251,6 +251,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		configshell-fb-1.1.fb23.tar.gz \
 		six-1.10.0.tar.gz \
 		pyparsing-2.1.10.tar.gz \
+		sed-4.4.tar.xz \
 		win_binaries-20170222.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -278,7 +279,7 @@ build_targets	:= esos_kernels kernel_headers esos_tui scst \
 		iftop nmon munin-c open-iscsi open-isns coreutils \
 		open-vm-tools libdnet libffi ptyprocess requests openwsman \
 		swig userspace-rcu docutils tzdata nvme-cli freetype ledmon \
-		nvmetcli configshell-fb six pyparsing
+		nvmetcli configshell-fb six pyparsing sed
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -2324,6 +2325,7 @@ util-linux: glibc ncurses zlib
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/blkid $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/wipefs $(IMAGE_DIR)/usr/sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/taskset $(IMAGE_DIR)/usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/flock $(IMAGE_DIR)/usr/bin/
 	$(call clean_la_files,libcommon)
 	$(call clean_la_files,libuuid)
 	$(call clean_la_files,libmount)
@@ -3020,5 +3022,11 @@ six: Python setuptools
 pyparsing: Python setuptools
 	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) $(WORK_DIR)/python \
 	./setup.py install --prefix=$(IMAGE_DIR)/usr
+	$(TOUCH) $(@)
+
+sed: glibc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install DESTDIR=$(IMAGE_DIR)
 	$(TOUCH) $(@)
 
