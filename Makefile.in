@@ -810,10 +810,14 @@ esos_kernels: $(if $(findstring yes,$(enable_zfs)),glibc gcc util-linux attr,)
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
 	  include/iscsi_scst_itf_ver.h; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i mods; \
+	  KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \
 	  $(MAKE) --directory $(linux_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
 	  SUBDIRS=$(scst_src)/iscsi-scst/kernel \
+	  INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install; \
+	  $(MAKE) --directory $(linux_src) KDIR=$(linux_src) \
+	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
+	  SUBDIRS=$(scst_src)/iscsi-scst/kernel/isert-scst \
 	  INSTALL_MOD_PATH=$(IMAGE_DIR) modules_install; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i srpt; \
