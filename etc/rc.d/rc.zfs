@@ -1,0 +1,41 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+ZPOOL="/usr/sbin/zpool"
+ZPOOL_CACHE="/etc/zfs/zpool.cache"
+
+check_args ${@}
+
+if [ -f "/lib/modules/$(/bin/uname -r)/extra/zfs/zfs.ko" ]; then
+    # Make sure the ZFS module is loaded, otherwise nothing to do
+    if [ ! -d "/proc/spl/kstat/zfs" ]; then
+        /bin/echo "It appears the ZFS module isn't loaded!"
+        exit 1
+    fi
+else
+    # Exit silently if the ZFS module isn't installed
+    exit 0
+fi
+
+start() {
+    # Import all ZFS pools
+    /bin/echo "Importing ZFS pools..."
+    if [ -f "${ZPOOL_CACHE}" ]; then
+        ${ZPOOL} import -c ${ZPOOL_CACHE} -aN
+    fi
+    ${ZPOOL} import -d /dev/disk/by-id -aN
+}
+
+stop() {
+    # Do nothing
+    :
+}
+
+status() {
+    # We don't know anything
+    exit ${UNKNOWN}
+}
+
+# Perform specified action
+${1}

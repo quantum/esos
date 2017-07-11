@@ -74,17 +74,10 @@ for i in $(/bin/ls /opt/sbin); do
 done
 
 if [ -f "/lib/modules/$(/bin/uname -r)/extra/zfs/zfs.ko" ]; then
-    /bin/echo "Loading ZFS..."
+    /bin/echo "Loading the ZFS module..."
     /sbin/modprobe zfs
-
     /bin/echo "Starting the ZFS Event Daemon..."
     /usr/sbin/zed -p /var/run/zed.pid
-
-    /bin/echo "Importing ZFS pools..."
-    if [ -f "/etc/zfs/zpool.cache" ]; then
-        /usr/sbin/zpool import -c /etc/zfs/zpool.cache -aN
-    fi
-    /usr/sbin/zpool import -d /dev/disk/by-id -aN
 fi
 
 # Start the LATE user settable services
