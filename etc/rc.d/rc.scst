@@ -2,7 +2,7 @@
 
 source /etc/rc.d/common
 
-SCST_MODS="scst qla2x00tgt iscsi_scst ib_srpt \
+SCST_MODS="scst qla2x00tgt iscsi-scst isert-scst ib_srpt \
 scst_disk scst_vdisk scst_tape scst_changer fcst"
 SCST_CFG="/etc/scst.conf"
 SCSTADMIN="/usr/sbin/scstadmin"
