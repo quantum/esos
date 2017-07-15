@@ -1488,6 +1488,7 @@ lvm2: glibc corosync dlm thin-provisioning-tools eudev
 	UDEV_LIBS="$(LDFLAGS) -ludev" \
 	LOCKD_DLM_CFLAGS="-I$(IMAGE_DIR)/usr/include" \
 	LOCKD_DLM_LIBS="$(LDFLAGS) -ldlm -lpthread" \
+	ac_cv_path_MODPROBE_CMD="/sbin/modprobe" \
 	./configure --with-lvm1=none --disable-selinux --prefix=/usr \
 	--with-clvmd=corosync --with-cluster=internal --enable-ocf \
 	--enable-cmirrord --disable-readline --with-thin=internal \
