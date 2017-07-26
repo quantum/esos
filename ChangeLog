@@ -1,3 +1,19 @@
+2017-07-26  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'lvconvert_fix' into 1.x.x
+
+2017-07-14  Marc A. Smith  <marc.smith@parodyne.com>
+
+	for the lvm2 package, we must specify the directory path for modprobe; set CONFIG_DM_CACHE_SMQ and CONFIG_DM_CACHE_CLEANER to be modules instead of built-in (at least some lvm2 utilities seem to only look for modules, like lvconvert)
+
+2017-07-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'fix_iser_mod' into 1.x.x
+
+2017-06-26  Marc A. Smith  <marc.smith@parodyne.com>
+
+	build/install the isert-scst module; load the isert-scst module in rc.scst and ocf:esos:scst
+
 2017-06-25  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'linux_update' into 1.x.x
