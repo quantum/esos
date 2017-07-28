@@ -1,3 +1,7 @@
+2017-07-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	build fix in esos_kernels for new SCST version
+
 2017-07-26  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated SCST to trunk/r7212
