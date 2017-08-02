@@ -14,6 +14,7 @@
 
 	for the lvm2 package, we must specify the directory path for modprobe; set CONFIG_DM_CACHE_SMQ and CONFIG_DM_CACHE_CLEANER to be modules instead of built-in (at least some lvm2 utilities seem to only look for modules, like lvconvert)
 
+<<<<<<< HEAD
 2017-07-13  Marc A. Smith  <marc.smith@parodyne.com>
 
 	in newer versions of SCST, it seems the preferred module names have changed for some (eg, iscsi-scst vs. iscsi_scst)
@@ -24,6 +25,10 @@
 
 	Merge branch 'fix_iser_mod'
 
+=======
+2017-07-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+>>>>>>> kdump_fixup
 	Merge branch 'fix_iser_mod' into 1.x.x
 
 2017-06-26  Marc A. Smith  <marc.smith@parodyne.com>
