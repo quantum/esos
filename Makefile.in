@@ -252,7 +252,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		six-1.10.0.tar.gz \
 		pyparsing-2.1.10.tar.gz \
 		sed-4.4.tar.xz \
-		win_binaries-20170222.tar.xz)
+		win_binaries-20170802.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
 build_targets	:= esos_kernels kernel_headers esos_tui scst \
