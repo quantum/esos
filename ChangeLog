@@ -1,3 +1,19 @@
+2017-08-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'win_install_fixup'
+
+	Merge branch 'kdump_fixup'
+
+	wait a few seconds before switching back the accessible partition for a "removable" USB flash drive media type
+
+	switched from using ext2fsd to "Ext2 IFS" (Ext2 Installable File System For Windows) in the Windows installation script which appears to handle newer Windows operating system versions with the ext2 file system
+
+2017-07-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated kexec-tools to version 2.0.15; tweaked the crashkernel parameter in grub.cfg to reserve the appropriate amount of memory (based on physical RAM size) for the kdump kernel
+
+	Merge branch 'lvconvert_fix' into 1.x.x
+
 2017-07-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	build fix in esos_kernels for new SCST version
@@ -14,7 +30,6 @@
 
 	for the lvm2 package, we must specify the directory path for modprobe; set CONFIG_DM_CACHE_SMQ and CONFIG_DM_CACHE_CLEANER to be modules instead of built-in (at least some lvm2 utilities seem to only look for modules, like lvconvert)
 
-<<<<<<< HEAD
 2017-07-13  Marc A. Smith  <marc.smith@parodyne.com>
 
 	in newer versions of SCST, it seems the preferred module names have changed for some (eg, iscsi-scst vs. iscsi_scst)
@@ -25,10 +40,6 @@
 
 	Merge branch 'fix_iser_mod'
 
-=======
-2017-07-11  Marc A. Smith  <marc.smith@parodyne.com>
-
->>>>>>> kdump_fixup
 	Merge branch 'fix_iser_mod' into 1.x.x
 
 2017-06-26  Marc A. Smith  <marc.smith@parodyne.com>
