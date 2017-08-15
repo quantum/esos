@@ -1,3 +1,11 @@
+2017-08-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'up_makedumpfile'
+
+2017-08-03  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated makedumpfile to the latest version (1.6.2) which supports our 4.9.x Linux kernel
+
 2017-08-02  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'win_install_fixup'
