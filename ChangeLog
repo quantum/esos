@@ -1,4 +1,24 @@
-2017-07-26  Marc A. Smith  <marc.smith@parodyne.com>
+2017-08-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'win_install_fixup' into 1.x.x
+
+	Merge branch 'up_makedumpfile' into 1.x.x
+
+	Merge branch 'kdump_fixup' into 1.x.x
+
+2017-08-03  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated makedumpfile to the latest version (1.6.2) which supports our 4.9.x Linux kernel
+
+2017-08-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	wait a few seconds before switching back the accessible partition for a "removable" USB flash drive media type
+
+	switched from using ext2fsd to "Ext2 IFS" (Ext2 Installable File System For Windows) in the Windows installation script which appears to handle newer Windows operating system versions with the ext2 file system
+
+2017-07-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated kexec-tools to version 2.0.15; tweaked the crashkernel parameter in grub.cfg to reserve the appropriate amount of memory (based on physical RAM size) for the kdump kernel
 
 	Merge branch 'lvconvert_fix' into 1.x.x
 
