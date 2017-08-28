@@ -1,3 +1,11 @@
+2017-08-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'eudev_space_fix' into 1.x.x
+
+2017-08-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added a patch for eudev that was backported from systemd which resolves an issue with whitespace characters in symbolic links created by [e]udev -- see systemd/systemd issue # 4833 and systemd/systemd pull request # 4837 for details; this issue was originally observed with some NVMe devices when using eudev 3.2.x and this fix resolves eudev issue # 148
+
 2017-08-15  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'win_install_fixup' into 1.x.x

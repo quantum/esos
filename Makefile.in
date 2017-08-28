@@ -2702,6 +2702,8 @@ rsync: glibc
 	$(TOUCH) $(@)
 
 eudev: glibc util-linux gperf
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
