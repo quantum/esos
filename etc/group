@@ -34,3 +34,4 @@ haclient:x:101:hacluster
 vtl:x:102:vtl
 nagios:x:498:nagios
 nut:x:103:nutmon
+input:x:999:

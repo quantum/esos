@@ -166,7 +166,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		sysklogd-1.5.1.tar.gz \
 		ipmitool-1.8.17.tar.bz2 \
 		less-481.tar.gz \
-		irqbalance-1.2.0.tar.gz \
+		irqbalance-master_20170901.tar.gz \
 		ethtool-4.8.tar.xz \
 		postgresql-9.6.0.tar.bz2 \
 		psycopg2-2.6.2.tar.gz \
@@ -2166,17 +2166,15 @@ less: glibc ncurses
 	$(TOUCH) $(@)
 
 irqbalance: glibc glib ncurses
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  $(SED) -i "/AC_CHECK_LIB/s/curses/ncursesw/g" \
 	  $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
 	cd $(tgt_src_dir) && \
-	GLIB_CFLAGS="-I$(IMAGE_DIR)/usr/include/glib-2.0 \
+	GLIB2_CFLAGS="-I$(IMAGE_DIR)/usr/include/glib-2.0 \
 	-I$(IMAGE_DIR)/usr/lib/glib-2.0/include" \
-	GLIB_LIBS="-L$(IMAGE_DIR)/usr/lib -lglib-2.0" ./configure \
+	GLIB2_LIBS="-L$(IMAGE_DIR)/usr/lib -lglib-2.0" ./configure \
 	--prefix=/usr --enable-numa --without-systemd --with-glib2 \
 	--without-libcap-ng
 	$(MAKE) --directory=$(tgt_src_dir)
@@ -2298,6 +2296,8 @@ bcache-tools: glibc util-linux openssl eudev
 	$(INSTALL) -m 0755 $(tgt_src_dir)/bcache-super-show \
 	$(IMAGE_DIR)/usr/sbin/bcache-super-show
 	$(INSTALL) -m 0644 $(tgt_src_dir)/69-bcache.rules \
+	$(IMAGE_DIR)/usr/lib/udev/rules.d/69-bcache.rules
+	$(SED) -i '/kmod load bcache/ s/^#*/#/' \
 	$(IMAGE_DIR)/usr/lib/udev/rules.d/69-bcache.rules
 	$(INSTALL) -m 0755 $(tgt_src_dir)/probe-bcache \
 	$(IMAGE_DIR)/usr/lib/udev/probe-bcache
