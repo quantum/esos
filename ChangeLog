@@ -1,4 +1,12 @@
+2017-09-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'log_fsck_fix'
+
+	in rc.sysinit when growing the esos_logs file system on first boot, this ext2 file system may not be marked clean and resize2fs will fail to expand the file system size... we fix this by adding a line for e2fsck before attempting to resize the FS
+
 2017-08-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'eudev_space_fix' into 1.x.x
 
 	Merge branch 'eudev_space_fix'
 
