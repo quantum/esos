@@ -85,6 +85,9 @@ start() {
             fi
         done
     fi
+    # A delay here is required for some HCA's
+    /bin/echo "Waiting for any physical links to establish..."
+    /bin/sleep 10
 }
 
 stop() {
