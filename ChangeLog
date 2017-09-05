@@ -1,4 +1,16 @@
+2017-09-05  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'tweaks_n_updates'
+
+2017-09-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.9.47
+
 2017-09-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	update irqbalance to the latest commit from master (resolves several bugs specific to this package); include the group 'input' in /etc/group (silences a warning from eudev complaining about an unknown group); comment out the "kmod load bcache" line in the udev rule file (bcache-tools) since its not needed and produces an ugly error in the logs
+
+	Merge branch 'log_fsck_fix' into 1.x.x
 
 	Merge branch 'log_fsck_fix'
 
