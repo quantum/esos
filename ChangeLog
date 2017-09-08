@@ -1,6 +1,26 @@
+2017-09-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'zfs_ha_supp'
+
+	Merge branch 'pmc_sas_driver'
+
+	enabled the CONFIG_SCSI_PM8001 kernel option (for PMC-Sierra SAS HBA's)
+
+2017-09-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	tweaked the default timeout values for the start/stop operations in ocf:esos:scst and ocf:esos:alua -- also increased the timeout values for promote/demote in both RA's as we noticed the timeout value being reached when testing with ZFS HA (specifically on a demote operation with I/O)
+
 2017-09-05  Marc A. Smith  <marc.smith@parodyne.com>
 
+	Merge branch 'openibd_delay'
+
+	Merge branch 'openibd_delay' into 1.x.x
+
+	for some HCA's establishing the physical link can take some time (seconds) and if OpenSM starts immediately after, it may fail to bind to the port -- to resolve this we introduce a simple delay at the end of start() in rc.openibd
+
 	Merge branch 'tweaks_n_updates'
+
+	Merge branch 'tweaks_n_updates' into 1.x.x
 
 2017-09-04  Marc A. Smith  <marc.smith@parodyne.com>
 
