@@ -1,5 +1,7 @@
 2017-09-10  Marc A. Smith  <marc.smith@parodyne.com>
 
+	updated SCST to version 3.3.x/r7232
+
 	Merge branch 'zfs_ha_supp' into 1.x.x
 
 2017-09-08  Marc A. Smith  <marc.smith@parodyne.com>
