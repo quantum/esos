@@ -491,6 +491,8 @@ image: $(build_targets)
 	$(STAGING_DIR)/usr/lib/ocf/resource.d/
 	$(CP) -R $(SRC_DIR)/misc/ocf/onesty \
 	$(STAGING_DIR)/usr/lib/ocf/resource.d/
+	$(CP) -R $(SRC_DIR)/misc/ocf/stmf-ha \
+	$(STAGING_DIR)/usr/lib/ocf/resource.d/
 	$(INSTALL) -D -m 0755 $(SRC_DIR)/misc/drbd_xsltproc/drbd-xmlproc \
 	$(STAGING_DIR)/usr/local/bin/drbd-xmlproc
 	$(INSTALL) -D -m 0644 $(SRC_DIR)/misc/drbd_xsltproc/xml2conf.xsl \

@@ -1,3 +1,37 @@
+2017-09-10  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'zfs_ha_supp' into 1.x.x
+
+2017-09-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'pmc_sas_driver' into 1.x.x
+
+	enabled the CONFIG_SCSI_PM8001 kernel option (for PMC-Sierra SAS HBA's)
+
+2017-09-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	tweaked the default timeout values for the start/stop operations in ocf:esos:scst and ocf:esos:alua -- also increased the timeout values for promote/demote in both RA's as we noticed the timeout value being reached when testing with ZFS HA (specifically on a demote operation with I/O)
+
+2017-09-05  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'openibd_delay' into 1.x.x
+
+	for some HCA's establishing the physical link can take some time (seconds) and if OpenSM starts immediately after, it may fail to bind to the port -- to resolve this we introduce a simple delay at the end of start() in rc.openibd
+
+	Merge branch 'tweaks_n_updates' into 1.x.x
+
+2017-09-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.9.47
+
+2017-09-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	update irqbalance to the latest commit from master (resolves several bugs specific to this package); include the group 'input' in /etc/group (silences a warning from eudev complaining about an unknown group); comment out the "kmod load bcache" line in the udev rule file (bcache-tools) since its not needed and produces an ugly error in the logs
+
+	Merge branch 'log_fsck_fix' into 1.x.x
+
+	in rc.sysinit when growing the esos_logs file system on first boot, this ext2 file system may not be marked clean and resize2fs will fail to expand the file system size... we fix this by adding a line for e2fsck before attempting to resize the FS
+
 2017-08-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'eudev_space_fix' into 1.x.x
@@ -34,7 +68,13 @@
 
 	for the lvm2 package, we must specify the directory path for modprobe; set CONFIG_DM_CACHE_SMQ and CONFIG_DM_CACHE_CLEANER to be modules instead of built-in (at least some lvm2 utilities seem to only look for modules, like lvconvert)
 
+2017-07-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	in newer versions of SCST, it seems the preferred module names have changed for some (eg, iscsi-scst vs. iscsi_scst)
+
 2017-07-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the ocf:stmf-ha:zfs resource (from https://github.com/skiselkov/stmf-ha) and tweaked a bit for ESOS; moved the ZFS pool importing stuff from rc.2 into a new rc.zfs script (enabled by default); updated the ocf:esos:scst and ocf:esos:alua resource agents to use the "set_dev_active" parameter which sets devices to active/inactive on promote/demote (used with SCST trunk)
 
 	Merge branch 'fix_iser_mod' into 1.x.x
 
