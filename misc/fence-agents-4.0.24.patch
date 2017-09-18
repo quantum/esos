@@ -1,0 +1,24 @@
+--- a/fence/agents/vmware_soap/fence_vmware_soap.py	2016-08-22 08:33:58.000000000 -0400
++++ b/fence/agents/vmware_soap/fence_vmware_soap.py	2017-09-18 16:31:26.492452834 -0400
+@@ -42,6 +42,11 @@
+ 
+ 	if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
+ 		if "--ssl-insecure" in options:
++			import ssl
++			from requests.packages.urllib3.exceptions import InsecureRequestWarning
++			if hasattr(ssl, '_create_unverified_context'):
++				ssl._create_default_https_context = ssl._create_unverified_context
++			requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+ 			verify = False
+ 		else:
+ 			verify = True
+@@ -69,7 +74,8 @@
+ 		conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
+ 	except requests.exceptions.SSLError as ex:
+ 		fail_usage("Server side certificate verification failed")
+-	except Exception:
++	except Exception as ex:
++		print "Login exception:", ex
+ 		fail(EC_LOGIN_DENIED)
+ 
+ 	options["ServiceContent"] = ServiceContent
