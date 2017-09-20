@@ -1243,8 +1243,13 @@ Python: glibc gcc bzip2 readline openssl zlib sqlite-autoconf ncurses db
 	cd $(tgt_src_dir) && LDFLAGS="$(LDFLAGS)" \
 	CPPFLAGS="-I$(IMAGE_DIR)/usr/include \
 	-I$(WORK_DIR)/kernel_headers/include" \
-	./configure --prefix=/usr --enable-shared
+	./configure --build=$(esos_host) --host=$(esos_target) \
+	--prefix=/usr --enable-shared --disable-ipv6 ac_cv_file__dev_ptmx=no \
+	ac_cv_file__dev_ptc=no
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)" CXX="$(cxx_base)"
+	$(SED) -i "/PYTHON_FOR_BUILD/s/python2.7/LD_LIBRARY_PATH=\
+	$(subst /,\/,$(IMAGE_DIR))\/usr\/lib: python2.7/" \
+	$(tgt_src_dir)/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) CC="$(cc_base)" CXX="$(cxx_base)" \
 	DESTDIR=$(IMAGE_DIR) install
 	$(ECHO) -e "#! /bin/sh\n\n$(IMAGE_DIR)/lib/ld-linux-x86-64.so.2 \
@@ -1953,6 +1958,8 @@ snappy: glibc gcc
 
 fence-agents: glibc nss Python pexpect pycurl python-suds Net-Telnet requests
 fence-agents: openwsman
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  $(SED) -i 's/\/log\/cluster/\/log/' $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && ./autogen.sh; \

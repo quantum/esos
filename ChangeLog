@@ -1,3 +1,11 @@
+2017-09-19  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'sept_fixes' into 1.x.x
+
+2017-09-18  Marc A. Smith  <marc.smith@parodyne.com>
+
+	use cross-compile option for the Python package which resolves a linking issue with readline + ncursesw on some platforms; the fence_vmware_soap fencing device has a few bugs which are not available in a release yet so we fix them in ESOS with a patch
+
 2017-09-10  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated SCST to version 3.3.x/r7232
