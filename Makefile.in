@@ -405,8 +405,8 @@ else
 	gcc_src		= $(wildcard $(SOURCES_DIR)/gcc-*)
 	chroot_build	= $(CHROOT_DIR)/build
 endif
-clean_targets		:= $(addprefix clean-,$(bootstrap_tgts)) \
-			$(addprefix clean-,$(chroot_tgts))
+clean_bootstrap_tgts	:= $(addprefix clean-,$(bootstrap_tgts))
+clean_chroot_tgts	:= $(addprefix clean-,$(chroot_tgts))
 gcc_ver			= $(subst gcc-,,$(notdir $(gcc_src)))
 tarball_src_dirs	= $(addprefix $(SOURCES_DIR)/,$(subst .tar.xz,,\
 			$(subst .tar.bz2,,$(subst .tar.gz,,\
@@ -457,7 +457,7 @@ all:
 
 # clean - Remove temporary files, any image/package files, and target files.
 .PHONY: clean
-clean: $(clean_targets)
+clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts)
 	$(QUIET) if $(MOUNT) | $(GREP) $(CHROOT_DIR) > /dev/null 2>&1; then \
 	  $(ECHO) "### One or more mounts still exist for chroot!"; \
 	  exit 1; \
@@ -471,12 +471,16 @@ clean: $(clean_targets)
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(RM) $(BUILD_DIR)/chroot_build.sh
 
-$(clean_targets):: target = $(subst clean-,,$(@))
-$(clean_targets)::
-	$(RM) $(target)
+$(clean_bootstrap_tgts):: target = $(subst clean-,,$(@))
+$(clean_bootstrap_tgts)::
+	$(RM) $(BUILD_DIR)/$(target)
 
-clean-esos_tui::
-	$(MAKE) --directory=$(SRC_DIR)/tui clean
+$(clean_chroot_tgts):: target = $(subst clean-,,$(@))
+$(clean_chroot_tgts)::
+	$(RM) $(chroot_build)/$(target)
+
+clean-esos_tui.chroot::
+	$(MAKE) --directory=$(chroot_build)/tui clean
 
 
 # distclean - Remove everything including build configuration settings.
@@ -552,6 +556,10 @@ symlink:
 bootstrap: symlink $(bootstrap_tgts)
 	$(CP) $(BUILD_DIR)/Makefile $(chroot_build)/
 	$(CP) -Rp $(SRC_DIR)/misc $(SRC_DIR)/tui $(chroot_build)/
+	$(ECHO) -n "$(if $(build_opts),$(build_opts),N/A)" > \
+	$(chroot_build)/build_opts
+	$(ECHO) -n "$(esos_ver)" > $(chroot_build)/esos_ver
+	$(ECHO) -n "$(git_branch)" > $(chroot_build)/git_branch
 	$(CP) /etc/passwd $(CHROOT_DIR)/etc/
 	$(QUIET) for i in bash cat dd echo ln pwd rm stty; do \
 	  if [ ! -e "$(CHROOT_DIR)/bin/$$i" ]; then \
@@ -1342,13 +1350,16 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	done
 	$(TOUCH) $(@)
 
+esos_tui.chroot: build_opts = $$($(CAT) $(chroot_build)/build_opts)
+esos_tui.chroot: esos_ver = $$($(CAT) $(chroot_build)/esos_ver)
+esos_tui.chroot: git_branch = $$($(CAT) $(chroot_build)/git_branch)
 esos_tui.chroot: $(wildcard $(chroot_build)/tui/*.c)
 esos_tui.chroot: $(wildcard $(chroot_build)/tui/*.h)
 esos_tui.chroot: glibc.chroot ncurses.chroot cdk.chroot iniparser.chroot \
 	parted.chroot util-linux.chroot curl.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(chroot_build)/tui \
-	CFLAGS="-DBUILD_OPTS=\"\\\"$(if $(build_opts),$(build_opts),N/A)\\\"\" \
+	CFLAGS="-DBUILD_OPTS=\"\\\"$(build_opts)\\\"\" \
 	-DESOS_VERSION=\"\\\"$(esos_ver)\\\"\" \
 	-DGIT_BRANCH=\"\\\"$(git_branch)\\\"\""
 	$(INSTALL) -m 755 $(chroot_build)/tui/esos_tui /usr/local/bin
