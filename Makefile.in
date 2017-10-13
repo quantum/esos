@@ -27,7 +27,6 @@ GZIP		:= @gzip@ -9
 ECHO		:= @echo@
 SFDISK		:= @sfdisk@
 CAT		:= @cat@
-TEST		:= @test@
 GREP		:= @grep@
 DD		:= @dd@
 MKFS		:= @mkfs@
@@ -53,7 +52,6 @@ READLINK	:= @readlink@
 STRIP		:= @strip@
 BZIP2		:= @bzip2@
 GIT		:= @git@
-CUT		:= @cut@
 FLOCK		:= @flock@
 ZIC		:= @zic@
 MV		:= @mv@
@@ -538,14 +536,14 @@ symlink:
 	  $(ECHO) "### The path /tools exists but isn't a symbolic link!"; \
 	  exit 1; \
 	elif [ -L "/tools" ] && \
-	  [ "$$(readlink -f /tools)" = "$(CHROOT_DIR)/tools" ]; then \
+	  [ "$$(readlink -f /tools)" = "$(TOOLS_DIR)" ]; then \
 	  :; \
 	else \
 	  if [ `whoami` != "root" ]; then \
 	    $(ECHO) "### Snap! Ya gotta be root for this part..."; \
 	    exit 1; \
 	  fi; \
-	  $(LN) -v $(CHROOT_DIR)/tools /tools; \
+	  $(LN) -v $(TOOLS_DIR) /tools; \
 	fi
 
 
@@ -651,10 +649,7 @@ kernel_headers: gcc.pass1
 	$(MAKE) --directory=$(linux_src) mrproper
 	$(MAKE) --directory=$(linux_src) \
 	INSTALL_HDR_PATH="$(WORK_DIR)/kernel_headers" headers_install
-	#- $(PATCH) -r - -N -d $(WORK_DIR)/kernel_headers -p1 < \
-	#$(SRC_DIR)/misc/kernel_headers.patch
-	$(CP) -rv $(WORK_DIR)/kernel_headers/include/* \
-	$(CHROOT_DIR)/tools/include/
+	$(CP) -rv $(WORK_DIR)/kernel_headers/include/* $(TOOLS_DIR)/include/
 	$(TOUCH) $(@)
 
 glibc: binutils.pass1 gcc.pass1 kernel_headers
@@ -1013,8 +1008,6 @@ kernel_headers.chroot:
 	$(MAKE) --directory=$(linux_src) mrproper
 	$(MAKE) --directory=$(linux_src) \
 	INSTALL_HDR_PATH="$(chroot_build)/kernel_headers" headers_install
-	#- $(PATCH) -r - -N -d $(WORK_DIR)/kernel_headers -p1 < \
-	#$(SRC_DIR)/misc/kernel_headers.patch
 	$(MKDIR) /usr/include
 	$(CP) -rv $(chroot_build)/kernel_headers/include/* /usr/include/
 	$(TOUCH) $(@)
@@ -1023,7 +1016,6 @@ glibc.chroot: gcc_inc_dir = /usr/lib/gcc/x86_64-pc-linux-gnu/$(gcc_ver)/include
 glibc.chroot: kernel_headers.chroot
 	$(call chroot_only)
 	$(LN) -v /tools/lib/gcc /usr/lib
-	#$(LN) -v ../lib/ld-linux-x86-64.so.2 /lib64
 	$(LN) -v ../lib/ld-linux-x86-64.so.2 /lib64/ld-lsb-x86-64.so.3
 	$(RM) /usr/include/limits.h
 	$(RM) $(chroot_build)/glibc-build
@@ -1052,16 +1044,8 @@ glibc.chroot: kernel_headers.chroot
 
 gcc.chroot: glibc.chroot
 	$(call chroot_only)
-	#- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	#$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	$(RM) $(chroot_build)/gcc-build
 	$(MKDIR) $(chroot_build)/gcc-build
-	#cd $(chroot_build)/gcc-build && \
-	#$(tgt_src_dir)/libstdc++-v3/configure --prefix=/usr \
-	#--disable-multilib --disable-nls --disable-libstdcxx-threads \
-	#--disable-libstdcxx-pch
-	#$(MAKE) --directory=$(chroot_build)/gcc-build
-	#$(MAKE) --directory=$(chroot_build)/gcc-build install
 	cd $(chroot_build)/gcc-build && $(tgt_src_dir)/configure \
 	--prefix=/usr --disable-multilib --disable-nls --disable-bootstrap \
 	--enable-languages=c,c++
@@ -1073,8 +1057,6 @@ gcc.chroot: glibc.chroot
 	all-target-libstdc++-v3
 	$(MAKE) --directory=$(chroot_build)/gcc-build \
 	install-target-libstdc++-v3
-	#$(call clean_la_files,libsupc)
-	#$(call clean_la_files,libstdc)
 	$(TOUCH) $(@)
 
 esos_kernels.chroot: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
@@ -1604,8 +1586,6 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	openssl.chroot zlib.chroot sqlite-autoconf.chroot ncurses.chroot \
 	db.chroot
 	$(call chroot_only)
-	#- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	#$(SRC_DIR)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
@@ -2163,8 +2143,6 @@ pexpect.chroot: Python.chroot setuptools.chroot python-suds.chroot \
 
 pycurl.chroot: Python.chroot curl.chroot setuptools.chroot pexpect.chroot
 	$(call chroot_only)
-	#- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	#/build/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && PYCURL_SSL_LIBRARY=openssl $(FLOCK) \
 	$(py_module_lock) python ./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
@@ -3010,14 +2988,11 @@ open-vm-tools.chroot: glibc.chroot gcc.chroot glib.chroot libdnet.chroot
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
 	$(SED) -i '/CFLAGS/s/-Werror//' $(tgt_src_dir)/configure
-	#cd $(tgt_src_dir) && $(SHELL) ./config/missing --run autoconf
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-deploypkg \
 	--disable-grabbitmqproxy --disable-vgauth --without-root-privileges \
 	--without-kernel-modules --without-gtk2 --without-gtkmm --without-pam \
 	--without-xmlsecurity --without-xerces --without-procps --without-icu \
 	--without-x
-	#$(TOUCH) -r $(tgt_src_dir)/Makefile.am $(tgt_src_dir)/aclocal.m4
-	#$(MAKE) --directory=$(tgt_src_dir) DNET_CPPFLAGS="" DNET_LIBS="-ldnet"	
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(SED) -i 's/-$$(LN_S) $$(DESTDIR)$$(sbindir)/-$$(LN_S) $$(sbindir)/g' \
 	$(tgt_src_dir)/hgfsmounter/Makefile
