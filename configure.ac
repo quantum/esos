@@ -1,6 +1,6 @@
-dnl Wrapper for AC_PATH_PROG that kills configure script if program is missing
+dnl Wrapper for AC_CHECK_PROG that kills configure script if program is missing
 AC_DEFUN([MY_PATH_PROG],
-	[AC_PATH_PROG([$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
+	[AC_CHECK_PROG([$1],[$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
 	test $[$1] == NOT_FOUND && AC_MSG_ERROR([program $1 is required])])
 
 AC_INIT()
@@ -63,6 +63,7 @@ MY_PATH_PROG([git])
 MY_PATH_PROG([cut])
 MY_PATH_PROG([flock])
 MY_PATH_PROG([zic])
+MY_PATH_PROG([mv])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
@@ -73,12 +74,15 @@ if test x"${PWD}" != x; then
 	dist_files_dir="${work_dir}/dist_files"
 	${mkdir} -p ${dist_files_dir} || exit 1
 	AC_SUBST(dist_files_dir, ${dist_files_dir})
-	pkg_src_dir="${work_dir}/build"
-	${mkdir} -p ${pkg_src_dir} || exit 1
-	AC_SUBST(pkg_src_dir, ${pkg_src_dir})
-	image_dir="${work_dir}/image"
-	${mkdir} -p ${image_dir} || exit 1
-	AC_SUBST(image_dir, ${image_dir})
+	chroot_dir="${work_dir}/chroot"
+	${mkdir} -p ${chroot_dir} || exit 1
+	AC_SUBST(chroot_dir, ${chroot_dir})
+	sources_dir="${chroot_dir}/sources"
+	${mkdir} -p ${sources_dir} || exit 1
+	AC_SUBST(sources_dir, ${sources_dir})
+	tools_dir="${chroot_dir}/tools"
+	${mkdir} -p ${tools_dir} || exit 1
+	AC_SUBST(tools_dir, ${tools_dir})
 	initramfs_dir="${work_dir}/initramfs"
 	${mkdir} -p ${initramfs_dir} || exit 1
 	AC_SUBST(initramfs_dir, ${initramfs_dir})
@@ -93,33 +97,35 @@ else
 fi
 
 dnl Create directory structure for the image
-if test -d "${image_dir}"; then
+if test -d "${chroot_dir}"; then
 	AC_MSG_NOTICE([creating image directory structure...])
-	${mkdir} -p ${image_dir}/{etc,bin,sbin,dev,proc,sys,root,home,run} || exit 1
-	${mkdir} -p ${image_dir}/boot/grub || exit 1
-	${mkdir} -p ${image_dir}/mnt/{root,conf,logs,vdisks,mhvtl} || exit 1
-	${mkdir} -p ${image_dir}/lib/firmware || exit 1
-	${mkdir} -p ${image_dir}/usr/{bin,sbin,libexec,lib} || exit 1
-	${mkdir} -p ${image_dir}/usr/local/{bin,sbin} || exit 1
-	${mkdir} -p ${image_dir}/opt/{bin,sbin,lib} || exit 1
-	${mkdir} -p ${image_dir}/run/lvm || exit 1
-	${mkdir} -p -m 1777 ${image_dir}/tmp || exit 1
-	${mkdir} -p ${image_dir}/var/{spool,lock,run,state,cache,log} || exit 1
-	${mkdir} -p ${image_dir}/var/lock/subsys || exit 1
-	${mkdir} -p -m 755 ${image_dir}/var/empty || exit 1
-	${mkdir} -p -m 1777 ${image_dir}/var/tmp || exit 1
-	${mkdir} -p -m 710 ${image_dir}/var/cron || exit 1
-	${mkdir} -p -m 700 ${image_dir}/var/cron/tabs || exit 1
-	${mkdir} -p ${image_dir}/var/lib/corosync || exit 1
-	${mkdir} -p ${image_dir}/var/lib/pacemaker/{cores,pengine,cib,blackbox} || exit 1
-	${mkdir} -p ${image_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
-	${mkdir} -p ${image_dir}/var/run/{crm,mdadm,stunnel} || exit 1
-	${mkdir} -p ${image_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
-	${mkdir} -p ${image_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
-	${mkdir} -p ${image_dir}/var/lib/stunnel || exit 1
-	${mkdir} -p ${image_dir}/var/lib/lldpad || exit 1
-	${ln} -sf lib ${image_dir}/lib64 || exit 1
-	${ln} -sf lib ${image_dir}/usr/lib64 || exit 1
+	${mkdir} -p ${chroot_dir}/{build,etc,bin,sbin,dev,proc,sys,root,home,run} || exit 1
+	${mkdir} -p ${chroot_dir}/boot/grub || exit 1
+	${mkdir} -p ${chroot_dir}/mnt/{root,conf,logs,vdisks,mhvtl} || exit 1
+	${mkdir} -p ${chroot_dir}/lib/firmware || exit 1
+	${mkdir} -p ${chroot_dir}/usr/{bin,sbin,libexec,lib} || exit 1
+	${mkdir} -p ${chroot_dir}/usr/local/{bin,sbin} || exit 1
+	${mkdir} -p ${chroot_dir}/opt/{bin,sbin,lib} || exit 1
+	${mkdir} -p ${chroot_dir}/run/lvm || exit 1
+	${mkdir} -p -m 1777 ${chroot_dir}/tmp || exit 1
+	${mkdir} -p ${chroot_dir}/var/{spool,lock,run,state,cache,log} || exit 1
+	${mkdir} -p ${chroot_dir}/var/lock/subsys || exit 1
+	${mkdir} -p -m 755 ${chroot_dir}/var/empty || exit 1
+	${mkdir} -p -m 1777 ${chroot_dir}/var/tmp || exit 1
+	${mkdir} -p -m 710 ${chroot_dir}/var/cron || exit 1
+	${mkdir} -p -m 700 ${chroot_dir}/var/cron/tabs || exit 1
+	${mkdir} -p ${chroot_dir}/var/lib/corosync || exit 1
+	${mkdir} -p ${chroot_dir}/var/lib/pacemaker/{cores,pengine,cib,blackbox} || exit 1
+	${mkdir} -p ${chroot_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
+	${mkdir} -p ${chroot_dir}/var/run/{crm,mdadm,stunnel} || exit 1
+	${mkdir} -p ${chroot_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
+	${mkdir} -p ${chroot_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
+	${mkdir} -p ${chroot_dir}/var/lib/stunnel || exit 1
+	${mkdir} -p ${chroot_dir}/var/lib/lldpad || exit 1
+	${ln} -sf lib ${chroot_dir}/lib64 || exit 1
+	${ln} -sf lib ${chroot_dir}/usr/lib64 || exit 1
+	${mkdir} -p ${tools_dir}/lib || exit 1
+	${ln} -sf lib ${tools_dir}/lib64 || exit 1
 	${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
 	${mkdir} -p ${initramfs_dir}/mnt/{root,tmp} || exit 1
 	${mkdir} -p ${initramfs_dir}/usr/{bin,sbin} || exit 1
@@ -210,7 +216,7 @@ AC_ARG_WITH(celerity_16_32,
 if test  "x${with_celerity_16_32}" = "xyes"; then
 	if test -f "${celerity_16_32_file}"; then
 		AC_MSG_NOTICE([extracting the celerity_16_32 package file...])
-		celerity_16_32_dir="${work_dir}/celerity_16_32"
+		celerity_16_32_dir="${chroot_dir}/build/celerity_16_32"
 		${mkdir} -p ${celerity_16_32_dir} || exit 1
 		${tar} xfz ${celerity_16_32_file} --strip-components=1 -C ${celerity_16_32_dir} || exit 1
 	else
@@ -235,7 +241,7 @@ if test  "x${with_atto_scst}" = "xyes"; then
 	fi
 	if test -f "${atto_scst_file}"; then
 		AC_MSG_NOTICE([extracting the atto_scst package file...])
-		atto_scst_dir="${work_dir}/atto_scst"
+		atto_scst_dir="${chroot_dir}/build/atto_scst"
 		${mkdir} -p ${atto_scst_dir} || exit 1
 		${tar} xfz ${atto_scst_file} --strip-components=1 -C ${atto_scst_dir} || exit 1
 		${find} ${atto_scst_dir} -type f -exec ${chmod} 0644 {} \; || exit 1
@@ -258,7 +264,7 @@ AC_ARG_WITH(ocs_sdk,
 if test  "x${with_ocs_sdk}" = "xyes"; then
 	if test -f "${ocs_sdk_file}"; then
 		AC_MSG_NOTICE([extracting the ocs_sdk package file...])
-		ocs_sdk_dir="${work_dir}/ocs_sdk"
+		ocs_sdk_dir="${chroot_dir}/build/ocs_sdk"
 		${mkdir} -p ${ocs_sdk_dir} || exit 1
 		${tar} xfz ${ocs_sdk_file} -C ${ocs_sdk_dir} || exit 1
 	else
@@ -281,7 +287,7 @@ if test  "x${with_uwire}" = "xyes"; then
 	AC_MSG_ERROR([support for Chelsio Unified Wire adapters is broken])
 	if test -f "${uwire_file}"; then
 		AC_MSG_NOTICE([extracting the uwire package file...])
-		uwire_dir="${work_dir}/uwire"
+		uwire_dir="${chroot_dir}/build/uwire"
 		${mkdir} -p ${uwire_dir} || exit 1
 		${tar} xfz ${uwire_file} --strip-components=1 -C ${uwire_dir} || exit 1
 	else
