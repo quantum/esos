@@ -1,3 +1,9 @@
+2017-10-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'new_build_setup'
+
+	fixed symlink issue with /bin/sh
+
 2017-10-13  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'new_build_setup'

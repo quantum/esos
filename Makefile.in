@@ -3241,7 +3241,7 @@ image:
 	! -path "./usr/lib/pkgconfig*" ! -path "./usr/lib/gcc" \
 	! -path "./bin/cat" ! -path "./bin/echo" ! -path "./bin/ln" \
 	! -path "./bin/pwd" ! -path "./bin/rm" ! -path "./bin/stty" \
-	! -path "./usr/bin/install" | \
+	! -path "./bin/sh" ! -path "./usr/bin/install" | \
 	$(CPIO) -pmdvu $(STAGING_DIR)
 	$(INSTALL) -D $(wildcard $(CHROOT_DIR)/usr/include/python*/pyconfig.h) \
 	$(STAGING_DIR)/usr/include/$(notdir \
