@@ -15,10 +15,15 @@ build instructions: http://www.esos-project.com/
 If this source is coming from GitHub then you will need to generate the
 configure script, otherwise if this is a release, it should already be present.
 
-The following should work in most cases:
+The following should work in most cases (adjust -jN flag to your liking):
 autoconf
 ./configure
-make
+sudo make symlink
+make -j5 > /tmp/bootstrap.out 2>&1
+sudo make pre_chroot
+sudo ./chroot_build.sh -j5 > /tmp/chroot.out 2>&1
+sudo make post_chroot
+sudo rm /tools
 sudo make image
 
 If you would like to create a distribution tarball package:
