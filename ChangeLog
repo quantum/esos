@@ -1,3 +1,27 @@
+2017-10-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'new_build_setup' into 1.x.x
+
+	updated INSTALL document for new build process
+
+2017-10-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed symlink issue with /bin/sh
+
+2017-10-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated .gitignore for new build system
+
+	split clean-targets for bootstrap/chroot; fixed issue for TUI target getting variables passed via CFLAGS; updated patch for ncurses-6.0
+
+	removed unneeded patches for Python, gcc, kernel_headers, and pycurl; test and cut are no longer needed in the Makefile; a few variable tweaks and removed commented out lines that are not needed
+
+2017-10-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated ZFS/SPL to version 0.7.2 (to support GCC 7.x)
+
+	initial patch application of new ESOS build system
+
 2017-09-19  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'sept_fixes' into 1.x.x

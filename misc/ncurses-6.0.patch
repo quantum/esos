@@ -1,0 +1,11 @@
+--- a/misc/terminfo.src	2015-07-25 15:27:20.000000000 -0400
++++ b/misc/terminfo.src	2017-10-13 10:38:59.445617703 -0400
+@@ -3962,7 +3962,7 @@
+ # This fragment is for people who cannot agree on what the backspace key
+ # should send.
+ xterm+kbs|fragment for backspace key,
+-	kbs=^H,
++	kbs=\177,
+ #
+ # This fragment describes as much of XFree86 xterm's "pc-style" function
+ # keys as will fit into terminfo's 60 function keys.
