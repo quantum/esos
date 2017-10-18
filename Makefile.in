@@ -273,7 +273,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		nvme-cli-1.4.tar.gz \
 		freetype-2.7.tar.bz2 \
 		ledmon-0.80.tar.gz \
-		nvmetcli-ec76995.tar.gz \
+		nvmetcli-master_20171018.tar.xz \
 		configshell-fb-1.1.fb23.tar.gz \
 		six-1.10.0.tar.gz \
 		pyparsing-2.1.10.tar.gz \
