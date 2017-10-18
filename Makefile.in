@@ -1698,14 +1698,16 @@ ssmtp.chroot: glibc.chroot openssl.chroot
 
 libibumad.chroot: glibc.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
 libibverbs.chroot: glibc.chroot libnl.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -1713,7 +1715,7 @@ libibverbs.chroot: glibc.chroot libnl.chroot
 srptools.chroot: glibc.chroot libibumad.chroot libibverbs.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ac_cv_func_malloc_0_nonnull=yes ./configure \
-	--prefix=/usr
+	--prefix=/usr --sysconfdir=/etc --localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinPROGRAMS
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinSCRIPTS
@@ -1843,7 +1845,8 @@ parted.chroot: glibc.chroot util-linux.chroot lvm2.chroot
 
 opensm.chroot: glibc.chroot gcc.chroot libibumad.chroot libibverbs.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-data
 	$(MAKE) --directory=$(tgt_src_dir)/opensm install-exec
@@ -2401,7 +2404,8 @@ infiniband-diags.chroot: glibc.chroot libibumad.chroot libibverbs.chroot \
 
 libibmad.chroot: glibc.chroot libibumad.chroot libibverbs.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -2542,7 +2546,8 @@ btier.chroot: glibc.chroot
 
 librdmacm.chroot: glibc.chroot libibverbs.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--localstatedir=/var --mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
