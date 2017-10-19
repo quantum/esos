@@ -3311,7 +3311,7 @@ image:
 	$(STAGING_DIR)/usr/bin/
 	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
 	$(INSTALL) $(SRC_DIR)/perf-agent/* $(STAGING_DIR)/usr/local/perf-agent/
-	$(LN) libncursesw.so.5 $(STAGING_DIR)/usr/lib/libncurses.so.5
+	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
 	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > \
 	$(STAGING_DIR)/etc/esos-release
 	$(CHOWN) -R root:root $(STAGING_DIR)/*
