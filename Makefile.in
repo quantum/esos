@@ -136,6 +136,14 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		vixie-cron-4.1.tar.bz2 \
 		libibumad-1.3.10.2.tar.gz \
 		libibverbs-1.2.1.tar.gz \
+		libcxgb3-1.3.1.tar.gz \
+		libcxgb4-1.4.0.tar.gz \
+		libi40iw-0.5.227.tar.gz \
+		libmlx4-1.2.1.tar.gz \
+		libmlx5-1.2.1.tar.gz \
+		libmthca-1.0.6.tar.gz \
+		libnes-1.1.4.tar.gz \
+		libocrdma-1.0.8.tar.gz \
 		srptools-1.0.3.tar.gz \
 		openssh-7.4p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
@@ -295,8 +303,10 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		qlogic_fw.chroot scstadmin.chroot openssh.chroot \
 		vixie-cron.chroot setuptools.chroot openssl.chroot \
 		zlib.chroot ncurses.chroot e2fsprogs.chroot ssmtp.chroot \
-		libibumad.chroot libibverbs.chroot srptools.chroot \
-		lsscsi.chroot sg3_utils.chroot groff.chroot \
+		libibumad.chroot libibverbs.chroot libcxgb3.chroot \
+		libcxgb4.chroot libi40iw.chroot libmlx4.chroot libmlx5.chroot \
+		libmthca.chroot libnes.chroot libocrdma.chroot \
+		srptools.chroot lsscsi.chroot sg3_utils.chroot groff.chroot \
 		python-suds.chroot kexec-tools.chroot iniparser.chroot \
 		cdk.chroot lvm2.chroot xfsprogs.chroot drbd-utils.chroot \
 		mdadm.chroot parted.chroot opensm.chroot libqb.chroot \
@@ -1712,6 +1722,62 @@ libibverbs.chroot: glibc.chroot libnl.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
+libcxgb3.chroot: glibc.chroot libibverbs.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libcxgb4.chroot: glibc.chroot libibverbs.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libi40iw.chroot: glibc.chroot libibverbs.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libmlx4.chroot: glibc.chroot libibverbs.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libmlx5.chroot: glibc.chroot libibverbs.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libmthca.chroot: glibc.chroot libibverbs.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libnes.chroot: glibc.chroot libibverbs.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libocrdma.chroot: glibc.chroot libibverbs.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
 srptools.chroot: glibc.chroot libibumad.chroot libibverbs.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ac_cv_func_malloc_0_nonnull=yes ./configure \
@@ -2399,7 +2465,9 @@ infiniband-diags.chroot: glibc.chroot libibumad.chroot libibverbs.chroot \
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--localstatedir=/var --with-perl-installdir=$(perl_install)
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install
+	$(MAKE) --directory=$(tgt_src_dir) install-data
+	$(MAKE) --directory=$(tgt_src_dir) install-sbinPROGRAMS
+	$(MAKE) --directory=$(tgt_src_dir) install-sbinSCRIPTS
 	$(TOUCH) $(@)
 
 libibmad.chroot: glibc.chroot libibumad.chroot libibverbs.chroot
