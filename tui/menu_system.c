@@ -1187,7 +1187,7 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             setCDKRadioCurrentItem(use_tls, 0);
 
         /* STARTTLS radio */
-        use_starttls = newCDKRadio(mail_screen, (window_x + 15), (window_y + 7),
+        use_starttls = newCDKRadio(mail_screen, (window_x + 16), (window_y + 7),
                 NONE, 5, 10, "</B>Use STARTTLS", g_no_yes_opts, 2,
                 '#' | g_color_dialog_select[g_curr_theme], 1,
                 g_color_dialog_select[g_curr_theme], FALSE, FALSE);
@@ -1203,8 +1203,8 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
             setCDKRadioCurrentItem(use_starttls, 0);
 
         /* Auth. Method radio */
-        auth_method = newCDKRadio(mail_screen, (window_x + 29), (window_y + 7),
-                NONE, 9, 10, "</B>Auth. Method", g_auth_meth_opts, 3,
+        auth_method = newCDKRadio(mail_screen, (window_x + 31), (window_y + 7),
+                NONE, 5, 10, "</B>Auth. Method", g_auth_meth_opts, 3,
                 '#' | g_color_dialog_select[g_curr_theme], 1,
                 g_color_dialog_select[g_curr_theme], FALSE, FALSE);
         if (!auth_method) {
