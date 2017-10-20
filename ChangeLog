@@ -1,3 +1,37 @@
+2017-10-20  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'add_nvmet_rc'
+
+	Merge branch 'ib_tool_fixes'
+
+	Merge branch 'misc_fixes'
+
+	Merge branch 'nvmetcli_update'
+
+	added the rc.nvmet script which handles restore and saving the NVMe Target configuration; updated /etc/rc.conf and /etc/rc.d/common for the new rc.nvmet script (disabled by default)
+
+2017-10-19  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the libcxgb3, libcxgb4, libi40iw, libmlx4, libmlx5, libmthca, libnes, and libocrdma packages for IB user-land support; tweaked the infiniband-diags.chroot target to not install an init/rc script
+
+	enabled the I40IW and OCRDMA drivers in the kernel config and updated openibd.conf + rc.openibd accordingly
+
+	several TUI visual widget fixes (overlap) in mailDialog(); a libncurses.so.5 symlink is required for some RAID CLI tools
+
+2017-10-18  Marc A. Smith  <marc.smith@parodyne.com>
+
+	many of the InfiniBand related packages need the --sysconfdir and --localstatedir parameters specified with the configure script so they look in the right places (eg, config files)
+
+	updated nvmetcli to the latest version from the parent git repo (0.5)
+
+2017-10-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'new_build_setup' into 1.x.x
+
+	Merge branch 'new_build_setup'
+
+	updated INSTALL document for new build process
+
 2017-10-15  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'new_build_setup'
