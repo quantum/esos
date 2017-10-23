@@ -245,7 +245,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		rsync-3.1.2.tar.gz \
 		eudev-3.2.1.tar.gz \
 		gperf-3.0.4.tar.gz \
-		multipath-tools-0.6.3.tar.gz \
+		multipath-tools-0.7.3.tar.gz \
 		archivemount-0.8.7.tar.gz \
 		libarchive-3.2.2.tar.gz \
 		mcelog-master_20161017.tar.gz \
@@ -2847,18 +2847,9 @@ gperf.chroot: glibc.chroot gcc.chroot
 multipath-tools.chroot: glibc.chroot lvm2.chroot readline.chroot \
 	eudev.chroot userspace-rcu.chroot
 	$(call chroot_only)
-	$(SED) -i '32,40 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
+	$(SED) -i '38,46 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
 	$(SED) -i 's/-lreadline$$/-lreadline -lncursesw/' \
 	$(tgt_src_dir)/multipathd/Makefile
-	$(SED) -i '/\tlibcheckrbd.so$$/d' \
-	$(tgt_src_dir)/libmultipath/checkers/Makefile
-	$(SED) -i 's/\tlibcheckrdac.so \\$$/\tlibcheckrdac.so/' \
-	$(tgt_src_dir)/libmultipath/checkers/Makefile
-	$(SED) -i 's/\/etc\/udev\/rules.d$$/\/usr\/lib\/udev\/rules.d/' \
-	$(tgt_src_dir)/kpartx/Makefile
-	$(SED) -i 's/\/etc\/udev\/rules.d\/$$/\
-	\/usr\/lib\/udev\/rules.d\/66-kpartx.rules/' \
-	$(tgt_src_dir)/kpartx/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib"
 	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib" bindir=/usr/sbin \
 	libudevdir=/usr/lib/udev install
