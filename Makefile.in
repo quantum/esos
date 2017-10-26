@@ -253,7 +253,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		rsync-3.1.2.tar.gz \
 		eudev-3.2.1.tar.gz \
 		gperf-3.0.4.tar.gz \
-		multipath-tools-0.6.3.tar.gz \
+		multipath-tools-0.7.3.tar.gz \
+		json-c-0.12.1.tar.gz \
 		archivemount-0.8.7.tar.gz \
 		libarchive-3.2.2.tar.gz \
 		mcelog-master_20161017.tar.gz \
@@ -334,11 +335,11 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		libmcrypt.chroot nsca.chroot btrfs-progs.chroot attr.chroot \
 		acl.chroot htop.chroot dmidecode.chroot xmlrpc-c.chroot \
 		stunnel.chroot sudo.chroot rsync.chroot eudev.chroot \
-		gperf.chroot multipath-tools.chroot archivemount.chroot \
-		libarchive.chroot mcelog.chroot edac-utils.chroot \
-		sysfsutils.chroot sqlite-autoconf.chroot iperf2.chroot \
-		iperf3.chroot libpcap.chroot iftop.chroot nmon.chroot \
-		munin-c.chroot open-iscsi.chroot open-isns.chroot \
+		gperf.chroot multipath-tools.chroot json-c.chroot \
+		archivemount.chroot libarchive.chroot mcelog.chroot \
+		edac-utils.chroot sysfsutils.chroot sqlite-autoconf.chroot \
+		iperf2.chroot iperf3.chroot libpcap.chroot iftop.chroot \
+		nmon.chroot munin-c.chroot open-iscsi.chroot open-isns.chroot \
 		coreutils.chroot open-vm-tools.chroot libdnet.chroot \
 		libffi.chroot ptyprocess.chroot requests.chroot \
 		openwsman.chroot swig.chroot userspace-rcu.chroot \
@@ -2918,25 +2919,26 @@ gperf.chroot: glibc.chroot gcc.chroot
 	$(TOUCH) $(@)
 
 multipath-tools.chroot: glibc.chroot lvm2.chroot readline.chroot \
-	eudev.chroot userspace-rcu.chroot
+	eudev.chroot userspace-rcu.chroot json-c.chroot
 	$(call chroot_only)
-	$(SED) -i '32,40 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(SED) -i '38,46 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
 	$(SED) -i 's/-lreadline$$/-lreadline -lncursesw/' \
 	$(tgt_src_dir)/multipathd/Makefile
-	$(SED) -i '/\tlibcheckrbd.so$$/d' \
-	$(tgt_src_dir)/libmultipath/checkers/Makefile
-	$(SED) -i 's/\tlibcheckrdac.so \\$$/\tlibcheckrdac.so/' \
-	$(tgt_src_dir)/libmultipath/checkers/Makefile
-	$(SED) -i 's/\/etc\/udev\/rules.d$$/\/usr\/lib\/udev\/rules.d/' \
-	$(tgt_src_dir)/kpartx/Makefile
-	$(SED) -i 's/\/etc\/udev\/rules.d\/$$/\
-	\/usr\/lib\/udev\/rules.d\/66-kpartx.rules/' \
-	$(tgt_src_dir)/kpartx/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib"
 	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib" bindir=/usr/sbin \
 	libudevdir=/usr/lib/udev install
 	$(SED) -i 's/"\/sbin\//"\/usr\/sbin\//' \
 	/usr/lib/udev/rules.d/66-kpartx.rules
+	$(TOUCH) $(@)
+
+json-c.chroot: glibc.chroot
+	$(call chroot_only)
+	$(SED) -i 's/-Werror//' $(tgt_src_dir)/Makefile.in
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
 archivemount.chroot: glibc.chroot libarchive.chroot fuse.chroot

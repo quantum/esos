@@ -157,7 +157,8 @@ c1f1db32fb6598d6a93e6e88796a8632  gperf-3.0.4.tar.gz
 547fa78704da53aa35912be58d31035f  corosync-2.4.2.tar.gz
 e73949b47f080dbe4093207d043754e5  pacemaker-1.1.16.tar.gz
 6dd7314233029d9dab0156e7b1c7830b  lxml-3.6.4.tar.gz
-4f6e54897f277309b48fc98faa31f9a4  multipath-tools-0.6.3.tar.gz
+a09c6e03a0c908aa43e9fd0e6a3ad914  multipath-tools-0.7.3.tar.gz
+55f7853f7d8cf664554ce3fa71bf1c7d  json-c-0.12.1.tar.gz
 ae6a32f6c0733d625569dc37e6fa441d  scst_qla2xxx-20170424.tar.gz
 7fee322a4b1d960e19a64870ca78924b  archivemount-0.8.7.tar.gz
 1ec00b7dcaf969dd2a5712f85f23c764  libarchive-3.2.2.tar.gz

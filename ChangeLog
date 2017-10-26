@@ -1,6 +1,18 @@
-2017-10-20  Marc A. Smith  <marc.smith@parodyne.com>
+2017-10-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'multipath-tools_update'
+
+	added json-c as a dependency for the new multipath-tools version; added a patch from Arch Linux for multipath-tools to support non-systemd distros
+
+2017-10-23  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated multipath-tools to version 0.7.3
+
+2017-10-22  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'add_nvmet_rc'
+
+2017-10-20  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'ib_tool_fixes'
 
