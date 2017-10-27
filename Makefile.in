@@ -805,7 +805,7 @@ bzip2: make
 	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 
-coreutils: make
+coreutils: make perl
 	$(call no_chroot)
 	cd $(tgt_src_dir) && ./configure --prefix=/tools \
 	--enable-install-program=hostname
@@ -2986,7 +2986,7 @@ open-isns.chroot: glibc.chroot openssl.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install_lib
 	$(TOUCH) $(@)
 
-coreutils.chroot: glibc.chroot
+coreutils.chroot: glibc.chroot perl.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
