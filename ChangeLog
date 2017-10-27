@@ -1,3 +1,9 @@
+2017-10-26  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'other_fixes'
+
+	perl is a dependency for the coreutils package; force a fsck in rc.sysinit before resizing the file system
+
 2017-10-25  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'multipath-tools_update'
