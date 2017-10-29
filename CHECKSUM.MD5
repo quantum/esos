@@ -44,6 +44,14 @@ b2db2a83caf66a208bb78d6d287cdaa3  openssh-7.4p1.tar.gz
 28f1205d8dd2001f26fec1e8c2cebe37  zlib-1.2.8.tar.xz
 dd017844c55713bd335aa229e6841d41  libibumad-1.3.10.2.tar.gz
 1544ebb89d861ce84057ab43dfcd22a0  libibverbs-1.2.1.tar.gz
+2a0929159acdd9d69da91e2fb2b746da  libcxgb3-1.3.1.tar.gz
+7a668609789d1702212e191e5f41b147  libcxgb4-1.4.0.tar.gz
+4b4de2c42a10811df7c9b975c8890e4a  libi40iw-0.5.227.tar.gz
+c09b34b427fa4bccae38a10c9758fc34  libmlx4-1.2.1.tar.gz
+eecd015a2c4f2452a0a1cbc121b40712  libmlx5-1.2.1.tar.gz
+893b38bc498ca47ca094e48358aae507  libmthca-1.0.6.tar.gz
+7702b473a6d3d11a5262e8e9306de557  libnes-1.1.4.tar.gz
+841a0a0f44a356931fcb379c5dab7f71  libocrdma-1.0.8.tar.gz
 f3a463673dcf52c726eb7df2f7c391de  srptools-1.0.3.tar.gz
 4a39e3b09cd422e2cae3edbaf56b3176  lsscsi-0.28.tar.gz
 cc825fa64bc7306a885f2fb2268d3ec5  groff-1.22.3.tar.gz

@@ -37,6 +37,12 @@ fi
 if [ "x${NES_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} iw_nes"
 fi
+if [ "x${I40IW_LOAD}" == "xyes" ]; then
+    KERN_MODS="${KERN_MODS} i40iw"
+fi
+if [ "x${OCRDMA_LOAD}" == "xyes" ]; then
+    KERN_MODS="${KERN_MODS} ocrdma"
+fi
 if [ "x${IPOIB_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_ipoib"
 fi
