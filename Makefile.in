@@ -558,6 +558,7 @@ symlink:
 	    $(ECHO) "### Snap! Ya gotta be root for this part..."; \
 	    exit 1; \
 	  fi; \
+	  $(RM) /tools; \
 	  $(LN) -v $(TOOLS_DIR) /tools; \
 	fi
 
@@ -979,7 +980,7 @@ autoconf: make m4 perl
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
-automake: make perl
+automake: make perl autoconf
 	$(call no_chroot)
 	cd $(tgt_src_dir) && ./configure --prefix=/tools
 	$(MAKE) --directory=$(tgt_src_dir)
