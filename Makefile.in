@@ -212,6 +212,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		SQLAlchemy-1.1.1.tar.gz \
 		infiniband-diags-1.6.7.tar.gz \
 		libibmad-1.3.12.tar.gz \
+		perftest-3.4.tar.gz \
 		lockfile-0.12.2.tar.gz \
 		pbr-1.10.0.tar.gz \
 		python-daemon-2.1.1.tar.gz \
@@ -324,18 +325,18 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		sysklogd.chroot less.chroot irqbalance.chroot ethtool.chroot \
 		postgresql.chroot psycopg2.chroot mysql.chroot MySQLdb.chroot \
 		SQLAlchemy.chroot infiniband-diags.chroot libibmad.chroot \
-		lockfile.chroot pbr.chroot python-daemon.chroot nrpe.chroot \
-		bcache-tools.chroot util-linux.chroot \
-		thin-provisioning-tools.chroot expat.chroot boost.chroot \
-		librdmacm.chroot sysstat.chroot pciutils.chroot tar.chroot \
-		net-snmp.chroot nut.chroot libusb.chroot libusb_compat.chroot \
-		freeipmi.chroot libgcrypt.chroot libgpg-error.chroot \
-		smartmontools.chroot cryptsetup.chroot popt.chroot mtx.chroot \
-		mt-st.chroot nagios-plugins.chroot libedit.chroot \
-		libmcrypt.chroot nsca.chroot btrfs-progs.chroot attr.chroot \
-		acl.chroot htop.chroot dmidecode.chroot xmlrpc-c.chroot \
-		stunnel.chroot sudo.chroot rsync.chroot eudev.chroot \
-		gperf.chroot multipath-tools.chroot json-c.chroot \
+		perftest.chroot lockfile.chroot pbr.chroot \
+		python-daemon.chroot nrpe.chroot bcache-tools.chroot \
+		util-linux.chroot thin-provisioning-tools.chroot expat.chroot \
+		boost.chroot librdmacm.chroot sysstat.chroot pciutils.chroot \
+		tar.chroot net-snmp.chroot nut.chroot libusb.chroot \
+		libusb_compat.chroot freeipmi.chroot libgcrypt.chroot \
+		libgpg-error.chroot smartmontools.chroot cryptsetup.chroot \
+		popt.chroot mtx.chroot mt-st.chroot nagios-plugins.chroot \
+		libedit.chroot libmcrypt.chroot nsca.chroot btrfs-progs.chroot \
+		attr.chroot acl.chroot htop.chroot dmidecode.chroot \
+		xmlrpc-c.chroot stunnel.chroot sudo.chroot rsync.chroot \
+		eudev.chroot gperf.chroot multipath-tools.chroot json-c.chroot \
 		archivemount.chroot libarchive.chroot mcelog.chroot \
 		edac-utils.chroot sysfsutils.chroot sqlite-autoconf.chroot \
 		iperf2.chroot iperf3.chroot libpcap.chroot iftop.chroot \
@@ -2465,7 +2466,8 @@ infiniband-diags.chroot: glibc.chroot libibumad.chroot libibverbs.chroot \
 	libibmad.chroot opensm.chroot glib.chroot eudev.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
-	--localstatedir=/var --with-perl-installdir=$(perl_install)
+	--localstatedir=/var --with-perl-installdir=$(perl_install) \
+	--with-ibpath_override=/usr/sbin
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-data
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinPROGRAMS
@@ -2476,6 +2478,13 @@ libibmad.chroot: glibc.chroot libibumad.chroot libibverbs.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--localstatedir=/var
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+perftest.chroot: glibc.chroot infiniband-diags.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
