@@ -1,3 +1,23 @@
+2017-11-22  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'more_fixes'
+
+	misc fixes for '/tools' symlink creation and build dep
+
+2017-10-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'other_fixes' into 1.x.x
+
+	Merge branch 'misc_fixes' into 1.x.x
+
+	Merge branch 'multipath-tools_update' into 1.x.x
+
+	Merge branch 'ib_tool_fixes' into 1.x.x
+
+	Merge branch 'add_nvmet_rc' into 1.x.x
+
+	Merge branch 'nvmetcli_update' into 1.x.x
+
 2017-10-26  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'other_fixes'
