@@ -287,6 +287,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		six-1.10.0.tar.gz \
 		pyparsing-2.1.10.tar.gz \
 		bc-1.07.1.tar.gz \
+		etckeeper-master_20171122.tar.xz \
+		git-2.9.5.tar.xz \
 		win_binaries-20170802.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -345,7 +347,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		openwsman.chroot swig.chroot userspace-rcu.chroot \
 		docutils.chroot tzdata.chroot nvme-cli.chroot freetype.chroot \
 		ledmon.chroot nvmetcli.chroot configshell-fb.chroot \
-		six.chroot pyparsing.chroot sed.chroot bc.chroot libtool.chroot
+		six.chroot pyparsing.chroot sed.chroot bc.chroot \
+		libtool.chroot etckeeper.chroot git.chroot
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -3243,6 +3246,24 @@ libtool.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-ltdlincludeHEADERS
 	$(MAKE) --directory=$(tgt_src_dir) install-libLTLIBRARIES
+	$(TOUCH) $(@)
+
+etckeeper.chroot: git.chroot
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir) etckeeper.version
+	$(MKDIR) /etc/etckeeper/ /var/cache/etckeeper/
+	$(CP) $(tgt_src_dir)/*.d /etc/etckeeper/
+	$(INSTALL) -m 0644 $(tgt_src_dir)/etckeeper.conf /etc/etckeeper/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/etckeeper /usr/bin/
+	$(INSTALL) -m 0644 $(tgt_src_dir)/etckeeper.8 /usr/share/man/man8/
+	$(TOUCH) $(@)
+
+git.chroot: glibc.chroot curl.chroot expat.chroot zlib.chroot openssh.chroot \
+	bash.chroot perl.chroot Python.chroot openssl.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-openssl \
+	--with-curl --with-expat --without-libpcre --without-tcltk
+	$(MAKE) --directory=$(tgt_src_dir)
 	$(TOUCH) $(@)
 
 
