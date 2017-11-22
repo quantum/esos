@@ -3252,7 +3252,7 @@ etckeeper.chroot: git.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir) etckeeper.version
 	$(MKDIR) /etc/etckeeper/ /var/cache/etckeeper/
-	$(CP) $(tgt_src_dir)/*.d /etc/etckeeper/
+	$(CP) -R $(tgt_src_dir)/*.d /etc/etckeeper/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/etckeeper.conf /etc/etckeeper/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/etckeeper /usr/bin/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/etckeeper.8 /usr/share/man/man8/
@@ -3264,6 +3264,7 @@ git.chroot: glibc.chroot curl.chroot expat.chroot zlib.chroot openssh.chroot \
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-openssl \
 	--with-curl --with-expat --without-libpcre --without-tcltk
 	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
 
