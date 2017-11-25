@@ -20,7 +20,7 @@ WGET		:= @wget@ -t 5
 MKDIR		:= @mkdir@ -p
 RM		:= @rm@ -rf
 TAR		:= @tar@
-CP		:= @cp@ -L
+CP		:= @cp@
 FIND		:= @find@
 CPIO		:= @cpio@
 GZIP		:= @gzip@ -9
@@ -3252,7 +3252,7 @@ etckeeper.chroot: git.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir) etckeeper.version
 	$(MKDIR) /etc/etckeeper/ /var/cache/etckeeper/
-	$(CP) -R $(tgt_src_dir)/*.d /etc/etckeeper/
+	$(CP) -Rp $(tgt_src_dir)/*.d /etc/etckeeper/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/etckeeper.conf /etc/etckeeper/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/etckeeper /usr/bin/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/etckeeper.8 /usr/share/man/man8/
