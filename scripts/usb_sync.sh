@@ -6,7 +6,9 @@
 # configuration sync (from USB to root tmpfs).
 
 CONF_MNT="/mnt/conf"
-SYNC_DIRS="/etc /var/lib /opt" # These are absolute paths (leading '/' required)
+RSYNC_DIR="${CONF_MNT}/rsync_dirs"
+ETCKEEPER_REPO="${CONF_MNT}/etckeeper.git"
+RSYNC_DIRS="/var/lib /opt" # These are absolute paths (leading '/' required)
 INITIAL_SYNC=0
 ROOT_PATH="/"
 
@@ -24,12 +26,23 @@ done
 # Mount, sync, and unmount
 mount ${CONF_MNT} || exit 1
 if [ ${INITIAL_SYNC} -eq 1 ]; then
+    if git ls-remote ${ETCKEEPER_REPO} > /dev/null 2>&1; then
+        git clone ${ETCKEEPER_REPO} /etc || exit 1
+    else
+        git config --global user.name "ESOS Superuser" || exit 1
+	git config --global user.email "root@$(hostname)" || exit 1
+	echo -en "# Specific to ESOS\n/rc.d/\n/esos-release\n/issue\n\n" > \
+            /etc/.gitignore || exit 1
+        etckeeper init || exit 1
+        cd /etc && git commit -m "initial check-in" || exit 1
+        cd /etc && git remote add origin ${GIT_REPO} || exit 1
+	cd /etc && git push origin master || exit 1
+    fi
     rsync --archive --exclude "System Volume Information" \
-        --exclude lost+found --exclude etc/esos-release \
-        ${CONF_MNT}/ ${ROOT_PATH} || exit 1
+        --exclude "lost+found" ${RSYNC_DIR}/ ${ROOT_PATH} || exit 1
 else
-    rsync --archive --exclude /etc/rc.d --relative --delete \
-        ${SYNC_DIRS} ${CONF_MNT} || exit 1
+    cd /etc && git push origin master || exit 1
+    rsync --archive --relative --delete ${SYNC_DIRS} ${RSYNC_DIR} || exit 1
 fi
 umount ${CONF_MNT} || exit 1
 

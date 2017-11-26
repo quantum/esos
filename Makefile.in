@@ -3419,6 +3419,8 @@ image:
 	$(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/vmware-tools -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(STAGING_DIR)/etc/etckeeper/*.d -type f ! -path "*/README" \
+	-print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 4755 $(STAGING_DIR)/usr/bin/sudo
