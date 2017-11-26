@@ -348,7 +348,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		docutils.chroot tzdata.chroot nvme-cli.chroot freetype.chroot \
 		ledmon.chroot nvmetcli.chroot configshell-fb.chroot \
 		six.chroot pyparsing.chroot sed.chroot bc.chroot \
-		libtool.chroot etckeeper.chroot git.chroot
+		libtool.chroot etckeeper.chroot git.chroot findutils.chroot
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -3263,6 +3263,13 @@ git.chroot: glibc.chroot curl.chroot expat.chroot zlib.chroot openssh.chroot \
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-openssl \
 	--with-curl --with-expat --without-libpcre --without-tcltk
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+findutils.chroot: glibc.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
