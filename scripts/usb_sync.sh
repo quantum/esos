@@ -1,9 +1,9 @@
 #! /bin/sh
 
 # This script will synchronize configuration files between the ESOS USB
-# device (esos_conf) and the root tmpfs filesystem using rsync. The '-i'
-# ('--initial') flag should only be used on boot to perform the initial
-# configuration sync (from USB to root tmpfs).
+# device (esos_conf) and the root tmpfs filesystem using Git and rsync.
+# The '-i' ('--initial') flag should only be used on boot to perform the
+# initial configuration sync (from USB to root tmpfs).
 
 CONF_MNT="/mnt/conf"
 USB_RSYNC="${CONF_MNT}/rsync_dirs"
@@ -32,6 +32,7 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
         cd /etc && git fetch -q origin master || exit 1
         cd /etc && git checkout -q -f -b master --track origin/master || exit 1
         cd /etc && git reset -q --hard origin/master || exit 1
+        etckeeper init > /dev/null || exit 1
     else
         git init -q --bare ${ETCKEEPER_REPO} || exit 1
 	echo -en "# Specific to ESOS\n/rc.d/\n/esos-release\n/issue\n\n" > \
@@ -39,9 +40,9 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
         etckeeper init > /dev/null || exit 1
         git config --system user.name "ESOS Superuser" || exit 1
 	git config --system user.email "root@esos" || exit 1
-        cd /etc && git commit -q -m "initial check-in" > /dev/null || exit 1
-        cd /etc && git remote add origin ${ETCKEEPER_REPO} > /dev/null || exit 1
-	cd /etc && git push -q origin master > /dev/null || exit 1
+        cd /etc && git commit -q -m "initial check-in via usb_sync.sh" || exit 1
+        cd /etc && git remote add origin ${ETCKEEPER_REPO} || exit 1
+	cd /etc && git push -q origin master || exit 1
     fi
     mkdir -p ${USB_RSYNC} || exit 1
     rsync --archive --exclude "System Volume Information" \
