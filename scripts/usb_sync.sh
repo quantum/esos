@@ -27,23 +27,27 @@ done
 mount ${CONF_MNT} || exit 1
 if [ ${INITIAL_SYNC} -eq 1 ]; then
     if git ls-remote ${ETCKEEPER_REPO} > /dev/null 2>&1; then
-        git clone ${ETCKEEPER_REPO} /etc || exit 1
+        cd /etc && git init -q || exit 1
+        cd /etc && git remote add origin ${ETCKEEPER_REPO} || exit 1
+        cd /etc && git fetch -q origin master || exit 1
+        cd /etc && git checkout -q -f -b master --track origin/master || exit 1
+        cd /etc && git reset -q --hard origin/master || exit 1
     else
-        git init --bare ${ETCKEEPER_REPO}
-        git config --global user.name "ESOS Superuser" || exit 1
-	git config --global user.email "root@$(hostname)" || exit 1
+        git init -q --bare ${ETCKEEPER_REPO} || exit 1
 	echo -en "# Specific to ESOS\n/rc.d/\n/esos-release\n/issue\n\n" > \
             /etc/.gitignore || exit 1
-        etckeeper init || exit 1
-        cd /etc && git commit -m "initial check-in" || exit 1
-        cd /etc && git remote add origin ${ETCKEEPER_REPO} || exit 1
-	cd /etc && git push origin master || exit 1
+        etckeeper init > /dev/null || exit 1
+        git config --system user.name "ESOS Superuser" || exit 1
+	git config --system user.email "root@esos" || exit 1
+        cd /etc && git commit -q -m "initial check-in" > /dev/null || exit 1
+        cd /etc && git remote add origin ${ETCKEEPER_REPO} > /dev/null || exit 1
+	cd /etc && git push -q origin master > /dev/null || exit 1
     fi
     mkdir -p ${USB_RSYNC} || exit 1
     rsync --archive --exclude "System Volume Information" \
         --exclude "lost+found" ${USB_RSYNC}/ ${ROOT_PATH} || exit 1
 else
-    cd /etc && git push origin master || exit 1
+    cd /etc && git push -q origin master || exit 1
     rsync --archive --relative --delete ${RSYNC_DIRS} ${USB_RSYNC} || exit 1
 fi
 umount ${CONF_MNT} || exit 1
