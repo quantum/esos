@@ -2472,6 +2472,7 @@ infiniband-diags.chroot: glibc.chroot libibumad.chroot libibverbs.chroot \
 	$(MAKE) --directory=$(tgt_src_dir) install-data
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinPROGRAMS
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinSCRIPTS
+	$(MAKE) --directory=$(tgt_src_dir)/libibnetdisc install-libLTLIBRARIES
 	$(TOUCH) $(@)
 
 libibmad.chroot: glibc.chroot libibumad.chroot libibverbs.chroot
