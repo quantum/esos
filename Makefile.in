@@ -156,7 +156,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20140928.tar.gz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.3.x_r7232.tar.gz \
+		scst-3.3.x_r7271.tar.gz \
 		kexec-tools-2.0.15.tar.xz \
 		drbd-utils-8.9.6.tar.gz \
 		lvm2-2_02_168.tar.gz \

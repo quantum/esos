@@ -1,3 +1,27 @@
+2017-11-30  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'scst_ver_bump' into 1.x.x
+
+	Merge branch '4_9_ver_bump' into 1.x.x
+
+	Merge branch 'more_ib_fixes' into 1.x.x
+
+	updated SCST to version 3.3.x/r7271
+
+2017-11-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.9.65
+
+	libibnetdisc.so is needed with infiniband-diags
+
+2017-11-22  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the perftest package for InfiniBand performance testing; in infiniband-diags.chroot we must specify the search path using --with-ibpath_override
+
+	Merge branch 'more_fixes' into 1.x.x
+
+	misc fixes for '/tools' symlink creation and build dep
+
 2017-10-28  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'other_fixes' into 1.x.x
