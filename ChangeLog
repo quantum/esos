@@ -1,6 +1,22 @@
+2017-12-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.14.3; updated SCST to version trunk/r7271; set mhVTL to be a build-time option (disabled by default) as there are no recent releases and isn't supported with Linux 4.14.x
+
+2017-11-30  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'more_ib_fixes'
+
+2017-11-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	libibnetdisc.so is needed with infiniband-diags
+
 2017-11-22  Marc A. Smith  <marc.smith@parodyne.com>
 
+	added the perftest package for InfiniBand performance testing; in infiniband-diags.chroot we must specify the search path using --with-ibpath_override
+
 	Merge branch 'more_fixes'
+
+	Merge branch 'more_fixes' into 1.x.x
 
 	misc fixes for '/tools' symlink creation and build dep
 

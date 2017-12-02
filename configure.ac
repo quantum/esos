@@ -186,9 +186,18 @@ AS_IF([test "x$enable_zfs" = "xyes"], [build_opts="${build_opts} zfs"])
 AC_SUBST(enable_zfs, ${enable_zfs})
 AC_MSG_NOTICE([zfs: ${enable_zfs}])
 
+dnl Optional feature mhvtl
+AC_ARG_ENABLE(mhvtl,
+	AS_HELP_STRING([--enable-mhvtl], [build and include mhVTL (broken)]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_mhvtl="${enableval}"], [enable_mhvtl="no"]), enable_mhvtl="no")
+AS_IF([test "x$enable_mhvtl" = "xyes"], [build_opts="${build_opts} mhvtl"])
+AC_SUBST(enable_mhvtl, ${enable_mhvtl})
+AC_MSG_NOTICE([mhvtl: ${enable_mhvtl}])
+
 dnl Optional feature eio
 AC_ARG_ENABLE(eio,
-	AS_HELP_STRING([--enable-eio], [build and include EnhanceIO]),
+	AS_HELP_STRING([--enable-eio], [build and include EnhanceIO (broken)]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_eio="${enableval}"], [enable_eio="no"]), enable_eio="no")
 AS_IF([test "x$enable_eio" = "xyes"], [build_opts="${build_opts} eio"])
@@ -197,7 +206,7 @@ AC_MSG_NOTICE([eio: ${enable_eio}])
 
 dnl Optional feature btier
 AC_ARG_ENABLE(btier,
-	AS_HELP_STRING([--enable-btier], [build and include BTIER]),
+	AS_HELP_STRING([--enable-btier], [build and include BTIER (broken)]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_btier="${enableval}"], [enable_btier="no"]), enable_btier="no")
 AS_IF([test "x$enable_btier" = "xyes"], [build_opts="${build_opts} btier"])

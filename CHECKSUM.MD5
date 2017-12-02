@@ -3,7 +3,7 @@ ff370482573133a7fcdd96cd2f552292  gcc-7.2.0.tar.xz
 86ee6e54ebfc4a90b643a65e402c4048  gmp-6.1.0.tar.bz2
 b8a2f6b0e68bef46e53da2ac439e1cf4  mpfr-3.1.4.tar.bz2
 d6a1d5f8ddea3abd2cc3e98f58352d26  mpc-1.0.3.tar.gz
-6d269ef3184a8e9d5081726689b6c913  linux-4.9.47.tar.xz
+c24ea351d105e48b401fd34db8163495  linux-4.14.3.tar.xz
 102f637c3812f81111f48f2427611be1  glibc-2.26.tar.xz
 da7ee73d4138635d728f5cc5c7678860  tcl-8.6.7.tar.xz
 46d6aa2d95c8604b75cf2fed20594cb7  expect-5.45.tar.xz
@@ -181,7 +181,7 @@ bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
 81f8e4595fa53f9f220a7500e3759e6c  crmsh-2.2.1.tar.gz
 7ab813b2e8921fc4e9f2f92cd5271b30  nmon-16c.tar.gz
 c8590c6a06cb846fc13f3ed10058755a  linux_firmware-master_20161101.tar.xz
-4de34be9adb341af19c9cbb4ec9ea5ea  scst-trunk_r7212.tar.gz
+feec1385900f13f73cc1623838aa4a59  scst-trunk_r7271.tar.gz
 f1e2f97e100e80e00ce3ead797538290  munin-c-0.0.9.tar.gz
 caf2c92bfe58c07f781ab74942e4b9f2  open-iscsi-2.0.874.tar.gz
 e0047d68b4d7a0b6104f67851b8b6475  open-isns-0.96.tar.gz
