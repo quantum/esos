@@ -1,5 +1,9 @@
 2017-12-02  Marc A. Smith  <marc.smith@parodyne.com>
 
+	Merge branch 'etckeeper_git'
+
+	check if mhVTL is being used before attempting to chmod those binaries in the image target
+
 	updated Linux to version 4.14.3; updated SCST to version trunk/r7271; set mhVTL to be a build-time option (disabled by default) as there are no recent releases and isn't supported with Linux 4.14.x
 
 2017-11-30  Marc A. Smith  <marc.smith@parodyne.com>
@@ -10,9 +14,33 @@
 
 	libibnetdisc.so is needed with infiniband-diags
 
+2017-11-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	tweaked the commit messages in both scripts to be a little more descriptive; updated header comment block in usb_sync.sh for new method; final tweaking of git command strings in usb_sync.sh; tested and appears to work as desired
+
+2017-11-26  Marc A. Smith  <marc.smith@parodyne.com>
+
+	specify the --sysconfdir flag for git.chroot; lots of script fixes/tweaks for usb_sync.sh and conf_sync.sh
+
+	etckeeper uses features in the find utility not found in the Busybox variant so include the findutils package in chroot and disable the Busybox find + xargs utilities
+
+	more tweaks for the usb_sync.sh script
+
+2017-11-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fix permissions for /etc/etckeeper/*.d files (executable); updates to the conf_sync.sh and usb_sync.sh scripts for the new etckeeper/Git setup
+
+2017-11-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	don't dereference sym links by default when using CP (-L); add the preserve flag for copy command in etckeeper.chroot
+
 2017-11-22  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the perftest package for InfiniBand performance testing; in infiniband-diags.chroot we must specify the search path using --with-ibpath_override
+
+	fixed build issues in etckeeper.chroot and git.chroot
+
+	added the etckeeper and git packages
 
 	Merge branch 'more_fixes'
 
