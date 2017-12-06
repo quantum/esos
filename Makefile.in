@@ -1133,7 +1133,7 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	    $(SED) -i 's/@depmod/#depmod/' \
 	    $(celerity_16_32_dir)/src/Makefile; \
 	    $(MAKE) --directory=$(celerity_16_32_dir)/src \
-	    DRIVER_NAME=celerity16fc clean; \
+	    KDIR=$(linux_src) DRIVER_NAME=celerity16fc clean; \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
 	    $(SED) -i 's,/usr/local/include/scst,$(scst_src)/scst/include,g' \
@@ -1468,9 +1468,11 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 
 celerity_16_32.chroot:
 	$(call chroot_only)
-	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/atfcnvr_x64 /usr/sbin/
-	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/atflash_x64 /usr/sbin/
-	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/atinfo_x64 /usr/sbin/
+	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/x64/atdevinfo /usr/sbin/
+	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/x64/atfcinfo /usr/sbin/
+	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/x64/atfcnvr /usr/sbin/
+	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/x64/atflash /usr/sbin/
+	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/x64/atinfo /usr/sbin/
 	$(TOUCH) $(@)
 
 atto_scst.chroot:

@@ -1,3 +1,7 @@
+2017-12-05  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updates to esos_kernels.chroot and celerity_16_32.chroot for the new ATTO Celerity FC driver version
+
 2017-12-02  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'etckeeper_git'
