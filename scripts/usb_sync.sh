@@ -27,6 +27,7 @@ done
 mount ${CONF_MNT} || exit 1
 if [ ${INITIAL_SYNC} -eq 1 ]; then
     if git ls-remote ${ETCKEEPER_REPO} > /dev/null 2>&1; then
+        # The Git repo exists, pull it down locally
         cd /etc && git init -q || exit 1
         cd /etc && git remote add origin ${ETCKEEPER_REPO} || exit 1
         cd /etc && git fetch -q origin master || exit 1
@@ -34,6 +35,24 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
         cd /etc && git reset -q --hard origin/master || exit 1
         etckeeper init > /dev/null || exit 1
     else
+        # Migrate any old configuration directories
+        if [ -d "${CONF_MNT}/etc" ]; then
+            echo "Sync'ing previous /etc configuration locally..."
+            rsync --archive --exclude etc/esos-release \
+                ${CONF_MNT}/etc ${ROOT_PATH} || exit 1
+            rm -rf ${CONF_MNT}/etc || exit 1
+        fi
+        if [ -d "${CONF_MNT}/var" ]; then
+            echo "Moving USB /var directory to new location..."
+            mkdir -p ${USB_RSYNC} || exit 1
+            mv ${CONF_MNT}/var ${USB_RSYNC}/ || exit 1
+        fi
+        if [ -d "${CONF_MNT}/opt" ]; then
+            echo "Moving USB /opt directory to new location..."
+            mkdir -p ${USB_RSYNC} || exit 1
+            mv ${CONF_MNT}/opt ${USB_RSYNC}/ || exit 1
+        fi
+        # Initialize and configure the new Git repo
         git init -q --bare ${ETCKEEPER_REPO} || exit 1
 	echo -en "# Specific to ESOS\n/rc.d/\n/esos-release\n/issue\n\n" > \
             /etc/.gitignore || exit 1
@@ -44,10 +63,12 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
         cd /etc && git remote add origin ${ETCKEEPER_REPO} || exit 1
 	cd /etc && git push -q origin master || exit 1
     fi
+    # Use rsync for the other directories/files
     mkdir -p ${USB_RSYNC} || exit 1
     rsync --archive --exclude "System Volume Information" \
         --exclude "lost+found" ${USB_RSYNC}/ ${ROOT_PATH} || exit 1
 else
+    # Push changes up to the USB Git repo / file system
     cd /etc && git push -q origin master || exit 1
     rsync --archive --relative --delete ${RSYNC_DIRS} ${USB_RSYNC} || exit 1
 fi
