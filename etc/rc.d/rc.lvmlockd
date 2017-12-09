@@ -2,7 +2,7 @@
 
 source /etc/rc.d/common
 
-LVMLOCKD="/usr/sbin/LVMLOCKD"
+LVMLOCKD="/usr/sbin/lvmlockd"
 LVMLOCKD_LOCK="/var/lock/lvmlockd"
 VGCHANGE="/usr/sbin/vgchange"
 LVMLOCKCTL="/usr/sbin/lvmlockctl"
