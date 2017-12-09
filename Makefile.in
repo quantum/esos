@@ -290,6 +290,12 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		bc-1.07.1.tar.gz \
 		etckeeper-master_20171122.tar.xz \
 		git-2.9.5.tar.xz \
+		nfs-utils-2.2.1.tar.xz \
+		rpcbind-0.2.4.tar.bz2 \
+		libtirpc-1.0.2.tar.bz2 \
+		libevent-2.1.8-stable.tar.gz \
+		keyutils-1.5.10.tar.bz2 \
+		libnfsidmap-0.26.tar.bz2 \
 		win_binaries-20170802.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -349,7 +355,9 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		docutils.chroot tzdata.chroot nvme-cli.chroot freetype.chroot \
 		ledmon.chroot nvmetcli.chroot configshell-fb.chroot \
 		six.chroot pyparsing.chroot sed.chroot bc.chroot \
-		libtool.chroot etckeeper.chroot git.chroot findutils.chroot
+		libtool.chroot etckeeper.chroot git.chroot findutils.chroot \
+		nfs-utils.chroot rpcbind.chroot libtirpc.chroot \
+		libevent.chroot keyutils.chroot libnfsidmap.chroot
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -1054,7 +1062,7 @@ glibc.chroot: kernel_headers.chroot
 	CC="gcc -isystem $(gcc_inc_dir) -isystem /usr/include" \
 	$(tgt_src_dir)/configure --prefix=/usr --disable-werror \
 	--enable-kernel=3.2 --enable-stack-protector=strong \
-	--enable-obsolete-rpc libc_cv_slibdir=/lib
+	--enable-obsolete-rpc --enable-obsolete-nsl libc_cv_slibdir=/lib
 	$(MAKE) --directory=$(chroot_build)/glibc-build
 	$(TOUCH) /etc/ld.so.conf
 	$(SED) '/test-installation/s@$$(PERL)@echo not running@' -i \
@@ -2003,10 +2011,10 @@ corosync.chroot: glibc.chroot libqb.chroot nss.chroot librdmacm.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/conf install-corosysxmlxsltDATA
 	$(TOUCH) $(@)
 
-nss.chroot: glibc.chroot gcc.chroot zlib.chroot
+nss.chroot: glibc.chroot gcc.chroot sqlite-autoconf.chroot zlib.chroot
 	$(call chroot_only)
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)/nss \
-	BUILD_OPT=1 USE_64=1 USE_SYSTEM_ZLIB=1 \
+	BUILD_OPT=1 USE_64=1 NSS_USE_SYSTEM_SQLITE=1 USE_SYSTEM_ZLIB=1 \
 	ZLIB_LIBS="-lz" OS_LIBS="-lpthread -ldl -lc -lrt -lz" \
 	CC="gcc -I$(tgt_src_dir)/nss/lib/zlib \
 	-I$(tgt_src_dir)/nss/lib/nss" \
@@ -3292,6 +3300,58 @@ git.chroot: glibc.chroot curl.chroot expat.chroot zlib.chroot openssh.chroot \
 findutils.chroot: glibc.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+nfs-utils.chroot: glibc.chroot rpcbind.chroot libevent.chroot keyutils.chroot \
+	sqlite-autoconf.chroot lvm2.chroot libnfsidmap.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-tcp-wrappers \
+	--disable-gss
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+rpcbind.chroot: glibc.chroot libtirpc.chroot
+	$(call chroot_only)
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	cd $(tgt_src_dir) && ./configure --prefix=/usr \
+	--without-systemdsystemunitdir
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libtirpc.chroot: glibc.chroot
+	$(call chroot_only)
+	$(SED) '/stdlib.h/a#include <stdint.h>' \
+	-i $(tgt_src_dir)/src/xdr_sizeof.c
+	$(SED) '/key_secret_is/s/secret/secretkey/' \
+	-i $(tgt_src_dir)/src/libtirpc.map
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--disable-static --disable-gssapi
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+libevent.chroot: glibc.chroot openssl.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+keyutils.chroot: glibc.chroot
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) LIBDIR=/usr/lib install
+	$(TOUCH) $(@)
+
+libnfsidmap.chroot: glibc.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)

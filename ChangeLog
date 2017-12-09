@@ -1,3 +1,21 @@
+2017-12-09  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'add_nfs'
+
+	Merge branch '20171209_fixes'
+
+	health_chk.sh: PD state "DHS" is acceptable for PERC controllers; rc.lvmlockd: fixed a typo/bug in the lvmlockd command string
+
+	added a new rc.nfsd script handle starting/stopping the NFS server
+
+2017-12-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the nfs-utils package and required dependencies (rpcbind, libtirpc, libevent, keyutils, libnfsidmap); updated nss.chroot to use system sqlite; updated the kernel config to enable NFS server support
+
+2017-12-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	usb_sync.sh: support migrating old ESOS configurations into the new Git repo setup
+
 2017-12-05  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updates to esos_kernels.chroot and celerity_16_32.chroot for the new ATTO Celerity FC driver version
@@ -14,7 +32,17 @@
 
 	Merge branch 'more_ib_fixes'
 
+	Merge branch 'scst_ver_bump' into 1.x.x
+
+	Merge branch '4_9_ver_bump' into 1.x.x
+
+	Merge branch 'more_ib_fixes' into 1.x.x
+
+	updated SCST to version 3.3.x/r7271
+
 2017-11-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.9.65
 
 	libibnetdisc.so is needed with infiniband-diags
 

@@ -205,3 +205,9 @@ b86a2d6c33727db526dbb17702d8e2a6  configshell-fb-1.1.fb23.tar.gz
 cda93857418655ea43590736fc3ca9fc  bc-1.07.1.tar.gz
 5a33aa36ba0661e1f73a22e76b15e7b0  etckeeper-master_20171122.tar.xz
 b3162dfbc456d46720b09c95cbdaf8af  git-2.9.5.tar.xz
+8e6e50548f869c6a55074bd36a38c7bc  nfs-utils-2.2.1.tar.xz
+cf10cd41ed8228fc54c316191c1f07fe  rpcbind-0.2.4.tar.bz2
+d5a37f1dccec484f9cabe2b97e54e9a6  libtirpc-1.0.2.tar.bz2
+f3eeaed018542963b7d2416ef1135ecc  libevent-2.1.8-stable.tar.gz
+3771676319bc7b84b1549b5c63ff5243  keyutils-1.5.10.tar.bz2
+2c0cf0e2b1665d51fa9a783679494888  libnfsidmap-0.26.tar.bz2
