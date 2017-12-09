@@ -1,0 +1,80 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+RPCBIND="/usr/bin/rpcbind"
+RPCBIND_LOCK="/var/lock/rpcbind"
+RPC_STATD="/usr/sbin/rpc.statd"
+RPC_STATD_LOCK="/var/lock/rpc.statd"
+RPC_NFSD="/usr/sbin/rpc.nfsd"
+RPC_NFSD_LOCK="/var/lock/rpc.nfsd"
+RPC_MOUNTD="/usr/sbin/rpc.mountd"
+RPC_MOUNTD_LOCK="/var/lock/rpc.mountd"
+EXPORTFS="/usr/sbin/exportfs"
+DFLT_OPTS="-p 2049 8"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    # The rpcbind daemon is needed first
+    /bin/echo "Starting rpcbind..."
+    ${RPCBIND} || exit 1
+    /bin/touch ${RPCBIND_LOCK}
+    # Now start statd
+    /bin/echo "Starting NFS statd..."
+    ${RPC_STATD} --no-notify || exit 1
+    /bin/touch ${RPC_STATD_LOCK}
+    # Now start nfsd
+    /bin/echo "Starting NFS nfsd..."
+    eval ${RPC_NFSD} ${USER_OPTS} || exit 1
+    /bin/touch ${RPC_NFSD_LOCK}
+    # Now start mountd
+    /bin/echo "Starting NFS mountd..."
+    ${RPC_MOUNTD} || exit 1
+    /bin/touch ${RPC_MOUNTD_LOCK}
+    # Finally export the NFS file systems
+    /bin/echo "Exporting all NFS file systems..."
+    ${EXPORTFS} -ra > /dev/null 2>&1
+}
+
+stop() {
+    # Now remove / stop everything in reverse
+    /bin/echo "Removing exported NFS file systems..."
+    ${EXPORTFS} -au > /dev/null 2>&1 || exit 1
+    /bin/echo "Stopping NFS statd..."
+    /bin/kill -TERM $(/bin/pidof ${RPC_STATD}) || exit 1
+    wait_for_stop ${RPC_STATD} && /bin/rm -f ${RPC_STATD_LOCK}
+    /bin/echo "Stopping NFS nfsd..."
+    /bin/kill -HUP $(/bin/pidof ${RPC_NFSD}) || exit 1
+    wait_for_stop ${RPC_NFSD} && /bin/rm -f ${RPC_NFSD_LOCK}
+    /bin/echo "Stopping NFS mountd..."
+    /bin/kill -TERM $(/bin/pidof ${RPC_MOUNTD}) || exit 1
+    wait_for_stop ${RPC_MOUNTD} && /bin/rm -f ${RPC_MOUNTD_LOCK}
+    # Remove a PID file that isn't done automatically
+    if [ -f "/var/run/rpc.statd.pid" ]; then
+        /bin/echo "Removing the stale rpc.statd PID file..."
+        /bin/rm -f /var/run/rpc.statd.pid
+    fi
+    /bin/echo "Stopping rpcbind..."
+    /bin/kill -TERM $(/bin/pidof ${RPCBIND}) || exit 1
+    wait_for_stop ${RPCBIND} && /bin/rm -f ${RPCBIND_LOCK}
+}
+
+status() {
+    /bin/pidof ${RPC_NFSD} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}
