@@ -55,9 +55,10 @@ for i in $(${HW_RAID_CLI} --list-physical-drives); do
     if [[ ("${ctrlr_type}" = "MegaRAID" && "${pd_state}" != "UGood" && \
         "${pd_state}" != "Onln" && "${pd_state}" != "GHS") || \
         ("${ctrlr_type}" = "PERC" && "${pd_state}" != "UGood" && \
-        "${pd_state}" != "Onln" && "${pd_state}" != "GHS") || \
-        ("${ctrlr_type}" = "AACRAID" && "${pd_state}" != "Ready" && \
-        "${pd_state}" != "Online" && "${pd_state}" != "Hot Spare") ]]; then
+        "${pd_state}" != "Onln" && "${pd_state}" != "GHS" && \
+        "${pd_state}" != "DHS") || ("${ctrlr_type}" = "AACRAID" && \
+        "${pd_state}" != "Ready" && "${pd_state}" != "Online" && \
+        "${pd_state}" != "Hot Spare") ]]; then
         echo "** Warning! It appears a ${ctrlr_type} physical drive" \
             "(${pd_encl_id}:${pd_slot_num}) has failed on controller #" \
             "${ctrlr_id}!" 1>&2
