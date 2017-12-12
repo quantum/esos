@@ -1,5 +1,7 @@
 2017-12-12  Marc A. Smith  <marc.smith@parodyne.com>
 
+	upgrading a live ESOS host/node by writing the complete image to the boot device is an acceptable practice which wipes the esos_conf FS, so we handle this in usb_sync.sh by recreating the Git repo and USB rsync directory
+
 	updated ZFS (spl + zfs) to version 0.7.4; several rc.nfsd tweaks/fixes
 
 2017-12-09  Marc A. Smith  <marc.smith@parodyne.com>

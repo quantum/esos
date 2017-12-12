@@ -68,6 +68,13 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
     rsync --archive --exclude "System Volume Information" \
         --exclude "lost+found" ${USB_RSYNC}/ ${ROOT_PATH} || exit 1
 else
+    # During an upgrade, the user may wipe esos_conf, so recreate if needed
+    if ! git ls-remote ${ETCKEEPER_REPO} > /dev/null 2>&1; then
+        git init -q --bare ${ETCKEEPER_REPO} || exit 1
+    fi
+    if [ ! -d "${USB_RSYNC}" ]; then
+        mkdir -p ${USB_RSYNC} || exit 1
+    fi
     # Push changes up to the USB Git repo / file system
     cd /etc && git push -q origin master || exit 1
     rsync --archive --relative --delete ${RSYNC_DIRS} ${USB_RSYNC} || exit 1
