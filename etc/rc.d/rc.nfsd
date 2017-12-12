@@ -43,21 +43,23 @@ start() {
     /bin/echo "Starting NFS mountd..."
     ${RPC_MOUNTD} || exit 1
     /bin/touch ${RPC_MOUNTD_LOCK}
-    # Finally export the NFS file systems
-    /bin/echo "Exporting all NFS file systems..."
-    ${EXPORTFS} -ra > /dev/null 2>&1
+    # Finally export the NFS file systems (if any exist)
+    if [ -f "/etc/exports" ]; then
+        /bin/echo "Exporting all NFS file systems..."
+        ${EXPORTFS} -ra || exit 1
+    fi
 }
 
 stop() {
     # Now remove / stop everything in reverse
     /bin/echo "Removing exported NFS file systems..."
-    ${EXPORTFS} -au > /dev/null 2>&1 || exit 1
+    ${EXPORTFS} -au || exit 1
     /bin/echo "Stopping NFS statd..."
     /bin/kill -TERM $(/bin/pidof ${RPC_STATD}) || exit 1
     wait_for_stop ${RPC_STATD} && /bin/rm -f ${RPC_STATD_LOCK}
     /bin/echo "Stopping NFS nfsd..."
-    /bin/kill -HUP $(/bin/pidof ${RPC_NFSD}) || exit 1
-    wait_for_stop ${RPC_NFSD} && /bin/rm -f ${RPC_NFSD_LOCK}
+    /usr/bin/killall -HUP nfsd || exit 1
+    wait_for_stop nfsd && /bin/rm -f ${RPC_NFSD_LOCK}
     /bin/echo "Stopping NFS mountd..."
     /bin/kill -TERM $(/bin/pidof ${RPC_MOUNTD}) || exit 1
     wait_for_stop ${RPC_MOUNTD} && /bin/rm -f ${RPC_MOUNTD_LOCK}
