@@ -1,3 +1,19 @@
+2017-12-20  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch '20171209_fixes' into 1.x.x
+
+2017-12-14  Marc A. Smith  <marc.smith@parodyne.com>
+
+	prevent conf_sync.sh from running when upgrading ESOS
+
+2017-12-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated stunnel to version 5.44
+
+2017-12-09  Marc A. Smith  <marc.smith@parodyne.com>
+
+	health_chk.sh: PD state "DHS" is acceptable for PERC controllers; rc.lvmlockd: fixed a typo/bug in the lvmlockd command string
+
 2017-11-30  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'scst_ver_bump' into 1.x.x

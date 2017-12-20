@@ -10,6 +10,7 @@ MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
 LINUX="LINUX"
 MACOSX="MACOSX"
+SYNC_LOCK="/tmp/conf_sync_lock"
 
 source ./install_common
 
@@ -73,6 +74,9 @@ image_file="$(ls esos-*.img.bz2)" || exit 1
 
 # Check if we're doing an upgrade
 if [ -f "/etc/esos-release" ]; then
+    # Prevent conf_sync.sh from running
+    touch ${SYNC_LOCK} || exit 1
+    trap 'rm -f ${SYNC_LOCK}' 0
     while true; do
         # Look up the ESOS block device node
         esos_root="$(findfs LABEL=esos_root)"
@@ -163,7 +167,7 @@ if [ -f "/etc/esos-release" ]; then
             umount ${usb_esos_mnt}/boot || exit 1
             umount ${usb_esos_mnt} || exit 1
             kpartx -d ${loop_dev} || exit 1
-            #losetup -d ${loop_dev} || exit 1
+            losetup -d ${loop_dev} || exit 1
             rm -rf ${TEMP_DIR}
             echo
             echo "### The ESOS upgrade succeeded! Here are the details:"
