@@ -296,6 +296,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libevent-2.1.8-stable.tar.gz \
 		keyutils-1.5.10.tar.bz2 \
 		libnfsidmap-0.26.tar.bz2 \
+		hdparm-9.52.tar.gz \
 		win_binaries-20170802.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -357,7 +358,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		six.chroot pyparsing.chroot sed.chroot bc.chroot \
 		libtool.chroot etckeeper.chroot git.chroot findutils.chroot \
 		nfs-utils.chroot rpcbind.chroot libtirpc.chroot \
-		libevent.chroot keyutils.chroot libnfsidmap.chroot
+		libevent.chroot keyutils.chroot libnfsidmap.chroot \
+		hdparm.chroot
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -3352,6 +3354,12 @@ libnfsidmap.chroot: glibc.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--disable-static
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+hdparm.chroot: glibc.chroot
+	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
