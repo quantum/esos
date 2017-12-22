@@ -300,6 +300,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		win_binaries-20170802.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
+# These targets are required before entering the chroot environment
 bootstrap_tgts	:= binutils.pass1 gcc.pass1 gmp mpfr mpc kernel_headers \
 		glibc gcc.libstdc++ binutils.pass2 gcc.pass2 tcl expect \
 		dejagnu check ncurses bash bison bzip2 coreutils diffutils \
@@ -307,6 +308,7 @@ bootstrap_tgts	:= binutils.pass1 gcc.pass1 gmp mpfr mpc kernel_headers \
 		sed tar texinfo util-linux xz pkg-config which autoconf \
 		automake libtool flex
 
+# All targets which are built/installed in the chroot environment
 chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		esos_kernels.chroot esos_tui.chroot scst.chroot \
 		busybox.chroot makedumpfile.chroot elfutils.chroot \
@@ -328,7 +330,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		lessfs.chroot tokyocabinet.chroot fuse.chroot db.chroot \
 		snappy.chroot fence-agents.chroot pexpect.chroot \
 		pycurl.chroot curl.chroot Net-Telnet.chroot fio.chroot \
-		bash.chroot open-fcoe.chroot open-lldp.chroot \
+		open-fcoe.chroot open-lldp.chroot \
 		libconfig.chroot libnl.chroot libpciaccess.chroot \
 		linux_firmware.chroot dlm.chroot ipmitool.chroot \
 		sysklogd.chroot less.chroot irqbalance.chroot ethtool.chroot \
@@ -338,7 +340,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		python-daemon.chroot nrpe.chroot bcache-tools.chroot \
 		util-linux.chroot thin-provisioning-tools.chroot expat.chroot \
 		boost.chroot librdmacm.chroot sysstat.chroot pciutils.chroot \
-		tar.chroot net-snmp.chroot nut.chroot libusb.chroot \
+		net-snmp.chroot nut.chroot libusb.chroot \
 		libusb_compat.chroot freeipmi.chroot libgcrypt.chroot \
 		libgpg-error.chroot smartmontools.chroot cryptsetup.chroot \
 		popt.chroot mtx.chroot mt-st.chroot nagios-plugins.chroot \
@@ -355,11 +357,14 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		openwsman.chroot swig.chroot userspace-rcu.chroot \
 		docutils.chroot tzdata.chroot nvme-cli.chroot freetype.chroot \
 		ledmon.chroot nvmetcli.chroot configshell-fb.chroot \
-		six.chroot pyparsing.chroot sed.chroot bc.chroot \
-		libtool.chroot etckeeper.chroot git.chroot findutils.chroot \
+		six.chroot pyparsing.chroot bc.chroot \
+		libtool.chroot etckeeper.chroot git.chroot \
 		nfs-utils.chroot rpcbind.chroot libtirpc.chroot \
 		libevent.chroot keyutils.chroot libnfsidmap.chroot \
 		hdparm.chroot
+
+# And finally these targets should be built without parallel execution
+system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
 
 # Check if we should enable additional build options
 ifeq ($(enable_gdb),yes)
@@ -438,6 +443,7 @@ else
 endif
 clean_bootstrap_tgts	:= $(addprefix clean-,$(bootstrap_tgts))
 clean_chroot_tgts	:= $(addprefix clean-,$(chroot_tgts))
+clean_system_tgts	:= $(addprefix clean-,$(system_tgts))
 gcc_ver			= $(subst gcc-,,$(notdir $(gcc_src)))
 tarball_src_dirs	= $(addprefix $(SOURCES_DIR)/,$(subst .tar.xz,,\
 			$(subst .tar.bz2,,$(subst .tar.gz,,\
@@ -488,7 +494,7 @@ all:
 
 # clean - Remove temporary files, any image/package files, and target files.
 .PHONY: clean
-clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts)
+clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts) $(clean_system_tgts)
 	$(QUIET) if $(MOUNT) | $(GREP) $(CHROOT_DIR) > /dev/null 2>&1; then \
 	  $(ECHO) "### One or more mounts still exist for chroot!"; \
 	  exit 1; \
@@ -508,6 +514,10 @@ $(clean_bootstrap_tgts)::
 
 $(clean_chroot_tgts):: target = $(subst clean-,,$(@))
 $(clean_chroot_tgts)::
+	$(RM) $(chroot_build)/$(target)
+
+$(clean_system_tgts):: target = $(subst clean-,,$(@))
+$(clean_system_tgts)::
 	$(RM) $(chroot_build)/$(target)
 
 clean-esos_tui.chroot::
@@ -1040,7 +1050,8 @@ pre_chroot:
 
 # build - Configure/compile/build all of the required projects.
 .PHONY: build
-build: $(chroot_tgts) ;
+build: $(chroot_tgts)
+	$(MAKE) --jobs=1 $(system_tgts)
 
 kernel_headers.chroot:
 	$(call chroot_only)
@@ -1862,7 +1873,7 @@ iniparser.chroot: glibc.chroot
 	$(INSTALL) -m 0644 $(tgt_src_dir)/src/dictionary.h /usr/include/
 	$(TOUCH) $(@)
 
-cdk.chroot: glibc.chroot ncurses.chroot sed.chroot
+cdk.chroot: glibc.chroot ncurses.chroot
 	$(call chroot_only)
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
@@ -3290,7 +3301,7 @@ etckeeper.chroot: git.chroot
 	$(TOUCH) $(@)
 
 git.chroot: glibc.chroot curl.chroot expat.chroot zlib.chroot openssh.chroot \
-	bash.chroot perl.chroot Python.chroot openssl.chroot
+	perl.chroot Python.chroot openssl.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--with-openssl --with-curl --with-expat --without-libpcre \
