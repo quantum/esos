@@ -1,3 +1,15 @@
+2017-12-22  Marc A. Smith  <marc.smith@parodyne.com>
+
+	since Linux 4.12 the console blanking no longer defaults to 600 seconds so we must set this explicitly in grub.cfg
+
+2017-12-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	moved several targets (namely bash.chroot and system utilities) into a separate variable which gets called after all other *.chroot targets and executes in a non-parallel mode (--jobs=1), this solves a common build failure with bash and parallel building
+
+2017-12-19  Marc A. Smith  <marc.smith@parodyne.com>
+
+	use the real hdparm utility (version 9.52) instead of the Busybox variant
+
 2017-12-14  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch '20171209_fixes'
