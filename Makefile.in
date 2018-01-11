@@ -97,7 +97,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.0.tar.bz2 \
 		mpfr-3.1.4.tar.bz2 \
 		mpc-1.0.3.tar.gz \
-		linux-4.9.65.tar.xz \
+		linux-4.9.76.tar.xz \
 		glibc-2.26.tar.xz \
 		tcl-8.6.7.tar.xz \
 		expect-5.45.tar.xz \

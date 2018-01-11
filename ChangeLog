@@ -1,3 +1,11 @@
+2018-01-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.9.76
+
+	Merge branch 'upgrade_fix' into 1.x.x
+
+	install.sh: there is no need to detach the loop device via losetup when finished upgrading as kpartx seems to handle this for us
+
 2017-12-20  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch '20171209_fixes' into 1.x.x
