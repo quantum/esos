@@ -1117,7 +1117,7 @@ esos_kernels.chroot: eio_src = $(wildcard /sources/EnhanceIO-*)
 esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
 esos_kernels.chroot: spl_src = $(wildcard /sources/spl-*)
 esos_kernels.chroot: zfs_src = $(wildcard /sources/zfs-*)
-esos_kernels.chroot: kernel_headers.chroot bc.chroot
+esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot
 esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot,)
 	$(call chroot_only)
@@ -1565,18 +1565,7 @@ elfutils.chroot: glibc.chroot zlib.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MKDIR) /usr/include/elfutils
-	$(INSTALL) $(tgt_src_dir)/libdw/libdw.h \
-	/usr/include/elfutils/libdw.h
-	$(INSTALL) $(tgt_src_dir)/libdwfl/libdwfl.h \
-	/usr/include/elfutils/libdwfl.h
-	$(INSTALL) $(tgt_src_dir)/libdw/dwarf.h /usr/include/dwarf.h
-	$(INSTALL) $(tgt_src_dir)/libelf/libelf.h /usr/include/libelf.h
-	$(INSTALL) $(tgt_src_dir)/libelf/gelf.h /usr/include/gelf.h
-	$(INSTALL) $(tgt_src_dir)/libelf/libelf.a /usr/lib/libelf.a
-	$(INSTALL) $(tgt_src_dir)/libdw/libdw.a /usr/lib/libdw.a
-	$(INSTALL) $(tgt_src_dir)/libasm/libasm.a /usr/lib/libasm.a
-	$(INSTALL) $(tgt_src_dir)/libebl/libebl.a /usr/lib/libebl.a
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
 sysvinit.chroot: glibc.chroot
