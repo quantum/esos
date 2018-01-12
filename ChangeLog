@@ -1,3 +1,17 @@
+2018-01-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated SCST to version trunk/r7336
+
+2018-01-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	elfutils.chroot is now a dependency for the Linux kernels; fix elfutils.chroot so it is installed correctly
+
+	updated Linux to version 4.14.13
+
+	Merge branch 'upgrade_fix'
+
+	install.sh: there is no need to detach the loop device via losetup when finished upgrading as kpartx seems to handle this for us
+
 2017-12-22  Marc A. Smith  <marc.smith@parodyne.com>
 
 	since Linux 4.12 the console blanking no longer defaults to 600 seconds so we must set this explicitly in grub.cfg
@@ -5,6 +19,10 @@
 2017-12-21  Marc A. Smith  <marc.smith@parodyne.com>
 
 	moved several targets (namely bash.chroot and system utilities) into a separate variable which gets called after all other *.chroot targets and executes in a non-parallel mode (--jobs=1), this solves a common build failure with bash and parallel building
+
+2017-12-20  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch '20171209_fixes' into 1.x.x
 
 2017-12-19  Marc A. Smith  <marc.smith@parodyne.com>
 
@@ -20,7 +38,6 @@
 
 	updated stunnel to version 5.44
 
-<<<<<<< HEAD
 2017-12-12  Marc A. Smith  <marc.smith@parodyne.com>
 
 	upgrading a live ESOS host/node by writing the complete image to the boot device is an acceptable practice which wipes the esos_conf FS, so we handle this in usb_sync.sh by recreating the Git repo and USB rsync directory
@@ -57,12 +74,6 @@
 
 	updated Linux to version 4.14.3; updated SCST to version trunk/r7271; set mhVTL to be a build-time option (disabled by default) as there are no recent releases and isn't supported with Linux 4.14.x
 
-=======
-2017-12-09  Marc A. Smith  <marc.smith@parodyne.com>
-
-	health_chk.sh: PD state "DHS" is acceptable for PERC controllers; rc.lvmlockd: fixed a typo/bug in the lvmlockd command string
-
->>>>>>> upgrade_fix
 2017-11-30  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'more_ib_fixes'
