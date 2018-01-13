@@ -1,3 +1,11 @@
+2018-01-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	rc.0: call conf_sync.sh instead of usb_sync.sh so we get a Git commit at the end and hide any messages (would complain about SCST being loaded)
+
+	removed Linux 4.9.x config/patch files
+
+	build the SCST qla2xxx module out-of-tree instead of in-tree (per SCST recommendation)
+
 2018-01-12  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated SCST to version trunk/r7336
