@@ -1121,10 +1121,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot
 esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot,)
 	$(call chroot_only)
-	if [ "$(enable_qla)" != "yes" ]; then \
-	  $(RM) $(linux_src)/drivers/scsi/qla2xxx; \
-	  $(LN) $(scst_src)/qla2x00t $(linux_src)/drivers/scsi/qla2xxx; \
-	fi
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
 	  $(MAKE) --directory=$(linux_src) clean; \
@@ -1215,9 +1211,6 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	      $(linux_src)/.config; \
 	    fi; \
 	  fi; \
-	  if [ "$(enable_qla)" != "yes" ]; then \
-	    $(SED) -i 's/# CONFIG_SCSI_QLA_FC is not set/CONFIG_SCSI_QLA_FC=m\nCONFIG_SCSI_QLA2XXX_TARGET=y/' $(linux_src)/.config; \
-	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(SED) -i 's/CONFIG_CHELSIO_T4\=m/# CONFIG_CHELSIO_T4 is not set/' \
 	    $(linux_src)/.config; \
@@ -1240,10 +1233,12 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	  KVER=$(kernel_ver)$$i \
 	  INSTALL_DIR_H=/usr/include/scst scst_install; \
 	  if [ "$(enable_qla)" != "yes" ]; then \
-	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	    KVER=$(kernel_ver)$$i qla_old; \
-	    $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	    KVER=$(kernel_ver)$$i qla_old_install; \
+	    BUILD_2X_MODULE=y CONFIG_SCSI_QLA_FC=y \
+	    CONFIG_SCSI_QLA2XXX_TARGET=y $(MAKE) --directory=$(scst_src) \
+	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i qla_old; \
+	    BUILD_2X_MODULE=y CONFIG_SCSI_QLA_FC=y \
+	    CONFIG_SCSI_QLA2XXX_TARGET=y $(MAKE) --directory=$(scst_src) \
+	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i qla_old_install; \
 	  fi; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
 	  include/iscsi_scst_itf_ver.h; \
