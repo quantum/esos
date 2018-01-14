@@ -31,7 +31,7 @@ done
 /bin/sleep 1
 
 /bin/echo "Saving random seed to a temporary file..."
-/bin/dd if=/dev/urandom of=/etc/random-seed count=1 bs=512 2> /dev/null
+/bin/dd if=/dev/urandom of=/var/lib/esos/random-seed count=1 bs=512 2> /dev/null
 
 /bin/echo "Saving the system time to hardware clock..."
 /sbin/hwclock --systohc --utc

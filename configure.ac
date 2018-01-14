@@ -120,6 +120,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${chroot_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/stunnel || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/lldpad || exit 1
+	${mkdir} -p ${chroot_dir}/var/lib/esos || exit 1
 	${ln} -sf lib ${chroot_dir}/lib64 || exit 1
 	${ln} -sf lib ${chroot_dir}/usr/lib64 || exit 1
 	${mkdir} -p ${tools_dir}/lib || exit 1

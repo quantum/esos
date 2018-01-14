@@ -36,10 +36,10 @@ echo "Starting kernel log daemon (klogd)..."
 /bin/echo "Configuring kernel parameters..."
 /sbin/sysctl -p /etc/sysctl.conf
 
-if [ -f "/etc/random-seed" ]; then
+if [ -f "/var/lib/esos/random-seed" ]; then
     /bin/echo "Initializing random number generator..."
-    /bin/cat /etc/random-seed > /dev/urandom
-    /bin/rm -f /etc/random-seed
+    /bin/cat /var/lib/esos/random-seed > /dev/urandom
+    /bin/rm -f /var/lib/esos/random-seed
 fi
 
 echo "Setting system time from hardware clock..."
