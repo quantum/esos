@@ -4,7 +4,7 @@ source /etc/rc.d/common
 
 UPSD="/usr/sbin/upsd"
 UPSMON="/usr/sbin/upsmon"
-UPSDRVCTL="/usr/bin/upsdrvctl"
+UPSDRVCTL="/usr/sbin/upsdrvctl"
 UPSD_LOCK="/var/lock/upsd"
 UPSMON_LOCK="/var/lock/upsmon"
 UPSDRVCTL_LOCK="/var/lock/upsdrvctl"
