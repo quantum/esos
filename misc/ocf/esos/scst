@@ -22,6 +22,7 @@ NO_CLOBBER="/tmp/scst_ra-no_clobber"
 REMOTE_INACT_STATE="offline"
 TRANSITION_STATE="transitioning"
 DLM_CONTROLD_PID="/var/run/dlm_controld/dlm_controld.pid"
+INIT_LOGOUT_TIMEOUT=20
 
 # For optional SCST modules
 OPTL_MODS=""
@@ -188,9 +189,17 @@ scst_stop() {
     done
 
     # We need to wait for all sessions to complete before continuing
+    timer=0
     ocf_log info "Waiting for all initiators to logout..."
     while ls -Ad ${SCST_SYSFS}/targets/*/*/sessions/* 2>&1 |
         grep -vE "${SCST_SYSFS}"'/targets/(copy_manager|scst_local)/'; do
+        if [ ${timer} -gt ${INIT_LOGOUT_TIMEOUT} ]; then
+            # Some initiators don't logout properly, don't wait forever
+            ocf_log warn "The initiator logout timeout" \
+                "(${INIT_LOGOUT_TIMEOUT}) was hit! Continuing..."
+            break
+        fi
+        timer=$(expr ${timer} + 1)
         ocf_log debug "Still waiting..."
         sleep 1
     done
