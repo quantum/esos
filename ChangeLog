@@ -1,3 +1,17 @@
+2018-01-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'scst_ra_fix' into 1.x.x
+
+	Merge branch 'rc_nut_fix' into 1.x.x
+
+2018-01-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	ocf:esos:scst: not all initiators logout properly on stop(), so we should handle timing out internally (20 seconds) to prevent a cluster error
+
+2018-01-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	rc.nut: fixed an incorrect path for the upsdrvctl binary (solves GH issue #206)
+
 2018-01-11  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated Linux to version 4.9.76
