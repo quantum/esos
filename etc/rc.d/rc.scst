@@ -82,7 +82,7 @@ stop_user_progs() {
 apply_config() {
     if [ -f ${SCST_CFG} ]; then
         /bin/echo "Applying SCST configuration..."
-        /usr/sbin/scstadmin -config ${SCST_CFG} || return 1
+        /usr/sbin/scstadmin -config ${SCST_CFG} -lip || return 1
     fi
     return 0
 }
