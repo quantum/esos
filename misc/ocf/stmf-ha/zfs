@@ -96,6 +96,14 @@ zpool_import () {
         #        cache it persistently (across machine reboots). We want
         #        the CRM to explicitly control imports of this pool.
         if zpool import -f $OCF_RESKEY_importargs -o cachefile=none "$OCF_RESKEY_pool" ; then
+            for i in $(zfs list -H -t volume -o name |
+                egrep "^$OCF_RESKEY_pool/"); do
+                # Wait for zvol creation in /dev
+                while [ ! -e "/dev/$i" ]; do
+                    debug_log "waiting for zvol $i to appear..."
+                    sleep 1
+                done
+            done
             debug_log "import successful"
             return $OCF_SUCCESS
         else
