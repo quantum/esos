@@ -62,7 +62,7 @@ scst_start() {
     # Configure SCST
     if [ -f "${SCST_CFG}" ]; then
         ocf_log info "Applying SCST configuration..."
-        ocf_run scstadmin -config "${SCST_CFG}"
+        ocf_run scstadmin -config "${SCST_CFG}" -lip
         # Prevent scst_stop() from clobbering the configuration file
         if [ ${?} -ne 0 ]; then
             ocf_log err "Something is wrong with the SCST configuration!"
@@ -643,6 +643,9 @@ scst_promote() {
                 ${OCF_RESKEY_device_group} -attributes \
                 state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
         fi
+        # Issue a Fibre Channel LIP
+        ocf_log debug "Issuing a LIP for all drivers and targets..."
+        ocf_run scstadmin -issue_lip
     else
         ocf_log err "The ALUA parameters need to be configured before using MS."
         exit ${OCF_ERR_CONFIGURED}
