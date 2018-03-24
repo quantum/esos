@@ -1,10 +1,34 @@
-2018-01-25  Marc A. Smith  <marc.smith@parodyne.com>
+2018-03-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	rc.nfsd: use the pid of rpcbind for a valid status() value
+
+2018-03-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'fc_lip_tweaks'
+
+	Merge branch 'zfs_ra_fix'
+
+2018-02-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	when a zfs pool is imported, the zvol's (volumes) may not be available under /dev when the command returns due to the minor operations being made asynchronous (see https://github.com/zfsonlinux/zfs/issues/4401); we handle this in the RA by waiting for the volumes (if any) to appear in /dev before returning
+
+2018-02-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	different Fibre Channel adapters, target drivers, and initiators all vary somewhat in behavior when enabling/disabling target interfaces, RSCN events, and loading/unloading drivers -- to compensate for this, we now issue a LIP when applying the SCST configuration and at the end of a promote operation in the resource agents
+
+2018-02-02  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'scst_ra_fix'
+
+2018-01-25  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'rc_nut_fix'
 
 	Merge branch 'add_kbd_pkg'
+
+	Merge branch 'scst_ra_fix' into 1.x.x
+
+	Merge branch 'rc_nut_fix' into 1.x.x
 
 2018-01-24  Marc A. Smith  <marc.smith@parodyne.com>
 

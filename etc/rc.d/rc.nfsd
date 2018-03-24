@@ -74,7 +74,7 @@ stop() {
 }
 
 status() {
-    /bin/pidof ${RPC_NFSD} > /dev/null 2>&1
+    /bin/pidof ${RPCBIND} > /dev/null 2>&1
     exit ${?}
 }
 
