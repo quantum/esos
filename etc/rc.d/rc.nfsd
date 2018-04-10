@@ -46,7 +46,7 @@ start() {
     # Finally export the NFS file systems (if any exist)
     if [ -f "/etc/exports" ]; then
         /bin/echo "Exporting all NFS file systems..."
-        ${EXPORTFS} -ra || exit 1
+        ${EXPORTFS} -ra || :
     fi
 }
 

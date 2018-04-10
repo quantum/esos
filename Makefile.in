@@ -1150,8 +1150,9 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	    $(celerity_16_32_dir)/src/Makefile; \
 	    $(SED) -i 's/@depmod/#depmod/' \
 	    $(celerity_16_32_dir)/src/Makefile; \
-	    $(MAKE) --directory=$(celerity_16_32_dir)/src \
-	    KDIR=$(linux_src) DRIVER_NAME=celerity16fc clean; \
+	    $(MAKE) --directory=$(celerity_16_32_dir)/src KDIR=$(linux_src) \
+	    FULL_KERNEL_VERSION=$(kernel_ver)$$i DRIVER_NAME=celerity16fc \
+	    clean; \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
 	    $(SED) -i 's,/usr/local/include/scst,$(scst_src)/scst/include,g' \
