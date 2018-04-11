@@ -433,9 +433,6 @@ alua_promote() {
             ${OCF_RESKEY_device_group} -attributes \
             state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
     fi
-    # Issue a Fibre Channel LIP
-    ocf_log debug "Issuing a LIP for all drivers and targets..."
-    ocf_run scstadmin -issue_lip
 
     # After the resource has been promoted, check whether the promotion worked
     while true; do
@@ -449,6 +446,10 @@ alua_promote() {
             sleep 1
         fi
     done
+
+    # Issue a delayed Fibre Channel LIP
+    ocf_log debug "Issuing a LIP for all drivers and targets..."
+    ocf_run sleep 5 && scstadmin -issue_lip
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
@@ -542,6 +543,10 @@ alua_demote() {
             break
         fi
     done
+
+    # Issue a delayed Fibre Channel LIP
+    ocf_log debug "Issuing a LIP for all drivers and targets..."
+    ocf_run sleep 5 && scstadmin -issue_lip
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}

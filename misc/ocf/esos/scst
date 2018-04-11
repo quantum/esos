@@ -132,6 +132,10 @@ scst_start() {
         sleep 1
     done
 
+    # Issue a delayed Fibre Channel LIP
+    ocf_log debug "Issuing a LIP for all drivers and targets..."
+    ocf_run sleep 5 && scstadmin -issue_lip
+
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
 }
@@ -661,9 +665,6 @@ scst_promote() {
                 ${OCF_RESKEY_device_group} -attributes \
                 state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
         fi
-        # Issue a Fibre Channel LIP
-        ocf_log debug "Issuing a LIP for all drivers and targets..."
-        ocf_run scstadmin -issue_lip
     else
         ocf_log err "The ALUA parameters need to be configured before using MS."
         exit ${OCF_ERR_CONFIGURED}
@@ -681,6 +682,10 @@ scst_promote() {
             sleep 1
         fi
     done
+
+    # Issue a delayed Fibre Channel LIP
+    ocf_log debug "Issuing a LIP for all drivers and targets..."
+    ocf_run sleep 5 && scstadmin -issue_lip
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
@@ -777,6 +782,10 @@ scst_demote() {
             break
         fi
     done
+
+    # Issue a delayed Fibre Channel LIP
+    ocf_log debug "Issuing a LIP for all drivers and targets..."
+    ocf_run sleep 5 && scstadmin -issue_lip
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
