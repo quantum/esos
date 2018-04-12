@@ -1,12 +1,36 @@
-2018-03-24  Marc A. Smith  <marc.smith@parodyne.com>
+2018-04-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'archive_log_fix'
+
+	Merge branch 'fix_scst_ra_block'
+
+2018-04-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	some FC drivers need a LIP issued during the cluster resource transitions to keep certain initiators happy (paths visible) -- we handle this by using scstadmin to issue a LIP at the end of start(), promote(), and demote() operations
+
+	some log files (/var/log/boot and /var/log/pacemaker.log namely) when mv'd we get disk space consumed until the file is re-opened, so instead we copy the files then truncate them to 0 bytes
+
+2018-04-10  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Makefile.in: update esos_kernels recipe for the newest ATTO Celerity driver version; rc.nfsd: running exportfs at the end of start() may exit with a bad status, so we instead always return an exit status of 0 for that command
+
+2018-03-26  Marc A. Smith  <marc.smith@parodyne.com>
 
 	rc.nfsd: use the pid of rpcbind for a valid status() value
 
 2018-03-21  Marc A. Smith  <marc.smith@parodyne.com>
 
+	added the function trigger_suspend_resume() to the ocf:esos:scst and ocf:esos:alua RA's which takes advantage of the 'size' vdisk_blockio attribute and rewrites the current value into this sysfs attribute which causes a global suspend/resume in SCST; instead of blocking/unblocking devices during promote/demote operations, we now use trigger_suspend_resume() after changing the ALUA state which should causes initiators to recognize the new state (we don't call this if setting the 'active' attribute since it also causes a global suspend/resume)
+
 	Merge branch 'fc_lip_tweaks'
 
 	Merge branch 'zfs_ra_fix'
+
+2018-03-19  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'zfs_ra_fix' into 1.x.x
+
+	Merge branch 'fc_lip_tweaks' into 1.x.x
 
 2018-02-28  Marc A. Smith  <marc.smith@parodyne.com>
 
