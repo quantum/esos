@@ -132,6 +132,10 @@ scst_start() {
         sleep 1
     done
 
+    # Issue a delayed Fibre Channel LIP
+    ocf_log debug "Issuing a LIP for all drivers and targets..."
+    ocf_run sleep 5 && scstadmin -issue_lip
+
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
 }
@@ -566,6 +570,19 @@ unblock_scst_devs() {
 }
 
 
+trigger_suspend_resume() {
+    # For just one member device of our device group, write to a benign
+    # attribute (eg, size) which causes I/O to suspend and then resume
+    ocf_log info "Suspending and resuming I/O globally..."
+    dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+    for i in $(find ${dev_grp_path}/devices -type l -maxdepth 1); do
+        ocf_log debug "Rewriting size attribute value for device '${i}'..."
+        head -1 ${i}/size > ${i}/size
+        break
+    done
+}
+
+
 scst_promote() {
     # Exit immediately if configuration is not valid
     scst_validate_all || exit ${?}
@@ -600,7 +617,8 @@ scst_promote() {
     if ocf_is_true ${OCF_RESKEY_alua}; then
         # Set the local target group to the "Master" ALUA state
         check_alua
-        block_scst_devs
+        # TODO: Don't block devices for now... needs to be re-visited.
+        #block_scst_devs
         if ocf_is_true ${OCF_RESKEY_use_trans_state}; then
             ocf_log debug "scst_promote() -> Setting target group" \
                 "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
@@ -609,6 +627,7 @@ scst_promote() {
                 ${OCF_RESKEY_local_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
                 state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+            trigger_suspend_resume
         fi
         ocf_log debug "scst_promote() -> Setting target group" \
             "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
@@ -623,8 +642,11 @@ scst_promote() {
                 -name active -type f -follow -maxdepth 2); do
                 echo 1 > ${i}
             done
+        else
+            trigger_suspend_resume
         fi
-        unblock_scst_devs
+        # TODO: Don't unblock devices for now... needs to be re-visited.
+        #unblock_scst_devs
         # Since there can only be one Master, set the remote target group
         if remote_inactive; then
             ocf_log debug "scst_promote() -> Setting target group" \
@@ -643,9 +665,6 @@ scst_promote() {
                 ${OCF_RESKEY_device_group} -attributes \
                 state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
         fi
-        # Issue a Fibre Channel LIP
-        ocf_log debug "Issuing a LIP for all drivers and targets..."
-        ocf_run scstadmin -issue_lip
     else
         ocf_log err "The ALUA parameters need to be configured before using MS."
         exit ${OCF_ERR_CONFIGURED}
@@ -663,6 +682,10 @@ scst_promote() {
             sleep 1
         fi
     done
+
+    # Issue a delayed Fibre Channel LIP
+    ocf_log debug "Issuing a LIP for all drivers and targets..."
+    ocf_run sleep 5 && scstadmin -issue_lip
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
@@ -704,7 +727,8 @@ scst_demote() {
     if ocf_is_true ${OCF_RESKEY_alua}; then
         # Set the local target group to the "Slave" ALUA state
         check_alua
-        block_scst_devs
+        # TODO: Don't block devices for now... needs to be re-visited.
+        #block_scst_devs
         if ocf_is_true ${OCF_RESKEY_use_trans_state}; then
             ocf_log debug "scst_demote() -> Setting target group" \
                 "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
@@ -713,6 +737,7 @@ scst_demote() {
                 ${OCF_RESKEY_local_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
                 state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+            trigger_suspend_resume
         fi
         ocf_log debug "scst_demote() -> Setting target group" \
             "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
@@ -727,8 +752,11 @@ scst_demote() {
                 -name active -type f -follow -maxdepth 2); do
                 echo 0 > ${i}
             done
+        else
+            trigger_suspend_resume
         fi
-        unblock_scst_devs
+        # TODO: Don't unblock devices for now... needs to be re-visited.
+        #unblock_scst_devs
         # If we're a Slave, we assume the remote side is the Master
         ocf_log debug "scst_demote() -> Setting target group" \
             "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
@@ -754,6 +782,10 @@ scst_demote() {
             break
         fi
     done
+
+    # Issue a delayed Fibre Channel LIP
+    ocf_log debug "Issuing a LIP for all drivers and targets..."
+    ocf_run sleep 5 && scstadmin -issue_lip
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
