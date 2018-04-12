@@ -1,3 +1,33 @@
+2018-04-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'archive_log_fix' into 1.x.x
+
+	Merge branch 'fix_scst_ra_block' into 1.x.x
+
+2018-04-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	some FC drivers need a LIP issued during the cluster resource transitions to keep certain initiators happy (paths visible) -- we handle this by using scstadmin to issue a LIP at the end of start(), promote(), and demote() operations
+
+	some log files (/var/log/boot and /var/log/pacemaker.log namely) when mv'd we get disk space consumed until the file is re-opened, so instead we copy the files then truncate them to 0 bytes
+
+2018-03-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the function trigger_suspend_resume() to the ocf:esos:scst and ocf:esos:alua RA's which takes advantage of the 'size' vdisk_blockio attribute and rewrites the current value into this sysfs attribute which causes a global suspend/resume in SCST; instead of blocking/unblocking devices during promote/demote operations, we now use trigger_suspend_resume() after changing the ALUA state which should causes initiators to recognize the new state (we don't call this if setting the 'active' attribute since it also causes a global suspend/resume)
+
+2018-03-19  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'zfs_ra_fix' into 1.x.x
+
+	Merge branch 'fc_lip_tweaks' into 1.x.x
+
+2018-02-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	when a zfs pool is imported, the zvol's (volumes) may not be available under /dev when the command returns due to the minor operations being made asynchronous (see https://github.com/zfsonlinux/zfs/issues/4401); we handle this in the RA by waiting for the volumes (if any) to appear in /dev before returning
+
+2018-02-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	different Fibre Channel adapters, target drivers, and initiators all vary somewhat in behavior when enabling/disabling target interfaces, RSCN events, and loading/unloading drivers -- to compensate for this, we now issue a LIP when applying the SCST configuration and at the end of a promote operation in the resource agents
+
 2018-01-25  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'scst_ra_fix' into 1.x.x

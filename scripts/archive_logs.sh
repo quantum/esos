@@ -22,7 +22,15 @@ archive_prefix="`hostname`_`date +%F`_`date +%s`"
 
 # Archive the logs -- we should only fail if there is no room in /tmp (tmpfs)
 mkdir -m 0755 -p ${TMP_DIR}/${archive_prefix} || exit 1
-mv -f /var/log/* ${TMP_DIR}/${archive_prefix}/ || exit 1
+find /var/log -type f ! -path "*/boot" ! -path "*/pacemaker.log" \
+    -exec mv -f {} ${TMP_DIR}/${archive_prefix}/ \; || exit 1
+for i in /var/log/boot /var/log/pacemaker.log; do
+    # TODO: Need a better solution, we're losing log lines using cp + truncate!
+    if [ -f "${i}" ]; then
+        cp -p ${i} ${TMP_DIR}/${archive_prefix}/ || exit 1
+        truncate -s 0 ${i} || exit 1
+    fi
+done
 file_path="${TMP_DIR}/${archive_prefix}.tar.gz"
 tar cpfz ${file_path} -C ${TMP_DIR} ${archive_prefix} || exit 1
 new_arch_size=$(du -k ${file_path} | awk '{print $1}')
