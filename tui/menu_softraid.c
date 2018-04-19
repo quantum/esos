@@ -382,7 +382,7 @@ void addArrayDialog(CDKSCREEN *main_cdk_screen) {
             dev_info_size = 0, dev_info_line_size = 0;
     char *error_msg = NULL, *temp_pstr = NULL;
     char *new_array_msg[NEW_ARRAY_INFO_LINES] = {NULL};
-    char blk_dev_list[MAX_MD_MEMBERS][MISC_STRING_LEN] = {0, 0},
+    char blk_dev_list[MAX_MD_MEMBERS][MISC_STRING_LEN] = {{0}, {0}},
             dev_info_line_buffer[MAX_DEV_INFO_LINE_BUFF] = {0},
             array_name_str[MISC_STRING_LEN] = {0},
             raid_lvl_str[MISC_STRING_LEN] = {0},

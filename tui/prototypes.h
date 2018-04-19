@@ -200,6 +200,9 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
 size_t g_scst_dev_types_size();
 size_t g_scst_handlers_size();
 size_t g_sync_label_msg_size();
+size_t g_add_ld_label_msg_size();
+size_t g_add_array_label_msg_size();
+size_t g_add_lv_label_msg_size();
 size_t g_usage_label_msg_size();
 
 #ifdef	__cplusplus

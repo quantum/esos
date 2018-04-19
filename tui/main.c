@@ -119,6 +119,10 @@ int main(int argc, char** argv) {
     openlog(TUI_LOG_PREFIX, TUI_LOG_OPTIONS, TUI_LOG_FACILITY);
     DEBUG_LOG("TUI start-up...");
 
+    /* Log passed arguments (if any) */
+    for (i = 1; i < argc; i++)
+        DEBUG_LOG("Argument %d: %s", i, argv[i]);
+
     /* Check if there is Internet access */
     inet_works = checkInetAccess();
 

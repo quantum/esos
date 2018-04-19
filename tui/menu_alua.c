@@ -636,7 +636,7 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
     attr_path[MAX_SYSFS_PATH_SIZE] = {0},
     attr_value[MAX_SYSFS_ATTR_SIZE] = {0};
     char *error_msg = NULL;
-    char *add_tgt_info_msg[TGT_GRP_INFO_LINES] = {NULL};
+    char *add_tgt_info_msg[ADD_TGT_INFO_LINES] = {NULL};
     int add_tgt_window_lines = 0, add_tgt_window_cols = 0, window_y = 0,
             window_x = 0, temp_int = 0, i = 0, traverse_ret = 0;
 

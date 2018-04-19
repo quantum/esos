@@ -533,7 +533,7 @@ void lvm2InfoDialog(CDKSCREEN *main_cdk_screen) {
  */
 void addPVDialog(CDKSCREEN *main_cdk_screen) {
     char *temp_pstr = NULL, *error_msg = NULL;
-    char blk_dev_list[MAX_LVM_PVS][MISC_STRING_LEN] = {0, 0},
+    char blk_dev_list[MAX_LVM_PVS][MISC_STRING_LEN] = {{0}, {0}},
             dev_info_line_buffer[MAX_DEV_INFO_LINE_BUFF] = {0},
             command_str[MAX_SHELL_CMD_LEN] = {0};
     int chosen_dev_cnt = 0, i = 0, dev_info_size = 0, dev_info_line_size = 0,
@@ -593,7 +593,7 @@ void addPVDialog(CDKSCREEN *main_cdk_screen) {
  */
 void remPVDialog(CDKSCREEN *main_cdk_screen) {
     char *temp_pstr = NULL, *error_msg = NULL, *confirm_msg = NULL;
-    char lvm_pv_list[MAX_LVM_PVS][MISC_STRING_LEN] = {0, 0},
+    char lvm_pv_list[MAX_LVM_PVS][MISC_STRING_LEN] = {{0}, {0}},
             dev_info_line_buffer[MAX_DEV_INFO_LINE_BUFF] = {0},
             command_str[MAX_SHELL_CMD_LEN] = {0};
     int chosen_pv_cnt = 0, i = 0, dev_info_size = 0, dev_info_line_size = 0,
@@ -663,7 +663,7 @@ void addVGDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *vg_name_entry = 0;
     char *temp_pstr = NULL, *error_msg = NULL, *entry_title = NULL,
             *vg_name_entry_val = NULL;
-    char lvm_pv_list[MAX_LVM_PVS][MISC_STRING_LEN] = {0, 0},
+    char lvm_pv_list[MAX_LVM_PVS][MISC_STRING_LEN] = {{0}, {0}},
             dev_info_line_buffer[MAX_DEV_INFO_LINE_BUFF] = {0},
             vg_name_str[MISC_STRING_LEN] = {0},
             command_str[MAX_SHELL_CMD_LEN] = {0};
