@@ -249,6 +249,7 @@ extern "C" {
 #define MAX_SCST_TGT_GRP_ID         65535
 #define MIN_SCST_LUN_VAL            0
 #define MAX_SCST_LUN_VAL            255
+#define MAX_SIMPLE_MENU_OPTS        16
 
 /* Logger settings */
 #define TUI_LOG_PREFIX      "esos_tui"

@@ -2509,6 +2509,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     delwin(date_window);
     for (i = 0; i < MAX_TZ_FILES; i++)
         FREE_NULL(tz_files[i]);
+    refreshCDKScreen(main_cdk_screen);
     return;
 }
 
