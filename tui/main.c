@@ -1209,7 +1209,8 @@ void screenResize(CDKSCREEN *cdk_screen, WINDOW *main_window,
  * of a screen resize. Also draws the box around the window.
  */
 void statusBar(WINDOW *window) {
-    char esos_ver_str[STAT_BAR_ESOS_VER_MAX] = {0},
+    char long_ver_str[MISC_STRING_LEN] = {0},
+            esos_ver_str[STAT_BAR_ESOS_VER_MAX] = {0},
             username_str[STAT_BAR_UNAME_MAX] = {0};
     int esos_ver_size = 0, username_size = 0, bar_space = 0, junk = 0;
     uid_t ruid = 0, euid = 0, suid = 0;
@@ -1218,8 +1219,10 @@ void statusBar(WINDOW *window) {
     chtype *status_bar = NULL;
 
     /* Set the ESOS status bar name/version */
-    snprintf(esos_ver_str, STAT_BAR_ESOS_VER_MAX,
+    snprintf(long_ver_str, MISC_STRING_LEN,
             "ESOS - Enterprise Storage OS %s", ESOS_VERSION);
+    snprintf(esos_ver_str, STAT_BAR_ESOS_VER_MAX,
+            prettyShrinkStr((STAT_BAR_ESOS_VER_MAX - 1), long_ver_str));
     esos_ver_size = strlen(esos_ver_str);
 
     /* Get username */

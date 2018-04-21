@@ -138,7 +138,8 @@ AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug], [build for debugging (do not strip userland binaries)]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_debug="${enableval}"], [enable_debug="no"]), enable_debug="no")
-AS_IF([test "x$enable_debug" = "xyes"], [build_opts="${build_opts} debug"])
+AS_IF([test "x$enable_debug" = "xyes"],
+	[build_opts="${build_opts} debug"; opt_suffix="${opt_suffix}d"])
 AC_SUBST(enable_debug, ${enable_debug})
 AC_MSG_NOTICE([debug: ${enable_debug}])
 
@@ -147,7 +148,8 @@ AC_ARG_ENABLE(gdb,
 	AS_HELP_STRING([--enable-gdb], [build and include gdb]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_gdb="${enableval}"], [enable_gdb="no"]), enable_gdb="no")
-AS_IF([test "x$enable_gdb" = "xyes"], [build_opts="${build_opts} gdb"])
+AS_IF([test "x$enable_gdb" = "xyes"],
+	[build_opts="${build_opts} gdb"; opt_suffix="${opt_suffix}g"])
 AC_SUBST(enable_gdb, ${enable_gdb})
 AC_MSG_NOTICE([gdb: ${enable_gdb}])
 
@@ -156,7 +158,8 @@ AC_ARG_ENABLE(valgrind,
 	AS_HELP_STRING([--enable-valgrind], [build and include valgrind]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_valgrind="${enableval}"], [enable_valgrind="no"]), enable_valgrind="no")
-AS_IF([test "x$enable_valgrind" = "xyes"], [build_opts="${build_opts} valgrind"])
+AS_IF([test "x$enable_valgrind" = "xyes"],
+	[build_opts="${build_opts} valgrind"; opt_suffix="${opt_suffix}v"])
 AC_SUBST(enable_valgrind, ${enable_valgrind})
 AC_MSG_NOTICE([valgrind: ${enable_valgrind}])
 
@@ -165,7 +168,8 @@ AC_ARG_ENABLE(strace,
 	AS_HELP_STRING([--enable-strace], [build and include strace]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_strace="${enableval}"], [enable_strace="no"]), enable_strace="no")
-AS_IF([test "x$enable_strace" = "xyes"], [build_opts="${build_opts} strace"])
+AS_IF([test "x$enable_strace" = "xyes"],
+	[build_opts="${build_opts} strace"; opt_suffix="${opt_suffix}s"])
 AC_SUBST(enable_strace, ${enable_strace})
 AC_MSG_NOTICE([strace: ${enable_strace}])
 
@@ -174,7 +178,8 @@ AC_ARG_ENABLE(qla,
 	AS_HELP_STRING([--enable-qla], [use the QLogic provided qla2xxx driver instead of the SCST in-tree driver]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_qla="${enableval}"], [enable_qla="no"]), enable_qla="no")
-AS_IF([test "x$enable_qla" = "xyes"], [build_opts="${build_opts} qla"])
+AS_IF([test "x$enable_qla" = "xyes"],
+	[build_opts="${build_opts} qla"; opt_suffix="${opt_suffix}q"])
 AC_SUBST(enable_qla, ${enable_qla})
 AC_MSG_NOTICE([qla: ${enable_qla}])
 
@@ -183,7 +188,8 @@ AC_ARG_ENABLE(zfs,
 	AS_HELP_STRING([--enable-zfs], [build and include ZFS]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_zfs="${enableval}"], [enable_zfs="no"]), enable_zfs="no")
-AS_IF([test "x$enable_zfs" = "xyes"], [build_opts="${build_opts} zfs"])
+AS_IF([test "x$enable_zfs" = "xyes"],
+	[build_opts="${build_opts} zfs"; opt_suffix="${opt_suffix}z"])
 AC_SUBST(enable_zfs, ${enable_zfs})
 AC_MSG_NOTICE([zfs: ${enable_zfs}])
 
@@ -192,7 +198,8 @@ AC_ARG_ENABLE(mhvtl,
 	AS_HELP_STRING([--enable-mhvtl], [build and include mhVTL (broken)]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_mhvtl="${enableval}"], [enable_mhvtl="no"]), enable_mhvtl="no")
-AS_IF([test "x$enable_mhvtl" = "xyes"], [build_opts="${build_opts} mhvtl"])
+AS_IF([test "x$enable_mhvtl" = "xyes"],
+	[build_opts="${build_opts} mhvtl"; opt_suffix="${opt_suffix}m"])
 AC_SUBST(enable_mhvtl, ${enable_mhvtl})
 AC_MSG_NOTICE([mhvtl: ${enable_mhvtl}])
 
@@ -201,7 +208,8 @@ AC_ARG_ENABLE(eio,
 	AS_HELP_STRING([--enable-eio], [build and include EnhanceIO (broken)]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_eio="${enableval}"], [enable_eio="no"]), enable_eio="no")
-AS_IF([test "x$enable_eio" = "xyes"], [build_opts="${build_opts} eio"])
+AS_IF([test "x$enable_eio" = "xyes"],
+	[build_opts="${build_opts} eio"; opt_suffix="${opt_suffix}e"])
 AC_SUBST(enable_eio, ${enable_eio})
 AC_MSG_NOTICE([eio: ${enable_eio}])
 
@@ -210,9 +218,21 @@ AC_ARG_ENABLE(btier,
 	AS_HELP_STRING([--enable-btier], [build and include BTIER (broken)]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_btier="${enableval}"], [enable_btier="no"]), enable_btier="no")
-AS_IF([test "x$enable_btier" = "xyes"], [build_opts="${build_opts} btier"])
+AS_IF([test "x$enable_btier" = "xyes"],
+	[build_opts="${build_opts} btier"; opt_suffix="${opt_suffix}b"])
 AC_SUBST(enable_btier, ${enable_btier})
 AC_MSG_NOTICE([btier: ${enable_btier}])
+
+dnl Optional simple text-based user interface (TUI)
+AC_ARG_ENABLE(simple_tui,
+	AS_HELP_STRING([--enable-simple_tui], [build the simple TUI version]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_simple_tui="${enableval}"], [enable_simple_tui="no"]),
+	enable_simple_tui="no")
+AS_IF([test "x$enable_simple_tui" = "xyes"],
+	[build_opts="${build_opts} simple_tui"; opt_suffix="${opt_suffix}S"])
+AC_SUBST(enable_simple_tui, ${enable_simple_tui})
+AC_MSG_NOTICE([simple_tui: ${enable_simple_tui}])
 
 dnl Optional package celerity_16_32 (user provides package file)
 AC_ARG_WITH(celerity_16_32,
@@ -231,7 +251,8 @@ if test  "x${with_celerity_16_32}" = "xyes"; then
 		AC_MSG_ERROR([unable to access the celerity_16_32 file: ${celerity_16_32_file}])
 	fi
 fi
-AS_IF([test "x$with_celerity_16_32" = "xyes"], [build_opts="${build_opts} celerity_16_32"])
+AS_IF([test "x$with_celerity_16_32" = "xyes"],
+	[build_opts="${build_opts} celerity_16_32"; opt_suffix="${opt_suffix}c"])
 AC_SUBST(celerity_16_32_dir, ${celerity_16_32_dir})
 AC_SUBST(with_celerity_16_32, ${with_celerity_16_32})
 AC_MSG_NOTICE([celerity_16_32: ${with_celerity_16_32}])
@@ -257,7 +278,8 @@ if test  "x${with_atto_scst}" = "xyes"; then
 		AC_MSG_ERROR([unable to access the atto_scst file: ${atto_scst_file}])
 	fi
 fi
-AS_IF([test "x$with_atto_scst" = "xyes"], [build_opts="${build_opts} atto_scst"])
+AS_IF([test "x$with_atto_scst" = "xyes"],
+	[build_opts="${build_opts} atto_scst"; opt_suffix="${opt_suffix}a"])
 AC_SUBST(atto_scst_dir, ${atto_scst_dir})
 AC_SUBST(with_atto_scst, ${with_atto_scst})
 AC_MSG_NOTICE([atto_scst: ${with_atto_scst}])
@@ -279,7 +301,8 @@ if test  "x${with_ocs_sdk}" = "xyes"; then
 		AC_MSG_ERROR([unable to access the ocs_sdk file: ${ocs_sdk_file}])
 	fi
 fi
-AS_IF([test "x$with_ocs_sdk" = "xyes"], [build_opts="${build_opts} ocs_sdk"])
+AS_IF([test "x$with_ocs_sdk" = "xyes"],
+	[build_opts="${build_opts} ocs_sdk"; opt_suffix="${opt_suffix}o"])
 AC_SUBST(ocs_sdk_dir, ${ocs_sdk_dir})
 AC_SUBST(with_ocs_sdk, ${with_ocs_sdk})
 AC_MSG_NOTICE([ocs_sdk: ${with_ocs_sdk}])
@@ -302,7 +325,8 @@ if test  "x${with_uwire}" = "xyes"; then
 		AC_MSG_ERROR([unable to access the uwire file: ${uwire_file}])
 	fi
 fi
-AS_IF([test "x$with_uwire" = "xyes"], [build_opts="${build_opts} uwire"])
+AS_IF([test "x$with_uwire" = "xyes"],
+	[build_opts="${build_opts} uwire"; opt_suffix="${opt_suffix}u"])
 AC_SUBST(uwire_dir, ${uwire_dir})
 AC_SUBST(with_uwire, ${with_uwire})
 AC_MSG_NOTICE([uwire: ${with_uwire}])
@@ -315,6 +339,8 @@ AC_MSG_NOTICE([src_dir: ${real_src_dir}])
 AC_SUBST(build_dir, ${PWD})
 AC_MSG_NOTICE([build_dir: ${PWD}])
 
+AS_IF([test "x${opt_suffix}" != "x"], [opt_suffix="_${opt_suffix}"])
 AC_SUBST(build_opts, m4_strip($(echo ${build_opts})))
+AC_SUBST(opt_suffix, m4_strip($(echo ${opt_suffix})))
 
 AC_OUTPUT(Makefile)
