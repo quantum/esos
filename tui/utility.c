@@ -1,7 +1,7 @@
 /**
  * @file utility.c
  * @brief Contains common utility functions used by other functions.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE

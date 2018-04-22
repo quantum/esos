@@ -1,7 +1,7 @@
 /**
  * @file menu_system.c
  * @brief Contains the menu actions for the 'System' menu.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -2509,7 +2509,6 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
     delwin(date_window);
     for (i = 0; i < MAX_TZ_FILES; i++)
         FREE_NULL(tz_files[i]);
-    refreshCDKScreen(main_cdk_screen);
     return;
 }
 

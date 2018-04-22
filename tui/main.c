@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @brief Contains the main() implementation and supporting functions.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
     CDKSCREEN *cdk_screen = 0;
     WINDOW *main_window = 0, *sub_window = 0;
     char *error_msg = NULL;
-    int screen_x = 0, screen_y = 0, latest_scr_y = 0, latest_scr_x = 0,
-            i = 0, child_status = 0, proc_status = 0, tty_fd = 0;
+    int screen_x = 0, screen_y = 0, i = 0, child_status = 0, proc_status = 0,
+            tty_fd = 0;
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
     boolean inet_works = FALSE;
@@ -127,8 +127,6 @@ start:
 
     /* Setup CDK */
     sub_window = newwin((LINES - 2), (COLS - 2), 1, 1);
-    latest_scr_y = LINES;
-    latest_scr_x = COLS;
     wbkgd(main_window, g_color_main_text[g_curr_theme]);
     wbkgd(sub_window, g_color_main_text[g_curr_theme]);
     cdk_screen = initCDKScreen(sub_window);
@@ -178,7 +176,12 @@ start:
             menu_loc_2[CDK_MENU_MAX_SIZE] = {0},
             selection = 0, key_pressed = 0, menu_choice = 0, submenu_choice = 0,
             labels_last_scr_y = 0, labels_last_scr_x = 0, last_tgt_lbl_rows = 0,
-            last_sess_lbl_rows = 0, menu_1_cnt = 0, menu_2_cnt = 0;
+            last_sess_lbl_rows = 0, menu_1_cnt = 0, menu_2_cnt = 0,
+            latest_scr_y = 0, latest_scr_x = 0;
+
+    /* These are used below to handle screen resizing */
+    latest_scr_y = LINES;
+    latest_scr_x = COLS;
 
     /* Create the menu lists */
     SAFE_ASPRINTF(&menu_list_1[SYSTEM_MENU][0],
@@ -524,6 +527,7 @@ start:
             testEmailDialog(cdk_screen);
         }
         curs_set(0);
+        refreshCDKScreen(cdk_screen);
     }
 #else
     /* Loop, refreshing the labels and waiting for input */

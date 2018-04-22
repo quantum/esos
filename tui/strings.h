@@ -1,7 +1,7 @@
 /**
  * @file strings.h
  * @brief Common string macros used throughout the entire program.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef STRINGS_H
