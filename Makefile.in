@@ -3145,7 +3145,7 @@ requests.chroot: Python.chroot setuptools.chroot
 	$(TOUCH) $(@)
 
 openwsman.chroot: glibc.chroot gcc.chroot Python.chroot setuptools.chroot \
-	libxml2.chroot openssl.chroot swig.chroot
+	libxml2.chroot openssl.chroot swig.chroot pycurl.chroot
 	$(call chroot_only)
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autoconfiscate.sh \
