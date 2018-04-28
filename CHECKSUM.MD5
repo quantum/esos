@@ -160,7 +160,7 @@ e73949b47f080dbe4093207d043754e5  pacemaker-1.1.16.tar.gz
 6dd7314233029d9dab0156e7b1c7830b  lxml-3.6.4.tar.gz
 a09c6e03a0c908aa43e9fd0e6a3ad914  multipath-tools-0.7.3.tar.gz
 55f7853f7d8cf664554ce3fa71bf1c7d  json-c-0.12.1.tar.gz
-ae6a32f6c0733d625569dc37e6fa441d  scst_qla2xxx-20170424.tar.gz
+b135b36a7cdd47ce591ac0a8e408d33f  scst_qla2xxx_unified-master_20180425.tar.xz
 7fee322a4b1d960e19a64870ca78924b  archivemount-0.8.7.tar.gz
 1ec00b7dcaf969dd2a5712f85f23c764  libarchive-3.2.2.tar.gz
 127a715fc1850888203880f48114d678  mcelog-master_20161017.tar.gz
@@ -181,7 +181,7 @@ bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
 81f8e4595fa53f9f220a7500e3759e6c  crmsh-2.2.1.tar.gz
 7ab813b2e8921fc4e9f2f92cd5271b30  nmon-16c.tar.gz
 c8590c6a06cb846fc13f3ed10058755a  linux_firmware-master_20161101.tar.xz
-c9e5568a5dc75c31a5068d48e913062f  scst-trunk_r7336.tar.gz
+3146b5e2b5d9152b4fce656e84e0e462  scst-trunk_r7398.tar.xz
 f1e2f97e100e80e00ce3ead797538290  munin-c-0.0.9.tar.gz
 caf2c92bfe58c07f781ab74942e4b9f2  open-iscsi-2.0.874.tar.gz
 e0047d68b4d7a0b6104f67851b8b6475  open-isns-0.96.tar.gz
