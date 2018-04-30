@@ -11,7 +11,7 @@
 # Initialization
 : ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}
 . ${OCF_FUNCTIONS_DIR}/ocf-shellfuncs
-SCST_MODS="scst qla2x00tgt iscsi_scst isert_scst ib_srpt \
+SCST_MODS="scst iscsi_scst isert_scst ib_srpt \
 scst_disk scst_vdisk scst_tape scst_changer fcst"
 SCST_CFG="/etc/scst.conf"
 PRE_SCST_CONF="/etc/pre-scst_xtra_conf"
@@ -23,6 +23,13 @@ REMOTE_INACT_STATE="offline"
 TRANSITION_STATE="transitioning"
 DLM_CONTROLD_PID="/var/run/dlm_controld/dlm_controld.pid"
 INIT_LOGOUT_TIMEOUT=20
+
+# Which Cavium/QLogic target module
+if [ -f "/lib/modules/$(/bin/uname -r)/extra/qla2x00tgt.ko" ]; then
+    SCST_MODS="${SCST_MODS} qla2x00tgt"
+else
+    SCST_MODS="${SCST_MODS} scst_qla2xxx"
+fi
 
 # For optional SCST modules
 OPTL_MODS=""
