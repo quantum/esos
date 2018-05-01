@@ -1126,7 +1126,11 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	  $(MAKE) --directory=$(linux_src) clean; \
 	  $(MAKE) --directory=$(linux_src) distclean; \
 	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
+	  KDIR=$(linux_src) clean; \
+	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
+	  KDIR=$(linux_src) extraclean; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
+	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) QLA_DIR=qla2x00t_git/qla2xxx-unified-target \
 	    clean; \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
@@ -1243,7 +1247,7 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	  $(ECHO) "### Compressing 'vmlinux' for later use..."; \
 	  $(XZ) -z -c $(linux_src)/vmlinux > $(chroot_build)/vmlinux$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) modules_install; \
-	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx
+	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
 	  $(ECHO) "### Building the SCST core and target drivers..."; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i scst; \
