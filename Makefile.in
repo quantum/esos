@@ -157,7 +157,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20140928.tar.gz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-trunk_r7336.tar.gz \
+		scst-trunk_r7398.tar.xz \
 		kexec-tools-2.0.15.tar.xz \
 		drbd-utils-8.9.6.tar.gz \
 		lvm2-2_02_168.tar.gz \
@@ -382,8 +382,7 @@ ifeq ($(enable_strace),yes)
 endif
 ifeq ($(enable_qla),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
-	scst_qla2xxx-20170424.tar.gz)
-	chroot_tgts += scst_qla2xxx.chroot
+	scst_qla2xxx_unified-master_20180425.tar.xz)
 endif
 ifeq ($(enable_zfs),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.7.4.tar.gz)
@@ -1115,7 +1114,7 @@ gcc.chroot: glibc.chroot
 	$(TOUCH) $(@)
 
 esos_kernels.chroot: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
-esos_kernels.chroot: qla2xxx_src = $(wildcard /sources/scst_qla2xxx-*)
+esos_kernels.chroot: qla2xxx_src = $(wildcard /sources/scst_qla2xxx_unified-*)
 esos_kernels.chroot: mhvtl_src = $(wildcard /sources/mhvtl-*)
 esos_kernels.chroot: eio_src = $(wildcard /sources/EnhanceIO-*)
 esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
@@ -1134,7 +1133,12 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	  KDIR=$(linux_src) extraclean; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
-	    $(MAKE) --directory=$(qla2xxx_src) KDIR=$(linux_src) clean; \
+	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
+	    KDIR=$(linux_src) QLA_DIR=qla2x00t_git/qla2xxx-unified-target \
+	    clean; \
+	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
+	    KDIR=$(linux_src) QLA_DIR=qla2x00t_git/qla2xxx-unified-target \
+	    extraclean; \
 	  fi; \
 	  if [ "$(enable_mhvtl)" = "yes" ]; then \
 	    $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean; \
@@ -1193,7 +1197,7 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) 2perf; \
 	    if [ "$(enable_qla)" = "yes" ]; then \
-	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2perf; \
+	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2perf; \
 	    fi; \
 	  fi; \
 	  if [ "$$i" = "$(debug_suffix)" ]; then \
@@ -1205,7 +1209,7 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) 2debug; \
 	    if [ "$(enable_qla)" = "yes" ]; then \
-	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx/qla2x00-target 2debug; \
+	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2debug; \
 	    fi; \
 	    if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	      $(SED) -i 's/CONFIG_DEBUG_LOCK_ALLOC=y/# CONFIG_DEBUG_LOCK_ALLOC is not set/' \
@@ -1215,6 +1219,21 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	      $(SED) -i 's/CONFIG_LOCKDEP=y/# CONFIG_LOCKDEP is not set/' \
 	      $(linux_src)/.config; \
 	    fi; \
+	  fi; \
+	  if [ "$(enable_qla)" = "yes" ]; then \
+	    $(MKDIR) $(scst_src)/qla2x00t_git; \
+	    $(LN) $(linux_src)/drivers/scsi/qla2xxx \
+	    $(scst_src)/qla2x00t_git/qla2xxx; \
+	    $(LN) $(qla2xxx_src) \
+	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target; \
+	    $(CP) -r $(scst_src)/qla2x00t_git/qla2xxx/Makefile \
+	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	    $(CP) -r $(scst_src)/qla2x00t_git/qla2xxx/*.[ch] \
+	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	    $(CP) -f $(qla2xxx_src)/drivers/scsi/qla2xxx/Makefile \
+	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	    $(CP) -r $(qla2xxx_src)/drivers/scsi/qla2xxx/*.[ch] \
+	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
 	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(SED) -i 's/CONFIG_CHELSIO_T4\=m/# CONFIG_CHELSIO_T4 is not set/' \
@@ -1231,6 +1250,7 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	  $(ECHO) "### Compressing 'vmlinux' for later use..."; \
 	  $(XZ) -z -c $(linux_src)/vmlinux > $(chroot_build)/vmlinux$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) modules_install; \
+	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
 	  $(ECHO) "### Building the SCST core and target drivers..."; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i scst; \
@@ -1264,11 +1284,17 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i fcst_install; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
-	    $(ECHO) "### Building the QLogic provided target driver..."; \
-	    $(MAKE) --directory=$(qla2xxx_src) SCST_DIR=$(scst_src)/scst/src \
-	    SCST_INC_DIR=$(scst_src)/scst/include \
-	    SCST_INC=$(scst_src)/scst/include KDIR=$(linux_src) \
-	    KVER=$(kernel_ver)$$i all; \
+	    $(ECHO) "### Building the Cavium Fibre Channel target driver..."; \
+	    $(PATCH) -r - -N -d $(qla2xxx_src) -p4 < \
+	    $(qla2xxx_src)/drivers/scsi/qla2xxx/extras/export_target_list.dif; \
+	    $(PATCH) -r - -N -d $(qla2xxx_src) -p4 < \
+	    $(qla2xxx_src)/drivers/scsi/qla2xxx/extras/move_command_alloc_to_callback.patch; \
+	    $(MAKE) --directory=$(scst_src) obj-m="qla2xxx.o scst_qla2xxx.o" \
+	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i SCST_INC_DIR=/usr/include \
+	    QLA_DIR=qla2x00t_git/qla2xxx-unified-target qla; \
+	    $(MAKE) --directory=$(scst_src) obj-m="qla2xxx.o scst_qla2xxx.o" \
+	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i SCST_INC_DIR=/usr/include \
+	    QLA_DIR=qla2x00t_git/qla2xxx-unified-target qla_install; \
 	  fi; \
 	  if [ "$(enable_mhvtl)" = "yes" ]; then \
 	    $(ECHO) "### Building the mhVTL module..."; \
@@ -1428,16 +1454,6 @@ scst.chroot: glibc.chroot esos_kernels.chroot
 	$(INSTALL) -vD -m 644 \
 	$(tgt_src_dir)/iscsi-scst/doc/manpages/iscsi-scst-adm.8 \
 	/usr/share/man/man8/iscsi-scst-adm.8
-	$(TOUCH) $(@)
-
-scst_qla2xxx.chroot:
-	$(call chroot_only)
-	$(INSTALL) -vD -m 755 $(tgt_src_dir)/drivers/scsi/qla2xxx/extras/\
-	qdiag.sh /usr/sbin/qdiag.sh
-	$(INSTALL) -vD -m 755 $(tgt_src_dir)/drivers/scsi/qla2xxx/extras/\
-	qla_dmp.sh /usr/sbin/qla_dmp.sh
-	$(INSTALL) -vD -m 755 $(tgt_src_dir)/drivers/scsi/qla2xxx/extras/\
-	qscst.sh /usr/sbin/qscst.sh
 	$(TOUCH) $(@)
 
 gdb.chroot: glibc.chroot ncurses.chroot zlib.chroot readline.chroot

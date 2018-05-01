@@ -1,3 +1,39 @@
+2018-05-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'unified_qla2xxx'
+
+	Merge branch 'simple_tui'
+
+	more build fixes for updated Cavium driver with --enable-qla
+
+2018-04-30  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the scst_qla2xxx_unified package with some Makefile fixes; more fixes for the new Cavium driver (--enable-qla); updated rc scripts to handle the new Cavium driver
+
+2018-04-28  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the scst_qla2xxx driver to scst_qla2xxx_unified (from Cavium); updated SCST to version trunk/r7398
+
+2018-04-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	build fix: pycurl.chroot is a dep for openwsman.chroot
+
+2018-04-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'archive_log_fix'
+
+2018-04-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated copyright notice in TUI source; call refreshCDKScreen() at the end of dialog action when using simple TUI instead of trying to call this in each dialog function
+
+	added the '--enable-simple_tui' autoconf option; moved the opt_suffix variable setup into the autoconf script; TUI: in statusBar() we use prettyShrinkStr() so we can see the whole ESOS version string
+
+2018-04-19  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added a #ifdef to enable a simplifed TUI that features a simple scroll widget with a limited number of menu item choices... works, but needs more testing
+
+	fixed the majority of the compiler warnings; updated long line formatting
+
 2018-04-12  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'archive_log_fix'
