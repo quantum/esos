@@ -1,7 +1,7 @@
 /**
  * @file menu_hwraid.c
  * @brief Contains the menu actions for the 'Hardware RAID' menu.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -622,11 +622,11 @@ void addVolDialog(CDKSCREEN *main_cdk_screen) {
             ctrlr_id_num[MISC_STRING_LEN] = {0},
             ctrlr_model[MISC_STRING_LEN] = {0},
             ctrlr_serial[MISC_STRING_LEN] = {0},
-            pd_encl_slot_list[MAX_HWRAID_PDRVS][MISC_STRING_LEN] = {0, 0},
+            pd_encl_slot_list[MAX_HWRAID_PDRVS][MISC_STRING_LEN] = {{0}, {0}},
             pd_info_line_buffer[MAX_PD_INFO_LINE_BUFF] = {0},
             raid_lvl_str[MISC_STRING_LEN] = {0},
             command_str[MAX_SHELL_CMD_LEN] = {0};
-    boolean finished = FALSE, add_vol = FALSE;
+    boolean finished = FALSE;
 
     /* Have the user pick a RAID controller */
     if ((ctrlr_cnt = getCtrlrChoice(main_cdk_screen, ctrlr_type, ctrlr_id_num,

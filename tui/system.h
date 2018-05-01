@@ -1,7 +1,7 @@
 /**
  * @file system.h
  * @brief System settings and configuration options for the program.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _SYSTEM_H
@@ -135,7 +135,7 @@ extern "C" {
 #define MEBIBYTE_SIZE           1048576LL
 #define VDISK_WRITE_SIZE        262144
 #define MAX_SHELL_CMD_LEN       256
-#define MISC_STRING_LEN         128
+#define MISC_STRING_LEN         1024
 #define UUID_STR_SIZE           64
 #define MAX_TUI_STR_LEN         256
 #define MAX_CMD_LINE_LEN        128
@@ -187,7 +187,7 @@ extern "C" {
 #define SYSFS_BLOCK             "/sys/block"
 #define SYSFS_NET               "/sys/class/net"
 #define MAX_SYSFS_ATTR_SIZE     256
-#define MAX_SYSFS_PATH_SIZE     256
+#define MAX_SYSFS_PATH_SIZE     2048
 #define SCSI_CHANGER_TYPE       8
 #define SCSI_TAPE_TYPE          1
 
@@ -249,6 +249,7 @@ extern "C" {
 #define MAX_SCST_TGT_GRP_ID         65535
 #define MIN_SCST_LUN_VAL            0
 #define MAX_SCST_LUN_VAL            255
+#define MAX_SIMPLE_MENU_OPTS        16
 
 /* Logger settings */
 #define TUI_LOG_PREFIX      "esos_tui"

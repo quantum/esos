@@ -1,7 +1,7 @@
 /**
  * @file info_labels.c
  * @brief Functions for the TUI main screen information labels.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -355,8 +355,8 @@ int readTargetData(char *label_msg[]) {
         /* Put it all together */
         if (row_cnt < MAX_INFO_LABEL_ROWS) {
             snprintf(line_buffer, TARGETS_LABEL_COLS,
-                    "%-33.33s %-10.10s %-10.10s %-20.20s",
-                    prettyShrinkStr(33, tgt_name[i]), driver_name[i],
+                    "%-32.32s %-10.10s %-10.10s %-20.20s",
+                    prettyShrinkStr(32, tgt_name[i]), driver_name[i],
                     tgt_state[i], tgt_speed_str[i]);
             SAFE_ASPRINTF(&label_msg[row_cnt], "%s", line_buffer);
             row_cnt++;

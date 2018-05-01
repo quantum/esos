@@ -1,7 +1,7 @@
 /**
  * @file menu_common.c
  * @brief Contains the common menu actions used by most menus.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -96,7 +96,8 @@ void informDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Display the error dialog box */
     inform = newCDKDialog(screen, CENTER, CENTER, message, INFORM_DIAG_MSG_SIZE,
-            g_ok_msg, 1, g_color_dialog_select[g_curr_theme], TRUE, TRUE, FALSE);
+            g_ok_msg, 1, g_color_dialog_select[g_curr_theme], TRUE, TRUE,
+            FALSE);
     if (inform) {
         setCDKDialogBackgroundAttrib(inform, g_color_dialog_text[g_curr_theme]);
         setCDKDialogBoxAttribute(inform, g_color_dialog_box[g_curr_theme]);
@@ -148,8 +149,8 @@ boolean confirmDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Display the confirmation dialog box */
     confirm = newCDKDialog(screen, CENTER, CENTER, message,
-            CONFIRM_DIAG_MSG_SIZE, g_ok_cancel_msg, 2, g_color_error_select[g_curr_theme],
-            TRUE, TRUE, FALSE);
+            CONFIRM_DIAG_MSG_SIZE, g_ok_cancel_msg, 2,
+            g_color_error_select[g_curr_theme], TRUE, TRUE, FALSE);
     if (confirm) {
         setCDKDialogBackgroundAttrib(confirm, g_color_error_text[g_curr_theme]);
         setCDKDialogBoxAttribute(confirm, g_color_error_box[g_curr_theme]);
@@ -230,7 +231,8 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
                         (strcmp(dir_entry->d_name, ".") != 0) &&
                         (strcmp(dir_entry->d_name, "..") != 0)) {
                     if (j < MAX_SCST_TGTS) {
-                        SAFE_ASPRINTF(&scst_tgt_name[j], "%s", dir_entry->d_name);
+                        SAFE_ASPRINTF(&scst_tgt_name[j], "%s",
+                                dir_entry->d_name);
                         SAFE_ASPRINTF(&scst_tgt_driver[j], "%s", drivers[i]);
                         SAFE_ASPRINTF(&scst_tgt_info[j], "<C>%s (Driver: %s)",
                                 dir_entry->d_name, drivers[i]);
@@ -261,8 +263,10 @@ void getSCSTTgtChoice(CDKSCREEN *cdk_screen, char tgt_name[],
             errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
             break;
         }
-        setCDKScrollBoxAttribute(scst_tgt_list, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(scst_tgt_list, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBoxAttribute(scst_tgt_list,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(scst_tgt_list,
+                g_color_dialog_text[g_curr_theme]);
         tgt_choice = activateCDKScroll(scst_tgt_list, 0);
 
         /* Check exit from widget and copy data if normal */
@@ -351,8 +355,10 @@ void getSCSTGroupChoice(CDKSCREEN *cdk_screen, char tgt_name[],
             errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
             break;
         }
-        setCDKScrollBoxAttribute(scst_grp_list, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(scst_grp_list, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBoxAttribute(scst_grp_list,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(scst_grp_list,
+                g_color_dialog_text[g_curr_theme]);
         group_choice = activateCDKScroll(scst_grp_list, 0);
 
         /* Check exit from widget and copy data if normal */
@@ -454,7 +460,8 @@ int getSCSTLUNChoice(CDKSCREEN *cdk_screen, char tgt_name[], char tgt_driver[],
             break;
         }
         setCDKScrollBoxAttribute(lun_scroll, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(lun_scroll, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(lun_scroll,
+                g_color_dialog_text[g_curr_theme]);
         lun_choice = activateCDKScroll(lun_scroll, 0);
 
         /* Check exit from widget (set only if normal exit) */
@@ -597,8 +604,10 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
             errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
             break;
         }
-        setCDKScrollBoxAttribute(scsi_dsk_list, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(scsi_dsk_list, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBoxAttribute(scsi_dsk_list,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(scsi_dsk_list,
+                g_color_dialog_text[g_curr_theme]);
         disk_choice = activateCDKScroll(scsi_dsk_list, 0);
 
         /* Check exit from widget and copy data if normal */
@@ -661,8 +670,10 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
             while ((dir_entry = readdir(dir_stream)) != NULL) {
                 if (dir_entry->d_type == DT_LNK) {
                     if (j < MAX_SCST_DEVS) {
-                        SAFE_ASPRINTF(&scst_dev_name[j], "%s", dir_entry->d_name);
-                        SAFE_ASPRINTF(&scst_dev_hndlr[j], "%s", g_scst_handlers[i]);
+                        SAFE_ASPRINTF(&scst_dev_name[j], "%s",
+                                dir_entry->d_name);
+                        SAFE_ASPRINTF(&scst_dev_hndlr[j], "%s",
+                                g_scst_handlers[i]);
                         SAFE_ASPRINTF(&scst_dev_info[j], "<C>%s (Handler: %s)",
                                 dir_entry->d_name, g_scst_handlers[i]);
                         j++;
@@ -692,8 +703,10 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
             errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
             break;
         }
-        setCDKScrollBoxAttribute(scst_dev_list, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(scst_dev_list, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBoxAttribute(scst_dev_list,
+                g_color_dialog_box[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(scst_dev_list,
+                g_color_dialog_text[g_curr_theme]);
         dev_choice = activateCDKScroll(scst_dev_list, 0);
 
         /* Check exit from widget and copy data if normal */
@@ -754,7 +767,8 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
                     (strcmp(dir_entry->d_name, "mgmt") != 0)) {
                 if (i < MAX_SCST_INITS) {
                     SAFE_ASPRINTF(&init_list[i], "%s", dir_entry->d_name);
-                    SAFE_ASPRINTF(&scroll_init_list[i], "<C>%.40s", init_list[i]);
+                    SAFE_ASPRINTF(&scroll_init_list[i], "<C>%.40s",
+                            init_list[i]);
                     i++;
                 }
             }
@@ -780,7 +794,8 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
             break;
         }
         setCDKScrollBoxAttribute(lun_scroll, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(lun_scroll, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(lun_scroll,
+                g_color_dialog_text[g_curr_theme]);
         lun_choice = activateCDKScroll(lun_scroll, 0);
 
         /* Check exit from widget and copy data if normal */
@@ -831,7 +846,8 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
                     SCSTADMIN_TOOL, SCST_CONF);
             ret_val = system(scstadmin_cmd);
             if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SCSTADMIN_TOOL, exit_stat);
+                SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SCSTADMIN_TOOL,
+                        exit_stat);
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
@@ -843,7 +859,8 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
                 SYNC_CONF_TOOL);
         ret_val = system(sync_conf_cmd);
         if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SYNC_CONF_TOOL, exit_stat);
+            SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SYNC_CONF_TOOL,
+                    exit_stat);
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
             break;
@@ -898,7 +915,8 @@ void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]) {
             break;
         }
         setCDKScrollBoxAttribute(user_scroll, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(user_scroll, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(user_scroll,
+                g_color_dialog_text[g_curr_theme]);
         user_choice = activateCDKScroll(user_scroll, 0);
 
         /* Check exit from widget and write the data if normal */
@@ -947,10 +965,11 @@ boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2) {
 
     /* Display the question dialog box */
     question = newCDKDialog(screen, CENTER, CENTER, message,
-            QUEST_DIAG_MSG_SIZE, g_yes_no_msg, 2, g_color_dialog_select[g_curr_theme],
-            TRUE, TRUE, FALSE);
+            QUEST_DIAG_MSG_SIZE, g_yes_no_msg, 2,
+            g_color_dialog_select[g_curr_theme], TRUE, TRUE, FALSE);
     if (question) {
-        setCDKDialogBackgroundAttrib(question, g_color_dialog_text[g_curr_theme]);
+        setCDKDialogBackgroundAttrib(question,
+                g_color_dialog_text[g_curr_theme]);
         setCDKDialogBoxAttribute(question, g_color_dialog_box[g_curr_theme]);
         selection = activateCDKDialog(question, 0);
 
@@ -1067,7 +1086,8 @@ void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
             break;
         }
         setCDKScrollBoxAttribute(fs_scroll, g_color_dialog_box[g_curr_theme]);
-        setCDKScrollBackgroundAttrib(fs_scroll, g_color_dialog_text[g_curr_theme]);
+        setCDKScrollBackgroundAttrib(fs_scroll,
+                g_color_dialog_text[g_curr_theme]);
         user_choice = activateCDKScroll(fs_scroll, 0);
 
         /* Check exit from widget and write the data if normal */
@@ -1106,9 +1126,9 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     char *error_msg = NULL, *dev_node_ptr = NULL, *cmd_str = NULL,
             *block_dev = NULL, *scroll_title = NULL;
     static char ret_buff[MAX_SYSFS_PATH_SIZE] = {0};
-    char blk_dev_name[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {0, 0},
-            blk_dev_info[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {0, 0},
-            blk_dev_size[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {0, 0},
+    char blk_dev_name[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {{0}, {0}},
+            blk_dev_info[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {{0}, {0}},
+            blk_dev_size[MAX_BLOCK_DEVS][MISC_STRING_LEN] = {{0}, {0}},
             attr_path[MAX_SYSFS_PATH_SIZE] = {0},
             attr_value[MAX_SYSFS_ATTR_SIZE] = {0},
             sym_links[MAX_SYSFS_ATTR_SIZE] = {0};
@@ -1120,12 +1140,12 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
     /* Get the usable block devices on this system */
     if ((dev_cnt = getUsableBlockDevs(cdk_screen, blk_dev_name,
             blk_dev_info, blk_dev_size)) == -1)
-        return;
+        return NULL;
 
     /* Make sure we actually have something to present */
     if (dev_cnt == 0) {
         errorDialog(cdk_screen, "No block devices found!", NULL);
-        return;
+        return NULL;
     }
 
     /* Fill the list (pretty) for our CDK label with block devices */
@@ -1786,7 +1806,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
             *net_if_duplex[MAX_NET_IFACE] = {NULL};
     char *scroll_title = NULL, *error_msg = NULL;
     char eth_duplex[MISC_STRING_LEN] = {0}, temp_str[MISC_STRING_LEN] = {0};
-    __be16 eth_speed = 0;
+    __be32 eth_speed = 0;
     short saved_ifr_flags = 0;
     bonding_t net_if_bonding[MAX_NET_IFACE] = {0};
     struct stat bridge_test = {0};
@@ -1908,8 +1928,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                  * to determine the link status -- probably not the best
                  * solution long term, but its easy for now */
                 eth_speed = ethtool_cmd_speed(&edata);
-                if (eth_speed == 0 || eth_speed == (__be16) (-1) ||
-                        eth_speed == (__be32) (-1)) {
+                if (eth_speed == 0 || eth_speed == (__be32) (-1)) {
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
                             g_bonding_map[net_if_bonding[j]]);
                     SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-9s%-21s%-16s%-26s",

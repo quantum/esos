@@ -65,6 +65,7 @@ enable_zfs		:= @enable_zfs@
 enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
+enable_simple_tui	:= @enable_simple_tui@
 with_celerity_16_32	:= @with_celerity_16_32@
 celerity_16_32_dir	:= $(subst $(CHROOT_DIR),,@celerity_16_32_dir@)
 with_atto_scst		:= @with_atto_scst@
@@ -74,6 +75,7 @@ ocs_sdk_dir		:= $(subst $(CHROOT_DIR),,@ocs_sdk_dir@)
 with_uwire		:= @with_uwire@
 uwire_dir		:= $(subst $(CHROOT_DIR),,@uwire_dir@)
 build_opts		:= @build_opts@
+opt_suffix		:= @opt_suffix@
 
 git_branch	:= $(shell if branch="$$($(GIT) --git-dir=$(SRC_DIR)/.git \
 		rev-parse --symbolic-full-name --abbrev-ref HEAD 2>&1)"; \
@@ -84,8 +86,6 @@ git_hash	:= $(shell if hash="$$($(GIT) --git-dir=$(SRC_DIR)/.git \
 git_tag		:= $(shell if tag="$$($(GIT) --git-dir=$(SRC_DIR)/.git \
 		describe --exact-match --abbrev=0 2>&1)"; \
 		then echo -n "$$tag"; else echo -n ""; fi)
-opt_suffix	:= $(if $(build_opts),_$(shell for i in $(build_opts); \
-		do $(ECHO) -n "$${i:0:1}"; done),)
 rel_name	:= $(git_tag)$(opt_suffix)
 dev_name	:= $(git_branch)_$(git_hash)$(opt_suffix)
 esos_ver	:= $(if $(filter %.x,$(git_branch)),$(rel_name),$(dev_name))
@@ -405,6 +405,9 @@ ifeq ($(enable_btier),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
 	btier-1.3.11.tar.gz)
 	chroot_tgts += btier.chroot
+endif
+ifeq ($(enable_simple_tui),yes)
+	tui_cpp_flags += -DSIMPLE_TUI
 endif
 ifeq ($(with_celerity_16_32),yes)
 	chroot_tgts += celerity_16_32.chroot
@@ -1404,7 +1407,7 @@ esos_tui.chroot: glibc.chroot ncurses.chroot cdk.chroot iniparser.chroot \
 	$(MAKE) --directory=$(chroot_build)/tui \
 	CFLAGS="-DBUILD_OPTS=\"\\\"$(build_opts)\\\"\" \
 	-DESOS_VERSION=\"\\\"$(esos_ver)\\\"\" \
-	-DGIT_BRANCH=\"\\\"$(git_branch)\\\"\""
+	-DGIT_BRANCH=\"\\\"$(git_branch)\\\"\" $(tui_cpp_flags)"
 	$(INSTALL) -m 755 $(chroot_build)/tui/esos_tui /usr/local/bin
 	$(TOUCH) $(@)
 

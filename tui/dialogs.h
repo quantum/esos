@@ -1,7 +1,7 @@
 /**
  * @file dialogs.h
  * @brief Settings related to the TUI dialogs.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _DIALOGS_H
@@ -142,7 +142,7 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define MAX_FS_ATTR_LEN                 64
 #define MAX_MNT_LINE_BUFFER             4096
 #define MAX_BLOCK_DEVS                  64
-#define MAX_ZONEINFO_PATH               64
+#define MAX_ZONEINFO_PATH               2048
 #define MAX_TZ_FILES                    1024
 #define MAX_PD_INFO_LINE_BUFF           4096
 #define MAX_DEV_INFO_LINE_BUFF          4096

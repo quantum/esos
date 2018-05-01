@@ -1,7 +1,7 @@
 /**
  * @file menu_interface.c
  * @brief Contains the menu actions for the 'Interface' menu.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -58,7 +58,7 @@ void themeDialog(CDKSCREEN *main_cdk_screen) {
 
         /* Check exit from widget and write the value if normal */
         if ((iface_theme_list->exitType == vNORMAL) &&
-                (g_curr_theme != theme_choice)) {
+                ((int) g_curr_theme != theme_choice)) {
             /* Load the ESOS configuration file (INI file) */
             ini_dict = iniparser_load(ESOS_CONF);
             if (ini_dict == NULL) {

@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @brief Contains the main() implementation and supporting functions.
- * @author Copyright (c) 2012-2017 Marc A. Smith
+ * @author Copyright (c) 2012-2018 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
@@ -49,23 +49,9 @@ int g_color_dialog_title[MAX_TUI_THEMES];
 int main(int argc, char** argv) {
     CDKSCREEN *cdk_screen = 0;
     WINDOW *main_window = 0, *sub_window = 0;
-    CDKMENU *menu_1 = 0, *menu_2 = 0;
-    CDKLABEL *targets_label = 0, *sessions_label = 0;
-    char *menu_list_1[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}},
-            *menu_list_2[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}};
-    char *tgt_label_msg[MAX_INFO_LABEL_ROWS] = {NULL},
-            *sess_label_msg[MAX_INFO_LABEL_ROWS] = {NULL};
     char *error_msg = NULL;
-    int selection = 0, key_pressed = 0, menu_choice = 0, submenu_choice = 0,
-            screen_x = 0, screen_y = 0, latest_scr_y = 0, latest_scr_x = 0,
-            i = 0, child_status = 0, proc_status = 0, tty_fd = 0,
-            labels_last_scr_y = 0, labels_last_scr_x = 0,
-            last_tgt_lbl_rows = 0, last_sess_lbl_rows = 0,
-            menu_1_cnt = 0, menu_2_cnt = 0;
-    int submenu_size_1[CDK_MENU_MAX_SIZE] = {0},
-            menu_loc_1[CDK_MENU_MAX_SIZE] = {0},
-            submenu_size_2[CDK_MENU_MAX_SIZE] = {0},
-            menu_loc_2[CDK_MENU_MAX_SIZE] = {0};
+    int screen_x = 0, screen_y = 0, i = 0, child_status = 0, proc_status = 0,
+            tty_fd = 0;
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
     boolean inet_works = FALSE;
@@ -119,6 +105,10 @@ int main(int argc, char** argv) {
     openlog(TUI_LOG_PREFIX, TUI_LOG_OPTIONS, TUI_LOG_FACILITY);
     DEBUG_LOG("TUI start-up...");
 
+    /* Log passed arguments (if any) */
+    for (i = 1; i < argc; i++)
+        DEBUG_LOG("Argument %d: %s", i, argv[i]);
+
     /* Check if there is Internet access */
     inet_works = checkInetAccess();
 
@@ -137,12 +127,61 @@ start:
 
     /* Setup CDK */
     sub_window = newwin((LINES - 2), (COLS - 2), 1, 1);
-    latest_scr_y = LINES;
-    latest_scr_x = COLS;
     wbkgd(main_window, g_color_main_text[g_curr_theme]);
     wbkgd(sub_window, g_color_main_text[g_curr_theme]);
     cdk_screen = initCDKScreen(sub_window);
     initCDKColor();
+
+#ifdef SIMPLE_TUI
+    /* Variables */
+    char *simple_menu_opts[MAX_SIMPLE_MENU_OPTS] = {NULL};
+    char *scroll_title = NULL;
+    CDKSCROLL *simple_menu_list = 0;
+    int simple_menu_choice = 0;
+
+    /* Create a simple menu scroll options list */
+    SAFE_ASPRINTF(&simple_menu_opts[0], "<C>Quit the TUI");
+    SAFE_ASPRINTF(&simple_menu_opts[1], "<C>Exit to Shell");
+    SAFE_ASPRINTF(&simple_menu_opts[2], "<C>Date & Time");
+    SAFE_ASPRINTF(&simple_menu_opts[3], "<C>Network Settings");
+    SAFE_ASPRINTF(&simple_menu_opts[4], "<C>Restart Networking");
+    SAFE_ASPRINTF(&simple_menu_opts[5], "<C>Email Setup");
+    SAFE_ASPRINTF(&simple_menu_opts[6], "<C>Send Test Email");
+
+    /* Create the simple menu scroll widget */
+    SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose a Menu Action\n",
+            g_color_dialog_title[g_curr_theme]);
+    simple_menu_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 60,
+            scroll_title, simple_menu_opts, 5,
+            FALSE, g_color_dialog_select[g_curr_theme], TRUE, FALSE);
+    if (!simple_menu_list) {
+        errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKScrollBoxAttribute(simple_menu_list,
+            g_color_dialog_box[g_curr_theme]);
+    setCDKScrollBackgroundAttrib(simple_menu_list,
+            g_color_dialog_text[g_curr_theme]);
+#else
+    /* Variables */
+    CDKMENU *menu_1 = 0, *menu_2 = 0;
+    CDKLABEL *targets_label = 0, *sessions_label = 0;
+    char *menu_list_1[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}},
+            *menu_list_2[MAX_MENU_ITEMS][MAX_SUB_ITEMS] = {{NULL}, {NULL}},
+            *tgt_label_msg[MAX_INFO_LABEL_ROWS] = {NULL},
+            *sess_label_msg[MAX_INFO_LABEL_ROWS] = {NULL};
+    int submenu_size_1[CDK_MENU_MAX_SIZE] = {0},
+            menu_loc_1[CDK_MENU_MAX_SIZE] = {0},
+            submenu_size_2[CDK_MENU_MAX_SIZE] = {0},
+            menu_loc_2[CDK_MENU_MAX_SIZE] = {0},
+            selection = 0, key_pressed = 0, menu_choice = 0, submenu_choice = 0,
+            labels_last_scr_y = 0, labels_last_scr_x = 0, last_tgt_lbl_rows = 0,
+            last_sess_lbl_rows = 0, menu_1_cnt = 0, menu_2_cnt = 0,
+            latest_scr_y = 0, latest_scr_x = 0;
+
+    /* These are used below to handle screen resizing */
+    latest_scr_y = LINES;
+    latest_scr_x = COLS;
 
     /* Create the menu lists */
     SAFE_ASPRINTF(&menu_list_1[SYSTEM_MENU][0],
@@ -368,6 +407,7 @@ start:
         goto quit;
     }
     setCDKMenuBackgroundColor(menu_2, g_color_menu_bg[g_curr_theme]);
+#endif
 
     /* We need root privileges; for the short term I don't see any other way
      * around this; long term we can hopefully do something else */
@@ -402,6 +442,94 @@ start:
                 "functions will not work. Check the '/var/log/boot' file.");
     }
 
+#ifdef SIMPLE_TUI
+    /* Activate the scroll widget, evaluate action, repeat */
+    for (;;) {
+        simple_menu_choice = activateCDKScroll(simple_menu_list, 0);
+        if (simple_menu_choice == 0) {
+            /* Synchronize the configuration and quit */
+            syncConfig(cdk_screen);
+            goto quit;
+
+        } else if (simple_menu_choice == 1) {
+            /* Set the UID to what was saved at the start */
+            if (setresuid(saved_uid, 0, -1) == -1) {
+                SAFE_ASPRINTF(&error_msg, "setresuid(): %s",
+                        strerror(errno));
+                errorDialog(cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+            }
+            /* Fork and execute a shell */
+            if ((child_pid = fork()) < 0) {
+                /* Could not fork */
+                SAFE_ASPRINTF(&error_msg, "fork(): %s", strerror(errno));
+                errorDialog(cdk_screen, error_msg, NULL);
+                FREE_NULL(error_msg);
+            } else if (child_pid == 0) {
+                /* Child; fix up the terminal and execute the shell */
+                endwin();
+                curs_set(1);
+                echo();
+                system(CLEAR_BIN);
+                /* Execute the shell; if we fail, print something
+                 * useful to syslog for debugging */
+                if ((execl(SHELL_BIN, SHELL_BIN, "--rcfile", GLOBAL_BASHRC,
+                        "-i", (char *) NULL)) == -1) {
+                    DEBUG_LOG("Calling execl() failed: %s",
+                            strerror(errno));
+                }
+                exit(2);
+            } else {
+                /* Parent; wait for the child to finish */
+                while ((proc_status = wait(&child_status)) != child_pid) {
+                    if (proc_status < 0 && errno == ECHILD)
+                        break;
+                    errno = 0;
+                }
+                /* Ending everything and starting fresh seems to work
+                 * best when switching between the shell and UI */
+                FREE_NULL(scroll_title);
+                for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)
+                    FREE_NULL(simple_menu_opts[i]);
+                destroyCDKScreenObjects(cdk_screen);
+                destroyCDKScreen(cdk_screen);
+                endCDK();
+                cdk_screen = NULL;
+
+                /* Check and see if we're still attached to our terminal */
+                if ((tty_fd = open("/dev/tty", O_RDONLY)) == -1) {
+                    /* Guess not, so we're done */
+                    goto quit;
+                } else {
+                    close(tty_fd);
+                    goto start;
+                }
+            }
+
+        } else if (simple_menu_choice == 2) {
+            /* Date & Time Settings dialog */
+            dateTimeDialog(cdk_screen);
+
+        } else if (simple_menu_choice == 3) {
+            /* Networking dialog */
+            networkDialog(cdk_screen);
+
+        } else if (simple_menu_choice == 4) {
+            /* Restart Networking dialog */
+            restartNetDialog(cdk_screen);
+
+        } else if (simple_menu_choice == 5) {
+            /* Mail Setup dialog */
+            mailDialog(cdk_screen);
+
+        } else if (simple_menu_choice == 6) {
+            /* Test Email dialog */
+            testEmailDialog(cdk_screen);
+        }
+        curs_set(0);
+        refreshCDKScreen(cdk_screen);
+    }
+#else
     /* Loop, refreshing the labels and waiting for input */
     halfdelay(REFRESH_DELAY);
     for (;;) {
@@ -918,6 +1046,7 @@ start:
         /* Done with the menus, go back to half-delay mode */
         halfdelay(REFRESH_DELAY);
     }
+#endif
 
     /* All done -- clean up */
 quit:
@@ -930,6 +1059,11 @@ quit:
     }
     delwin(sub_window);
     delwin(main_window);
+#ifdef SIMPLE_TUI
+    FREE_NULL(scroll_title);
+    for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)
+        FREE_NULL(simple_menu_opts[i]);
+#else
     for (i = 0; i < menu_1_cnt; i++)
         FREE_NULL(menu_list_1[i][0]);
     for (i = 0; i < menu_2_cnt; i++)
@@ -938,6 +1072,7 @@ quit:
         FREE_NULL(tgt_label_msg[i]);
         FREE_NULL(sess_label_msg[i]);
     }
+#endif
     system(CLEAR_BIN);
     exit(EXIT_SUCCESS);
 }
@@ -1078,7 +1213,8 @@ void screenResize(CDKSCREEN *cdk_screen, WINDOW *main_window,
  * of a screen resize. Also draws the box around the window.
  */
 void statusBar(WINDOW *window) {
-    char esos_ver_str[STAT_BAR_ESOS_VER_MAX] = {0},
+    char long_ver_str[MISC_STRING_LEN] = {0},
+            esos_ver_str[STAT_BAR_ESOS_VER_MAX] = {0},
             username_str[STAT_BAR_UNAME_MAX] = {0};
     int esos_ver_size = 0, username_size = 0, bar_space = 0, junk = 0;
     uid_t ruid = 0, euid = 0, suid = 0;
@@ -1087,8 +1223,10 @@ void statusBar(WINDOW *window) {
     chtype *status_bar = NULL;
 
     /* Set the ESOS status bar name/version */
-    snprintf(esos_ver_str, STAT_BAR_ESOS_VER_MAX,
+    snprintf(long_ver_str, MISC_STRING_LEN,
             "ESOS - Enterprise Storage OS %s", ESOS_VERSION);
+    snprintf(esos_ver_str, STAT_BAR_ESOS_VER_MAX,
+            prettyShrinkStr((STAT_BAR_ESOS_VER_MAX - 1), long_ver_str));
     esos_ver_size = strlen(esos_ver_str);
 
     /* Get username */
