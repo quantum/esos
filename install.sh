@@ -111,7 +111,7 @@ if [ -f "/etc/esos-release" ]; then
             echo
         if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
             echo "### Increasing the /tmp file system..."
-            mount -o remount,size=5G /tmp || exit 1
+            mount -o remount,size=6G /tmp || exit 1
             echo
             echo "### Mounting the ESOS USB flash drive file systems..."
             usb_esos_mnt="${TEMP_DIR}/old_esos"
