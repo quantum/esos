@@ -1,3 +1,11 @@
+2018-05-09  Marc A. Smith  <marc.smith@parodyne.com>
+
+	enabled the CONFIG_VMD kernel option
+
+2018-05-02  Marc A. Smith  <marc.smith@parodyne.com>
+
+	install.sh: increased /tmp FS remount size to 6G to accomodate for larger packages when upgrading
+
 2018-05-01  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'unified_qla2xxx'
