@@ -605,7 +605,7 @@ bootstrap: symlink $(bootstrap_tgts)
 	$(chroot_build)/build_opts
 	$(ECHO) -n "$(esos_ver)" > $(chroot_build)/esos_ver
 	$(ECHO) -n "$(git_branch)" > $(chroot_build)/git_branch
-	$(CP) /etc/passwd $(CHROOT_DIR)/etc/
+	$(CP) /etc/passwd /etc/resolv.conf $(CHROOT_DIR)/etc/
 	$(QUIET) for i in bash cat dd echo ln pwd rm stty; do \
 	  if [ ! -e "$(CHROOT_DIR)/bin/$$i" ]; then \
 	    $(LN) -v /tools/bin/$$i $(CHROOT_DIR)/bin; \
@@ -3459,7 +3459,8 @@ image:
 	! -path "./usr/lib/pkgconfig*" ! -path "./usr/lib/gcc" \
 	! -path "./bin/cat" ! -path "./bin/echo" ! -path "./bin/ln" \
 	! -path "./bin/pwd" ! -path "./bin/rm" ! -path "./bin/stty" \
-	! -path "./bin/sh" ! -path "./usr/bin/install" | \
+	! -path "./bin/sh" ! -path "./usr/bin/install" \
+	! -path "./etc/resolv.conf" | \
 	$(CPIO) -pmdvu $(STAGING_DIR)
 	$(INSTALL) -D $(wildcard $(CHROOT_DIR)/usr/include/python*/pyconfig.h) \
 	$(STAGING_DIR)/usr/include/$(notdir \
