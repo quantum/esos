@@ -1927,8 +1927,7 @@ drbd-utils.chroot: glibc.chroot eudev.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-83support \
 	--with-udev --without-xen --with-pacemaker --without-heartbeat \
 	--without-rgmanager --without-bashcompletion --with-distro=generic \
-	--sysconfdir=/etc --localstatedir=/var --with-initscripttype=sysv \
-	--without-manual
+	--sysconfdir=/etc --localstatedir=/var --with-initscripttype=sysv
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
