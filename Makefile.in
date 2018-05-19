@@ -171,7 +171,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		glib-2.50.1.tar.xz \
 		libxml2-2.9.4.tar.gz \
 		libxslt-1.1.29.tar.gz \
-		Python-2.7.12.tar.xz \
+		Python-3.6.5.tar.xz \
 		crmsh-2.2.1.tar.gz \
 		libaio-0.3.110-1.tar.xz \
 		glue-1.0.12.tar.bz2 \
@@ -184,7 +184,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		fuse-2.9.7.tar.gz \
 		db-5.3.28.tar.gz \
 		snappy-1.1.3.tar.gz \
-		fence-agents-4.0.24.tar.gz \
+		fence-agents-4.2.0.tar.gz \
 		opensm-3.3.20.tar.gz \
 		curl-7.50.3.tar.bz2 \
 		Net-Telnet-3.04.tar.gz \
@@ -262,7 +262,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		open-vm-tools-10.0.7-3227872.tar.gz \
 		libdnet-1.11.tar.gz \
 		libffi-3.2.1.tar.gz \
-		openwsman-2.6.3.tar.gz \
+		openwsman-2.6.5.tar.gz \
 		swig-3.0.10.tar.gz \
 		userspace-rcu-0.9.2.tar.bz2 \
 		tzdata-2016i.tar.gz \
@@ -1630,24 +1630,26 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	--with-ensurepip=upgrade
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	pip install --upgrade pip
-	pip install setuptools==28.6.0
-	pip install configshell-fb==1.1.23
-	pip install docutils==0.12
-	pip install pbr==1.10.0
-	pip install python-daemon==2.1.1
-	pip install lockfile==0.12.2
-	pip install lxml==3.6.4
-	pip install suds==0.4
-	pip install ptyprocess==0.5.1
-	pip install pexpect==4.2.1
-	PYCURL_SSL_LIBRARY=openssl pip install pycurl==7.43.0
-	pip install psycopg2==2.6.2
-	pip install pyparsing==2.1.10
-	pip install requests==2.11.1
-	pip install six==1.10.0
-	pip install MySQL-python==1.2.5
-	pip install SQLAlchemy==1.1.1
+	pip3 install --upgrade pip
+	#pip3 install setuptools==28.6.0
+	pip3 install configshell-fb==1.1.23
+	pip3 install docutils==0.12
+	pip3 install pbr==1.10.0
+	pip3 install lockfile==0.12.2
+	pip3 install python-daemon==2.1.1
+	pip3 install lxml==3.6.4
+	#pip3 install suds==0.4
+	pip3 install suds-py3==1.3.3.0
+	pip3 install ptyprocess==0.5.1
+	pip3 install pexpect==4.2.1
+	PYCURL_SSL_LIBRARY=openssl pip3 install pycurl==7.43.0
+	pip3 install psycopg2==2.6.2
+	pip3 install pyparsing==2.1.10
+	pip3 install requests==2.11.1
+	pip3 install six==1.10.0
+	#pip3 install MySQL-python==1.2.5
+	pip3 install mysqlclient==1.3.12
+	pip3 install SQLAlchemy==1.1.1
 	$(TOUCH) $(@)
 
 qlogic_fw.chroot:
@@ -2218,8 +2220,6 @@ snappy.chroot: glibc.chroot gcc.chroot
 fence-agents.chroot: glibc.chroot nss.chroot Python.chroot Net-Telnet.chroot \
 	openwsman.chroot
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  $(SED) -i 's/\/log\/cluster/\/log/' $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
@@ -3077,6 +3077,7 @@ openwsman.chroot: glibc.chroot gcc.chroot Python.chroot libxml2.chroot \
 	  --ignore-deprecation-warning; \
 	fi
 	$(SED) -i "s/\$$EGREP/egrep/g" $(tgt_src_dir)/configure
+	$(SED) -i "s/python-config/python3-config/g" $(tgt_src_dir)/configure
 	cd $(tgt_src_dir) && CXX="g++ -std=c++98" ./configure --prefix=/usr \
 	--disable-pam --enable-python=yes --disable-server --disable-plugins \
 	--disable-more-warnings --disable-silent-rules
@@ -3144,7 +3145,7 @@ ledmon.chroot: glibc.chroot gcc.chroot sg3_utils.chroot
 
 nvmetcli.chroot: glibc.chroot Python.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && python ./setup.py install --prefix=/usr
+	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
 	$(INSTALL) -m 0755 $(tgt_src_dir)/nvmetcli /usr/sbin/
 	$(TOUCH) $(@)
 
