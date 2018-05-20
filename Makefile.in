@@ -172,7 +172,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libxml2-2.9.4.tar.gz \
 		libxslt-1.1.29.tar.gz \
 		Python-3.6.5.tar.xz \
-		crmsh-2.2.1.tar.gz \
+		crmsh-master_20180520.tar.xz \
 		libaio-0.3.110-1.tar.xz \
 		glue-1.0.12.tar.bz2 \
 		readline-6.3.tar.gz \
