@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 
 '''
 Created on Jul 27, 2013
@@ -23,18 +23,18 @@ Keep daily records for 1 year
 Minimal version of Postgresql due to database uri is 9.2
 '''
 
-import ConfigParser
+import configparser
 import datetime
 
 version = 'ESOS perf-agent 0.0.1'
 configfile = '/etc/perf-agent.conf'
 
 def initconfig(configfile):
-    cfg = ConfigParser.ConfigParser()
+    cfg = configparser.ConfigParser()
     try:
         cfg.read(configfile)
     except:
-        print "Error unable to read a valid configuration file"
+        print("Error unable to read a valid configuration file")
         exit(1)
     return cfg
 
@@ -81,8 +81,8 @@ def connectDB():
         try:
             mvars.dbconn = psycopg2.connect(mvars.cfg.get('Database','DBURI'))
         except Exception as err:
-            print 'Unable to connect to DB'
-            print err
+            print('Unable to connect to DB')
+            print(err)
             exit(1)
     if dbtype == 'mysql':
         global mysql
@@ -96,19 +96,19 @@ def connectDB():
 
         dburi = mvars.cfg.get('Database','DBURI')
         
-        import urlparse
+        import urllib.parse
         
         # not very nice but it does the job
-        dbuser = urlparse.urlparse(dburi)[1].split(':')[0]
-        dbpass = urlparse.urlparse(dburi)[1].split(':')[1].split('@')[0]
-        dbhost = urlparse.urlparse(dburi)[1].split('@')[1]
-        dbname = urlparse.urlparse(dburi)[2].split('/')[1]
+        dbuser = urllib.parse.urlparse(dburi)[1].split(':')[0]
+        dbpass = urllib.parse.urlparse(dburi)[1].split(':')[1].split('@')[0]
+        dbhost = urllib.parse.urlparse(dburi)[1].split('@')[1]
+        dbname = urllib.parse.urlparse(dburi)[2].split('/')[1]
                 
         try:
             mvars.dbconn = MySQLdb.connect(host=dbhost,user=dbuser,passwd=dbpass,db=dbname, cursorclass=MySQLdb.cursors.DictCursor)
         except Exception as err:
-            print 'Unable to connect to DB'
-            print err
+            print('Unable to connect to DB')
+            print(err)
             exit(1)
             
 def getmyhostid():
@@ -170,13 +170,13 @@ def interavg(host,device):
     startdate = (datetime.datetime.now()-datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0,microsecond=0)
     dates = []
     dates.append(startdate)
-    for i in xrange(1,96):
+    for i in range(1,96):
         d = startdate + datetime.timedelta(minutes=(i*15))
         dates.append(d)
     enddate = startdate.replace(hour=23, minute=59, second=59,microsecond=999999)
     dates.append(enddate)
        
-    for i in xrange(0,96):
+    for i in range(0,96):
         # Select Query Block
         cur = getcur(cursor_factory=DictCursor)
         cur.execute(squery,(dates[i],dates[i+1],device))
@@ -213,7 +213,7 @@ def interavg(host,device):
         
         except Exception as err:
             mvars.dbconn.rollback()
-            print err    
+            print(err)    
 
 def hourlyavg(host,device):
     # This will be executed 24 times in a row until the whole day gets processed
@@ -243,13 +243,13 @@ def hourlyavg(host,device):
     # build the dates list - hours within a day
     dates = []
     dates.append(startdate)
-    for i in xrange(1,24):
+    for i in range(1,24):
         d = startdate + datetime.timedelta(hours=i)
         dates.append(d)
     enddate = startdate.replace(hour=23, minute=59, second=59,microsecond=999999)
     dates.append(enddate)
     
-    for i in xrange(0,24):
+    for i in range(0,24):
         # Select Query Block
         cur = getcur(cursor_factory=DictCursor)
         cur.execute(squery,(dates[i],dates[i+1],device))
@@ -281,7 +281,7 @@ def hourlyavg(host,device):
         
         except Exception as err:
             mvars.dbconn.rollback()
-            print err
+            print(err)
         
     cur.close()
 
@@ -342,7 +342,7 @@ def dailyavg(host,device):
     
     except Exception as err:
         mvars.dbconn.rollback()
-        print err
+        print(err)
 
 def start():
     connectDB()

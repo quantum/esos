@@ -4,7 +4,7 @@ Created on Jun 14, 2013
 @author: martino
 '''
 
-import ConfigParser
+import configparser
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
@@ -34,11 +34,11 @@ def getSession():
     return smaker()
 
 def initconfig(configfile):
-    cfg = ConfigParser.ConfigParser()
+    cfg = configparser.ConfigParser()
     try:
         cfg.read(configfile)
     except:
-        print "Error unable to read a valid configuration file"
+        print("Error unable to read a valid configuration file")
         exit(1)
     return cfg
 
@@ -97,13 +97,13 @@ class Poller():
                 session.close()
             else:
                 self.devs[device] = d.id
-        print self.devs
+        print(self.devs)
 
     def stop(self):
         self.stop = True
     
     def start(self):
-        print self.hostid
+        print(self.hostid)
         while self.stop == False:
             session = self.smaker()
             
@@ -116,13 +116,13 @@ class Poller():
                     session.commit()
                 except:
                     # Todo: replace with logging or silence the messages entirely
-                    print 'Error communicating with database while adding %s stats' % device
+                    print('Error communicating with database while adding %s stats' % device)
                 del s
             session.close()
             del session
             
 def printstatus(signum,frame):
-    print 'test'
+    print('test')
     
 def start():
     cfg = initconfig(configfile)
