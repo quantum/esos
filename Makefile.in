@@ -3144,7 +3144,6 @@ ledmon.chroot: glibc.chroot gcc.chroot sg3_utils.chroot
 nvmetcli.chroot: glibc.chroot Python.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
-	$(INSTALL) -m 0755 $(tgt_src_dir)/nvmetcli /usr/sbin/
 	$(TOUCH) $(@)
 
 sed.chroot: glibc.chroot
