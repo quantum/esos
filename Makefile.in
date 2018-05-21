@@ -171,9 +171,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		glib-2.50.1.tar.xz \
 		libxml2-2.9.4.tar.gz \
 		libxslt-1.1.29.tar.gz \
-		Python-2.7.12.tar.xz \
-		crmsh-2.2.1.tar.gz \
-		lxml-3.6.4.tar.gz \
+		Python-3.6.5.tar.xz \
+		crmsh-master_20180520.tar.xz \
 		libaio-0.3.110-1.tar.xz \
 		glue-1.0.12.tar.bz2 \
 		readline-6.3.tar.gz \
@@ -185,14 +184,10 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		fuse-2.9.7.tar.gz \
 		db-5.3.28.tar.gz \
 		snappy-1.1.3.tar.gz \
-		fence-agents-4.0.24.tar.gz \
+		fence-agents-4.2.0.tar.gz \
 		opensm-3.3.20.tar.gz \
-		pycurl-7.43.0.tar.gz \
 		curl-7.50.3.tar.bz2 \
 		Net-Telnet-3.04.tar.gz \
-		python-suds-0.4.tar.gz \
-		setuptools-28.6.0.tar.gz \
-		pexpect-4.2.1.tar.gz \
 		open-fcoe-3.19.tar.gz \
 		open-lldp-0.9.46.tar.gz \
 		libconfig-1.5.tar.gz \
@@ -206,16 +201,10 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		irqbalance-master_20170901.tar.gz \
 		ethtool-4.8.tar.xz \
 		postgresql-9.6.0.tar.bz2 \
-		psycopg2-2.6.2.tar.gz \
 		mysql-5.0.96.tar.gz \
-		MySQLdb-1.2.5.tar.gz \
-		SQLAlchemy-1.1.1.tar.gz \
 		infiniband-diags-1.6.7.tar.gz \
 		libibmad-1.3.12.tar.gz \
 		perftest-3.4.tar.gz \
-		lockfile-0.12.2.tar.gz \
-		pbr-1.10.0.tar.gz \
-		python-daemon-2.1.1.tar.gz \
 		bcache-tools-1.0.8.tar.gz \
 		nrpe-3.0.1.tar.gz \
 		thin-provisioning-tools-0.6.3.tar.gz \
@@ -273,20 +262,14 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		open-vm-tools-10.0.7-3227872.tar.gz \
 		libdnet-1.11.tar.gz \
 		libffi-3.2.1.tar.gz \
-		ptyprocess-0.5.1.tar.gz \
-		requests-2.11.1.tar.gz \
-		openwsman-2.6.3.tar.gz \
+		openwsman-2.6.5.tar.gz \
 		swig-3.0.10.tar.gz \
 		userspace-rcu-0.9.2.tar.bz2 \
-		docutils-0.12.tar.gz \
 		tzdata-2016i.tar.gz \
 		nvme-cli-1.4.tar.gz \
 		freetype-2.7.tar.bz2 \
 		ledmon-0.80.tar.gz \
 		nvmetcli-master_20171018.tar.xz \
-		configshell-fb-1.1.fb23.tar.gz \
-		six-1.10.0.tar.gz \
-		pyparsing-2.1.10.tar.gz \
 		bc-1.07.1.tar.gz \
 		etckeeper-master_20171122.tar.xz \
 		git-2.9.5.tar.xz \
@@ -315,54 +298,47 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		busybox.chroot makedumpfile.chroot elfutils.chroot \
 		sysvinit.chroot grub.chroot perl.chroot Python.chroot \
 		qlogic_fw.chroot scstadmin.chroot openssh.chroot \
-		vixie-cron.chroot setuptools.chroot openssl.chroot \
-		zlib.chroot ncurses.chroot e2fsprogs.chroot ssmtp.chroot \
-		libibumad.chroot libibverbs.chroot libcxgb3.chroot \
-		libcxgb4.chroot libi40iw.chroot libmlx4.chroot libmlx5.chroot \
-		libmthca.chroot libnes.chroot libocrdma.chroot \
-		srptools.chroot lsscsi.chroot sg3_utils.chroot groff.chroot \
-		python-suds.chroot kexec-tools.chroot iniparser.chroot \
-		cdk.chroot lvm2.chroot xfsprogs.chroot drbd-utils.chroot \
-		mdadm.chroot parted.chroot opensm.chroot libqb.chroot \
-		pacemaker.chroot corosync.chroot nss.chroot glib.chroot \
-		libxml2.chroot libxslt.chroot bzip2.chroot crmsh.chroot \
-		lxml.chroot libaio.chroot glue.chroot readline.chroot \
-		resource-agents.chroot lzo.chroot mhash.chroot \
-		lessfs.chroot tokyocabinet.chroot fuse.chroot db.chroot \
-		snappy.chroot fence-agents.chroot pexpect.chroot \
-		pycurl.chroot curl.chroot Net-Telnet.chroot fio.chroot \
-		open-fcoe.chroot open-lldp.chroot \
-		libconfig.chroot libnl.chroot libpciaccess.chroot \
-		linux_firmware.chroot dlm.chroot ipmitool.chroot \
-		sysklogd.chroot less.chroot irqbalance.chroot ethtool.chroot \
-		postgresql.chroot psycopg2.chroot mysql.chroot MySQLdb.chroot \
-		SQLAlchemy.chroot infiniband-diags.chroot libibmad.chroot \
-		perftest.chroot lockfile.chroot pbr.chroot \
-		python-daemon.chroot nrpe.chroot bcache-tools.chroot \
+		vixie-cron.chroot openssl.chroot zlib.chroot ncurses.chroot \
+		e2fsprogs.chroot ssmtp.chroot libibumad.chroot \
+		libibverbs.chroot libcxgb3.chroot libcxgb4.chroot \
+		libi40iw.chroot libmlx4.chroot libmlx5.chroot libmthca.chroot \
+		libnes.chroot libocrdma.chroot srptools.chroot lsscsi.chroot \
+		sg3_utils.chroot groff.chroot kexec-tools.chroot \
+		iniparser.chroot cdk.chroot lvm2.chroot xfsprogs.chroot \
+		drbd-utils.chroot mdadm.chroot parted.chroot opensm.chroot \
+		libqb.chroot pacemaker.chroot corosync.chroot nss.chroot \
+		glib.chroot libxml2.chroot libxslt.chroot bzip2.chroot \
+		crmsh.chroot libaio.chroot glue.chroot readline.chroot \
+		resource-agents.chroot lzo.chroot mhash.chroot lessfs.chroot \
+		tokyocabinet.chroot fuse.chroot db.chroot snappy.chroot \
+		fence-agents.chroot curl.chroot Net-Telnet.chroot fio.chroot \
+		open-fcoe.chroot open-lldp.chroot libconfig.chroot \
+		libnl.chroot libpciaccess.chroot linux_firmware.chroot \
+		dlm.chroot ipmitool.chroot sysklogd.chroot less.chroot \
+		irqbalance.chroot ethtool.chroot postgresql.chroot \
+		mysql.chroot infiniband-diags.chroot libibmad.chroot \
+		perftest.chroot nrpe.chroot bcache-tools.chroot \
 		util-linux.chroot thin-provisioning-tools.chroot expat.chroot \
 		boost.chroot librdmacm.chroot sysstat.chroot pciutils.chroot \
-		net-snmp.chroot nut.chroot libusb.chroot \
-		libusb_compat.chroot freeipmi.chroot libgcrypt.chroot \
-		libgpg-error.chroot smartmontools.chroot cryptsetup.chroot \
-		popt.chroot mtx.chroot mt-st.chroot nagios-plugins.chroot \
-		libedit.chroot libmcrypt.chroot nsca.chroot btrfs-progs.chroot \
-		attr.chroot acl.chroot htop.chroot dmidecode.chroot \
-		xmlrpc-c.chroot stunnel.chroot sudo.chroot rsync.chroot \
-		eudev.chroot gperf.chroot multipath-tools.chroot json-c.chroot \
+		net-snmp.chroot nut.chroot libusb.chroot libusb_compat.chroot \
+		freeipmi.chroot libgcrypt.chroot libgpg-error.chroot \
+		smartmontools.chroot cryptsetup.chroot popt.chroot mtx.chroot \
+		mt-st.chroot nagios-plugins.chroot libedit.chroot \
+		libmcrypt.chroot nsca.chroot btrfs-progs.chroot attr.chroot \
+		acl.chroot htop.chroot dmidecode.chroot xmlrpc-c.chroot \
+		stunnel.chroot sudo.chroot rsync.chroot eudev.chroot \
+		gperf.chroot multipath-tools.chroot json-c.chroot \
 		archivemount.chroot libarchive.chroot mcelog.chroot \
 		edac-utils.chroot sysfsutils.chroot sqlite-autoconf.chroot \
 		iperf2.chroot iperf3.chroot libpcap.chroot iftop.chroot \
 		nmon.chroot munin-c.chroot open-iscsi.chroot open-isns.chroot \
 		coreutils.chroot open-vm-tools.chroot libdnet.chroot \
-		libffi.chroot ptyprocess.chroot requests.chroot \
-		openwsman.chroot swig.chroot userspace-rcu.chroot \
-		docutils.chroot tzdata.chroot nvme-cli.chroot freetype.chroot \
-		ledmon.chroot nvmetcli.chroot configshell-fb.chroot \
-		six.chroot pyparsing.chroot bc.chroot \
-		libtool.chroot etckeeper.chroot git.chroot \
-		nfs-utils.chroot rpcbind.chroot libtirpc.chroot \
-		libevent.chroot keyutils.chroot libnfsidmap.chroot \
-		hdparm.chroot kbd.chroot
+		libffi.chroot openwsman.chroot swig.chroot \
+		userspace-rcu.chroot tzdata.chroot nvme-cli.chroot \
+		freetype.chroot ledmon.chroot nvmetcli.chroot bc.chroot \
+		libtool.chroot etckeeper.chroot git.chroot nfs-utils.chroot \
+		rpcbind.chroot libtirpc.chroot libevent.chroot \
+		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -453,7 +429,6 @@ tarball_src_dirs	= $(addprefix $(SOURCES_DIR)/,$(subst .tar.xz,,\
 			$(notdir $(dist_files))))))
 img_file		:= $(BUILD_DIR)/esos-$(esos_ver).img
 bz2_img_file		:= $(img_file).bz2
-py_module_lock		:= $(chroot_build)/py_module_lock
 esos_target		= x86_64-esos-linux-gnu
 temp_path		= /tools/bin:/bin:/usr/bin
 
@@ -1648,11 +1623,31 @@ perl.chroot: glibc.chroot db.chroot
 
 Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	openssl.chroot zlib.chroot sqlite-autoconf.chroot ncurses.chroot \
-	db.chroot
+	db.chroot libxml2.chroot libxslt.chroot curl.chroot postgresql.chroot \
+	mysql.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared \
+	--with-ensurepip=upgrade
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	pip3 install --upgrade pip
+	pip3 install configshell-fb==1.1.23
+	pip3 install docutils==0.12
+	pip3 install pbr==1.10.0
+	pip3 install lockfile==0.12.2
+	pip3 install python-daemon==2.1.1
+	pip3 install lxml==3.6.4
+	pip3 install suds-py3==1.3.3.0
+	pip3 install ptyprocess==0.5.1
+	pip3 install pexpect==4.2.1
+	PYCURL_SSL_LIBRARY=openssl pip3 install pycurl==7.43.0
+	pip3 install psycopg2==2.6.2
+	pip3 install pyparsing==2.1.10
+	pip3 install requests==2.11.1
+	pip3 install six==1.10.0
+	pip3 install mysqlclient==1.3.12
+	pip3 install SQLAlchemy==1.1.1
+	$(RM) .cache
 	$(TOUCH) $(@)
 
 qlogic_fw.chroot:
@@ -1689,12 +1684,6 @@ vixie-cron.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) all
 	$(INSTALL) -m 111 $(tgt_src_dir)/cron /usr/sbin/
 	$(INSTALL) -m 4111 $(tgt_src_dir)/crontab /usr/bin/
-	$(TOUCH) $(@)
-
-setuptools.chroot: Python.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 
 openssl.chroot: glibc.chroot gcc.chroot
@@ -1853,12 +1842,6 @@ groff.chroot: glibc.chroot gcc.chroot
 	-I$(wildcard /tools/include/c++/*/x86_64-pc-linux-gnu)"
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(LN) tbl /usr/bin/gtbl
-	$(TOUCH) $(@)
-
-python-suds.chroot: Python.chroot setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python ./setup.py \
-	install --prefix=/usr
 	$(TOUCH) $(@)
 
 kexec-tools.chroot: glibc.chroot
@@ -2090,8 +2073,7 @@ bzip2.chroot: glibc.chroot
 	$(INSTALL) -v -m644 $(tgt_src_dir)/bzlib.h /usr/include
 	$(TOUCH) $(@)
 
-crmsh.chroot: glibc.chroot Python.chroot glue.chroot pacemaker.chroot \
-	lxml.chroot
+crmsh.chroot: glibc.chroot Python.chroot glue.chroot pacemaker.chroot
 	$(call chroot_only)
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
@@ -2100,13 +2082,6 @@ crmsh.chroot: glibc.chroot Python.chroot glue.chroot pacemaker.chroot \
 	--localstatedir=/var --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=/ install
-	$(TOUCH) $(@)
-
-lxml.chroot: glibc.chroot libxml2.chroot libxslt.chroot Python.chroot \
-	setuptools.chroot python-daemon.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 
 libaio.chroot: glibc.chroot
@@ -2240,12 +2215,9 @@ snappy.chroot: glibc.chroot gcc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
-fence-agents.chroot: glibc.chroot nss.chroot Python.chroot pexpect.chroot \
-	pycurl.chroot python-suds.chroot Net-Telnet.chroot requests.chroot \
+fence-agents.chroot: glibc.chroot nss.chroot Python.chroot Net-Telnet.chroot \
 	openwsman.chroot
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  $(SED) -i 's/\/log\/cluster/\/log/' $(tgt_src_dir)/configure.ac; \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
@@ -2254,19 +2226,6 @@ fence-agents.chroot: glibc.chroot nss.chroot Python.chroot pexpect.chroot \
 	--sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-
-pexpect.chroot: Python.chroot setuptools.chroot python-suds.chroot \
-	ptyprocess.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
-	$(TOUCH) $(@)
-
-pycurl.chroot: Python.chroot curl.chroot setuptools.chroot pexpect.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && PYCURL_SSL_LIBRARY=openssl $(FLOCK) \
-	$(py_module_lock) python ./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 
 curl.chroot: glibc.chroot openssl.chroot
@@ -2463,13 +2422,6 @@ postgresql.chroot: glibc.chroot zlib.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/src/interfaces/libpq install
 	$(TOUCH) $(@)
 
-psycopg2.chroot: glibc.chroot Python.chroot postgresql.chroot \
-	setuptools.chroot pycurl.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py build_ext install --prefix=/usr
-	$(TOUCH) $(@)
-
 mysql.chroot: glibc.chroot ncurses.chroot busybox.chroot
 	$(call chroot_only)
 	$(LN) /bin/busybox /usr/bin/ps
@@ -2483,21 +2435,6 @@ mysql.chroot: glibc.chroot ncurses.chroot busybox.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/include install
 	$(MAKE) --directory=$(tgt_src_dir)/extra install
 	$(RM) /usr/bin/ps
-	$(TOUCH) $(@)
-
-MySQLdb.chroot: glibc.chroot Python.chroot mysql.chroot setuptools.chroot \
-	psycopg2.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py build
-	cd $(tgt_src_dir) && python ./setup.py install --prefix=/usr
-	$(TOUCH) $(@)
-
-SQLAlchemy.chroot: glibc.chroot Python.chroot psycopg2.chroot MySQLdb.chroot \
-	setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 
 infiniband-diags.chroot: perl_install = $(wildcard /usr/lib/perl5/5.*)
@@ -2527,26 +2464,6 @@ perftest.chroot: glibc.chroot infiniband-diags.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-
-lockfile.chroot: glibc.chroot Python.chroot setuptools.chroot \
-	SQLAlchemy.chroot pbr.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
-	$(TOUCH) $(@)
-
-pbr.chroot: glibc.chroot Python.chroot setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
-	$(TOUCH) $(@)
-
-python-daemon.chroot: glibc.chroot Python.chroot lockfile.chroot \
-	setuptools.chroot docutils.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 
 nrpe.chroot: glibc.chroot openssl.chroot e2fsprogs.chroot
@@ -3150,26 +3067,15 @@ libffi.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
-ptyprocess.chroot: Python.chroot setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
-	$(TOUCH) $(@)
-
-requests.chroot: Python.chroot setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
-	$(TOUCH) $(@)
-
-openwsman.chroot: glibc.chroot gcc.chroot Python.chroot setuptools.chroot \
-	libxml2.chroot openssl.chroot swig.chroot pycurl.chroot
+openwsman.chroot: glibc.chroot gcc.chroot Python.chroot libxml2.chroot \
+	openssl.chroot swig.chroot
 	$(call chroot_only)
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autoconfiscate.sh \
 	  --ignore-deprecation-warning; \
 	fi
 	$(SED) -i "s/\$$EGREP/egrep/g" $(tgt_src_dir)/configure
+	$(SED) -i "s/python-config/python3-config/g" $(tgt_src_dir)/configure
 	cd $(tgt_src_dir) && CXX="g++ -std=c++98" ./configure --prefix=/usr \
 	--disable-pam --enable-python=yes --disable-server --disable-plugins \
 	--disable-more-warnings --disable-silent-rules
@@ -3193,12 +3099,6 @@ userspace-rcu.chroot: glibc.chroot gcc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-
-docutils.chroot: glibc.chroot Python.chroot setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 
 tzdata.chroot: zoneinfo = /usr/share/zoneinfo
@@ -3241,30 +3141,9 @@ ledmon.chroot: glibc.chroot gcc.chroot sg3_utils.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
-nvmetcli.chroot: Python.chroot setuptools.chroot configshell-fb.chroot \
-       	six.chroot pyparsing.chroot
+nvmetcli.chroot: glibc.chroot Python.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
-	$(INSTALL) -m 0755 $(tgt_src_dir)/nvmetcli /usr/sbin/
-	$(TOUCH) $(@)
-
-configshell-fb.chroot: Python.chroot setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
-	$(TOUCH) $(@)
-
-six.chroot: Python.chroot setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
-	$(TOUCH) $(@)
-
-pyparsing.chroot: Python.chroot setuptools.chroot
-	$(call chroot_only)
-	cd $(tgt_src_dir) && $(FLOCK) $(py_module_lock) python \
-	./setup.py install --prefix=/usr
+	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 
 sed.chroot: glibc.chroot

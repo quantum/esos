@@ -1,3 +1,27 @@
+2018-05-20  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'python_2_to_3'
+
+	nvmetcli.chroot: installing the nvmetcli script manually is not needed (setup.py handles this)
+
+	remove the .cache file after using pip
+
+	updated crmsh to the latest development snapshot in order to support Python 3
+
+2018-05-19  Marc A. Smith  <marc.smith@parodyne.com>
+
+	removed un-needed pip3 lines in Python.chroot target; updated all ESOS-specific Python scripts to be compatible with version 3
+
+	updated Python to version 3.6.5; updated fence-agents and openwsman to latest versions (to support python3); pip -> pip3 (and several package name changes)
+
+2018-05-18  Marc A. Smith  <marc.smith@parodyne.com>
+
+	removed individual Python module targets and instead using pip to install all required modules; fixed deps for other targets that use Python
+
+	include the DRBD manual pages for drbd-utils
+
+	copy /etc/resolv.conf into the chroot environment so we can lookup DNS entries
+
 2018-05-09  Marc A. Smith  <marc.smith@parodyne.com>
 
 	enabled the CONFIG_VMD kernel option

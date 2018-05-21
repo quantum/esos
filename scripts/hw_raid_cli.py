@@ -1,4 +1,4 @@
-#! /usr/bin/python2.7
+#! /usr/bin/python3
 
 # A simple Python wrapper script for the propietary CLI RAID tools. The purpose
 # of this script is abstract the provisioning of hardware RAID, so we can use
@@ -62,7 +62,7 @@ class MegaRAID():
                         model = line.split('=')[1].strip()
                     elif 'Serial Number =' in line:
                         serial = line.split('=')[1].strip()
-                print 'MegaRAID,%s,%s,%s' % (each, model, serial)
+                print('MegaRAID,%s,%s,%s' % (each, model, serial))
 
     def list_phy_drives(self, id_num=-1, avail_only=False):
         # Either for all, or a specific controller
@@ -98,9 +98,9 @@ class MegaRAID():
                         state = p_drive_info[2]
                         size = p_drive_info[4] + ' ' + p_drive_info[5]
                         model = p_drive_info[11]
-                        print 'MegaRAID,%s,%s,%s,%s,%s,%s' % (each, encl_id,
+                        print('MegaRAID,%s,%s,%s,%s,%s,%s' % (each, encl_id,
                                                               slot_num, state,
-                                                              size, model)
+                                                              size, model))
 
     def list_log_drives(self, id_num=-1):
         # Either for all, or a specific controller
@@ -134,9 +134,9 @@ class MegaRAID():
                         size = l_drive_info[7] + ' ' + l_drive_info[8]
                         if len(l_drive_info) == 10:
                             name = l_drive_info[9]
-                        print 'MegaRAID,%s,%s,%s,%s,%s,%s' % (each, ld_id,
+                        print('MegaRAID,%s,%s,%s,%s,%s,%s' % (each, ld_id,
                                                               raid_lvl, state,
-                                                              size, name)
+                                                              size, name))
 
     def add_log_drive(self, ctrlr_id, raid_lvl, phys_drives, read_cache,
                       write_cache):
@@ -156,7 +156,7 @@ class MegaRAID():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def rem_log_drive(self, ctrlr_id, ld_id):
@@ -167,7 +167,7 @@ class MegaRAID():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def add_hsp_drive(self, ctrlr_id, encl_id, slot_num):
@@ -179,7 +179,7 @@ class MegaRAID():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def rem_hsp_drive(self, ctrlr_id, encl_id, slot_num):
@@ -191,7 +191,7 @@ class MegaRAID():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
 
@@ -240,7 +240,7 @@ class PERC():
                         model = line.split('=')[1].strip()
                     elif 'Serial Number =' in line:
                         serial = line.split('=')[1].strip()
-                print 'PERC,%s,%s,%s' % (each, model, serial)
+                print('PERC,%s,%s,%s' % (each, model, serial))
 
     def list_phy_drives(self, id_num=-1, avail_only=False):
         # Either for all, or a specific controller
@@ -276,9 +276,9 @@ class PERC():
                         state = p_drive_info[2]
                         size = p_drive_info[4] + ' ' + p_drive_info[5]
                         model = p_drive_info[11]
-                        print 'PERC,%s,%s,%s,%s,%s,%s' % (each, encl_id,
+                        print('PERC,%s,%s,%s,%s,%s,%s' % (each, encl_id,
                                                           slot_num, state,
-                                                          size, model)
+                                                          size, model))
 
     def list_log_drives(self, id_num=-1):
         # Either for all, or a specific controller
@@ -312,9 +312,9 @@ class PERC():
                         size = l_drive_info[7] + ' ' + l_drive_info[8]
                         if len(l_drive_info) == 10:
                             name = l_drive_info[9]
-                        print 'PERC,%s,%s,%s,%s,%s,%s' % (each, ld_id,
+                        print('PERC,%s,%s,%s,%s,%s,%s' % (each, ld_id,
                                                           raid_lvl, state,
-                                                          size, name)
+                                                          size, name))
 
     def add_log_drive(self, ctrlr_id, raid_lvl, phys_drives, read_cache,
                       write_cache):
@@ -334,7 +334,7 @@ class PERC():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def rem_log_drive(self, ctrlr_id, ld_id):
@@ -345,7 +345,7 @@ class PERC():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def add_hsp_drive(self, ctrlr_id, encl_id, slot_num):
@@ -357,7 +357,7 @@ class PERC():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def rem_hsp_drive(self, ctrlr_id, encl_id, slot_num):
@@ -369,7 +369,7 @@ class PERC():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
 
@@ -418,7 +418,7 @@ class AACRAID():
                         model = line.split(':')[1].strip()
                     elif 'Controller Serial Number' in line:
                         serial = line.split(':')[1].strip()
-                print 'AACRAID,%s,%s,%s' % (each, model, serial)
+                print('AACRAID,%s,%s,%s' % (each, model, serial))
 
     def list_phy_drives(self, id_num=-1, avail_only=False):
         # Either for all, or a specific controller
@@ -467,9 +467,9 @@ class AACRAID():
                         if avail_only:
                             if pd_in_use:
                                 continue
-                        print 'AACRAID,%s,%s,%s,%s,%s,%s' % (each, encl_id,
+                        print('AACRAID,%s,%s,%s,%s,%s,%s' % (each, encl_id,
                                                              slot_num, state,
-                                                             size, model)
+                                                             size, model))
 
     def list_log_drives(self, id_num=-1, avail_only=False):
         # Either for all, or a specific controller
@@ -508,9 +508,9 @@ class AACRAID():
                         size = line.split(':')[1].strip()
                         # This is the last line to find, so we're done here
                         found_drive = False
-                        print 'AACRAID,%s,%s,%s,%s,%s,%s' % (each, ld_id,
+                        print('AACRAID,%s,%s,%s,%s,%s,%s' % (each, ld_id,
                                                              raid_lvl, state,
-                                                             size, name)
+                                                             size, name))
 
     def add_log_drive(self, ctrlr_id, raid_lvl, phys_drives, read_cache,
                       write_cache):
@@ -534,7 +534,7 @@ class AACRAID():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def rem_log_drive(self, ctrlr_id, ld_id):
@@ -545,7 +545,7 @@ class AACRAID():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def add_hsp_drive(self, ctrlr_id, encl_id, slot_num):
@@ -557,7 +557,7 @@ class AACRAID():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
     def rem_hsp_drive(self, ctrlr_id, encl_id, slot_num):
@@ -569,7 +569,7 @@ class AACRAID():
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
-            print stdout
+            print(stdout)
             sys.exit(cmd_exit)
 
 

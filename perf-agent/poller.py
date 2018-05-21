@@ -227,5 +227,5 @@ def initTable(engine):
     try:
         Base.metadata.create_all(engine)
     except Exception as err:
-        print 'Unable to connect to the database %s' % err
+        print('Unable to connect to the database %s' % err)
         exit(1)
