@@ -1,3 +1,13 @@
+2018-05-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.14.43; updated linux-firmware to the latest version
+
+	updated multipath-tools to version 0.7.7
+
+2018-05-23  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated nvmetcli to the latest version
+
 2018-05-20  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'python_2_to_3'
