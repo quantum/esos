@@ -243,7 +243,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		rsync-3.1.2.tar.gz \
 		eudev-3.2.1.tar.gz \
 		gperf-3.0.4.tar.gz \
-		multipath-tools-0.7.3.tar.gz \
+		multipath-tools-0.7.7.tar.xz \
 		json-c-0.12.1.tar.gz \
 		archivemount-0.8.7.tar.gz \
 		libarchive-3.2.2.tar.gz \
@@ -2888,9 +2888,7 @@ gperf.chroot: glibc.chroot gcc.chroot
 multipath-tools.chroot: glibc.chroot lvm2.chroot readline.chroot \
 	eudev.chroot userspace-rcu.chroot json-c.chroot
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
-	$(SED) -i '38,46 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
+	$(SED) -i '41,49 s/^#*/#/' $(tgt_src_dir)/Makefile.inc
 	$(SED) -i 's/-lreadline$$/-lreadline -lncursesw/' \
 	$(tgt_src_dir)/multipathd/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib"
