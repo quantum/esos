@@ -241,7 +241,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		stunnel-5.44.tar.gz \
 		sudo-1.8.18p1.tar.gz \
 		rsync-3.1.2.tar.gz \
-		eudev-3.2.1.tar.gz \
+		eudev-master_20180525.tar.xz \
 		gperf-3.0.4.tar.gz \
 		multipath-tools-0.7.7.tar.xz \
 		json-c-0.12.1.tar.gz \
@@ -2867,8 +2867,6 @@ rsync.chroot: glibc.chroot
 
 eudev.chroot: glibc.chroot util-linux.chroot gperf.chroot
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
