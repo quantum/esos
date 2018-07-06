@@ -213,3 +213,5 @@ a4bea37ecb9a3fb5c0c8ef18c2f7eeaf8ccbcfec91f72f3bccfc6bf72a3e3902  git-2.9.5.tar.
 391cd35a8aa48bcba1678b483c3e2525d0990eca963bb035962fcf1e3ee2a8bf  libnfsidmap-0.26.tar.bz2
 c3429cd423e271fa565bf584598fd751dd2e773bb7199a592b06b5a61cec4fb6  hdparm-9.52.tar.gz
 5fd90af6beb225a9bb9b9fb414c090fba53c9a55793e172f508cd43652e59a88  kbd-2.0.4.tar.xz
+69acbc2fbdefb955d42a4c606dfde800c2885711d2979e356c0636efde9ec3b5  pcre-8.42.tar.gz
+5d15becbf69aba1fe33f8d416d97edd95ea8919ea9ac519eff9bafebb6022cb5  nginx-1.14.0.tar.gz
