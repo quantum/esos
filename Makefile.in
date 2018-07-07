@@ -131,6 +131,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		automake-1.15.1.tar.xz \
 		libtool-2.4.6.tar.gz \
 		flex-2.6.4.tar.gz \
+		Linux-PAM-1.3.1.tar.xz \
 		busybox-1.26.2.tar.bz2 \
 		grub-2.02~rc1.tar.xz \
 		sysvinit-2.88dsf.tar.bz2 \
@@ -297,11 +298,11 @@ bootstrap_tgts	:= binutils.pass1 gcc.pass1 gmp mpfr mpc kernel_headers \
 # All targets which are built/installed in the chroot environment
 chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		esos_kernels.chroot esos_tui.chroot scst.chroot \
-		busybox.chroot makedumpfile.chroot elfutils.chroot \
-		sysvinit.chroot grub.chroot perl.chroot Python.chroot \
-		qlogic_fw.chroot scstadmin.chroot openssh.chroot \
-		vixie-cron.chroot openssl.chroot zlib.chroot ncurses.chroot \
-		e2fsprogs.chroot ssmtp.chroot libibumad.chroot \
+		Linux-PAM.chroot busybox.chroot makedumpfile.chroot \
+		elfutils.chroot sysvinit.chroot grub.chroot perl.chroot \
+		Python.chroot qlogic_fw.chroot scstadmin.chroot \
+		openssh.chroot vixie-cron.chroot openssl.chroot zlib.chroot \
+		ncurses.chroot e2fsprogs.chroot ssmtp.chroot libibumad.chroot \
 		libibverbs.chroot libcxgb3.chroot libcxgb4.chroot \
 		libi40iw.chroot libmlx4.chroot libmlx5.chroot libmthca.chroot \
 		libnes.chroot libocrdma.chroot srptools.chroot lsscsi.chroot \
@@ -562,7 +563,7 @@ symlink:
 	  $(ECHO) "### The path /tools exists but isn't a symbolic link!"; \
 	  exit 1; \
 	elif [ -L "/tools" ] && \
-	  [ "$$(readlink -f /tools)" = "$(TOOLS_DIR)" ]; then \
+	  [ "$$($(READLINK) -f /tools)" = "$(TOOLS_DIR)" ]; then \
 	  :; \
 	else \
 	  if [ `whoami` != "root" ]; then \
@@ -1520,7 +1521,22 @@ uwire.chroot: glibc.chroot
 	/usr/share/man/man8/
 	$(TOUCH) $(@)
 
-busybox.chroot: glibc.chroot
+Linux-PAM.chroot: glibc.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--libdir=/usr/lib --disable-regenerate-docu --enable-static \
+	--enable-db=no --enable-securedir=/lib/security
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(CHMOD) -v 4755 /sbin/unix_chkpwd
+	for file in pam pam_misc pamc; do \
+	  $(MV) -v /usr/lib/lib$${file}.so.* /lib && \
+	  $(LN) -v ../../lib/$$($(READLINK) /usr/lib/lib$${file}.so) \
+	  /usr/lib/lib$${file}.so; \
+	done
+	$(TOUCH) $(@)
+
+busybox.chroot: glibc.chroot Linux-PAM.chroot
 	$(call chroot_only)
 	$(SED) -i 's/\/\/if (--loop_on_fail == 0)/if (--loop_on_fail == 0)/' \
 	$(tgt_src_dir)/networking/ntpd.c
@@ -1531,7 +1547,7 @@ busybox.chroot: glibc.chroot
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
 	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).config > \
 	$(tgt_src_dir)/.config
-	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) CONFIG_EXTRA_LDLIBS="dl"
 	$(INSTALL) -D $(tgt_src_dir)/busybox_unstripped \
 	$(chroot_build)/initramfs/bin/busybox
 	$(MAKE) --directory=$(tgt_src_dir) clean
@@ -3282,7 +3298,7 @@ pcre.chroot: glibc.chroot
 
 nginx.chroot: glibc.chroot pcre.chroot zlib.chroot openssl.chroot
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --path=/var/lib/nginx \
+	cd $(tgt_src_dir) && ./configure --prefix=/var/lib/nginx \
 	--sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf \
 	--pid-path=/var/run/nginx.pid \
 	--error-log-path=/var/log/nginx/error.log \
