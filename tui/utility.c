@@ -634,6 +634,24 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
                                 "Block Size: %s", tmp_buff);
                         dev_cnt++;
                     }
+                } else if ((strstr(dev_node_test, "/dev/xvd")) != NULL) {
+                    /* For Xen block devices */
+                    if (dev_cnt < MAX_BLOCK_DEVS) {
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
+                                dir_entry->d_name);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_size[dev_cnt], MISC_STRING_LEN, "%s",
+                                tmp_buff);
+                        snprintf(dir_name, MAX_SYSFS_PATH_SIZE,
+                                "%s/%s/device/model",
+                                SYSFS_BLOCK, blk_dev_name[dev_cnt]);
+                        readAttribute(dir_name, tmp_buff);
+                        snprintf(blk_dev_info[dev_cnt], MISC_STRING_LEN,
+                                "Model: %s", tmp_buff);
+                        dev_cnt++;
+                    }
                 }
                 // TODO: Still more controller block devices (ida, rd)
                 // need to be added but we need hardware so we can

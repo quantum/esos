@@ -1917,11 +1917,12 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                 ifr.ifr_data = (caddr_t) & edata;
                 edata.cmd = ETHTOOL_GSET;
                 if (ioctl(sock, SIOCETHTOOL, &ifr) < 0) {
-                    SAFE_ASPRINTF(&error_msg, "ioctl(): SIOCETHTOOL Error (%s)",
+// will fail under xen
+/*                    SAFE_ASPRINTF(&error_msg, "ioctl(): SIOCETHTOOL Error (%s)",
                             ifr.ifr_name);
                     errorDialog(cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
-                    return;
+                    return;*/
                 }
 
                 /* Get speed of Ethernet link; we use the returned speed value
