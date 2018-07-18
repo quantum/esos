@@ -115,7 +115,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${chroot_dir}/var/lib/corosync || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/pacemaker/{cores,pengine,cib,blackbox} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
-	${mkdir} -p ${chroot_dir}/var/run/{crm,mdadm,stunnel} || exit 1
+	${mkdir} -p ${chroot_dir}/var/run/{crm,mdadm,stunnel,web_ui} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/stunnel || exit 1

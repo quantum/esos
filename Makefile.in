@@ -1675,6 +1675,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install django-pam==1.4.1
 	pip3 install django-widget-tweaks==1.4.2
 	pip3 install django-session-timeout==0.0.3
+	pip3 install uWSGI==2.0.17.1
 	$(RM) .cache
 	$(TOUCH) $(@)
 
@@ -3481,6 +3482,7 @@ image:
 	$(CHOWN) 65534:65534 $(STAGING_DIR)/var/run/stunnel
 	$(CHOWN) 0:65534 $(STAGING_DIR)/var/lib/stunnel
 	$(CHMOD) 1770 $(STAGING_DIR)/var/lib/stunnel
+	$(CHOWN) 104:104 $(STAGING_DIR)/var/run/web_ui
 	$(LN) rc.0 $(STAGING_DIR)/etc/rc.d/rc.6
 	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.5
 	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.4
