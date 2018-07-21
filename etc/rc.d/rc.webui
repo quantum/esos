@@ -5,6 +5,7 @@ source /etc/rc.d/common
 UWSGI="/usr/bin/uwsgi"
 PID_FILE="/var/run/web_ui/uwsgi.pid"
 CERT_KEY_FILE="/etc/web_ui/nginx.pem"
+DJANGO_KEY_FILE="/etc/web_ui/secret_key"
 DFLT_OPTS="--ini /etc/web_ui/uwsgi.ini --daemonize /var/log/uwsgi.log"
 
 check_args ${@}
@@ -27,6 +28,11 @@ start() {
         /usr/bin/openssl req -x509 -nodes -days 3650 -newkey rsa:1024 \
             -subj "/C=US/ST=MI/L=Flint/O=Parodyne Inc./CN=localhost" \
             -keyout ${CERT_KEY_FILE} -out ${CERT_KEY_FILE} || exit 1
+    fi
+    # Create the Django secret key if needed
+    if [ ! -f "${DJANGO_KEY_FILE}" ]; then
+        /bin/echo "The Django secret key doesn't exist, generating one..."
+        /usr/bin/openssl rand -base64 32 > ${DJANGO_KEY_FILE} || exit 1
     fi
     # Now we can start uWSGI for the app
     /bin/echo "Starting the ESOS Web UI..."

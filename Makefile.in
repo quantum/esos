@@ -3467,7 +3467,8 @@ image:
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 4755 $(STAGING_DIR)/usr/bin/sudo
-	$(CHMOD) 600 $(STAGING_DIR)/etc/shadow
+	$(CHMOD) 640 $(STAGING_DIR)/etc/shadow
+	$(CHOWN) 0:42 $(STAGING_DIR)/etc/shadow
 	$(CHMOD) 600 $(STAGING_DIR)/etc/crontab
 	$(CHMOD) 1777 $(STAGING_DIR)/tmp
 	$(CHMOD) 1777 $(STAGING_DIR)/var/tmp
