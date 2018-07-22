@@ -1494,10 +1494,10 @@ web_ui.chroot: Python.chroot nginx.chroot
 	/opt/lib/web_ui/manage.py
 	$(INSTALL) -D -m 0755 $(web_ui_dir)/uwsgi_params \
 	/opt/lib/web_ui/uwsgi_params
-	$(CP) -r $(web_ui_dir)/esos /opt/lib/web_ui/esos
-	$(CP) -r $(web_ui_dir)/web_ui /opt/lib/web_ui/web_ui
-	$(CP) -r $(web_ui_dir)/static /opt/lib/web_ui/static
-	$(CP) -r $(web_ui_dir)/templates /opt/lib/web_ui/templates
+	$(CP) -R $(web_ui_dir)/esos /opt/lib/web_ui/
+	$(CP) -R $(web_ui_dir)/web_ui /opt/lib/web_ui/
+	$(CP) -R $(web_ui_dir)/static /opt/lib/web_ui/
+	$(CP) -R $(web_ui_dir)/templates /opt/lib/web_ui/
 	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
 	$(TOUCH) $(@)
 
@@ -1695,7 +1695,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install django-widget-tweaks==1.4.2
 	pip3 install django-session-timeout==0.0.3
 	pip3 install uWSGI==2.0.17.1
-	$(RM) .cache
+	$(RM) /.cache
 	$(TOUCH) $(@)
 
 qlogic_fw.chroot:
@@ -3517,7 +3517,7 @@ image:
 	$(MKDIR) $(STAGING_DIR)/boot
 	$(FIND) $(STAGING_DIR)/etc -path $(STAGING_DIR)/etc/rc.d -prune -o \
 	-print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
-	$(FIND) $(STAGING_DIR)/var/lib -print0 | \
+	$(FIND) $(STAGING_DIR)/var/lib $(STAGING_DIR)/opt -print0 | \
 	$(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
 	$(SED) -i 's/ $(subst /,\/,$(CHROOT_DIR))\// \//g' \
 	$(STAGING_DIR)/usr/lib/libc.so

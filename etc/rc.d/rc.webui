@@ -36,7 +36,8 @@ start() {
     fi
     # Make sure no migrations exist
     /bin/echo "Applying pending model migrations (if any)..."
-    cd /opt/lib/web_ui && /usr/bin/python3 manage.py migrate
+    cd /opt/lib/web_ui && /usr/bin/sudo -u webui \
+        /usr/bin/python3 manage.py migrate --no-color
     # Now we can start uWSGI for the app
     /bin/echo "Starting the ESOS Web UI..."
     eval ${UWSGI} ${USER_OPTS} || exit 1
