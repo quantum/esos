@@ -1498,7 +1498,6 @@ web_ui.chroot: Python.chroot nginx.chroot
 	$(CP) -r $(web_ui_dir)/web_ui /opt/lib/web_ui/web_ui
 	$(CP) -r $(web_ui_dir)/static /opt/lib/web_ui/static
 	$(CP) -r $(web_ui_dir)/templates /opt/lib/web_ui/templates
-	$(CHOWN) -R webui:webui /opt/lib/web_ui
 	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
 	$(TOUCH) $(@)
 
@@ -3414,12 +3413,6 @@ image:
 	$(STAGING_DIR)/usr/share/doc/esos/ChangeLog
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
 	$(CPIO) -pmdvu $(STAGING_DIR)/etc
-	if [ "$(with_web_ui)" = "yes" ]; then \
-	  $(SED) -i 's/^rc\.nginx_enable=.*/rc\.nginx_enable=YES/' \
-	  /etc/rc.conf; \
-	  $(SED) 's/^rc\.webui_enable=.*/rc\.webui_enable=YES/' \
-	  /etc/rc.conf; \
-	fi
 	$(chroot_build)/grub-install \
 	--directory=$(CHROOT_DIR)/usr/lib/grub/i386-pc \
 	--grub-setup=$(chroot_build)/grub-bios-setup \
@@ -3501,6 +3494,13 @@ image:
 	$(QUIET) if [ "$(enable_mhvtl)" = "yes" ]; then \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtltape; \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtllibrary; \
+	fi
+	$(QUIET) if [ "$(with_web_ui)" = "yes" ]; then \
+	  $(CHOWN) -R 104:104 $(STAGING_DIR)/opt/lib/web_ui; \
+	  $(SED) -i 's/^rc\.nginx_enable=.*/rc\.nginx_enable=YES/' \
+	  $(STAGING_DIR)/etc/rc.conf; \
+	  $(SED) -i 's/^rc\.webui_enable=.*/rc\.webui_enable=YES/' \
+	  $(STAGING_DIR)/etc/rc.conf; \
 	fi
 	$(CHOWN) 101:101 $(STAGING_DIR)/var/lib/corosync
 	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/pacemaker
