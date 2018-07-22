@@ -6,6 +6,7 @@ UWSGI="/usr/bin/uwsgi"
 PID_FILE="/var/run/web_ui/uwsgi.pid"
 CERT_KEY_FILE="/etc/web_ui/nginx.pem"
 DJANGO_KEY_FILE="/etc/web_ui/secret_key"
+WEB_UI_DIR="/opt/lib/web_ui"
 DFLT_OPTS="--ini /etc/web_ui/uwsgi.ini --daemonize /var/log/uwsgi.log"
 
 check_args ${@}
@@ -33,6 +34,11 @@ start() {
     if [ ! -f "${DJANGO_KEY_FILE}" ]; then
         /bin/echo "The Django secret key doesn't exist, generating one..."
         /usr/bin/openssl rand -base64 32 > ${DJANGO_KEY_FILE} || exit 1
+    fi
+    if ! cd ${WEB_UI_DIR} && /usr/bin/python3 manage.py \
+        makemigrations --check > /dev/null; then
+        /bin/echo "Applying pending model migration(s)..."
+        cd ${WEB_UI_DIR} && /usr/bin/python3 manage.py migrate
     fi
     # Now we can start uWSGI for the app
     /bin/echo "Starting the ESOS Web UI..."

@@ -66,6 +66,8 @@ enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
 enable_simple_tui	:= @enable_simple_tui@
+with_web_ui		:= @with_web_ui@
+web_ui_dir		:= $(subst $(CHROOT_DIR),,@web_ui_dir@)
 with_celerity_16_32	:= @with_celerity_16_32@
 celerity_16_32_dir	:= $(subst $(CHROOT_DIR),,@celerity_16_32_dir@)
 with_atto_scst		:= @with_atto_scst@
@@ -387,6 +389,9 @@ ifeq ($(enable_btier),yes)
 endif
 ifeq ($(enable_simple_tui),yes)
 	tui_cpp_flags += -DSIMPLE_TUI
+endif
+ifeq ($(with_web_ui),yes)
+	chroot_tgts += web_ui.chroot
 endif
 ifeq ($(with_celerity_16_32),yes)
 	chroot_tgts += celerity_16_32.chroot
@@ -1480,6 +1485,21 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/cmd install
 	$(MAKE) --directory=$(tgt_src_dir)/man install
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
+	$(TOUCH) $(@)
+
+web_ui.chroot: Python.chroot nginx.chroot
+	$(call chroot_only)
+	$(CP) -f $(web_ui_dir)/nginx.conf /etc/nginx/nginx.conf
+	$(INSTALL) -D -m 0755 $(web_ui_dir)/manage.py \
+	/opt/lib/web_ui/manage.py
+	$(INSTALL) -D -m 0755 $(web_ui_dir)/uwsgi_params \
+	/opt/lib/web_ui/uwsgi_params
+	$(CP) -r $(web_ui_dir)/esos /opt/lib/web_ui/esos
+	$(CP) -r $(web_ui_dir)/web_ui /opt/lib/web_ui/web_ui
+	$(CP) -r $(web_ui_dir)/static /opt/lib/web_ui/static
+	$(CP) -r $(web_ui_dir)/templates /opt/lib/web_ui/templates
+	$(CHOWN) -R webui:webui /opt/lib/web_ui
+	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
 	$(TOUCH) $(@)
 
 celerity_16_32.chroot:
@@ -3394,6 +3414,12 @@ image:
 	$(STAGING_DIR)/usr/share/doc/esos/ChangeLog
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
 	$(CPIO) -pmdvu $(STAGING_DIR)/etc
+	if [ "$(with_web_ui)" = "yes" ]; then \
+	  $(SED) -i 's/^rc\.nginx_enable=.*/rc\.nginx_enable=YES/' \
+	  /etc/rc.conf; \
+	  $(SED) 's/^rc\.webui_enable=.*/rc\.webui_enable=YES/' \
+	  /etc/rc.conf; \
+	fi
 	$(chroot_build)/grub-install \
 	--directory=$(CHROOT_DIR)/usr/lib/grub/i386-pc \
 	--grub-setup=$(chroot_build)/grub-bios-setup \
