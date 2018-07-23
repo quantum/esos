@@ -77,7 +77,7 @@ cd /mnt/root
 spinner="/-\|"
 spin_pos=0
 bunzip2 -c ${cpio_arch} | \
-	cpio -imdv --quiet | while read i; do
+	cpio -imduv --quiet | while read i; do
 	printf "\b"${spinner:$spin_pos:1}
 	spin_pos=$(( ( ${spin_pos} + 1 ) % 4 ))
 done
