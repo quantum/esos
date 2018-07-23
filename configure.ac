@@ -115,7 +115,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${chroot_dir}/var/lib/corosync || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/pacemaker/{cores,pengine,cib,blackbox} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
-	${mkdir} -p ${chroot_dir}/var/run/{crm,mdadm,stunnel} || exit 1
+	${mkdir} -p ${chroot_dir}/var/run/{crm,mdadm,stunnel,web_ui} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/stunnel || exit 1
@@ -233,6 +233,29 @@ AS_IF([test "x$enable_simple_tui" = "xyes"],
 	[build_opts="${build_opts} simple_tui"; opt_suffix="${opt_suffix}S"])
 AC_SUBST(enable_simple_tui, ${enable_simple_tui})
 AC_MSG_NOTICE([simple_tui: ${enable_simple_tui}])
+
+dnl Optional package web_ui (user provides package file)
+AC_ARG_WITH(web_ui,
+	AS_HELP_STRING([--with-web_ui=PATH],
+	[build and include web_ui; PATH is the web_ui package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[web_ui_file="${withval}"; with_web_ui="yes"],
+	[with_web_ui="no"]), with_web_ui="no")
+if test  "x${with_web_ui}" = "xyes"; then
+	if test -f "${web_ui_file}"; then
+		AC_MSG_NOTICE([extracting the web_ui package file...])
+		web_ui_dir="${chroot_dir}/build/web_ui"
+		${mkdir} -p ${web_ui_dir} || exit 1
+		${tar} xfJ ${web_ui_file} --strip-components=1 -C ${web_ui_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the web_ui file: ${web_ui_file}])
+	fi
+fi
+AS_IF([test "x$with_web_ui" = "xyes"],
+	[build_opts="${build_opts} web_ui"; opt_suffix="${opt_suffix}w"])
+AC_SUBST(web_ui_dir, ${web_ui_dir})
+AC_SUBST(with_web_ui, ${with_web_ui})
+AC_MSG_NOTICE([web_ui: ${with_web_ui}])
 
 dnl Optional package celerity_16_32 (user provides package file)
 AC_ARG_WITH(celerity_16_32,

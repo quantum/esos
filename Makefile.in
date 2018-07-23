@@ -66,6 +66,8 @@ enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
 enable_simple_tui	:= @enable_simple_tui@
+with_web_ui		:= @with_web_ui@
+web_ui_dir		:= $(subst $(CHROOT_DIR),,@web_ui_dir@)
 with_celerity_16_32	:= @with_celerity_16_32@
 celerity_16_32_dir	:= $(subst $(CHROOT_DIR),,@celerity_16_32_dir@)
 with_atto_scst		:= @with_atto_scst@
@@ -131,6 +133,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		automake-1.15.1.tar.xz \
 		libtool-2.4.6.tar.gz \
 		flex-2.6.4.tar.gz \
+		Linux-PAM-1.3.1.tar.xz \
 		busybox-1.26.2.tar.bz2 \
 		grub-2.02~rc1.tar.xz \
 		sysvinit-2.88dsf.tar.bz2 \
@@ -281,6 +284,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libnfsidmap-0.26.tar.bz2 \
 		hdparm-9.52.tar.gz \
 		kbd-2.0.4.tar.xz \
+		pcre-8.42.tar.gz \
+		nginx-1.14.0.tar.gz \
 		win_binaries-20170802.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -295,11 +300,11 @@ bootstrap_tgts	:= binutils.pass1 gcc.pass1 gmp mpfr mpc kernel_headers \
 # All targets which are built/installed in the chroot environment
 chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		esos_kernels.chroot esos_tui.chroot scst.chroot \
-		busybox.chroot makedumpfile.chroot elfutils.chroot \
-		sysvinit.chroot grub.chroot perl.chroot Python.chroot \
-		qlogic_fw.chroot scstadmin.chroot openssh.chroot \
-		vixie-cron.chroot openssl.chroot zlib.chroot ncurses.chroot \
-		e2fsprogs.chroot ssmtp.chroot libibumad.chroot \
+		Linux-PAM.chroot busybox.chroot makedumpfile.chroot \
+		elfutils.chroot sysvinit.chroot grub.chroot perl.chroot \
+		Python.chroot qlogic_fw.chroot scstadmin.chroot \
+		openssh.chroot vixie-cron.chroot openssl.chroot zlib.chroot \
+		ncurses.chroot e2fsprogs.chroot ssmtp.chroot libibumad.chroot \
 		libibverbs.chroot libcxgb3.chroot libcxgb4.chroot \
 		libi40iw.chroot libmlx4.chroot libmlx5.chroot libmthca.chroot \
 		libnes.chroot libocrdma.chroot srptools.chroot lsscsi.chroot \
@@ -338,7 +343,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		freetype.chroot ledmon.chroot nvmetcli.chroot bc.chroot \
 		libtool.chroot etckeeper.chroot git.chroot nfs-utils.chroot \
 		rpcbind.chroot libtirpc.chroot libevent.chroot \
-		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot
+		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot \
+		pcre.chroot nginx.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -383,6 +389,9 @@ ifeq ($(enable_btier),yes)
 endif
 ifeq ($(enable_simple_tui),yes)
 	tui_cpp_flags += -DSIMPLE_TUI
+endif
+ifeq ($(with_web_ui),yes)
+	chroot_tgts += web_ui.chroot
 endif
 ifeq ($(with_celerity_16_32),yes)
 	chroot_tgts += celerity_16_32.chroot
@@ -559,7 +568,7 @@ symlink:
 	  $(ECHO) "### The path /tools exists but isn't a symbolic link!"; \
 	  exit 1; \
 	elif [ -L "/tools" ] && \
-	  [ "$$(readlink -f /tools)" = "$(TOOLS_DIR)" ]; then \
+	  [ "$$($(READLINK) -f /tools)" = "$(TOOLS_DIR)" ]; then \
 	  :; \
 	else \
 	  if [ `whoami` != "root" ]; then \
@@ -1478,6 +1487,20 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
 	$(TOUCH) $(@)
 
+web_ui.chroot: Python.chroot nginx.chroot
+	$(call chroot_only)
+	$(CP) -f $(web_ui_dir)/nginx.conf /etc/nginx/nginx.conf
+	$(INSTALL) -D -m 0755 $(web_ui_dir)/manage.py \
+	/opt/lib/web_ui/manage.py
+	$(INSTALL) -D -m 0755 $(web_ui_dir)/uwsgi_params \
+	/opt/lib/web_ui/uwsgi_params
+	$(CP) -R $(web_ui_dir)/esos /opt/lib/web_ui/
+	$(CP) -R $(web_ui_dir)/web_ui /opt/lib/web_ui/
+	$(CP) -R $(web_ui_dir)/static /opt/lib/web_ui/
+	$(CP) -R $(web_ui_dir)/templates /opt/lib/web_ui/
+	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
+	$(TOUCH) $(@)
+
 celerity_16_32.chroot:
 	$(call chroot_only)
 	$(INSTALL) -m 0755 $(celerity_16_32_dir)/cli/x64/atdevinfo /usr/sbin/
@@ -1517,7 +1540,22 @@ uwire.chroot: glibc.chroot
 	/usr/share/man/man8/
 	$(TOUCH) $(@)
 
-busybox.chroot: glibc.chroot
+Linux-PAM.chroot: glibc.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--libdir=/usr/lib --disable-regenerate-docu --enable-static \
+	--enable-db=no --enable-securedir=/lib/security
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(CHMOD) -v 4755 /sbin/unix_chkpwd
+	for file in pam pam_misc pamc; do \
+	  $(MV) -v /usr/lib/lib$${file}.so.* /lib && \
+	  $(LN) -v ../../lib/$$($(READLINK) /usr/lib/lib$${file}.so) \
+	  /usr/lib/lib$${file}.so; \
+	done
+	$(TOUCH) $(@)
+
+busybox.chroot: glibc.chroot Linux-PAM.chroot
 	$(call chroot_only)
 	$(SED) -i 's/\/\/if (--loop_on_fail == 0)/if (--loop_on_fail == 0)/' \
 	$(tgt_src_dir)/networking/ntpd.c
@@ -1528,7 +1566,7 @@ busybox.chroot: glibc.chroot
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
 	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).config > \
 	$(tgt_src_dir)/.config
-	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) CONFIG_EXTRA_LDLIBS="dl"
 	$(INSTALL) -D $(tgt_src_dir)/busybox_unstripped \
 	$(chroot_build)/initramfs/bin/busybox
 	$(MAKE) --directory=$(tgt_src_dir) clean
@@ -1647,7 +1685,17 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install six==1.10.0
 	pip3 install mysqlclient==1.3.12
 	pip3 install SQLAlchemy==1.1.1
-	$(RM) .cache
+	pip3 install parallax==1.0.4
+	pip3 install py-dateutil==2.2
+	pip3 install PyYAML==3.13
+	pip3 install pytz==2018.5
+	pip3 install Django==2.0.5
+	pip3 install python-pam==1.8.4
+	pip3 install django-pam==1.4.1
+	pip3 install django-widget-tweaks==1.4.2
+	pip3 install django-session-timeout==0.0.3
+	pip3 install uWSGI==2.0.17.1
+	$(RM) /.cache
 	$(TOUCH) $(@)
 
 qlogic_fw.chroot:
@@ -3261,6 +3309,25 @@ kbd.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
+pcre.chroot: glibc.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+nginx.chroot: glibc.chroot pcre.chroot zlib.chroot openssl.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/var/lib/nginx \
+	--sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf \
+	--pid-path=/var/run/nginx.pid \
+	--error-log-path=/var/log/nginx/error.log \
+	--http-log-path=/var/log/nginx/access.log \
+	--with-http_ssl_module
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot
@@ -3419,13 +3486,21 @@ image:
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
 	$(CHMOD) 4755 $(STAGING_DIR)/usr/bin/sudo
-	$(CHMOD) 600 $(STAGING_DIR)/etc/shadow
+	$(CHMOD) 640 $(STAGING_DIR)/etc/shadow
+	$(CHOWN) 0:42 $(STAGING_DIR)/etc/shadow
 	$(CHMOD) 600 $(STAGING_DIR)/etc/crontab
 	$(CHMOD) 1777 $(STAGING_DIR)/tmp
 	$(CHMOD) 1777 $(STAGING_DIR)/var/tmp
 	$(QUIET) if [ "$(enable_mhvtl)" = "yes" ]; then \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtltape; \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtllibrary; \
+	fi
+	$(QUIET) if [ "$(with_web_ui)" = "yes" ]; then \
+	  $(CHOWN) -R 104:104 $(STAGING_DIR)/opt/lib/web_ui; \
+	  $(SED) -i 's/^rc\.nginx_enable=.*/rc\.nginx_enable=YES/' \
+	  $(STAGING_DIR)/etc/rc.conf; \
+	  $(SED) -i 's/^rc\.webui_enable=.*/rc\.webui_enable=YES/' \
+	  $(STAGING_DIR)/etc/rc.conf; \
 	fi
 	$(CHOWN) 101:101 $(STAGING_DIR)/var/lib/corosync
 	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/pacemaker
@@ -3434,6 +3509,7 @@ image:
 	$(CHOWN) 65534:65534 $(STAGING_DIR)/var/run/stunnel
 	$(CHOWN) 0:65534 $(STAGING_DIR)/var/lib/stunnel
 	$(CHMOD) 1770 $(STAGING_DIR)/var/lib/stunnel
+	$(CHOWN) 104:104 $(STAGING_DIR)/var/run/web_ui
 	$(LN) rc.0 $(STAGING_DIR)/etc/rc.d/rc.6
 	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.5
 	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.4
@@ -3441,7 +3517,7 @@ image:
 	$(MKDIR) $(STAGING_DIR)/boot
 	$(FIND) $(STAGING_DIR)/etc -path $(STAGING_DIR)/etc/rc.d -prune -o \
 	-print0 | $(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
-	$(FIND) $(STAGING_DIR)/var/lib -print0 | \
+	$(FIND) $(STAGING_DIR)/var/lib $(STAGING_DIR)/opt -print0 | \
 	$(XARGS) -0 $(TOUCH) -h -d "2001-01-01 00:00:00"
 	$(SED) -i 's/ $(subst /,\/,$(CHROOT_DIR))\// \//g' \
 	$(STAGING_DIR)/usr/lib/libc.so

@@ -88,6 +88,7 @@ a939c4990d74e6fc1ee62be05716f633  libconfig-1.5.tar.gz
 580cb878be536804daca87fb75ae46cc  libnl-1.1.4.tar.gz
 15ca4c1f6ce3023f7134ab7d784986c3  open-lldp-0.9.46.tar.gz
 ace78aec799b1cf6dfaea55d3879ed9f  libpciaccess-0.13.4.tar.bz2
+558ff53b0fc0563ca97f79e911822165  Linux-PAM-1.3.1.tar.xz
 bb59d25ee2643db20f212eec539429f1  busybox-1.26.2.tar.bz2
 f7408aa2b40333db0413d4aab6bbe978  ipmitool-1.8.17.tar.bz2
 c70599ab0d037fde724f7210c2c8d7f8  sysklogd-1.5.1.tar.gz
@@ -213,3 +214,5 @@ f3eeaed018542963b7d2416ef1135ecc  libevent-2.1.8-stable.tar.gz
 2c0cf0e2b1665d51fa9a783679494888  libnfsidmap-0.26.tar.bz2
 410539d0bf3cc247181594581edbfb53  hdparm-9.52.tar.gz
 c1635a5a83b63aca7f97a3eab39ebaa6  kbd-2.0.4.tar.xz
+fc18afa0f14a25475cf097ee102a3e4f  pcre-8.42.tar.gz
+2d856aca3dfe1d32e3c9f8c4cac0cc95  nginx-1.14.0.tar.gz

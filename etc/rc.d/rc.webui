@@ -1,0 +1,57 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+UWSGI="/usr/bin/uwsgi"
+PID_FILE="/var/run/web_ui/uwsgi.pid"
+CERT_KEY_FILE="/etc/web_ui/nginx.pem"
+DJANGO_KEY_FILE="/etc/web_ui/secret_key"
+DFLT_OPTS="--ini /etc/web_ui/uwsgi.ini --daemonize /var/log/uwsgi.log"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    # Create an SSL certificate + key if needed
+    if [ ! -f "${CERT_KEY_FILE}" ]; then
+        /bin/echo "The SSL certificate doesn't exist, generating one..."
+        /usr/bin/openssl req -x509 -nodes -days 3650 -newkey rsa:1024 \
+            -subj "/C=US/ST=MI/L=Flint/O=Parodyne Inc./CN=localhost" \
+            -keyout ${CERT_KEY_FILE} -out ${CERT_KEY_FILE} || exit 1
+    fi
+    # Create the Django secret key if needed
+    if [ ! -f "${DJANGO_KEY_FILE}" ]; then
+        /bin/echo "The Django secret key doesn't exist, generating one..."
+        /usr/bin/openssl rand -base64 32 > ${DJANGO_KEY_FILE} || exit 1
+    fi
+    # Make sure no migrations exist
+    /bin/echo "Applying pending model migrations (if any)..."
+    cd /opt/lib/web_ui && /usr/bin/sudo -u webui \
+        /usr/bin/python3 manage.py migrate --no-color
+    # Now we can start uWSGI for the app
+    /bin/echo "Starting the ESOS Web UI..."
+    eval ${UWSGI} ${USER_OPTS} || exit 1
+}
+
+stop() {
+    /bin/echo "Stopping the ESOS Web UI..."
+    ${UWSGI} --stop ${PID_FILE} || exit 1
+}
+
+status() {
+    /bin/pidof ${UWSGI} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}
