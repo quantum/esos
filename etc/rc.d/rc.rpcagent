@@ -1,0 +1,54 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+RPC_AGENT="/opt/sbin/rpc_agent"
+RPC_AGENT_LOCK="/var/lock/rpc_agent"
+CERT_KEY_FILE="/etc/stunnel/rpc_agent.pem"
+DFLT_OPTS=""
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    # Create an X.509 certificate and private key if needed
+    if [ ! -f "${CERT_KEY_FILE}" ]; then
+        /bin/echo "The X.509 certificate doesn't exist, generating one..."
+        temp_key_file="/tmp/rpc_agent_key.pem"
+        /usr/bin/openssl req -new -x509 -days 3650 -nodes \
+            -subj "/C=US/ST=MI/L=Flint/O=Parodyne Inc./CN=localhost" \
+            -out ${CERT_KEY_FILE} -keyout ${temp_key_file} || exit 1
+        /usr/bin/openssl rsa -in ${temp_key_file} >> ${CERT_KEY_FILE} || exit 1
+        /bin/rm -f ${temp_key_file}
+        /usr/bin/openssl gendh 2048 >> ${CERT_KEY_FILE} || exit 1
+        /bin/chmod 0600 ${CERT_KEY_FILE} || exit 1
+    fi
+    # Now we can start RPC agent
+    /bin/echo "Starting the ESOS RPC Agent..."
+    eval ${RPC_AGENT} ${USER_OPTS} || exit 1
+    /bin/touch ${NGINX_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping the ESOS RPC Agent..."
+    /bin/kill -TERM $(/bin/pidof ${RPC_AGENT}) || exit 1
+    wait_for_stop ${RPC_AGENT} && /bin/rm -f ${RPC_AGENT_LOCK}
+}
+
+status() {
+    /bin/pidof ${RPC_AGENT} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}
