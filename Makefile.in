@@ -1506,7 +1506,7 @@ web_ui.chroot: Python.chroot nginx.chroot
 	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
 	$(TOUCH) $(@)
 
-rpc_agent.chroot:
+rpc_agent.chroot: stunnel.chroot
 	$(call chroot_only)
 	$(CP) -f $(rpc_agent_dir)/stunnel.conf /etc/stunnel/stunnel.conf
 	$(INSTALL) -D -m 0755 $(rpc_agent_dir)/rpc_agent /opt/sbin/rpc_agent
@@ -2905,6 +2905,7 @@ stunnel.chroot: glibc.chroot openssl.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/src install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/doc install-data
+	$(MAKE) --directory=$(tgt_src_dir)/tools install-confDATA
 	$(TOUCH) $(@)
 
 sudo.chroot: glibc.chroot
