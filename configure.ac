@@ -257,6 +257,29 @@ AC_SUBST(web_ui_dir, ${web_ui_dir})
 AC_SUBST(with_web_ui, ${with_web_ui})
 AC_MSG_NOTICE([web_ui: ${with_web_ui}])
 
+dnl Optional package rpc_agent (user provides package file)
+AC_ARG_WITH(rpc_agent,
+	AS_HELP_STRING([--with-rpc_agent=PATH],
+	[build and include rpc_agent; PATH is the rpc_agent package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[rpc_agent_file="${withval}"; with_rpc_agent="yes"],
+	[with_rpc_agent="no"]), with_rpc_agent="no")
+if test  "x${with_rpc_agent}" = "xyes"; then
+	if test -f "${rpc_agent_file}"; then
+		AC_MSG_NOTICE([extracting the rpc_agent package file...])
+		rpc_agent_dir="${chroot_dir}/build/rpc_agent"
+		${mkdir} -p ${rpc_agent_dir} || exit 1
+		${tar} xfJ ${rpc_agent_file} --strip-components=1 -C ${rpc_agent_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the rpc_agent file: ${rpc_agent_file}])
+	fi
+fi
+AS_IF([test "x$with_rpc_agent" = "xyes"],
+	[build_opts="${build_opts} rpc_agent"; opt_suffix="${opt_suffix}r"])
+AC_SUBST(rpc_agent_dir, ${rpc_agent_dir})
+AC_SUBST(with_rpc_agent, ${with_rpc_agent})
+AC_MSG_NOTICE([rpc_agent: ${with_rpc_agent}])
+
 dnl Optional package celerity_16_32 (user provides package file)
 AC_ARG_WITH(celerity_16_32,
 	AS_HELP_STRING([--with-celerity_16_32=PATH],

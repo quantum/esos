@@ -68,6 +68,8 @@ enable_btier		:= @enable_btier@
 enable_simple_tui	:= @enable_simple_tui@
 with_web_ui		:= @with_web_ui@
 web_ui_dir		:= $(subst $(CHROOT_DIR),,@web_ui_dir@)
+with_rpc_agent		:= @with_rpc_agent@
+rpc_agent_dir		:= $(subst $(CHROOT_DIR),,@rpc_agent_dir@)
 with_celerity_16_32	:= @with_celerity_16_32@
 celerity_16_32_dir	:= $(subst $(CHROOT_DIR),,@celerity_16_32_dir@)
 with_atto_scst		:= @with_atto_scst@
@@ -392,6 +394,9 @@ ifeq ($(enable_simple_tui),yes)
 endif
 ifeq ($(with_web_ui),yes)
 	chroot_tgts += web_ui.chroot
+endif
+ifeq ($(with_rpc_agent),yes)
+	chroot_tgts += rpc_agent.chroot
 endif
 ifeq ($(with_celerity_16_32),yes)
 	chroot_tgts += celerity_16_32.chroot
@@ -1499,6 +1504,12 @@ web_ui.chroot: Python.chroot nginx.chroot
 	$(CP) -R $(web_ui_dir)/static /opt/lib/web_ui/
 	$(CP) -R $(web_ui_dir)/templates /opt/lib/web_ui/
 	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
+	$(TOUCH) $(@)
+
+rpc_agent.chroot: stunnel.chroot
+	$(call chroot_only)
+	$(CP) -f $(rpc_agent_dir)/stunnel.conf /etc/stunnel/stunnel.conf
+	$(INSTALL) -D -m 0755 $(rpc_agent_dir)/rpc_agent /opt/sbin/rpc_agent
 	$(TOUCH) $(@)
 
 celerity_16_32.chroot:
@@ -2894,6 +2905,7 @@ stunnel.chroot: glibc.chroot openssl.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/src install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/doc install-data
+	$(MAKE) --directory=$(tgt_src_dir)/tools install-confDATA
 	$(TOUCH) $(@)
 
 sudo.chroot: glibc.chroot
@@ -3500,6 +3512,12 @@ image:
 	  $(SED) -i 's/^rc\.nginx_enable=.*/rc\.nginx_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
 	  $(SED) -i 's/^rc\.webui_enable=.*/rc\.webui_enable=YES/' \
+	  $(STAGING_DIR)/etc/rc.conf; \
+	fi
+	$(QUIET) if [ "$(with_rpc_agent)" = "yes" ]; then \
+	  $(SED) -i 's/^rc\.stunnel_enable=.*/rc\.stunnel_enable=YES/' \
+	  $(STAGING_DIR)/etc/rc.conf; \
+	  $(SED) -i 's/^rc\.rpcagent_enable=.*/rc\.rpcagent_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
 	fi
 	$(CHOWN) 101:101 $(STAGING_DIR)/var/lib/corosync
