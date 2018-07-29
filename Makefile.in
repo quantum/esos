@@ -66,6 +66,7 @@ enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
 enable_simple_tui	:= @enable_simple_tui@
+enable_commercial	:= @enable_commercial@
 with_web_ui		:= @with_web_ui@
 web_ui_dir		:= $(subst $(CHROOT_DIR),,@web_ui_dir@)
 with_rpc_agent		:= @with_rpc_agent@
@@ -95,6 +96,11 @@ dev_name	:= $(git_branch)_$(git_hash)$(opt_suffix)
 esos_ver	:= $(if $(filter %.x,$(git_branch)),$(rel_name),$(dev_name))
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
+ifeq ($(enable_commerical),yes)
+edition = Professional
+else
+edition = Community
+endif
 
 dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		binutils-2.29.1.tar.xz \
@@ -390,6 +396,10 @@ ifeq ($(enable_btier),yes)
 	chroot_tgts += btier.chroot
 endif
 ifeq ($(enable_simple_tui),yes)
+	tui_cpp_flags += -DSIMPLE_TUI
+endif
+ifeq ($(enable_commercial),yes)
+	tui_cpp_flags += -DCOMMERCIAL
 	tui_cpp_flags += -DSIMPLE_TUI
 endif
 ifeq ($(with_web_ui),yes)
@@ -3419,8 +3429,13 @@ image:
 	$(STAGING_DIR)/usr/include/$(notdir \
 	$(wildcard $(CHROOT_DIR)/usr/include/python*))/pyconfig.h
 	$(MKDIR) $(STAGING_DIR)/usr/share/doc/esos
-	$(SED) -n '/END OF TERMS AND CONDITIONS/q;p' $(SRC_DIR)/COPYING > \
-	$(STAGING_DIR)/usr/share/doc/esos/LICENSE
+	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
+	  $(CP) $(SRC_DIR)/PROF_LICENSE \
+	  $(STAGING_DIR)/usr/share/doc/esos/LICENSE; \
+	else \
+	  $(CP) $(SRC_DIR)/COMM_LICENSE \
+	  $(STAGING_DIR)/usr/share/doc/esos/LICENSE; \
+	fi
 	$(INSTALL) -m 0644 $(SRC_DIR)/ChangeLog \
 	$(STAGING_DIR)/usr/share/doc/esos/ChangeLog
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
@@ -3484,7 +3499,7 @@ image:
 	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
 	$(INSTALL) $(SRC_DIR)/perf-agent/* $(STAGING_DIR)/usr/local/perf-agent/
 	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
-	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > \
+	$(ECHO) "ESOS $(edition) $(esos_ver)" > \
 	$(STAGING_DIR)/etc/esos-release
 	$(CHOWN) -R root:root $(STAGING_DIR)/*
 	$(FIND) $(STAGING_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644

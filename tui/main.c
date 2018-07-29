@@ -132,6 +132,39 @@ start:
     cdk_screen = initCDKScreen(sub_window);
     initCDKColor();
 
+    /* Draw the CDK screen */
+    statusBar(main_window);
+    refreshCDKScreen(cdk_screen);
+
+    /* We need root privileges; for the short term I don't see any other way
+     * around this; long term we can hopefully do something else */
+    saved_uid = getuid();
+    if (setresuid(0, -1, saved_uid) == -1) {
+        SAFE_ASPRINTF(&error_msg, "setresuid(): %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg,
+                "Your capabilities may be reduced...");
+        FREE_NULL(error_msg);
+    }
+
+    /* Check if license has been accepted */
+    if (!acceptLicense(cdk_screen)) {
+        errorDialog(cdk_screen,
+                "You must accept the Enterprise Storage OS (ESOS) license",
+                "agreement to use this software. Hit ENTER to exit.");
+        goto quit;
+    }
+
+    /* Usage count (only if we have Internet) */
+    if (inet_works)
+        reportUsage(cdk_screen);
+
+    /* Check and see if SCST is loaded */
+    if (!isSCSTLoaded()) {
+        errorDialog(cdk_screen,
+                "It appears SCST is not loaded; a number of the TUI",
+                "functions will not work. Check the '/var/log/boot' file.");
+    }
+
 #ifdef SIMPLE_TUI
     /* Variables */
     char *simple_menu_opts[MAX_SIMPLE_MENU_OPTS] = {NULL};
@@ -408,39 +441,6 @@ start:
     }
     setCDKMenuBackgroundColor(menu_2, g_color_menu_bg[g_curr_theme]);
 #endif
-
-    /* We need root privileges; for the short term I don't see any other way
-     * around this; long term we can hopefully do something else */
-    saved_uid = getuid();
-    if (setresuid(0, -1, saved_uid) == -1) {
-        SAFE_ASPRINTF(&error_msg, "setresuid(): %s", strerror(errno));
-        errorDialog(cdk_screen, error_msg,
-                "Your capabilities may be reduced...");
-        FREE_NULL(error_msg);
-    }
-
-    /* Draw the CDK screen */
-    statusBar(main_window);
-    refreshCDKScreen(cdk_screen);
-
-    /* Check if license has been accepted */
-    if (!acceptLicense(cdk_screen)) {
-        errorDialog(cdk_screen,
-                "You must accept the Enterprise Storage OS (ESOS) license",
-                "agreement to use this software. Hit ENTER to exit.");
-        goto quit;
-    }
-
-    /* Usage count (only if we have Internet) */
-    if (inet_works)
-        reportUsage(cdk_screen);
-
-    /* Check and see if SCST is loaded */
-    if (!isSCSTLoaded()) {
-        errorDialog(cdk_screen,
-                "It appears SCST is not loaded; a number of the TUI",
-                "functions will not work. Check the '/var/log/boot' file.");
-    }
 
 #ifdef SIMPLE_TUI
     /* Activate the scroll widget, evaluate action, repeat */
@@ -1223,8 +1223,13 @@ void statusBar(WINDOW *window) {
     chtype *status_bar = NULL;
 
     /* Set the ESOS status bar name/version */
+#ifdef COMMERCIAL
     snprintf(long_ver_str, MISC_STRING_LEN,
-            "ESOS - Enterprise Storage OS %s", ESOS_VERSION);
+            "ESOS Professional %s", ESOS_VERSION);
+#else
+    snprintf(long_ver_str, MISC_STRING_LEN,
+            "ESOS Community %s", ESOS_VERSION);
+#endif
     snprintf(esos_ver_str, STAT_BAR_ESOS_VER_MAX,
             prettyShrinkStr((STAT_BAR_ESOS_VER_MAX - 1), long_ver_str));
     esos_ver_size = strlen(esos_ver_str);
@@ -1321,9 +1326,13 @@ boolean acceptLicense(CDKSCREEN *main_cdk_screen) {
                 break;
             } else {
                 /* Setup scrolling window widget */
-                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>Enterprise Storage "
-                        "OS (ESOS) License\n",
-                        g_color_dialog_title[g_curr_theme]);
+#ifdef COMMERCIAL
+                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>ESOS Professional "
+                        "License\n", g_color_dialog_title[g_curr_theme]);
+#else
+                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>ESOS Community "
+                        "License\n", g_color_dialog_title[g_curr_theme]);
+#endif
                 esos_license = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                         (ESOS_LICENSE_ROWS + 2), (ESOS_LICENSE_COLS + 2),
                         swindow_title, MAX_ESOS_LICENSE_LINES, TRUE, FALSE);
