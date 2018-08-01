@@ -165,6 +165,97 @@ start:
                 "functions will not work. Check the '/var/log/boot' file.");
     }
 
+#ifdef COMMERCIAL
+    /* Variables */
+    CDKLABEL *lic_status_label = 0, *ip_addr_label = 0, *web_ui_label = 0,
+            *rpc_agent_label = 0;
+    char *lic_status_msg[LIC_STATUS_INFO_LINES] = {NULL},
+            *ip_addr_msg[IP_ADDR_INFO_LINES] = {NULL},
+            *web_ui_msg[WEB_UI_INFO_LINES] = {NULL},
+            *rpc_agent_msg[RPC_AGENT_INFO_LINES] = {NULL};
+
+    /* License status information label */
+    SAFE_ASPRINTF(&lic_status_msg[0],
+            "</%d/B/U>ESOS License Status<!%d><!B><!U>"
+            "                           ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
+    SAFE_ASPRINTF(&lic_status_msg[1], "Demo license installed, 30 days remain.");
+    lic_status_label = newCDKLabel(cdk_screen, 31, 1, lic_status_msg,
+            LIC_STATUS_INFO_LINES, TRUE, FALSE);
+    if (!lic_status_label) {
+        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKLabelBoxAttribute(lic_status_label,
+            g_color_main_box[g_curr_theme]);
+    setCDKLabelBackgroundAttrib(lic_status_label,
+            g_color_main_text[g_curr_theme]);
+
+    /* IP address information label */
+    SAFE_ASPRINTF(&ip_addr_msg[0],
+            "</%d/B/U>Configured IPv4 Addresses<!%d><!B><!U>"
+            "                     ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
+    SAFE_ASPRINTF(&ip_addr_msg[1], " ");
+    SAFE_ASPRINTF(&ip_addr_msg[2], " ");
+    SAFE_ASPRINTF(&ip_addr_msg[3], " ");
+    SAFE_ASPRINTF(&ip_addr_msg[4], " ");
+    SAFE_ASPRINTF(&ip_addr_msg[5], " ");
+    ip_addr_label = newCDKLabel(cdk_screen, 31, 5, ip_addr_msg,
+            IP_ADDR_INFO_LINES, TRUE, FALSE);
+    if (!ip_addr_label) {
+        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKLabelBoxAttribute(ip_addr_label,
+            g_color_main_box[g_curr_theme]);
+    setCDKLabelBackgroundAttrib(ip_addr_label,
+            g_color_main_text[g_curr_theme]);
+
+    /* Web UI information label */
+    SAFE_ASPRINTF(&web_ui_msg[0],
+            "</%d/B/U>ESOS Web UI Services<!%d><!B><!U>"
+            "                          ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
+    SAFE_ASPRINTF(&web_ui_msg[1], "rc.webui: Running");
+    SAFE_ASPRINTF(&web_ui_msg[2], "rc.nginx: Running");
+    web_ui_label = newCDKLabel(cdk_screen, 31, 13, web_ui_msg,
+            WEB_UI_INFO_LINES, TRUE, FALSE);
+    if (!web_ui_label) {
+        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKLabelBoxAttribute(web_ui_label,
+            g_color_main_box[g_curr_theme]);
+    setCDKLabelBackgroundAttrib(web_ui_label,
+            g_color_main_text[g_curr_theme]);
+
+    /* RPC agent information label */
+    SAFE_ASPRINTF(&rpc_agent_msg[0],
+            "</%d/B/U>ESOS RPC Agent Services<!%d><!B><!U>"
+            "                       ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
+    SAFE_ASPRINTF(&rpc_agent_msg[1], "rc.rpcagent: Running");
+    SAFE_ASPRINTF(&rpc_agent_msg[2], "rc.stunnel: Running");
+    rpc_agent_label = newCDKLabel(cdk_screen, 31, 20, rpc_agent_msg,
+            RPC_AGENT_INFO_LINES, TRUE, FALSE);
+    if (!rpc_agent_label) {
+        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKLabelBoxAttribute(rpc_agent_label,
+            g_color_main_box[g_curr_theme]);
+    setCDKLabelBackgroundAttrib(rpc_agent_label,
+            g_color_main_text[g_curr_theme]);
+
+    /* Make the label widgets appear */
+    refreshCDKScreen(cdk_screen);
+#endif
+
 #ifdef SIMPLE_TUI
     /* Variables */
     char *simple_menu_opts[MAX_SIMPLE_MENU_OPTS] = {NULL};
@@ -173,28 +264,29 @@ start:
     int simple_menu_choice = 0;
 
     /* Create a simple menu scroll options list */
-    SAFE_ASPRINTF(&simple_menu_opts[0], "<C>Quit the TUI");
-    SAFE_ASPRINTF(&simple_menu_opts[1], "<C>Exit to Shell");
-    SAFE_ASPRINTF(&simple_menu_opts[2], "<C>Date & Time");
-    SAFE_ASPRINTF(&simple_menu_opts[3], "<C>Network Settings");
-    SAFE_ASPRINTF(&simple_menu_opts[4], "<C>Restart Networking");
-    SAFE_ASPRINTF(&simple_menu_opts[5], "<C>Email Setup");
-    SAFE_ASPRINTF(&simple_menu_opts[6], "<C>Send Test Email");
+    SAFE_ASPRINTF(&simple_menu_opts[0], "<C></B>Quit the TUI<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[1], "<C></B>Exit to Shell<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[2], "<C></B>Date & Time<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[3], "<C></B>Network Settings<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[4], "<C></B>Restart Networking<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[5], "<C></B>Email Setup<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[6], "<C></B>Send Test Email<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[7], "<C></B>About ESOS<!B>");
 
     /* Create the simple menu scroll widget */
     SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose a Menu Action\n",
-            g_color_dialog_title[g_curr_theme]);
-    simple_menu_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 60,
-            scroll_title, simple_menu_opts, 5,
-            FALSE, g_color_dialog_select[g_curr_theme], TRUE, FALSE);
+            g_color_menu_letter[g_curr_theme]);
+    simple_menu_list = newCDKScroll(cdk_screen, 1, 1, NONE, 22, 30,
+            scroll_title, simple_menu_opts, 8,
+            FALSE, g_color_menu_text[g_curr_theme], TRUE, FALSE);
     if (!simple_menu_list) {
         errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto quit;
     }
     setCDKScrollBoxAttribute(simple_menu_list,
-            g_color_dialog_box[g_curr_theme]);
+            g_color_main_box[g_curr_theme]);
     setCDKScrollBackgroundAttrib(simple_menu_list,
-            g_color_dialog_text[g_curr_theme]);
+            g_color_main_text[g_curr_theme]);
 #else
     /* Variables */
     CDKMENU *menu_1 = 0, *menu_2 = 0;
@@ -491,6 +583,16 @@ start:
                 FREE_NULL(scroll_title);
                 for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)
                     FREE_NULL(simple_menu_opts[i]);
+#ifdef COMMERCIAL
+                for (i = 0; i < LIC_STATUS_INFO_LINES; i++)
+                    FREE_NULL(lic_status_msg[i]);
+                for (i = 0; i < IP_ADDR_INFO_LINES; i++)
+                    FREE_NULL(ip_addr_msg[i]);
+                for (i = 0; i < WEB_UI_INFO_LINES; i++)
+                    FREE_NULL(web_ui_msg[i]);
+                for (i = 0; i < RPC_AGENT_INFO_LINES; i++)
+                    FREE_NULL(rpc_agent_msg[i]);
+#endif
                 destroyCDKScreenObjects(cdk_screen);
                 destroyCDKScreen(cdk_screen);
                 endCDK();
@@ -525,6 +627,10 @@ start:
         } else if (simple_menu_choice == 6) {
             /* Test Email dialog */
             testEmailDialog(cdk_screen);
+
+        } else if (simple_menu_choice == 7) {
+            /* About dialog */
+            aboutDialog(cdk_screen);
         }
         curs_set(0);
         refreshCDKScreen(cdk_screen);
@@ -1059,6 +1165,16 @@ quit:
     }
     delwin(sub_window);
     delwin(main_window);
+#ifdef COMMERCIAL
+    for (i = 0; i < LIC_STATUS_INFO_LINES; i++)
+        FREE_NULL(lic_status_msg[i]);
+    for (i = 0; i < IP_ADDR_INFO_LINES; i++)
+        FREE_NULL(ip_addr_msg[i]);
+    for (i = 0; i < WEB_UI_INFO_LINES; i++)
+        FREE_NULL(web_ui_msg[i]);
+    for (i = 0; i < RPC_AGENT_INFO_LINES; i++)
+        FREE_NULL(rpc_agent_msg[i]);
+#endif
 #ifdef SIMPLE_TUI
     FREE_NULL(scroll_title);
     for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)

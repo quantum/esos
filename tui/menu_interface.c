@@ -263,7 +263,7 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
 #endif
     if (gethostname(hostname, ((sizeof hostname) - 1)) == -1)
         snprintf(hostname, sizeof (hostname), "hostname");
-    SAFE_ASPRINTF(&message[0], "<C></%d/B>About ESOS",
+    SAFE_ASPRINTF(&message[0], "<C></%d/B>About ESOS (Enterprise Storage OS)",
             g_color_dialog_title[g_curr_theme]);
     SAFE_ASPRINTF(&message[1], " ");
     SAFE_ASPRINTF(&message[2], "</B>This Host:<!B>\t%-.40s", hostname);

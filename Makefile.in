@@ -98,8 +98,10 @@ prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
 ifeq ($(enable_commerical),yes)
 edition = Professional
+pkg_name = esos_prof
 else
 edition = Community
+pkg_name = esos_comm
 endif
 
 dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
@@ -451,7 +453,7 @@ gcc_ver			= $(subst gcc-,,$(notdir $(gcc_src)))
 tarball_src_dirs	= $(addprefix $(SOURCES_DIR)/,$(subst .tar.xz,,\
 			$(subst .tar.bz2,,$(subst .tar.gz,,\
 			$(notdir $(dist_files))))))
-img_file		:= $(BUILD_DIR)/esos-$(esos_ver).img
+img_file		:= $(BUILD_DIR)/$(pkg_name)-$(esos_ver).img
 bz2_img_file		:= $(img_file).bz2
 esos_target		= x86_64-esos-linux-gnu
 temp_path		= /tools/bin:/bin:/usr/bin
@@ -504,9 +506,9 @@ clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(INITRAMFS_DIR)/*
 	$(RM) $(CHROOT_DIR)/*
 	$(RM) $(BUILD_DIR)/dist_*.txt
-	$(RM) $(BUILD_DIR)/esos-*.zip
-	$(RM) $(BUILD_DIR)/esos-*.img
-	$(RM) $(BUILD_DIR)/esos-*.img.bz2
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.bz2
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(RM) $(BUILD_DIR)/chroot_build.sh
 
@@ -3591,7 +3593,7 @@ image:
 
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
-pkg_dist: pkg_prefix = esos-$(esos_ver)
+pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
