@@ -177,6 +177,7 @@ extern "C" {
 #define VGREMOVE_BIN    "/usr/sbin/vgremove"
 #define LVCREATE_BIN    "/usr/sbin/lvcreate"
 #define LVREMOVE_BIN    "/usr/sbin/lvremove"
+#define RPC_AGENT_BIN   "/opt/sbin/rpc_agent"
 
 /* A few sysfs settings */
 #define SYSFS_FC_HOST           "/sys/class/fc_host"

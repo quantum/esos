@@ -652,3 +652,82 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
     FREE_NULL(boot_dev_node);
     return dev_cnt;
 }
+
+
+/**
+ * @brief Get the service status of the given rc/init script, and return a
+ * string (char array) with it's current state.
+ */
+char *rcSvcStatus(char rc_svc_name[]) {
+    static char ret_buff[MISC_STRING_LEN] = {0};
+    char *error_msg = NULL;
+    char command_str[MAX_SHELL_CMD_LEN] = {0};
+    int exit_stat = 0, ret_val = 0;
+
+    /* Since ret_buff is re-used between calls, we reset the first character */
+    ret_buff[0] = '\0';
+
+    /* Get the rc/init script status */
+    snprintf(command_str, MAX_SHELL_CMD_LEN,
+            "/etc/rc.d/%s status > /dev/null 2>&1", rc_svc_name);
+    ret_val = system(command_str);
+    exit_stat = WEXITSTATUS(ret_val);
+    if (exit_stat == 0) {
+        strncpy(ret_buff, "Running", MISC_STRING_LEN);
+    } else if (exit_stat == 1) {
+        strncpy(ret_buff, "Stopped", MISC_STRING_LEN);
+    } else {
+        SAFE_ASPRINTF(&error_msg, "The script exited with %d!", exit_stat);
+        strncpy(ret_buff, error_msg, MISC_STRING_LEN);
+        FREE_NULL(error_msg);
+    }
+
+    /* Done */
+    if (ret_buff[0] != '\0')
+        return ret_buff;
+    else
+        return NULL;
+}
+
+
+/**
+ * @brief Execute the ESOS RPC Agent to get the status of the current license
+ * file (if any). Return a simple string that indicates the license state.
+ */
+char *checkAgentLic() {
+    static char ret_buff[MISC_STRING_LEN] = {0};
+    char lic_status_msg[MAX_SYSFS_ATTR_SIZE] = {0};
+    char *cmd_str = NULL, *error_msg = NULL;
+    int ret_val = 0, exit_stat = 0;
+    FILE *rpc_agent_cmd = NULL;
+
+    /* Since ret_buff is re-used between calls, we reset the first character */
+    ret_buff[0] = '\0';
+
+    /* Check the license file status by calling rpc_agent */
+    SAFE_ASPRINTF(&cmd_str, "%s --check 2>&1", RPC_AGENT_BIN);
+    rpc_agent_cmd = popen(cmd_str, "r");
+    fgets(lic_status_msg, sizeof (lic_status_msg), rpc_agent_cmd);
+    if ((exit_stat = pclose(rpc_agent_cmd)) == -1) {
+        ret_val = -1;
+    } else {
+        if (WIFEXITED(exit_stat))
+            ret_val = WEXITSTATUS(exit_stat);
+        else
+            ret_val = -1;
+    }
+    FREE_NULL(cmd_str);
+    if ((ret_val != 0) && (ret_val != 1)) {
+        SAFE_ASPRINTF(&error_msg, "The binary exited with %d!", ret_val);
+        strncpy(ret_buff, error_msg, MISC_STRING_LEN);
+        FREE_NULL(error_msg);
+    } else {
+        strncpy(ret_buff, strStrip(lic_status_msg), MISC_STRING_LEN);
+    }
+
+    /* Done */
+    if (ret_buff[0] != '\0')
+        return ret_buff;
+    else
+        return NULL;
+}

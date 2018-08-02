@@ -19,6 +19,8 @@
 #include <curl/curl.h>
 #include <assert.h>
 #include <locale.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -173,6 +175,10 @@ start:
             *ip_addr_msg[IP_ADDR_INFO_LINES] = {NULL},
             *web_ui_msg[WEB_UI_INFO_LINES] = {NULL},
             *rpc_agent_msg[RPC_AGENT_INFO_LINES] = {NULL};
+    struct ifaddrs *first_ifaddrs = NULL, *next_ifaddrs = NULL;
+    void *tmp_addr_ptr = NULL;
+    char addr_buffer[INET_ADDRSTRLEN] = {0};
+    int addr_line_cnt = 0;
 
     /* License status information label */
     SAFE_ASPRINTF(&lic_status_msg[0],
@@ -180,7 +186,8 @@ start:
             "                           ",
             g_color_info_header[g_curr_theme],
             g_color_info_header[g_curr_theme]);
-    SAFE_ASPRINTF(&lic_status_msg[1], "Demo license installed, 30 days remain.");
+    SAFE_ASPRINTF(&lic_status_msg[1], "%s",
+            prettyShrinkStr(46, checkAgentLic()));
     lic_status_label = newCDKLabel(cdk_screen, 31, 1, lic_status_msg,
             LIC_STATUS_INFO_LINES, TRUE, FALSE);
     if (!lic_status_label) {
@@ -198,11 +205,37 @@ start:
             "                     ",
             g_color_info_header[g_curr_theme],
             g_color_info_header[g_curr_theme]);
-    SAFE_ASPRINTF(&ip_addr_msg[1], " ");
-    SAFE_ASPRINTF(&ip_addr_msg[2], " ");
-    SAFE_ASPRINTF(&ip_addr_msg[3], " ");
-    SAFE_ASPRINTF(&ip_addr_msg[4], " ");
-    SAFE_ASPRINTF(&ip_addr_msg[5], " ");
+    /* First create the linked list of local interfaces */
+    if (getifaddrs(&first_ifaddrs) == -1) {
+        SAFE_ASPRINTF(&error_msg, "getifaddrs(): %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        FREE_NULL(error_msg);
+    } else {
+        /* Now iterate over the list of network interfaces */
+        addr_line_cnt = 1;
+        for (next_ifaddrs = first_ifaddrs; next_ifaddrs != NULL;
+                next_ifaddrs = next_ifaddrs->ifa_next) {
+            if (!next_ifaddrs->ifa_addr)
+                continue;
+            /* We don't care about the loopback interface */
+            if (strcmp(next_ifaddrs->ifa_name, "lo") == 0)
+                continue;
+            /* And we only want IPv4 addresses */
+            if (next_ifaddrs->ifa_addr->sa_family == AF_INET) {
+                tmp_addr_ptr = &((struct sockaddr_in *) next_ifaddrs->
+                        ifa_addr)->sin_addr;
+                inet_ntop(AF_INET, tmp_addr_ptr, addr_buffer, INET_ADDRSTRLEN);
+                if (addr_line_cnt < IP_ADDR_INFO_LINES) {
+                    SAFE_ASPRINTF(&ip_addr_msg[addr_line_cnt], "%s (%s)",
+                            addr_buffer, next_ifaddrs->ifa_name);
+                    addr_line_cnt++;
+                }
+            }
+        }
+        /* Clean up */
+        if (first_ifaddrs != NULL)
+            freeifaddrs(first_ifaddrs);
+    }
     ip_addr_label = newCDKLabel(cdk_screen, 31, 5, ip_addr_msg,
             IP_ADDR_INFO_LINES, TRUE, FALSE);
     if (!ip_addr_label) {
@@ -220,8 +253,10 @@ start:
             "                          ",
             g_color_info_header[g_curr_theme],
             g_color_info_header[g_curr_theme]);
-    SAFE_ASPRINTF(&web_ui_msg[1], "rc.webui: Running");
-    SAFE_ASPRINTF(&web_ui_msg[2], "rc.nginx: Running");
+    SAFE_ASPRINTF(&web_ui_msg[1], "rc.webui: %s",
+            prettyShrinkStr(36, rcSvcStatus("rc.webui")));
+    SAFE_ASPRINTF(&web_ui_msg[2], "rc.nginx: %s",
+            prettyShrinkStr(36, rcSvcStatus("rc.nginx")));
     web_ui_label = newCDKLabel(cdk_screen, 31, 13, web_ui_msg,
             WEB_UI_INFO_LINES, TRUE, FALSE);
     if (!web_ui_label) {
@@ -239,8 +274,10 @@ start:
             "                       ",
             g_color_info_header[g_curr_theme],
             g_color_info_header[g_curr_theme]);
-    SAFE_ASPRINTF(&rpc_agent_msg[1], "rc.rpcagent: Running");
-    SAFE_ASPRINTF(&rpc_agent_msg[2], "rc.stunnel: Running");
+    SAFE_ASPRINTF(&rpc_agent_msg[1], "rc.rpcagent: %s",
+            prettyShrinkStr(33, rcSvcStatus("rc.rpcagent")));
+    SAFE_ASPRINTF(&rpc_agent_msg[2], "rc.stunnel:  %s",
+            prettyShrinkStr(33, rcSvcStatus("rc.stunnel")));
     rpc_agent_label = newCDKLabel(cdk_screen, 31, 20, rpc_agent_msg,
             RPC_AGENT_INFO_LINES, TRUE, FALSE);
     if (!rpc_agent_label) {
