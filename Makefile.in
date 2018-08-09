@@ -1504,7 +1504,7 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
 	$(TOUCH) $(@)
 
-web_ui.chroot: Python.chroot nginx.chroot
+web_ui.chroot: Python.chroot nginx.chroot sudo.chroot
 	$(call chroot_only)
 	$(CP) -f $(web_ui_dir)/nginx.conf /etc/nginx/nginx.conf
 	$(INSTALL) -D -m 0755 $(web_ui_dir)/manage.py \
@@ -1516,6 +1516,8 @@ web_ui.chroot: Python.chroot nginx.chroot
 	$(CP) -R $(web_ui_dir)/static /opt/lib/web_ui/
 	$(CP) -R $(web_ui_dir)/templates /opt/lib/web_ui/
 	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
+	$(ECHO) "webui ALL=(root) NOPASSWD: /etc/rc.d/rc.rpcagent,\
+	/usr/local/sbin/install_lic.sh" > /etc/sudoers.d/webui
 	$(TOUCH) $(@)
 
 rpc_agent.chroot: stunnel.chroot
@@ -3477,6 +3479,10 @@ image:
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/support_pkg.sh \
 	$(STAGING_DIR)/usr/local/sbin/
+	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
+	  $(INSTALL) $(SRC_DIR)/scripts/install_lic.sh \
+	  $(STAGING_DIR)/usr/local/sbin/; \
+	fi
 	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d
 	$(CP) -R $(SRC_DIR)/misc/ocf/esos \
 	$(STAGING_DIR)/usr/lib/ocf/resource.d/
