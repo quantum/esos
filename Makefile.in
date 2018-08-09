@@ -96,7 +96,7 @@ dev_name	:= $(git_branch)_$(git_hash)$(opt_suffix)
 esos_ver	:= $(if $(filter %.x,$(git_branch)),$(rel_name),$(dev_name))
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
-ifeq ($(enable_commerical),yes)
+ifeq ($(enable_commercial),yes)
 edition = Professional
 pkg_name = esos_prof
 else

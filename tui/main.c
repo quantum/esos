@@ -278,7 +278,7 @@ start:
             prettyShrinkStr(33, rcSvcStatus("rc.rpcagent")));
     SAFE_ASPRINTF(&rpc_agent_msg[2], "rc.stunnel:  %s",
             prettyShrinkStr(33, rcSvcStatus("rc.stunnel")));
-    rpc_agent_label = newCDKLabel(cdk_screen, 31, 20, rpc_agent_msg,
+    rpc_agent_label = newCDKLabel(cdk_screen, 31, 18, rpc_agent_msg,
             RPC_AGENT_INFO_LINES, TRUE, FALSE);
     if (!rpc_agent_label) {
         errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);

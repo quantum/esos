@@ -70,7 +70,7 @@ fi
 echo
 
 # Locate the image file
-image_file="$(ls esos-*.img.bz2)" || exit 1
+image_file="$(ls esos*.img.bz2)" || exit 1
 
 # Check if we're doing an upgrade
 if [ -f "/etc/esos-release" ]; then
