@@ -3479,6 +3479,8 @@ image:
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/support_pkg.sh \
 	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/raid_tools.py \
+	$(STAGING_DIR)/usr/local/sbin/
 	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
 	  $(INSTALL) $(SRC_DIR)/scripts/install_lic.sh \
 	  $(STAGING_DIR)/usr/local/sbin/; \
