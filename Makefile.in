@@ -296,7 +296,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		kbd-2.0.4.tar.xz \
 		pcre-8.42.tar.gz \
 		nginx-1.14.0.tar.gz \
-		win_binaries-20170802.tar.xz)
+		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
 # These targets are required before entering the chroot environment
@@ -3612,7 +3612,6 @@ pkg_dist: $(bz2_img_file)
 	$(LN) $(SRC_DIR) $(pkg_prefix)
 	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/install_common \
 	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
-	$(pkg_prefix)/rpm2cpio.sh \
 	$(pkg_prefix)/INSTALL $(pkg_prefix)/README \
 	$(pkg_prefix)/COPYING $(pkg_prefix)/ChangeLog
 	$(RM) $(pkg_prefix)
