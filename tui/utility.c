@@ -600,7 +600,7 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
                 } else if ((strstr(dev_node_test, "/dev/rbd")) != NULL) {
                     /* For RBD (Ceph) block devices */
                     if (dev_cnt < MAX_BLOCK_DEVS) {
-                        snprintf(blk_dev_name[dev_cnt], "%s", MISC_STRING_LEN,
+                        snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
                                 dir_entry->d_name);
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
