@@ -66,6 +66,7 @@ enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
 enable_simple_tui	:= @enable_simple_tui@
+enable_commercial	:= @enable_commercial@
 with_web_ui		:= @with_web_ui@
 web_ui_dir		:= $(subst $(CHROOT_DIR),,@web_ui_dir@)
 with_rpc_agent		:= @with_rpc_agent@
@@ -95,6 +96,13 @@ dev_name	:= $(git_branch)_$(git_hash)$(opt_suffix)
 esos_ver	:= $(if $(filter %.x,$(git_branch)),$(rel_name),$(dev_name))
 prod_suffix	:= -esos.prod
 debug_suffix	:= -esos.debug
+ifeq ($(enable_commercial),yes)
+edition = Professional
+pkg_name = esos_prof
+else
+edition = Community
+pkg_name = esos_comm
+endif
 
 dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		binutils-2.29.1.tar.xz \
@@ -288,7 +296,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		kbd-2.0.4.tar.xz \
 		pcre-8.42.tar.gz \
 		nginx-1.14.0.tar.gz \
-		win_binaries-20170802.tar.xz)
+		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
 # These targets are required before entering the chroot environment
@@ -392,6 +400,10 @@ endif
 ifeq ($(enable_simple_tui),yes)
 	tui_cpp_flags += -DSIMPLE_TUI
 endif
+ifeq ($(enable_commercial),yes)
+	tui_cpp_flags += -DCOMMERCIAL
+	tui_cpp_flags += -DSIMPLE_TUI
+endif
 ifeq ($(with_web_ui),yes)
 	chroot_tgts += web_ui.chroot
 endif
@@ -441,7 +453,7 @@ gcc_ver			= $(subst gcc-,,$(notdir $(gcc_src)))
 tarball_src_dirs	= $(addprefix $(SOURCES_DIR)/,$(subst .tar.xz,,\
 			$(subst .tar.bz2,,$(subst .tar.gz,,\
 			$(notdir $(dist_files))))))
-img_file		:= $(BUILD_DIR)/esos-$(esos_ver).img
+img_file		:= $(BUILD_DIR)/$(pkg_name)-$(esos_ver).img
 bz2_img_file		:= $(img_file).bz2
 esos_target		= x86_64-esos-linux-gnu
 temp_path		= /tools/bin:/bin:/usr/bin
@@ -494,9 +506,9 @@ clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(INITRAMFS_DIR)/*
 	$(RM) $(CHROOT_DIR)/*
 	$(RM) $(BUILD_DIR)/dist_*.txt
-	$(RM) $(BUILD_DIR)/esos-*.zip
-	$(RM) $(BUILD_DIR)/esos-*.img
-	$(RM) $(BUILD_DIR)/esos-*.img.bz2
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.bz2
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(RM) $(BUILD_DIR)/chroot_build.sh
 
@@ -1492,7 +1504,7 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
 	$(TOUCH) $(@)
 
-web_ui.chroot: Python.chroot nginx.chroot
+web_ui.chroot: Python.chroot nginx.chroot sudo.chroot
 	$(call chroot_only)
 	$(CP) -f $(web_ui_dir)/nginx.conf /etc/nginx/nginx.conf
 	$(INSTALL) -D -m 0755 $(web_ui_dir)/manage.py \
@@ -1504,6 +1516,8 @@ web_ui.chroot: Python.chroot nginx.chroot
 	$(CP) -R $(web_ui_dir)/static /opt/lib/web_ui/
 	$(CP) -R $(web_ui_dir)/templates /opt/lib/web_ui/
 	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
+	$(ECHO) "webui ALL=(root) NOPASSWD: /etc/rc.d/rc.rpcagent,\
+	/usr/local/sbin/install_lic.sh" > /etc/sudoers.d/webui
 	$(TOUCH) $(@)
 
 rpc_agent.chroot: stunnel.chroot
@@ -3419,8 +3433,13 @@ image:
 	$(STAGING_DIR)/usr/include/$(notdir \
 	$(wildcard $(CHROOT_DIR)/usr/include/python*))/pyconfig.h
 	$(MKDIR) $(STAGING_DIR)/usr/share/doc/esos
-	$(SED) -n '/END OF TERMS AND CONDITIONS/q;p' $(SRC_DIR)/COPYING > \
-	$(STAGING_DIR)/usr/share/doc/esos/LICENSE
+	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
+	  $(CP) $(SRC_DIR)/PROF_LICENSE \
+	  $(STAGING_DIR)/usr/share/doc/esos/LICENSE; \
+	else \
+	  $(CP) $(SRC_DIR)/COMM_LICENSE \
+	  $(STAGING_DIR)/usr/share/doc/esos/LICENSE; \
+	fi
 	$(INSTALL) -m 0644 $(SRC_DIR)/ChangeLog \
 	$(STAGING_DIR)/usr/share/doc/esos/ChangeLog
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
@@ -3460,6 +3479,12 @@ image:
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/support_pkg.sh \
 	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/raid_tools.py \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
+	  $(INSTALL) $(SRC_DIR)/scripts/install_lic.sh \
+	  $(STAGING_DIR)/usr/local/sbin/; \
+	fi
 	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d
 	$(CP) -R $(SRC_DIR)/misc/ocf/esos \
 	$(STAGING_DIR)/usr/lib/ocf/resource.d/
@@ -3484,7 +3509,7 @@ image:
 	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
 	$(INSTALL) $(SRC_DIR)/perf-agent/* $(STAGING_DIR)/usr/local/perf-agent/
 	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
-	$(ECHO) "ESOS - Enterprise Storage OS $(esos_ver)" > \
+	$(ECHO) "ESOS $(edition) $(esos_ver)" > \
 	$(STAGING_DIR)/etc/esos-release
 	$(CHOWN) -R root:root $(STAGING_DIR)/*
 	$(FIND) $(STAGING_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644
@@ -3576,7 +3601,7 @@ image:
 
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
-pkg_dist: pkg_prefix = esos-$(esos_ver)
+pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
@@ -3587,7 +3612,6 @@ pkg_dist: $(bz2_img_file)
 	$(LN) $(SRC_DIR) $(pkg_prefix)
 	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/install_common \
 	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
-	$(pkg_prefix)/rpm2cpio.sh \
 	$(pkg_prefix)/INSTALL $(pkg_prefix)/README \
 	$(pkg_prefix)/COPYING $(pkg_prefix)/ChangeLog
 	$(RM) $(pkg_prefix)

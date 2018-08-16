@@ -254,11 +254,16 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     int i = 0;
 
     /* Set the message */
+#ifdef COMMERCIAL
     snprintf(esos_ver, MAX_SYSFS_ATTR_SIZE,
-            "ESOS - Enterprise Storage OS %s", ESOS_VERSION);
+            "ESOS Professional %s", ESOS_VERSION);
+#else
+    snprintf(esos_ver, MAX_SYSFS_ATTR_SIZE,
+            "ESOS Community %s", ESOS_VERSION);
+#endif
     if (gethostname(hostname, ((sizeof hostname) - 1)) == -1)
         snprintf(hostname, sizeof (hostname), "hostname");
-    SAFE_ASPRINTF(&message[0], "<C></%d/B>About ESOS",
+    SAFE_ASPRINTF(&message[0], "<C></%d/B>About ESOS (Enterprise Storage OS)",
             g_color_dialog_title[g_curr_theme]);
     SAFE_ASPRINTF(&message[1], " ");
     SAFE_ASPRINTF(&message[2], "</B>This Host:<!B>\t%-.40s", hostname);
@@ -266,15 +271,14 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     SAFE_ASPRINTF(&message[4], " ");
     SAFE_ASPRINTF(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
     SAFE_ASPRINTF(&message[6], " ");
-    SAFE_ASPRINTF(&message[7], "</B>ESOS Copyright (C) 2017 Marc A. Smith");
-    SAFE_ASPRINTF(&message[8], "This program comes with ABSOLUTELY NO "
-            "WARRANTY; for details view");
-    SAFE_ASPRINTF(&message[9], "the ESOS license file. This is free software, "
-            "and you are welcome to");
-    SAFE_ASPRINTF(&message[10], "redistribute it under certain conditions; "
-            "view the ESOS license file");
-    SAFE_ASPRINTF(&message[11], "for details. ESOS license file: %s",
-            ESOS_LICENSE);
+    SAFE_ASPRINTF(&message[7], "</B>Copyright (C) 2018 Parodyne Inc. "
+            "All rights reserved.");
+    SAFE_ASPRINTF(&message[8], " ");
+    SAFE_ASPRINTF(&message[9], "ESOS and Enterprise Storage OS are "
+            "registered trademarks of Parodyne Inc.");
+    SAFE_ASPRINTF(&message[10], "The full ESOS license agreement (EULA) "
+            "is available at this path:");
+    SAFE_ASPRINTF(&message[11], "%s", ESOS_LICENSE);
     SAFE_ASPRINTF(&message[12], " ");
     SAFE_ASPRINTF(&message[13], " ");
 

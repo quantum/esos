@@ -36,7 +36,7 @@ start() {
     # Now we can start RPC agent
     /bin/echo "Starting the ESOS RPC Agent..."
     eval ${RPC_AGENT} ${USER_OPTS} || exit 1
-    /bin/touch ${NGINX_LOCK}
+    /bin/touch ${RPC_AGENT_LOCK}
 }
 
 stop() {

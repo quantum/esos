@@ -19,6 +19,8 @@
 #include <curl/curl.h>
 #include <assert.h>
 #include <locale.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 
 #include "prototypes.h"
 #include "system.h"
@@ -132,6 +134,165 @@ start:
     cdk_screen = initCDKScreen(sub_window);
     initCDKColor();
 
+    /* Draw the CDK screen */
+    statusBar(main_window);
+    refreshCDKScreen(cdk_screen);
+
+    /* We need root privileges; for the short term I don't see any other way
+     * around this; long term we can hopefully do something else */
+    saved_uid = getuid();
+    if (setresuid(0, -1, saved_uid) == -1) {
+        SAFE_ASPRINTF(&error_msg, "setresuid(): %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg,
+                "Your capabilities may be reduced...");
+        FREE_NULL(error_msg);
+    }
+
+    /* Check if license has been accepted */
+    if (!acceptLicense(cdk_screen)) {
+        errorDialog(cdk_screen,
+                "You must accept the Enterprise Storage OS (ESOS) license",
+                "agreement to use this software. Hit ENTER to exit.");
+        goto quit;
+    }
+
+    /* Usage count (only if we have Internet) */
+    if (inet_works)
+        reportUsage(cdk_screen);
+
+    /* Check and see if SCST is loaded */
+    if (!isSCSTLoaded()) {
+        errorDialog(cdk_screen,
+                "It appears SCST is not loaded; a number of the TUI",
+                "functions will not work. Check the '/var/log/boot' file.");
+    }
+
+#ifdef COMMERCIAL
+    /* Variables */
+    CDKLABEL *lic_status_label = 0, *ip_addr_label = 0, *web_ui_label = 0,
+            *rpc_agent_label = 0;
+    char *lic_status_msg[LIC_STATUS_INFO_LINES] = {NULL},
+            *ip_addr_msg[IP_ADDR_INFO_LINES] = {NULL},
+            *web_ui_msg[WEB_UI_INFO_LINES] = {NULL},
+            *rpc_agent_msg[RPC_AGENT_INFO_LINES] = {NULL};
+    struct ifaddrs *first_ifaddrs = NULL, *next_ifaddrs = NULL;
+    void *tmp_addr_ptr = NULL;
+    char addr_buffer[INET_ADDRSTRLEN] = {0};
+    int addr_line_cnt = 0;
+
+    /* License status information label */
+    SAFE_ASPRINTF(&lic_status_msg[0],
+            "</%d/B/U>ESOS License Status<!%d><!B><!U>"
+            "                           ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
+    SAFE_ASPRINTF(&lic_status_msg[1], "%s",
+            prettyShrinkStr(46, checkAgentLic()));
+    lic_status_label = newCDKLabel(cdk_screen, 31, 1, lic_status_msg,
+            LIC_STATUS_INFO_LINES, TRUE, FALSE);
+    if (!lic_status_label) {
+        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKLabelBoxAttribute(lic_status_label,
+            g_color_main_box[g_curr_theme]);
+    setCDKLabelBackgroundAttrib(lic_status_label,
+            g_color_main_text[g_curr_theme]);
+
+    /* IP address information label */
+    SAFE_ASPRINTF(&ip_addr_msg[0],
+            "</%d/B/U>Configured IPv4 Addresses<!%d><!B><!U>"
+            "                     ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
+    /* First create the linked list of local interfaces */
+    if (getifaddrs(&first_ifaddrs) == -1) {
+        SAFE_ASPRINTF(&error_msg, "getifaddrs(): %s", strerror(errno));
+        errorDialog(cdk_screen, error_msg, NULL);
+        FREE_NULL(error_msg);
+    } else {
+        /* Now iterate over the list of network interfaces */
+        addr_line_cnt = 1;
+        for (next_ifaddrs = first_ifaddrs; next_ifaddrs != NULL;
+                next_ifaddrs = next_ifaddrs->ifa_next) {
+            if (!next_ifaddrs->ifa_addr)
+                continue;
+            /* We don't care about the loopback interface */
+            if (strcmp(next_ifaddrs->ifa_name, "lo") == 0)
+                continue;
+            /* And we only want IPv4 addresses */
+            if (next_ifaddrs->ifa_addr->sa_family == AF_INET) {
+                tmp_addr_ptr = &((struct sockaddr_in *) next_ifaddrs->
+                        ifa_addr)->sin_addr;
+                inet_ntop(AF_INET, tmp_addr_ptr, addr_buffer, INET_ADDRSTRLEN);
+                if (addr_line_cnt < IP_ADDR_INFO_LINES) {
+                    SAFE_ASPRINTF(&ip_addr_msg[addr_line_cnt], "%s (%s)",
+                            addr_buffer, next_ifaddrs->ifa_name);
+                    addr_line_cnt++;
+                }
+            }
+        }
+        /* Clean up */
+        if (first_ifaddrs != NULL)
+            freeifaddrs(first_ifaddrs);
+    }
+    ip_addr_label = newCDKLabel(cdk_screen, 31, 5, ip_addr_msg,
+            IP_ADDR_INFO_LINES, TRUE, FALSE);
+    if (!ip_addr_label) {
+        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKLabelBoxAttribute(ip_addr_label,
+            g_color_main_box[g_curr_theme]);
+    setCDKLabelBackgroundAttrib(ip_addr_label,
+            g_color_main_text[g_curr_theme]);
+
+    /* Web UI information label */
+    SAFE_ASPRINTF(&web_ui_msg[0],
+            "</%d/B/U>ESOS Web UI Services<!%d><!B><!U>"
+            "                          ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
+    SAFE_ASPRINTF(&web_ui_msg[1], "rc.webui: %s",
+            prettyShrinkStr(36, rcSvcStatus("rc.webui")));
+    SAFE_ASPRINTF(&web_ui_msg[2], "rc.nginx: %s",
+            prettyShrinkStr(36, rcSvcStatus("rc.nginx")));
+    web_ui_label = newCDKLabel(cdk_screen, 31, 13, web_ui_msg,
+            WEB_UI_INFO_LINES, TRUE, FALSE);
+    if (!web_ui_label) {
+        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKLabelBoxAttribute(web_ui_label,
+            g_color_main_box[g_curr_theme]);
+    setCDKLabelBackgroundAttrib(web_ui_label,
+            g_color_main_text[g_curr_theme]);
+
+    /* RPC agent information label */
+    SAFE_ASPRINTF(&rpc_agent_msg[0],
+            "</%d/B/U>ESOS RPC Agent Services<!%d><!B><!U>"
+            "                       ",
+            g_color_info_header[g_curr_theme],
+            g_color_info_header[g_curr_theme]);
+    SAFE_ASPRINTF(&rpc_agent_msg[1], "rc.rpcagent: %s",
+            prettyShrinkStr(33, rcSvcStatus("rc.rpcagent")));
+    SAFE_ASPRINTF(&rpc_agent_msg[2], "rc.stunnel:  %s",
+            prettyShrinkStr(33, rcSvcStatus("rc.stunnel")));
+    rpc_agent_label = newCDKLabel(cdk_screen, 31, 18, rpc_agent_msg,
+            RPC_AGENT_INFO_LINES, TRUE, FALSE);
+    if (!rpc_agent_label) {
+        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
+        goto quit;
+    }
+    setCDKLabelBoxAttribute(rpc_agent_label,
+            g_color_main_box[g_curr_theme]);
+    setCDKLabelBackgroundAttrib(rpc_agent_label,
+            g_color_main_text[g_curr_theme]);
+
+    /* Make the label widgets appear */
+    refreshCDKScreen(cdk_screen);
+#endif
+
 #ifdef SIMPLE_TUI
     /* Variables */
     char *simple_menu_opts[MAX_SIMPLE_MENU_OPTS] = {NULL};
@@ -140,28 +301,29 @@ start:
     int simple_menu_choice = 0;
 
     /* Create a simple menu scroll options list */
-    SAFE_ASPRINTF(&simple_menu_opts[0], "<C>Quit the TUI");
-    SAFE_ASPRINTF(&simple_menu_opts[1], "<C>Exit to Shell");
-    SAFE_ASPRINTF(&simple_menu_opts[2], "<C>Date & Time");
-    SAFE_ASPRINTF(&simple_menu_opts[3], "<C>Network Settings");
-    SAFE_ASPRINTF(&simple_menu_opts[4], "<C>Restart Networking");
-    SAFE_ASPRINTF(&simple_menu_opts[5], "<C>Email Setup");
-    SAFE_ASPRINTF(&simple_menu_opts[6], "<C>Send Test Email");
+    SAFE_ASPRINTF(&simple_menu_opts[0], "<C></B>Quit the TUI<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[1], "<C></B>Exit to Shell<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[2], "<C></B>Date & Time<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[3], "<C></B>Network Settings<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[4], "<C></B>Restart Networking<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[5], "<C></B>Email Setup<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[6], "<C></B>Send Test Email<!B>");
+    SAFE_ASPRINTF(&simple_menu_opts[7], "<C></B>About ESOS<!B>");
 
     /* Create the simple menu scroll widget */
     SAFE_ASPRINTF(&scroll_title, "<C></%d/B>Choose a Menu Action\n",
-            g_color_dialog_title[g_curr_theme]);
-    simple_menu_list = newCDKScroll(cdk_screen, CENTER, CENTER, NONE, 15, 60,
-            scroll_title, simple_menu_opts, 5,
-            FALSE, g_color_dialog_select[g_curr_theme], TRUE, FALSE);
+            g_color_menu_letter[g_curr_theme]);
+    simple_menu_list = newCDKScroll(cdk_screen, 1, 1, NONE, 22, 30,
+            scroll_title, simple_menu_opts, 8,
+            FALSE, g_color_menu_text[g_curr_theme], TRUE, FALSE);
     if (!simple_menu_list) {
         errorDialog(cdk_screen, SCROLL_ERR_MSG, NULL);
         goto quit;
     }
     setCDKScrollBoxAttribute(simple_menu_list,
-            g_color_dialog_box[g_curr_theme]);
+            g_color_main_box[g_curr_theme]);
     setCDKScrollBackgroundAttrib(simple_menu_list,
-            g_color_dialog_text[g_curr_theme]);
+            g_color_main_text[g_curr_theme]);
 #else
     /* Variables */
     CDKMENU *menu_1 = 0, *menu_2 = 0;
@@ -409,39 +571,6 @@ start:
     setCDKMenuBackgroundColor(menu_2, g_color_menu_bg[g_curr_theme]);
 #endif
 
-    /* We need root privileges; for the short term I don't see any other way
-     * around this; long term we can hopefully do something else */
-    saved_uid = getuid();
-    if (setresuid(0, -1, saved_uid) == -1) {
-        SAFE_ASPRINTF(&error_msg, "setresuid(): %s", strerror(errno));
-        errorDialog(cdk_screen, error_msg,
-                "Your capabilities may be reduced...");
-        FREE_NULL(error_msg);
-    }
-
-    /* Draw the CDK screen */
-    statusBar(main_window);
-    refreshCDKScreen(cdk_screen);
-
-    /* Check if license has been accepted */
-    if (!acceptLicense(cdk_screen)) {
-        errorDialog(cdk_screen,
-                "You must accept the Enterprise Storage OS (ESOS) license",
-                "agreement to use this software. Hit ENTER to exit.");
-        goto quit;
-    }
-
-    /* Usage count (only if we have Internet) */
-    if (inet_works)
-        reportUsage(cdk_screen);
-
-    /* Check and see if SCST is loaded */
-    if (!isSCSTLoaded()) {
-        errorDialog(cdk_screen,
-                "It appears SCST is not loaded; a number of the TUI",
-                "functions will not work. Check the '/var/log/boot' file.");
-    }
-
 #ifdef SIMPLE_TUI
     /* Activate the scroll widget, evaluate action, repeat */
     for (;;) {
@@ -491,6 +620,16 @@ start:
                 FREE_NULL(scroll_title);
                 for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)
                     FREE_NULL(simple_menu_opts[i]);
+#ifdef COMMERCIAL
+                for (i = 0; i < LIC_STATUS_INFO_LINES; i++)
+                    FREE_NULL(lic_status_msg[i]);
+                for (i = 0; i < IP_ADDR_INFO_LINES; i++)
+                    FREE_NULL(ip_addr_msg[i]);
+                for (i = 0; i < WEB_UI_INFO_LINES; i++)
+                    FREE_NULL(web_ui_msg[i]);
+                for (i = 0; i < RPC_AGENT_INFO_LINES; i++)
+                    FREE_NULL(rpc_agent_msg[i]);
+#endif
                 destroyCDKScreenObjects(cdk_screen);
                 destroyCDKScreen(cdk_screen);
                 endCDK();
@@ -525,6 +664,10 @@ start:
         } else if (simple_menu_choice == 6) {
             /* Test Email dialog */
             testEmailDialog(cdk_screen);
+
+        } else if (simple_menu_choice == 7) {
+            /* About dialog */
+            aboutDialog(cdk_screen);
         }
         curs_set(0);
         refreshCDKScreen(cdk_screen);
@@ -1059,6 +1202,16 @@ quit:
     }
     delwin(sub_window);
     delwin(main_window);
+#ifdef COMMERCIAL
+    for (i = 0; i < LIC_STATUS_INFO_LINES; i++)
+        FREE_NULL(lic_status_msg[i]);
+    for (i = 0; i < IP_ADDR_INFO_LINES; i++)
+        FREE_NULL(ip_addr_msg[i]);
+    for (i = 0; i < WEB_UI_INFO_LINES; i++)
+        FREE_NULL(web_ui_msg[i]);
+    for (i = 0; i < RPC_AGENT_INFO_LINES; i++)
+        FREE_NULL(rpc_agent_msg[i]);
+#endif
 #ifdef SIMPLE_TUI
     FREE_NULL(scroll_title);
     for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)
@@ -1223,8 +1376,13 @@ void statusBar(WINDOW *window) {
     chtype *status_bar = NULL;
 
     /* Set the ESOS status bar name/version */
+#ifdef COMMERCIAL
     snprintf(long_ver_str, MISC_STRING_LEN,
-            "ESOS - Enterprise Storage OS %s", ESOS_VERSION);
+            "ESOS Professional %s", ESOS_VERSION);
+#else
+    snprintf(long_ver_str, MISC_STRING_LEN,
+            "ESOS Community %s", ESOS_VERSION);
+#endif
     snprintf(esos_ver_str, STAT_BAR_ESOS_VER_MAX,
             prettyShrinkStr((STAT_BAR_ESOS_VER_MAX - 1), long_ver_str));
     esos_ver_size = strlen(esos_ver_str);
@@ -1321,9 +1479,13 @@ boolean acceptLicense(CDKSCREEN *main_cdk_screen) {
                 break;
             } else {
                 /* Setup scrolling window widget */
-                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>Enterprise Storage "
-                        "OS (ESOS) License\n",
-                        g_color_dialog_title[g_curr_theme]);
+#ifdef COMMERCIAL
+                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>ESOS Professional "
+                        "License\n", g_color_dialog_title[g_curr_theme]);
+#else
+                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>ESOS Community "
+                        "License\n", g_color_dialog_title[g_curr_theme]);
+#endif
                 esos_license = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                         (ESOS_LICENSE_ROWS + 2), (ESOS_LICENSE_COLS + 2),
                         swindow_title, MAX_ESOS_LICENSE_LINES, TRUE, FALSE);

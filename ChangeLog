@@ -1,3 +1,85 @@
+2018-08-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'prof_ed_prep'
+
+2018-08-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated the "win_binaries" package to only include Windows tools that are now required; removed support for inlining RAID CLI tools from the install.sh and install.vbs installer scripts
+
+2018-08-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the 'raid_tools.py' script to handle installing propietary RAID CLI tools from the shell
+
+2018-08-09  Marc A. Smith  <marc.smith@parodyne.com>
+
+	web_ui.chroot: include a file in /etc/sudoers.d/ for the web UI stuff; rc.rpcagent: fixed typo in start(); added the 'install_lic.sh' script to assist web UI installing a new license
+
+2018-08-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed typo in enable-commercial block of Makefile; fixed new image file name path in install.sh script
+
+2018-08-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	many TUI updates for -DCOMMERCIAL including RPC agent and web UI status labels, IP adddress list, and license file status, all with actual data -- currently only refreshs data at start
+
+2018-07-31  Marc A. Smith  <marc.smith@parodyne.com>
+
+	we now use two different package names for ESOS Professional (esos_prof) and ESOS Community (esos_comm); updates to the TUI for the Commercial variant that shows RPC agent and web UI service stats
+
+2018-07-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated license file names (GPL and commercial); added the '--enable-commercial' build time option; updated branding in config files and TUI to use ESOS Professional / Community
+
+2018-07-26  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'agent_prep'
+
+	removed default stunnel.conf file (and directory); set stunnel.chroot as a dep for rpc_agent.chroot; updated stunnel.chroot to install an example config file
+
+2018-07-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the '--with-rpc_agent=PATH' build option to support inlining the ESOS RPC Agent software; added an init/rc script to handle starting/stopping the ESOS RPC Agent; updated the Makefile to handle the new build-time option for rpc_agent
+
+2018-07-23  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'web_prep'
+
+	the '-u' flag for cpio in the initramfs script is needed to overwrite extracted "files" (and directories), since in the cpio archive, the directory path (generated from 'find') is after all files/directories under it, and '-d' is needed since this is last as well, otherwise cpio fails to extract -- this solves the issue where directory ownership is not maintained
+
+2018-07-22  Marc A. Smith  <marc.smith@parodyne.com>
+
+	several tweaks for copying files in web_ui.chroot; set the old timestamp on files in /opt (image target); in rc.webui perform the Django migrations as user 'webui'
+
+	fixed several issues with inlining ESOS Web UI
+
+	added the '--with-web_ui=PATH' build time option to support inlining the ESOS Web UI add-on application; updated rc.webui to handle applying Django model migrations if needed
+
+2018-07-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated image target to set permissions for 'shadow' group and 'webui' user; fixed typos in rc.conf; updated rc.webui to handle creating secret key for Django
+
+2018-07-18  Marc A. Smith  <marc.smith@parodyne.com>
+
+	include the uWSGI package in Python.chroot; added the 'webui' user and group; added several directory-creation and modification lines to accomodate ESOS Web UI; added the rc.webui init script for ESOS Web UI
+
+2018-07-08  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added /etc/pam.d/login to allow normal login via getty
+
+2018-07-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the Linux-PAM package (a dep for building Busybox with PAM support); fixed build option for nginx; added default /etc/pam.d/ config files; updated Busybox config to use PAM
+
+2018-07-06  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added Python packages parallax, py-dateutil, and PyYAML (missing deps for crmsh); added Django and several add-ons + dependencies via the Python.chroot target
+
+	added nginx 1.14.0 and pcre 8.42 (dep for nginx); added a 'rc.nginx' init/rc script to handle starting/stopping the service (disabled by default)
+
+2018-05-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated eudev to the latest commit in the 'master' branch
+
 2018-05-24  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated Linux to version 4.14.43; updated linux-firmware to the latest version

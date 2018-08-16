@@ -3,16 +3,13 @@
 PKG_DIR="${PWD}"
 TEMP_DIR="${PKG_DIR}/temp"
 MNT_DIR="${TEMP_DIR}/mnt"
-LOCAL_RPM2CPIO="${PKG_DIR}/rpm2cpio.sh"
-LINUX_REQD_TOOLS="tar cpio dd md5sum sha256sum grep blockdev lsscsi unzip findfs bunzip2 rpm2cpio"
-MACOSX_REQD_TOOLS="tar cpio dd md5 shasum cat cut sed diff grep diskutil unzip bunzip2 fuse-ext2"
+LINUX_REQD_TOOLS="dd md5sum sha256sum grep egrep blockdev lsscsi findfs bunzip2"
+MACOSX_REQD_TOOLS="dd md5 shasum cat cut sed diff grep egrep diskutil bunzip2"
 MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
 LINUX="LINUX"
 MACOSX="MACOSX"
 SYNC_LOCK="/tmp/conf_sync_lock"
-
-source ./install_common
 
 echo "*** Enterprise Storage OS Install Script ***" && echo
 
@@ -44,13 +41,6 @@ for i in ${!reqd_tools}; do
 done
 echo
 
-# Set the rpm2cpio that we're using
-if [ "${this_os}" = "${LINUX}" ]; then
-    rpm2cpio=$(which rpm2cpio)
-elif [ "${this_os}" = "${MACOSX}" ]; then
-    rpm2cpio=${LOCAL_RPM2CPIO}
-fi
-
 # Checksums
 echo "### Verifying checksums..."
 if [ "${this_os}" = "${LINUX}" ]; then
@@ -70,7 +60,7 @@ fi
 echo
 
 # Locate the image file
-image_file="$(ls esos-*.img.bz2)" || exit 1
+image_file="$(ls esos*.img.bz2)" || exit 1
 
 # Check if we're doing an upgrade
 if [ -f "/etc/esos-release" ]; then
@@ -242,117 +232,13 @@ else
     exit 0
 fi
 
-# Continue on to installing proprietary CLI tools, or finished
+# We're all done, users can install RAID tools in the ESOS instance
 echo && echo
-read -p "*** If you would like to add any RAID controller management utilities, press ENTER to continue; otherwise press CTRL-C to quit, your ESOS USB drive install is complete. ***"
-
-# Display proprietary tool information and download instructions
-echo && echo
-mkdir -p ${TEMP_DIR} || exit 1
-for i in ${PROP_TOOLS}; do
-    tool_desc=TOOL_DESC_${i}
-    echo "### ${!tool_desc}"
-    tool_file=TOOL_FILE_${i}
-    echo "### Required file: ${!tool_file}"
-    tool_url=TOOL_URL_${i}
-    echo "### Download URL: ${!tool_url}"
-    echo "### Place downloaded file in this directory: ${PKG_DIR}"
-    echo
-done
-
-# Prompt user to continue
+echo "*** RAID controller management utilities are now installed using" \
+    "the 'raid_tools.py' script in a running ESOS instance. ***"
 echo
-read -p "*** Once the file(s) have been loaded and placed in the '${PKG_DIR}' directory, press ENTER to install the RAID controller CLI tools on your new ESOS USB drive. ***"
-
-# Check downloaded packages
-echo && echo
-echo "### Checking downloaded packages..."
-for i in ${PROP_TOOLS}; do
-    tool_file=TOOL_FILE_${i}
-    if [ -e "${PKG_DIR}/${!tool_file}" ]; then
-        echo "${PKG_DIR}/${!tool_file}: Adding to the install list."
-        install_list="${install_list} ${i}"
-    else
-        echo "${PKG_DIR}/${!tool_file}: File not found."
-    fi
-done
-
-# Install the proprietary CLI tools to the ESOS USB drive (if any)
-echo
-if [ -z "${install_list}" ]; then
-    echo "### Nothing to do."
-    echo "### Your ESOS USB drive is complete, however, no RAID controller CLI tools were installed."
-else
-    echo "### Installing proprietary CLI tools..."
-    mkdir -p ${MNT_DIR} || exit 1
-    if [ "${this_os}" = "${LINUX}" ]; then
-        esos_conf=$(findfs LABEL=esos_conf)
-        if [ ${?} -ne 0 ]; then
-            exit 1
-        fi
-        # Just in case this system has an auto-mounter
-        if grep ${esos_conf} /proc/mounts > /dev/null 2>&1; then
-            umount ${esos_conf} || exit 1
-        fi
-    fi
-    # Mount it and inject all (if any) of the tools
-    if [ "${this_os}" = "${LINUX}" ]; then
-        if [ -f "/etc/esos-release" ]; then
-            MNT_DIR=""
-        else
-            mount ${esos_conf} ${MNT_DIR} || exit 1
-            mkdir -p ${MNT_DIR}/opt/{sbin,lib} || exit 1
-        fi
-    elif [ "${this_os}" = "${MACOSX}" ]; then
-        fuse-ext2 -o force ${dev_node}s3 ${MNT_DIR} || exit 1
-        sleep 5
-        mkdir -p ${MNT_DIR}/opt/{sbin,lib} || exit 1
-    fi
-    cd ${TEMP_DIR}
-    for i in ${install_list}; do
-        if [ "${i}" = "StorCLI" ]; then
-            unzip -o ${PKG_DIR}/*_StorCLI*.zip && unzip -o \
-            versionChangeSet/univ_viva_cli_rel/storcli_all_os.zip && \
-            ${rpm2cpio} storcli_all_os/Linux/storcli-*.rpm | \
-            cpio -idmv && cp opt/MegaRAID/storcli/storcli64 \
-            ${MNT_DIR}/opt/sbin/ && cp opt/MegaRAID/storcli/libstorelibir* \
-            ${MNT_DIR}/opt/lib/
-        elif [ "${i}" = "perccli" ]; then
-            tar xvfz ${PKG_DIR}/perccli-*.tar.gz && \
-            ${rpm2cpio} perccli-*.noarch.rpm | cpio -idmv && \
-            cp opt/MegaRAID/perccli/perccli64 ${MNT_DIR}/opt/sbin/ && \
-            cp opt/MegaRAID/perccli/libstorelibir* ${MNT_DIR}/opt/lib/
-        elif [ "${i}" = "arcconf" ]; then
-            unzip -o ${PKG_DIR}/arcconf_*.zip && cp linux_x64/cmdline/arcconf \
-            ${MNT_DIR}/opt/sbin/
-        elif [ "${i}" = "hpacucli" ]; then
-            ${rpm2cpio} ${PKG_DIR}/hpacucli-*.x86_64.rpm | cpio -idmv && \
-            cp opt/compaq/hpacucli/bld/.hpacucli ${MNT_DIR}/opt/sbin/hpacucli \
-            && cp opt/compaq/hpacucli/bld/*.so ${MNT_DIR}/opt/lib/
-        elif [ "${i}" = "hpssacli" ]; then
-            ${rpm2cpio} ${PKG_DIR}/hpssacli-*.x86_64.rpm | cpio -idmv && \
-            cp opt/hp/hpssacli/bld/hpssacli ${MNT_DIR}/opt/sbin/
-        elif [ "${i}" = "linuxcli" ]; then
-            unzip -o ${PKG_DIR}/linuxcli_*.zip && \
-            cp linuxcli_*/x86_64/cli64 ${MNT_DIR}/opt/sbin/
-        elif [ "${i}" = "3DM2_CLI" ]; then
-            unzip -o ${PKG_DIR}/3DM2_CLI-*.zip && tar xvfz tdmCliLnx.tgz && \
-            cp tw_cli.x86_64 ${MNT_DIR}/opt/sbin/
-        elif [ "${i}" = "MegaCLI" ]; then
-            unzip -o ${PKG_DIR}/*_MegaCLI.zip && ${rpm2cpio} \
-            Linux/MegaCli-*.rpm | cpio -idmv && \
-            cp opt/MegaRAID/MegaCli/MegaCli64 ${MNT_DIR}/opt/sbin/
-        fi
-    done
-
-    cd -
-    if [ ! -f "/etc/esos-release" ]; then
-        umount ${MNT_DIR}
-    fi
-    echo
-    echo "### ESOS USB drive installation complete!"
-    echo "### You may now remove and use your ESOS USB drive."
-fi
+echo "### ESOS USB drive installation complete!"
+echo "### You may now remove and use your ESOS USB drive."
 
 # Done
 rm -rf ${TEMP_DIR}

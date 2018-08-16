@@ -241,7 +241,7 @@ AC_ARG_WITH(web_ui,
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
 	[web_ui_file="${withval}"; with_web_ui="yes"],
 	[with_web_ui="no"]), with_web_ui="no")
-if test  "x${with_web_ui}" = "xyes"; then
+if test "x${with_web_ui}" = "xyes"; then
 	if test -f "${web_ui_file}"; then
 		AC_MSG_NOTICE([extracting the web_ui package file...])
 		web_ui_dir="${chroot_dir}/build/web_ui"
@@ -264,7 +264,7 @@ AC_ARG_WITH(rpc_agent,
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
 	[rpc_agent_file="${withval}"; with_rpc_agent="yes"],
 	[with_rpc_agent="no"]), with_rpc_agent="no")
-if test  "x${with_rpc_agent}" = "xyes"; then
+if test "x${with_rpc_agent}" = "xyes"; then
 	if test -f "${rpc_agent_file}"; then
 		AC_MSG_NOTICE([extracting the rpc_agent package file...])
 		rpc_agent_dir="${chroot_dir}/build/rpc_agent"
@@ -280,6 +280,25 @@ AC_SUBST(rpc_agent_dir, ${rpc_agent_dir})
 AC_SUBST(with_rpc_agent, ${with_rpc_agent})
 AC_MSG_NOTICE([rpc_agent: ${with_rpc_agent}])
 
+dnl Optional commerical edition of ESOS (GPL is default)
+AC_ARG_ENABLE(commercial,
+	AS_HELP_STRING([--enable-commercial], [build the commercial edition]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_commercial="${enableval}"], [enable_commercial="no"]),
+	enable_commercial="no")
+if test "x${enable_commercial}" = "xyes"; then
+	if test "x${with_web_ui}" != "xyes"; then
+		AC_MSG_ERROR([the commercial edition requires the web_ui build option])
+	fi
+	if test "x${with_rpc_agent}" != "xyes"; then
+		AC_MSG_ERROR([the commercial edition requires the rpc_agent build option])
+	fi
+fi
+AS_IF([test "x$enable_commercial" = "xyes"],
+	[build_opts="${build_opts} commercial"; opt_suffix="${opt_suffix}C"])
+AC_SUBST(enable_commercial, ${enable_commercial})
+AC_MSG_NOTICE([commercial: ${enable_commercial}])
+
 dnl Optional package celerity_16_32 (user provides package file)
 AC_ARG_WITH(celerity_16_32,
 	AS_HELP_STRING([--with-celerity_16_32=PATH],
@@ -287,7 +306,7 @@ AC_ARG_WITH(celerity_16_32,
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
 	[celerity_16_32_file="${withval}"; with_celerity_16_32="yes"],
 	[with_celerity_16_32="no"]), with_celerity_16_32="no")
-if test  "x${with_celerity_16_32}" = "xyes"; then
+if test "x${with_celerity_16_32}" = "xyes"; then
 	if test -f "${celerity_16_32_file}"; then
 		AC_MSG_NOTICE([extracting the celerity_16_32 package file...])
 		celerity_16_32_dir="${chroot_dir}/build/celerity_16_32"
@@ -310,8 +329,8 @@ AC_ARG_WITH(atto_scst,
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
 	[atto_scst_file="${withval}"; with_atto_scst="yes"],
 	[with_atto_scst="no"]), with_atto_scst="no")
-if test  "x${with_atto_scst}" = "xyes"; then
-	if test  "x${with_celerity_16_32}" != "xyes"; then
+if test "x${with_atto_scst}" = "xyes"; then
+	if test "x${with_celerity_16_32}" != "xyes"; then
 		AC_MSG_ERROR([the ATTO SCST driver requires the Celerity 16/32 build option])
 	fi
 	if test -f "${atto_scst_file}"; then
@@ -337,7 +356,7 @@ AC_ARG_WITH(ocs_sdk,
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
 	[ocs_sdk_file="${withval}"; with_ocs_sdk="yes"],
 	[with_ocs_sdk="no"]), with_ocs_sdk="no")
-if test  "x${with_ocs_sdk}" = "xyes"; then
+if test "x${with_ocs_sdk}" = "xyes"; then
 	if test -f "${ocs_sdk_file}"; then
 		AC_MSG_NOTICE([extracting the ocs_sdk package file...])
 		ocs_sdk_dir="${chroot_dir}/build/ocs_sdk"
@@ -360,7 +379,7 @@ AC_ARG_WITH(uwire,
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
 	[uwire_file="${withval}"; with_uwire="yes"],
 	[with_uwire="no"]), with_uwire="no")
-if test  "x${with_uwire}" = "xyes"; then
+if test "x${with_uwire}" = "xyes"; then
 	AC_MSG_ERROR([support for Chelsio Unified Wire adapters is broken])
 	if test -f "${uwire_file}"; then
 		AC_MSG_NOTICE([extracting the uwire package file...])
