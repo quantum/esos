@@ -1,3 +1,11 @@
+2018-08-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'rbd_blk_fix' into 1.x.x
+
+2018-08-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed bug in getUsableBlockDevs() that is visible when Ceph RBD devices exist on a ESOS system
+
 2018-06-18  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated Linux to version 4.9.109
