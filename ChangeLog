@@ -1,4 +1,8 @@
-2018-08-15  Marc A. Smith  <marc.smith@parodyne.com>
+2018-08-27  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the 'dosfstools' package (resolves GH issue #215); removed un-needed line in Windows installer script (install.vbs)
+
+2018-08-16  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'prof_ed_prep'
 
