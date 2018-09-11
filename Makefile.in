@@ -1254,6 +1254,9 @@ esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
 	  $(MAKE) --directory=$(linux_src) modules_install; \
 	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
 	  $(ECHO) "### Building the SCST core and target drivers..."; \
+	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \
+	  -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/ \*\/$$//' \
+	  $(scst_src)/scst/include/scst.h; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i scst; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
