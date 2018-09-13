@@ -95,7 +95,7 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define ALUA_LAYOUT_COLS                72
 #define MAX_ALUA_LAYOUT_LINES           128
 #define ESOS_LICENSE_ROWS               10
-#define ESOS_LICENSE_COLS               76
+#define ESOS_LICENSE_COLS               74
 #define MAX_ESOS_LICENSE_LINES          768
 
 /* Other window/screen/label/etc. sizing limits */

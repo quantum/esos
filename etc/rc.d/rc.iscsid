@@ -6,6 +6,8 @@ ISCSID="/sbin/iscsid"
 ISCSID_LOCK="/var/lock/iscsid"
 ISCSIADM="/sbin/iscsiadm"
 SYNC="/bin/sync"
+INAME_FILE="/etc/iscsi/initiatorname.iscsi"
+ISCSI_INAME="/sbin/iscsi-iname"
 DFLT_OPTS=""
 
 check_args ${@}
@@ -22,6 +24,10 @@ else
 fi
 
 start() {
+    if [ ! -f "${INAME_FILE}" ]; then
+        /bin/echo "Generating unique iSCSI initiator name..."
+	/bin/echo "InitiatorName=`${ISCSI_INAME}`" > ${INAME_FILE} || exit 1
+    fi
     /bin/echo "Starting iSCSI initiator service..."
     eval ${ISCSID} ${USER_OPTS} || exit 1
     /bin/touch ${ISCSID_LOCK}

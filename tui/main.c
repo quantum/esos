@@ -288,9 +288,6 @@ start:
             g_color_main_box[g_curr_theme]);
     setCDKLabelBackgroundAttrib(rpc_agent_label,
             g_color_main_text[g_curr_theme]);
-
-    /* Make the label widgets appear */
-    refreshCDKScreen(cdk_screen);
 #endif
 
 #ifdef SIMPLE_TUI
@@ -570,6 +567,9 @@ start:
     }
     setCDKMenuBackgroundColor(menu_2, g_color_menu_bg[g_curr_theme]);
 #endif
+
+/* Make the screen widgets appear */
+refreshCDKScreen(cdk_screen);
 
 #ifdef SIMPLE_TUI
     /* Activate the scroll widget, evaluate action, repeat */
@@ -1481,10 +1481,12 @@ boolean acceptLicense(CDKSCREEN *main_cdk_screen) {
                 /* Setup scrolling window widget */
 #ifdef COMMERCIAL
                 SAFE_ASPRINTF(&swindow_title, "<C></%d/B>ESOS Professional "
-                        "License\n", g_color_dialog_title[g_curr_theme]);
+                        "License - Scroll Down to Read/Accept\n",
+                        g_color_dialog_title[g_curr_theme]);
 #else
                 SAFE_ASPRINTF(&swindow_title, "<C></%d/B>ESOS Community "
-                        "License\n", g_color_dialog_title[g_curr_theme]);
+                        "License - Scroll Down to Read/Accept\n",
+                        g_color_dialog_title[g_curr_theme]);
 #endif
                 esos_license = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                         (ESOS_LICENSE_ROWS + 2), (ESOS_LICENSE_COLS + 2),

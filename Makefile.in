@@ -3083,7 +3083,6 @@ open-iscsi.chroot: glibc.chroot open-isns.chroot util-linux.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install_programs
 	$(MAKE) --directory=$(tgt_src_dir) install_doc
 	$(MAKE) --directory=$(tgt_src_dir) install_etc
-	$(MAKE) --directory=$(tgt_src_dir) install_iname
 	$(MAKE) --directory=$(tgt_src_dir) install_iface
 	$(TOUCH) $(@)
 
@@ -3610,6 +3609,8 @@ image:
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
+pkg_dist: license_file =  $(if $(findstring yes,$(enable_commercial)),\
+	PROF_LICENSE,COMM_LICENSE)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
@@ -3621,7 +3622,7 @@ pkg_dist: $(bz2_img_file)
 	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/install_common \
 	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
 	$(pkg_prefix)/INSTALL $(pkg_prefix)/README \
-	$(pkg_prefix)/COPYING $(pkg_prefix)/ChangeLog
+	$(pkg_prefix)/$(license_file) $(pkg_prefix)/ChangeLog
 	$(RM) $(pkg_prefix)
 	$(LN) $(wildcard $(SOURCES_DIR)/win_binaries-*) $(pkg_prefix)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/*
