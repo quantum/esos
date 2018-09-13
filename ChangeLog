@@ -1,3 +1,11 @@
+2018-09-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'health_chk_fix' into 1.x.x
+
+2018-08-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	health_chk.sh: 'JBOD' is an acceptable PD state for PERC RAID controllers (issue #219)
+
 2018-08-16  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'rbd_blk_fix' into 1.x.x
