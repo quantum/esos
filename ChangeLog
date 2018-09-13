@@ -1,10 +1,26 @@
+2018-09-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'health_chk_fix'
+
+	formatted ESOS Community license file to fit better in scrolling window widget; don't generate a default iSCSI initiator name file during build; include the correct license file in pkg_dist; rc.iscsid: generate a unique iSCSI initiator name file in start() if one doesn't already exist; decreased size (columns) of EULA scrolling window widget in TUI; fixed screen refresh issue in TUI for Community edition; added a note to the EULA scrolling window title line informing user to scroll down
+
 2018-08-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the 'dosfstools' package (resolves GH issue #215); removed un-needed line in Windows installer script (install.vbs)
 
+2018-08-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	health_chk.sh: 'JBOD' is an acceptable PD state for PERC RAID controllers (issue #219)
+
 2018-08-16  Marc A. Smith  <marc.smith@parodyne.com>
 
+	Merge branch 'rbd_blk_fix' into 1.x.x
+
 	Merge branch 'prof_ed_prep'
+
+2018-08-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed bug in getUsableBlockDevs() that is visible when Ceph RBD devices exist on a ESOS system
 
 2018-08-13  Marc A. Smith  <marc.smith@parodyne.com>
 
@@ -79,6 +95,10 @@
 	added Python packages parallax, py-dateutil, and PyYAML (missing deps for crmsh); added Django and several add-ons + dependencies via the Python.chroot target
 
 	added nginx 1.14.0 and pcre 8.42 (dep for nginx); added a 'rc.nginx' init/rc script to handle starting/stopping the service (disabled by default)
+
+2018-06-18  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated Linux to version 4.9.109
 
 2018-05-25  Marc A. Smith  <marc.smith@parodyne.com>
 
@@ -167,6 +187,10 @@
 	Merge branch 'archive_log_fix'
 
 	Merge branch 'fix_scst_ra_block'
+
+	Merge branch 'archive_log_fix' into 1.x.x
+
+	Merge branch 'fix_scst_ra_block' into 1.x.x
 
 2018-04-11  Marc A. Smith  <marc.smith@parodyne.com>
 
