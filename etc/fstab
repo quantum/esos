@@ -2,7 +2,7 @@ devtmpfs /dev devtmpfs size=64m,nosuid,mode=0755 0 0
 proc /proc proc	defaults 0 0
 sysfs /sys sysfs defaults 0 0
 devpts /dev/pts devpts gid=5,mode=620 0 0
-tmpfs /dev/shm tmpfs size=128m,mode=1777 0 0
+tmpfs /dev/shm tmpfs size=256m,mode=1777 0 0
 tmpfs /tmp tmpfs mode=1777,nosuid,noatime 0 0
 LABEL=ESOS_BOOT /boot vfat sync,noauto 1 1
 LABEL=esos_root /mnt/root ext2	sync,noauto 1 1

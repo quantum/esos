@@ -1,3 +1,7 @@
+2018-09-22  Marc A. Smith  <marc.smith@parodyne.com>
+
+	several updates for ESOS Web UI; increased default /dev/shm file system size in /etc/fstab
+
 2018-09-13  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'health_chk_fix'
