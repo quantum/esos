@@ -1,3 +1,9 @@
+2018-10-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'redirect_conf'
+
+	the iscsi RA (ocf:heartbeat:iscsi) uses an old column name for ps which is not supported by the Busybox variant, so we handle this in the resource-agents.chroot target; fixed a couple issues with the pkg_dist target; updated kernel config options to better support DM multipath for initiator use
+
 2018-09-22  Marc A. Smith  <marc.smith@parodyne.com>
 
 	several updates for ESOS Web UI; increased default /dev/shm file system size in /etc/fstab
@@ -7,6 +13,10 @@
 	Merge branch 'health_chk_fix'
 
 	formatted ESOS Community license file to fit better in scrolling window widget; don't generate a default iSCSI initiator name file during build; include the correct license file in pkg_dist; rc.iscsid: generate a unique iSCSI initiator name file in start() if one doesn't already exist; decreased size (columns) of EULA scrolling window widget in TUI; fixed screen refresh issue in TUI for Community edition; added a note to the EULA scrolling window title line informing user to scroll down
+
+2018-09-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	enable the CONFIG_SCST_FORWARD_MODE_PASS_THROUGH option for SCST
 
 2018-08-27  Marc A. Smith  <marc.smith@parodyne.com>
 
