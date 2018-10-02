@@ -2200,6 +2200,8 @@ resource-agents.chroot: glib.chroot glue.chroot
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-ansi \
 	--disable-fatal-warnings --sysconfdir=/etc --localstatedir=/var
+	$(SED) -i 's/ps -e -o cmd/ps -e -o comm/' \
+	$(tgt_src_dir)/heartbeat/iscsi
 	$(MAKE) --directory=$(tgt_src_dir)/rgmanager
 	$(MAKE) --directory=$(tgt_src_dir)/include
 	$(MAKE) --directory=$(tgt_src_dir)/heartbeat
@@ -3613,7 +3615,7 @@ image:
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
 pkg_dist: license_file =  $(if $(findstring yes,$(enable_commercial)),\
-	PROF_LICENSE,COMM_LICENSE)
+PROF_LICENSE,COMM_LICENSE)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
@@ -3622,10 +3624,10 @@ pkg_dist: $(bz2_img_file)
 	$(pkg_prefix)/dist_*.txt
 	$(RM) $(pkg_prefix)
 	$(LN) $(SRC_DIR) $(pkg_prefix)
-	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/install_common \
+	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/ChangeLog \
 	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
 	$(pkg_prefix)/INSTALL $(pkg_prefix)/README \
-	$(pkg_prefix)/$(license_file) $(pkg_prefix)/ChangeLog
+	$(pkg_prefix)/$(license_file)
 	$(RM) $(pkg_prefix)
 	$(LN) $(wildcard $(SOURCES_DIR)/win_binaries-*) $(pkg_prefix)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/*
