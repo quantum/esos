@@ -15,6 +15,7 @@ SCST_SYSFS="/sys/kernel/scst_tgt"
 ALUA_STATES="active nonoptimized standby unavailable offline transitioning"
 REMOTE_INACT_STATE="offline"
 TRANSITION_STATE="transitioning"
+SCST_DEV_MAPS="/etc/esos_dev_maps/scst"
 
 
 alua_start() {
@@ -47,6 +48,29 @@ alua_start() {
         ${OCF_RESKEY_remote_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
         state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+
+    # The MS resource starts as Slave so this should be safe here
+    if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
+        # TODO: Using the dev_disk handler would be better if PR pass-through
+        # was supported, however, it is not currently. Revisit in the future.
+        #real_to_redirect_dev
+        # Try to set the devices to the redirected backing device to start
+        dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+        for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
+            dev_name="$(basename ${i})"
+            ocf_log debug "Setting device '${dev_name}' to the" \
+                "redirected block device..."
+            echo 0 > ${i}/active || exit ${OCF_ERR_GENERIC}
+            new_filename="$(get_redirect_filename ${dev_name})"
+            if [ -z "${new_filename}" ]; then
+                ocf_log warn "Redirected backing device not found," \
+                    "leaving inactive and skipping..."
+                continue
+            fi
+            echo "${new_filename}" > ${i}/filename || exit ${OCF_ERR_GENERIC}
+            echo 1 > ${i}/active || exit ${OCF_ERR_GENERIC}
+        done
+    fi
 
     # Make sure the resource started correctly
     while ! alua_monitor; do
@@ -97,6 +121,18 @@ alua_stop() {
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
         state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
+
+    if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
+        # TODO: Using the dev_disk handler would be better if PR pass-through
+        # was supported, however, it is not currently. Revisit in the future.
+        #redirect_to_real_dev
+        # If we're stopping, set all of the devices to inactive for now
+        for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
+            dev_name="$(basename ${i})"
+            ocf_log debug "Setting device '${dev_name}' to inactive..."
+            echo 0 > ${i}/active
+        done
+    fi
 
     # Make sure the resource stopped correctly
     while alua_monitor; do
@@ -184,6 +220,14 @@ alua_monitor() {
                     ${OCF_RESKEY_device_group} -attributes \
                     state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
             fi
+        fi
+    fi
+
+    # Resource starts as Slave, but the redirected device might not be
+    # available then, so we check it's set correctly here
+    if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
+        if [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_s_alua_state}" ]; then
+            bio_dev_to_redirect
         fi
     fi
 
@@ -283,6 +327,21 @@ alua_meta_data() {
 	      <shortdesc lang="en">The 'set_dev_active' parameter.</shortdesc>
 	      <content type="boolean" default="false" />
 	    </parameter>
+	    <parameter name="redirect_mode" unique="0" required="0">
+	      <longdesc lang="en">On promotion/demotion set all devices belonging to this resource's ALUA device group to use the real/redirected backing device.</longdesc>
+	      <shortdesc lang="en">The 'redirect_mode' parameter.</shortdesc>
+	      <content type="boolean" default="false" />
+	    </parameter>
+	    <parameter name="redirect_tgt" unique="0" required="0">
+	      <longdesc lang="en">The SCST target name used for internal redirection (used with redirect_mode).</longdesc>
+	      <shortdesc lang="en">The 'redirect_tgt' parameter.</shortdesc>
+	      <content type="string" default="" />
+	    </parameter>
+	    <parameter name="redirect_grp" unique="0" required="0">
+	      <longdesc lang="en">The SCST security group name that belongs to the redirection target (used with redirect_mode).</longdesc>
+	      <shortdesc lang="en">The 'redirect_grp' parameter.</shortdesc>
+	      <content type="string" default="" />
+	    </parameter>
 	  </parameters>
 	  <actions>
 	    <action name="meta-data" timeout="5" />
@@ -350,6 +409,233 @@ trigger_suspend_resume() {
 }
 
 
+redirect_to_real_dev() {
+    # Change the LUN backing device from the redirected device to the real one
+    ocf_log info "Changing redirected device to real one for LUN's on all" \
+        "'${OCF_RESKEY_device_group}' devices..."
+    dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+    for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
+        dev_name="$(basename ${i})"
+        ocf_log debug "Getting H:C:T:L value for SCST device '${dev_name}'..."
+        SAVED_IFS=${IFS}
+        IFS=$(echo -en "\n\b")
+        for j in $(lsscsi); do
+            vendor="$(echo ${j} | awk '{print $3}' | tr -d \"[:space:]\")"
+            product="$(echo ${j} | awk '{print $4}' | tr -d \"[:space:]\")"
+            if [ "x${vendor}" = "xSCST_BIO" ] && \
+                [ "x${product}" = "x${dev_name}" ]; then
+                scsi_hctl="$(echo ${j} | awk '{print $1}' | \
+                    tr -d \"[:space:]\" | tr -d [ | tr -d ])"
+            fi
+        done
+        IFS=${SAVED_IFS}
+        ocf_log debug "H:C:T:L value detected as '${scsi_hctl}'..."
+        if [ -n "${scsi_hctl}" ]; then
+            dev_exports="/sys/kernel/scst_tgt/devices/${scsi_hctl}/exported"
+            for j in $(ls ${dev_exports}); do
+                lun_path="$(readlink -f ${dev_exports}/${j})"
+                if echo ${lun_path} | \
+                    egrep 'copy_manager_tgt|redirect' \
+                    > /dev/null 2>&1; then
+                    continue
+                fi
+                lun_num="$(basename ${lun_path})"
+                ocf_log debug "Replacing LUN '${lun_num}' device" \
+                    "with '${dev_name}'..."
+                echo "replace_no_ua ${dev_name} ${lun_num}" \
+                    > ${lun_path}/../mgmt
+            done
+            # Now we can close the H:C:T:L dev_disk device
+            #ocf_log info "Closing the '${scsi_hctl}' dev_disk device..."
+            #ocf_run scstadmin -noprompt -close_dev ${scsi_hctl} \
+            #    -handler dev_disk
+        else
+            ocf_log warn "The H:C:T:L value could not be found for" \
+                "device '${dev_name}', skipping..."
+            continue
+        fi
+    done
+}
+
+
+real_to_redirect_dev() {
+    # Change the LUN backing device from the real device to the redirected one
+    ocf_log info "Changing real device to redirected one for LUN's on all" \
+        "'${OCF_RESKEY_device_group}' devices..."
+    dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+    for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
+        dev_name="$(basename ${i})"
+        ocf_log debug "Getting H:C:T:L value for SCST device '${dev_name}'..."
+        SAVED_IFS=${IFS}
+        IFS=$(echo -en "\n\b")
+        for j in $(lsscsi); do
+            vendor="$(echo ${j} | awk '{print $3}' | tr -d \"[:space:]\")"
+            product="$(echo ${j} | awk '{print $4}' | tr -d \"[:space:]\")"
+            if [ "x${vendor}" = "xSCST_BIO" ] && \
+                [ "x${product}" = "x${dev_name}" ]; then
+                scsi_hctl="$(echo ${j} | awk '{print $1}' | \
+                    tr -d \"[:space:]\" | tr -d [ | tr -d ])"
+            fi
+        done
+        IFS=${SAVED_IFS}
+        ocf_log debug "H:C:T:L value detected as '${scsi_hctl}'..."
+        if [ -n "${scsi_hctl}" ]; then
+            # Now we can open the H:C:T:L dev_disk device
+            ocf_log info "Opening the '${scsi_hctl}' dev_disk device..."
+            ocf_run scstadmin -noprompt -open_dev ${scsi_hctl} \
+                -handler dev_disk
+            dev_exports="/sys/kernel/scst_tgt/devices/${dev_name}/exported"
+            for j in $(ls ${dev_exports}); do
+                lun_path="$(readlink -f ${dev_exports}/${j})"
+                if echo ${lun_path} | \
+                    egrep 'copy_manager_tgt|redirect' \
+                    > /dev/null 2>&1; then
+                    continue
+                fi
+                lun_num="$(basename ${lun_path})"
+                ocf_log debug "Replacing LUN '${lun_num}' device" \
+                    "with '${scsi_hctl}'..."
+                echo "replace_no_ua ${scsi_hctl} ${lun_num}" \
+                    > ${lun_path}/../mgmt
+            done
+        else
+            ocf_log warn "The H:C:T:L value could not be found for" \
+                "device '${dev_name}', skipping..."
+            continue
+        fi
+    done
+}
+
+
+get_real_filename() {
+    # Lookup the real backing device name from the map file
+    dev_name="${1}"
+    if [ ! -f "${SCST_DEV_MAPS}/${dev_name}" ]; then
+        ocf_log err "No SCST device map file found for device '${dev_name}'!"
+        echo ""
+    fi
+    filename="$(head -1 ${SCST_DEV_MAPS}/${dev_name})"
+    ocf_log debug "Real backing device for '${dev_name}': ${filename}"
+    echo ${filename}
+}
+
+
+get_redirect_filename() {
+    # Find the redirected (iSCSI) block device from lsscsi output
+    dev_name="${1}"
+    filename=""
+    SAVED_IFS=${IFS}
+    IFS=$(echo -en "\n\b")
+    for i in $(lsscsi); do
+        vendor="$(echo ${i} | awk '{print $3}' | tr -d \"[:space:]\")"
+        product="$(echo ${i} | awk '{print $4}' | tr -d \"[:space:]\")"
+        if [ "x${vendor}" = "xSCST_BIO" ] && \
+            [ "x${product}" = "x${dev_name}" ]; then
+            filename="$(echo ${i} | awk '{print $6}' | tr -d \"[:space:]\")"
+            break
+        fi
+    done
+    IFS=${SAVED_IFS}
+    ocf_log debug "Redirected backing device for '${dev_name}': ${filename}"
+    echo ${filename}
+}
+
+
+bio_dev_to_real() {
+    # Loop over each SCST device in the device group and modify the filename
+    dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+    for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
+        dev_name="$(basename ${i})"
+        if [ -f "${i}/active" ]; then
+            # Check if the current filename value is correct
+            new_filename="$(get_real_filename ${dev_name})"
+            if [ -z "${new_filename}" ]; then
+                ocf_log warn "A valid backing block device was not" \
+                    "found, skipping..."
+                continue
+            fi
+            filename_val="$(head -1 ${i}/filename)"
+            active_val="$(head -1 ${i}/active)"
+            if [ "x${new_filename}" = "x${filename_val}" ]; then
+                ocf_log debug "The 'filename' attribute value is already" \
+                    "what it should be..."
+                if [ "x${active_val}" = "x0" ]; then
+                    ocf_log debug "Setting device '${dev_name}' to active..."
+                    echo 1 > ${i}/active
+                fi
+                continue
+            fi
+            # The current filename value is not accurate, so change it
+            if [ "x${active_val}" = "x1" ]; then
+                ocf_log debug "Setting device '${dev_name}' to inactive..."
+                echo 0 > ${i}/active
+            fi
+            ocf_log info "Changing 'filename' attribute for device" \
+                "'${dev_name}' to the real backing device..."
+            echo "${new_filename}" > ${i}/filename
+            if [ ${?} -eq 0 ]; then
+                ocf_log debug "Setting device '${dev_name}' to active..."
+                echo 1 > ${i}/active
+            else
+                ocf_log warn "Changing the device 'filename' attribute" \
+                    "failed, check kernel logs!"
+            fi
+        else
+            ocf_log warn "SCST device '${dev_name}' doesn't have an" \
+                "'active' attribute... is this not a vdisk_blockio device?"
+            continue
+        fi
+    done
+}
+
+
+bio_dev_to_redirect() {
+    # Loop over each SCST device in the device group and modify the filename
+    dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+    for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
+        dev_name="$(basename ${i})"
+        if [ -f "${i}/active" ]; then
+            # Check if the current filename value is correct
+            new_filename="$(get_redirect_filename ${dev_name})"
+            if [ -z "${new_filename}" ]; then
+                ocf_log warn "A valid backing block device was not" \
+                    "found, not doing anything..."
+                continue
+            fi
+            filename_val="$(head -1 ${i}/filename)"
+            active_val="$(head -1 ${i}/active)"
+            if [ "x${new_filename}" = "x${filename_val}" ]; then
+                ocf_log debug "The 'filename' attribute value is already" \
+                    "what it should be..."
+                if [ "x${active_val}" = "x0" ]; then
+                    ocf_log debug "Setting device '${dev_name}' to active..."
+                    echo 1 > ${i}/active
+                fi
+                continue
+            fi
+            # The current filename value is not accurate, so change it
+            if [ "x${active_val}" = "x1" ]; then
+                ocf_log debug "Setting device '${dev_name}' to inactive..."
+                echo 0 > ${i}/active
+            fi
+            ocf_log info "Changing 'filename' attribute for device" \
+                "'${dev_name}' to the redirected backing device..."
+            echo "${new_filename}" > ${i}/filename
+            if [ ${?} -eq 0 ]; then
+                ocf_log debug "Setting device '${dev_name}' to active..."
+                echo 1 > ${i}/active
+            else
+                ocf_log warn "Changing the device 'filename' attribute" \
+                    "failed, check kernel logs!"
+            fi
+        else
+            ocf_log warn "SCST device '${dev_name}' doesn't have an" \
+                "'active' attribute... is this not a vdisk_blockio device?"
+        fi
+    done
+}
+
+
 alua_promote() {
     # Exit immediately if configuration is not valid
     alua_validate_all || exit ${?}
@@ -385,8 +671,10 @@ alua_promote() {
 
     # Set the local target group to the "Master" ALUA state
     check_alua
+
     # TODO: Don't block devices for now... needs to be re-visited.
     #block_scst_devs
+
     if ocf_is_true ${OCF_RESKEY_use_trans_state}; then
         ocf_log debug "alua_promote() -> Setting target group" \
             "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
@@ -404,7 +692,43 @@ alua_promote() {
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
         state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
-    if ocf_is_true ${OCF_RESKEY_set_dev_active}; then
+
+    if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
+        # TODO: Using the dev_disk handler would be better if PR pass-through
+        # was supported, however, it is not currently. Revisit in the future.
+        #redirect_to_real_dev
+        # Change the backing device to the real one
+        bio_dev_to_real
+        # Map the device as a LUN on the internal redirection target
+        dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+        for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
+            dev_name="$(basename ${i})"
+            ocf_log info "Adding a LUN mapping for device '${dev_name}'" \
+                "to the redirection target..."
+            tgt_path="${SCST_SYSFS}/targets/iscsi/${OCF_RESKEY_redirect_tgt}"
+            lun_path="${tgt_path}/ini_groups/${OCF_RESKEY_redirect_grp}/luns"
+            for j in $(find ${lun_path} -maxdepth 1 -type d); do
+                lun_dev_path="$(readlink -f ${j}/device)"
+                lun_dev_name="$(basename ${lun_dev_path})"
+                if [ "x${lun_dev_name}" = "x${dev_name}" ]; then
+                    ocf_log warn "Mapped LUN for device '${dev_name}'" \
+                        "already exists, skipping..."
+                    continue
+                fi
+            done
+	    lun_val="$(ls ${lun_path} | grep -v mgmt | sort -nr | head -1)"
+	    if [ -n "${lun_val}" ]; then
+                lun_val="$(expr ${lun_val} + 1)"
+                ocf_log debug "Attempting to use LUN value '${lun_val}'..."
+                ocf_run scstadmin -add_lun ${lun_val} -driver iscsi \
+                    -target ${OCF_RESKEY_redirect_tgt} \
+                    -group ${OCF_RESKEY_redirect_grp} -device ${dev_name}
+            else
+                ocf_log warn "A suitable LUN value was not found," \
+                    "not mapping '${dev_name}' to the redirection target..."
+            fi
+        done
+    elif ocf_is_true ${OCF_RESKEY_set_dev_active}; then
         ocf_log debug "alua_promote() -> Changing the group's devices to active..."
         for i in $(find ${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}/devices/ \
             -name active -type f -follow -maxdepth 2); do
@@ -413,8 +737,10 @@ alua_promote() {
     else
         trigger_suspend_resume
     fi
+
     # TODO: Don't unblock devices for now... needs to be re-visited.
     #unblock_scst_devs
+
     # Since there can only be one Master, set the remote target group
     if remote_inactive; then
         ocf_log debug "alua_promote() -> Setting target group" \
@@ -492,8 +818,10 @@ alua_demote() {
 
     # Set the local target group to the "Slave" ALUA state
     check_alua
+
     # TODO: Don't block devices for now... needs to be re-visited.
     #block_scst_devs
+
     if ocf_is_true ${OCF_RESKEY_use_trans_state}; then
         ocf_log debug "alua_demote() -> Setting target group" \
             "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
@@ -511,7 +839,39 @@ alua_demote() {
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
         state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
-    if ocf_is_true ${OCF_RESKEY_set_dev_active}; then
+
+    if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
+        # TODO: Using the dev_disk handler would be better if PR pass-through
+        # was supported, however, it is not currently. Revisit in the future.
+        #real_to_redirect_dev
+        # Change the backing device to the redirected one
+        bio_dev_to_redirect
+        # Unmap the device LUN from the internal redirection target
+        dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+        for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
+            dev_name="$(basename ${i})"
+            ocf_log info "Removing the LUN mapping for device '${dev_name}'" \
+                "from the redirection target..."
+            dev_exports="/sys/kernel/scst_tgt/devices/${dev_name}/exported"
+            lun_val=""
+            for j in $(ls ${dev_exports}); do
+                lun_path="$(readlink -f ${dev_exports}/${j})"
+                if echo ${lun_path} | grep "${OCF_RESKEY_redirect_tgt}" | \
+                    grep "${OCF_RESKEY_redirect_grp}" > /dev/null 2>&1; then
+                    lun_val="$(basename ${lun_path})"
+                    break
+                fi
+            done
+	    if [ -n "${lun_val}" ]; then
+                ocf_run scstadmin -noprompt -rem_lun ${lun_val} -driver iscsi \
+                    -target ${OCF_RESKEY_redirect_tgt} \
+                    -group ${OCF_RESKEY_redirect_grp}
+            else
+                ocf_log warn "No LUN mapping found for device '${dev_name}'" \
+                    "on the internal redirection target!"
+            fi
+        done
+    elif ocf_is_true ${OCF_RESKEY_set_dev_active}; then
         ocf_log debug "alua_demote() -> Changing the group's devices to inactive..."
         for i in $(find ${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}/devices/ \
             -name active -type f -follow -maxdepth 2); do
@@ -520,8 +880,10 @@ alua_demote() {
     else
         trigger_suspend_resume
     fi
+
     # TODO: Don't unblock devices for now... needs to be re-visited.
     #unblock_scst_devs
+
     # If we're a Slave, we assume the remote side is the Master
     ocf_log debug "alua_demote() -> Setting target group" \
         "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
@@ -606,14 +968,37 @@ check_alua() {
         fi
     done
     if [ ${valid_m_alua_state} -eq 0 ]; then
-        ocf_log err "The 'm_alua_state' value is \
-            not valid: ${OCF_RESKEY_m_alua_state}"
+        ocf_log err "The 'm_alua_state' value is" \
+            "not valid: ${OCF_RESKEY_m_alua_state}"
         exit ${OCF_ERR_INSTALLED}
     fi
     if [ ${valid_s_alua_state} -eq 0 ]; then
-        ocf_log err "The 's_alua_state' value is \
-            not valid: ${OCF_RESKEY_s_alua_state}"
+        ocf_log err "The 's_alua_state' value is" \
+            "not valid: ${OCF_RESKEY_s_alua_state}"
         exit ${OCF_ERR_INSTALLED}
+    fi
+
+    # If using redirection mode, check required parameters
+    if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
+        if [ "x${OCF_RESKEY_redirect_tgt}" = "x" ]; then
+            ocf_log err "The 'redirect_tgt' value is not set!"
+            exit ${OCF_ERR_INSTALLED}
+        fi
+        if [ "x${OCF_RESKEY_redirect_grp}" = "x" ]; then
+            ocf_log err "The 'redirect_grp' value is not set!"
+            exit ${OCF_ERR_INSTALLED}
+        fi
+        redirect_tgt="${SCST_SYSFS}/targets/iscsi/${OCF_RESKEY_redirect_tgt}"
+        if [ ! -d "${redirect_tgt}" ]; then
+            ocf_log err "The '${OCF_RESKEY_redirect_tgt}' target" \
+                "does not exist!"
+            exit ${OCF_ERR_INSTALLED}
+        fi
+        if [ ! -d "${redirect_tgt}/ini_groups/${OCF_RESKEY_redirect_grp}" ]; then
+            ocf_log err "The '${OCF_RESKEY_redirect_grp}' security group" \
+                "does not exist for target '${OCF_RESKEY_redirect_tgt}'!"
+            exit ${OCF_ERR_INSTALLED}
+        fi
     fi
 }
 

@@ -68,6 +68,12 @@ scst_start() {
 
     # Configure SCST
     if [ -f "${SCST_CFG}" ]; then
+        if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
+            ocf_log debug "Redirect mode is enabled, adjusting the SCST" \
+                "configuration file..."
+            cp -f ${SCST_CFG} ${SCST_CFG}.redirect_mode_backup
+            sed -i 's/active 1/active 0/g' ${SCST_CFG}
+        fi
         ocf_log info "Applying SCST configuration..."
         ocf_run scstadmin -config "${SCST_CFG}" -lip
         # Prevent scst_stop() from clobbering the configuration file
@@ -432,6 +438,11 @@ scst_meta_data() {
 	    <parameter name="set_dev_active" unique="0" required="0">
 	      <longdesc lang="en">Set any vdisk_blockio devices for the given device group to active/inactive (1/0) on promotion/demotion.</longdesc>
 	      <shortdesc lang="en">The 'set_dev_active' parameter.</shortdesc>
+	      <content type="boolean" default="false" />
+	    </parameter>
+	    <parameter name="redirect_mode" unique="0" required="0">
+	      <longdesc lang="en">Set the "active" attribute to 0 for all devices on start-up.</longdesc>
+	      <shortdesc lang="en">The 'redirect_mode' parameter.</shortdesc>
 	      <content type="boolean" default="false" />
 	    </parameter>
 	  </parameters>

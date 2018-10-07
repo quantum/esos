@@ -1,3 +1,11 @@
+2018-10-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated SCST to version trunk/r7499; updates for the ocf:esos:alua and ocf:esos:scst RA's to handle "internal redirection" configuration with SCST
+
+2018-10-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated SCST to version trunk/r7493
+
 2018-10-01  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'redirect_conf'
