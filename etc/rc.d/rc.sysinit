@@ -30,7 +30,7 @@ if [ ! -L "/etc/localtime" ]; then
     /bin/ln -s /usr/share/zoneinfo/posix/Factory /etc/localtime
 fi
 
-echo "Starting kernel log daemon (klogd)..."
+/bin/echo "Starting kernel log daemon (klogd)..."
 /usr/sbin/klogd -c1
 
 /bin/echo "Configuring kernel parameters..."
@@ -42,28 +42,30 @@ if [ -f "/var/lib/esos/random-seed" ]; then
     /bin/rm -f /var/lib/esos/random-seed
 fi
 
-echo "Setting system time from hardware clock..."
+/bin/echo "Setting system time from hardware clock..."
 /sbin/hwclock --hctosys --utc
 
-echo "Updating module dependencies..."
+/bin/echo "Updating module dependencies..."
 /sbin/depmod -a
 
-echo "Updating run-time linker cache..."
+/bin/echo "Updating run-time linker cache..."
 /sbin/ldconfig
 
 fs_node=$(/sbin/findfs LABEL=esos_logs)
+base_blk_dev="$(/bin/echo ${fs_node} | \
+    /usr/bin/sed -e '/\/dev\/sd/s/4//; /\/dev\/nvme/s/p4//')"
 if [ -n "${fs_node}" ]; then
-    free_end=$(/usr/sbin/parted -m -s ${fs_node%?} unit s print free | \
+    free_end=$(/usr/sbin/parted -m -s ${base_blk_dev} unit s print free | \
         egrep ':free;$' | tail -n+2 | cut -d: -f3)
     if [ -n "${free_end}" ]; then
         echo "Growing the esos_logs file system..."
-        orig_start=`/usr/sbin/parted -m -s ${fs_node%?} unit s print | \
+        orig_start=`/usr/sbin/parted -m -s ${base_blk_dev} unit s print | \
             egrep '^4:' | cut -d: -f2`
-        /usr/sbin/parted -m -s ${fs_node%?} rm 4
-        /usr/sbin/parted -m -s ${fs_node%?} mkpart primary \
+        /usr/sbin/parted -m -s ${base_blk_dev} rm 4
+        /usr/sbin/parted -m -s ${base_blk_dev} mkpart primary \
             ${orig_start} ${free_end}
         /usr/sbin/udevadm settle --timeout=30
-        /sbin/blockdev --rereadpt ${fs_node%?}
+        /sbin/blockdev --rereadpt ${base_blk_dev}
         /bin/sleep 1
         /usr/sbin/e2fsck -pf ${fs_node}
         /usr/sbin/resize2fs -p ${fs_node}

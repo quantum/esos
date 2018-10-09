@@ -68,6 +68,11 @@ alua_start() {
                 continue
             fi
             echo "${new_filename}" > ${i}/filename || exit ${OCF_ERR_GENERIC}
+            if ! sg_turs ${new_filename}; then
+                ocf_log warn "The backing SCSI disk '${new_filename}'" \
+                    "is not ready yet (TUR failed), skipping..."
+                continue
+            fi
             echo 1 > ${i}/active || exit ${OCF_ERR_GENERIC}
         done
     fi
@@ -403,7 +408,9 @@ trigger_suspend_resume() {
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
     for i in $(find ${dev_grp_path}/devices -type l -maxdepth 1); do
         ocf_log debug "Rewriting size attribute value for device '${i}'..."
-        head -1 ${i}/size > ${i}/size
+        size_val="$(head -1 ${i}/size)"
+        ocf_log debug "Size attribute value: ${size_val}"
+        echo ${size_val} > ${i}/size
         break
     done
 }
@@ -608,6 +615,11 @@ bio_dev_to_redirect() {
                 ocf_log debug "The 'filename' attribute value is already" \
                     "what it should be..."
                 if [ "x${active_val}" = "x0" ]; then
+                    if ! sg_turs ${new_filename}; then
+                        ocf_log warn "The backing SCSI disk '${new_filename}'" \
+                            "is not ready yet (TUR failed), skipping..."
+                        continue
+                    fi
                     ocf_log debug "Setting device '${dev_name}' to active..."
                     echo 1 > ${i}/active
                 fi
@@ -621,6 +633,11 @@ bio_dev_to_redirect() {
             ocf_log info "Changing 'filename' attribute for device" \
                 "'${dev_name}' to the redirected backing device..."
             echo "${new_filename}" > ${i}/filename
+            if ! sg_turs ${new_filename}; then
+                ocf_log warn "The backing SCSI disk '${new_filename}'" \
+                    "is not ready yet (TUR failed), skipping..."
+                continue
+            fi
             if [ ${?} -eq 0 ]; then
                 ocf_log debug "Setting device '${dev_name}' to active..."
                 echo 1 > ${i}/active

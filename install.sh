@@ -74,7 +74,8 @@ if [ -f "/etc/esos-release" ]; then
             echo "ERROR: We couldn't find the LABEL=esos_root file system!"
             exit 1
         fi
-        esos_blk_dev="$(echo ${esos_root} | sed -e 's/2//')"
+        esos_blk_dev="$(echo ${esos_root} | \
+            sed -e '/\/dev\/sd/s/2//; /\/dev\/nvme/s/p2//')"
         # Make sure the image disk label and the ESOS USB drive match
         image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
         disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
@@ -106,8 +107,17 @@ if [ -f "/etc/esos-release" ]; then
             echo "### Mounting the ESOS USB flash drive file systems..."
             usb_esos_mnt="${TEMP_DIR}/old_esos"
             mkdir -p ${usb_esos_mnt} || exit 1
-            mount ${esos_blk_dev}2 ${usb_esos_mnt} || exit 1
-            mount ${esos_blk_dev}1 ${usb_esos_mnt}/boot || exit 1
+            if echo ${esos_blk_dev} | grep -q "/dev/nvme"; then
+                # For NVMe drives
+                esos_blk_root="${esos_blk_dev}p2"
+                esos_blk_boot="${esos_blk_dev}p1"
+            else
+                # For SCSI drives
+                esos_blk_root="${esos_blk_dev}2"
+                esos_blk_boot="${esos_blk_dev}1"
+            fi
+            mount ${esos_blk_root} ${usb_esos_mnt} || exit 1
+            mount ${esos_blk_boot} ${usb_esos_mnt}/boot || exit 1
             echo
             echo "### Extracting the image file..."
             mkdir -p ${TEMP_DIR} || exit 1

@@ -3,7 +3,7 @@ ff370482573133a7fcdd96cd2f552292  gcc-7.2.0.tar.xz
 86ee6e54ebfc4a90b643a65e402c4048  gmp-6.1.0.tar.bz2
 b8a2f6b0e68bef46e53da2ac439e1cf4  mpfr-3.1.4.tar.bz2
 d6a1d5f8ddea3abd2cc3e98f58352d26  mpc-1.0.3.tar.gz
-e2ee85c1c56cc048b072ccd469862233  linux-4.14.43.tar.xz
+1d6f60bffbb90c16986064bdeb2624fd  linux-4.14.74.tar.xz
 102f637c3812f81111f48f2427611be1  glibc-2.26.tar.xz
 da7ee73d4138635d728f5cc5c7678860  tcl-8.6.7.tar.xz
 46d6aa2d95c8604b75cf2fed20594cb7  expect-5.45.tar.xz
@@ -139,7 +139,7 @@ c4f491dd411a09e9de3b8702ea6f73eb  libmcrypt-2.5.8.tar.bz2
 127e109ed05274597d67c24c89861d49  btrfs-progs-v4.8.1.tar.xz
 84f58dec00b60f2dc8fd1c9709291cc7  attr-2.4.47.tar.gz
 a61415312426e9c2212bd7dc7929abda  acl-2.2.52.tar.gz
-76f5ea9e36ebaf605d0d7ec2e50d6ac6  kexec-tools-2.0.15.tar.xz
+f72c11e3bd80de23cae144ce8683d96b  kexec-tools-2.0.17.tar.xz
 12e8c6131a27c05422edcd2ae3e79dfb  qlogic_fw-20140928.tar.gz
 8afdb925dba24a58b74fff74d7f3180e  lessfs-1.7.0.tar.gz
 2cb4feffea9167ba71b5f346a0c0a40d  mdadm-4.0.tar.xz
@@ -161,7 +161,7 @@ e73949b47f080dbe4093207d043754e5  pacemaker-1.1.16.tar.gz
 6dd7314233029d9dab0156e7b1c7830b  lxml-3.6.4.tar.gz
 0beaf89b9365d5c2ba42e4c3694725aa  multipath-tools-0.7.7.tar.xz
 55f7853f7d8cf664554ce3fa71bf1c7d  json-c-0.12.1.tar.gz
-8474fb8ed88c685c92fc9ee246390cfd  scst_qla2xxx_unified-master_20180425.tar.xz
+431c77a143a6847a2529c48cd33f4d74  scst_qla2xxx_unified-master_20181008.tar.xz
 7fee322a4b1d960e19a64870ca78924b  archivemount-0.8.7.tar.gz
 1ec00b7dcaf969dd2a5712f85f23c764  libarchive-3.2.2.tar.gz
 127a715fc1850888203880f48114d678  mcelog-master_20161017.tar.gz
@@ -176,7 +176,7 @@ ded45b4e3f8a0b6fd54c75ab2d36198f  iperf2-2.0.9.tar.gz
 cd7179eff62b2cc5f0567ac5c70e5047  iperf3-3.1.3.tar.gz
 7acec816283b96392b41594606d1a637  mhvtl-1.5-3_release.tar.gz
 bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
-72be5bf973eed898c5127e3abc466583  makedumpfile-1.6.2.tar.gz
+7dfbca19f487604c271e2892ba07f4bd  makedumpfile-1.6.4.tar.gz
 76ed6d3190cd77b00890f3365353124b  drbd-utils-8.9.6.tar.gz
 28b352363ea7eb6698ad2efcd7d8c2ae  thin-provisioning-tools-0.6.3.tar.gz
 5e2bcbbf3018a4a5ce61fc15e264612e  crmsh-master_20180520.tar.xz
