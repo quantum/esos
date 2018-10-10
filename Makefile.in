@@ -249,7 +249,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		attr-2.4.47.tar.gz \
 		acl-2.2.52.tar.gz \
 		htop-2.0.2.tar.gz \
-		dmidecode-3.0.tar.xz \
+		dmidecode-3.2.tar.xz \
 		xmlrpc-c-1.39.11.tar.gz \
 		stunnel-5.44.tar.gz \
 		sudo-1.8.18p1.tar.gz \

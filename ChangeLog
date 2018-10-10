@@ -1,3 +1,7 @@
+2018-10-09  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated dmidecode to version 3.2 (supports SMBIOS 3.1.1)
+
 2018-10-08  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated Linux to version 4.14.74; updated kexec-tools to version 2.0.17; updated the SCST/Cavium qla2xxx driver to the latest commit from the master branch; updated makedumpfile to version 1.6.4; in image target, don't touch /opt otherwise new files don't get sync'd properly; modprobe.conf: only enable target mode for the qla2xxx driver; rc.sysinit: fix binary paths for several lines and updated the esos_logs FS expansion to support NVMe drives; install.sh: updates to support upgrading ESOS in-place on NVMe drives; several updates for the ocf:esos:alua RA with redirection mode
