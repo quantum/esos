@@ -297,6 +297,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		pcre-8.42.tar.gz \
 		nginx-1.14.0.tar.gz \
 		dosfstools-4.1.tar.xz \
+		lsof-4.91.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -355,7 +356,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		libtool.chroot etckeeper.chroot git.chroot nfs-utils.chroot \
 		rpcbind.chroot libtirpc.chroot libevent.chroot \
 		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot \
-		pcre.chroot nginx.chroot dosfstools.chroot
+		pcre.chroot nginx.chroot dosfstools.chroot lsof.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -1459,6 +1460,9 @@ scst.chroot: glibc.chroot esos_kernels.chroot
 	$(INSTALL) -vD -m 644 \
 	$(tgt_src_dir)/iscsi-scst/doc/manpages/iscsi-scst-adm.8 \
 	/usr/share/man/man8/iscsi-scst-adm.8
+	$(MAKE) --directory=$(tgt_src_dir)/usr \
+	SCST_INC_DIR=$(tgt_src_dir)/scst/include all
+	$(MAKE) --directory=$(tgt_src_dir)/usr PREFIX=/usr install
 	$(TOUCH) $(@)
 
 gdb.chroot: glibc.chroot ncurses.chroot zlib.chroot readline.chroot
@@ -2676,10 +2680,16 @@ sysstat.chroot: glibc.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/mpstat /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/pidstat /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/cifsiostat /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/sar /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/sadc /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/sadf /usr/bin/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/iostat.1 /usr/share/man/man1/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/mpstat.1 /usr/share/man/man1/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/pidstat.1 /usr/share/man/man1/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/cifsiostat.1 /usr/share/man/man1/
+	$(INSTALL) -m 0644 $(tgt_src_dir)/man/sar.1 /usr/share/man/man1/
+	$(INSTALL) -m 0644 $(tgt_src_dir)/man/sadc.8 /usr/share/man/man8/
+	$(INSTALL) -m 0644 $(tgt_src_dir)/man/sadf.1 /usr/share/man/man1/
 	$(TOUCH) $(@)
 
 pciutils.chroot: glibc.chroot zlib.chroot
@@ -3365,6 +3375,14 @@ dosfstools.chroot: glibc.chroot eudev.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+
+lsof.chroot: glibc.chroot libtirpc.chroot
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./Configure -n linux
+	$(MAKE) --directory=$(tgt_src_dir) CFGL="-L./lib -llsof -ltirpc"
+	$(INSTALL) -v -m 0755 $(tgt_src_dir)/lsof /usr/bin/
+	$(INSTALL) -v -m 0644 $(tgt_src_dir)/lsof.8 /usr/share/man/man8/
 	$(TOUCH) $(@)
 
 

@@ -724,7 +724,8 @@ alua_promote() {
                 "to the redirection target..."
             tgt_path="${SCST_SYSFS}/targets/iscsi/${OCF_RESKEY_redirect_tgt}"
             lun_path="${tgt_path}/ini_groups/${OCF_RESKEY_redirect_grp}/luns"
-            for j in $(find ${lun_path} -maxdepth 1 -type d); do
+            for j in $(find ${lun_path} -maxdepth 1 -type d \
+                ! -path ${lun_path}); do
                 lun_dev_path="$(readlink -f ${j}/device)"
                 lun_dev_name="$(basename ${lun_dev_path})"
                 if [ "x${lun_dev_name}" = "x${dev_name}" ]; then
@@ -861,6 +862,13 @@ alua_demote() {
         # TODO: Using the dev_disk handler would be better if PR pass-through
         # was supported, however, it is not currently. Revisit in the future.
         #real_to_redirect_dev
+        ocf_log debug "alua_demote() -> Changing the group's" \
+            "devices to inactive..."
+        dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+        for i in $(find ${dev_grp_path}/devices/ \
+            -name active -type f -follow -maxdepth 2); do
+            echo 0 > ${i}
+        done
         # Change the backing device to the redirected one
         bio_dev_to_redirect
         # Unmap the device LUN from the internal redirection target
@@ -889,8 +897,10 @@ alua_demote() {
             fi
         done
     elif ocf_is_true ${OCF_RESKEY_set_dev_active}; then
-        ocf_log debug "alua_demote() -> Changing the group's devices to inactive..."
-        for i in $(find ${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}/devices/ \
+        ocf_log debug "alua_demote() -> Changing the group's" \
+            "devices to inactive..."
+        dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
+        for i in $(find ${dev_grp_path}/devices/ \
             -name active -type f -follow -maxdepth 2); do
             echo 0 > ${i}
         done

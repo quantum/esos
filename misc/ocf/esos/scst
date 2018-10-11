@@ -93,8 +93,7 @@ scst_start() {
     if kill -s 0 $(cat ${DLM_CONTROLD_PID}) > /dev/null 2>&1; then
         # Enable cluster mode for all SCST devices
         ocf_log info "Enabling cluster mode for all devices..."
-        for i in $(find ${SCST_SYSFS}/handlers -name cluster_mode -type f \
-            -follow -maxdepth 3); do
+        for i in $(find ${SCST_SYSFS}/devices -name cluster_mode -type f); do
             echo 1 > ${i} &
         done
         ocf_log debug "Waiting for enable-cluster-mode to complete..."
