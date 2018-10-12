@@ -1914,6 +1914,8 @@ sg3_utils.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(INSTALL) -m 0755 $(tgt_src_dir)/scripts/rescan-scsi-bus.sh \
+	/usr/sbin/rescan-scsi-bus.sh
 	$(TOUCH) $(@)
 
 groff.chroot: glibc.chroot gcc.chroot
@@ -1999,6 +2001,8 @@ drbd-utils.chroot: glibc.chroot eudev.chroot
 
 mdadm.chroot: glibc.chroot corosync.chroot dlm.chroot
 	$(call chroot_only)
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
 	$(MAKE) --directory=$(tgt_src_dir) \
 	MAP_DIR="/var/run/mdadm" RUN_DIR="/var/run/mdadm" \
 	CWFLAGS="-Wall -Wstrict-prototypes -Wextra -Wno-unused-parameter"
@@ -3120,6 +3124,7 @@ coreutils.chroot: glibc.chroot perl.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/df /bin/df
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/dd /bin/dd
+	$(INSTALL) -m 0755 $(tgt_src_dir)/src/pr /bin/pr
 	$(TOUCH) $(@)
 
 open-vm-tools.chroot: glibc.chroot gcc.chroot glib.chroot libdnet.chroot

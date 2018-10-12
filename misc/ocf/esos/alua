@@ -54,6 +54,11 @@ alua_start() {
         # TODO: Using the dev_disk handler would be better if PR pass-through
         # was supported, however, it is not currently. Revisit in the future.
         #real_to_redirect_dev
+        # We are likley using iSCSI with redirect mode, rescan here
+        ocf_log debug "Rescanning all running iSCSI initiator sessions..."
+        iscsiadm --mode session --rescan
+        ocf_log debug "Issuing a SCSI bus rescan..."
+        rescan-scsi-bus.sh
         # Try to set the devices to the redirected backing device to start
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
@@ -720,6 +725,7 @@ alua_promote() {
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
             dev_name="$(basename ${i})"
+            lun_exists=0
             ocf_log info "Adding a LUN mapping for device '${dev_name}'" \
                 "to the redirection target..."
             tgt_path="${SCST_SYSFS}/targets/iscsi/${OCF_RESKEY_redirect_tgt}"
@@ -731,9 +737,13 @@ alua_promote() {
                 if [ "x${lun_dev_name}" = "x${dev_name}" ]; then
                     ocf_log warn "Mapped LUN for device '${dev_name}'" \
                         "already exists, skipping..."
-                    continue
+                    lun_exists=1
+                    break
                 fi
             done
+            if [ ${lun_exists} -eq 1 ]; then
+                continue
+            fi
 	    lun_val="$(ls ${lun_path} | grep -v mgmt | sort -nr | head -1)"
 	    if [ -n "${lun_val}" ]; then
                 lun_val="$(expr ${lun_val} + 1)"

@@ -1,3 +1,7 @@
+2018-10-11  Marc A. Smith  <marc.smith@parodyne.com>
+
+	include the rescan-scsi-bus.sh tool from the sg3_utils package; patch for mdadm that prevents udev (rule from mdadm) from assemblying MD component devices incrementally if 'raid=noautodetect' is used in boot options; pass several boot options in GRUB entries to prevent auto assembly of MD arrays; several updates to ocf:esos:alua (one bug fix, one enhancement)
+
 2018-10-10  Marc A. Smith  <marc.smith@parodyne.com>
 
 	replaced the Busybox lsof variant with the real lsof (resolves issue with Raid1 RA); include the sar, sadc, and sadf tools with the sysstat package; updates to the initramfs script to better support capturing a crash dump when a NVMe device is used as the ESOS boot media; several bug fixes for the ocf:esos:alua and ocf:esos:scst RA's; updated patch for ocf:heartbeat:Raid1 to provide more detail when performing RAID array operations with mdadm; build/install SCST usr/ binaries (eg, stpgd)
