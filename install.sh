@@ -3,7 +3,7 @@
 PKG_DIR="${PWD}"
 TEMP_DIR="${PKG_DIR}/temp"
 MNT_DIR="${TEMP_DIR}/mnt"
-LINUX_REQD_TOOLS="dd md5sum sha256sum grep egrep blockdev lsscsi findfs bunzip2"
+LINUX_REQD_TOOLS="dd md5sum sha256sum grep egrep blockdev lsblk findfs bunzip2"
 MACOSX_REQD_TOOLS="dd md5 shasum cat cut sed diff grep egrep diskutil bunzip2"
 MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
@@ -76,7 +76,7 @@ if [ -f "/etc/esos-release" ]; then
         fi
         esos_blk_dev="$(echo ${esos_root} | \
             sed -e '/\/dev\/sd/s/2//; /\/dev\/nvme/s/p2//')"
-        # Make sure the image disk label and the ESOS USB drive match
+        # Make sure the image disk label and the ESOS boot drive match
         image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
         disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
         image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
@@ -104,7 +104,7 @@ if [ -f "/etc/esos-release" ]; then
             echo "### Increasing the /tmp file system..."
             mount -o remount,size=6G /tmp || exit 1
             echo
-            echo "### Mounting the ESOS USB flash drive file systems..."
+            echo "### Mounting the ESOS boot drive file systems..."
             usb_esos_mnt="${TEMP_DIR}/old_esos"
             mkdir -p ${usb_esos_mnt} || exit 1
             if echo ${esos_blk_dev} | grep -q "/dev/nvme"; then
@@ -182,14 +182,15 @@ fi
 # Print out a list of disk devices
 echo "### Here is a list of disk devices on this machine:"
 if [ "${this_os}" = "${LINUX}" ]; then
-    lsscsi
+    lsblk --nodeps --paths --exclude 11 \
+        --output NAME,VENDOR,MODEL,REV,SIZE,TRAN,SUBSYSTEMS
 elif [ "${this_os}" = "${MACOSX}" ]; then
     diskutil list
 fi
 echo
 
-# Get desired USB drive device node and perform a few checks
-echo "### Please type the full path of your USB drive device node" \
+# Get desired install target device node and perform a few checks
+echo "### Please type the full path of your destination device node" \
     "(eg, /dev/sdz):" && read dev_node
 echo
 if [ "${dev_node}" = "" ] || [ ! -e ${dev_node} ]; then
@@ -211,7 +212,7 @@ elif [ "${this_os}" = "${MACOSX}" ]; then
         grep -o [^'<'integer'>'].*[^'<''/'integer'>']) || exit 1
 fi
 if [ ${dev_bytes} -lt 4000000000 ]; then
-    echo "ERROR: Your USB flash drive isn't large enough;" \
+    echo "ERROR: Your target install drive isn't large enough;" \
         "it must be at least 4000 MiB."
     exit 1
 fi
@@ -247,8 +248,8 @@ echo && echo
 echo "*** RAID controller management utilities are now installed using" \
     "the 'raid_tools.py' script in a running ESOS instance. ***"
 echo
-echo "### ESOS USB drive installation complete!"
-echo "### You may now remove and use your ESOS USB drive."
+echo "### ESOS boot device installation complete!"
+echo "### You may now remove and use your ESOS bootable drive."
 
 # Done
 rm -rf ${TEMP_DIR}
