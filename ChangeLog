@@ -1,4 +1,12 @@
-2018-10-11  Marc A. Smith  <marc.smith@parodyne.com>
+2018-10-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	esos_kernels.chroot: install the perf tool at the very top of the recipe; several deps for hwloc.chroot
+
+	other userland tools are built in esos_kernels.chroot now, so we might as well just keep glibc, gcc, and friends as deps always
+
+	added the blktrace and hwloc packages (useful for performance testing, tracking down issues); include the 'perf' tool when building the Linux kernels; util-linux.chroot: pull in the lsblk and lscpu binaries; install.sh: use lsblk for listing installation target devices instead of lsscsi (not all boot devices / install media are SCSI disks), updated wording for "USB flash" to more generic words in the script
+
+2018-10-12  Marc A. Smith  <marc.smith@parodyne.com>
 
 	include the rescan-scsi-bus.sh tool from the sg3_utils package; patch for mdadm that prevents udev (rule from mdadm) from assemblying MD component devices incrementally if 'raid=noautodetect' is used in boot options; pass several boot options in GRUB entries to prevent auto assembly of MD arrays; several updates to ocf:esos:alua (one bug fix, one enhancement)
 

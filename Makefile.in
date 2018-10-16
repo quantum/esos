@@ -1129,6 +1129,8 @@ esos_kernels.chroot: zfs_src = $(wildcard /sources/zfs-*)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot
 	$(call chroot_only)
+	$(MAKE) --directory=$(linux_src)/tools/perf
+	$(INSTALL) -m 0755 $(linux_src)/tools/perf/perf /usr/bin/perf
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
 	  $(MAKE) --directory=$(linux_src) clean; \
@@ -1256,8 +1258,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(XZ) -z -c $(linux_src)/vmlinux > $(chroot_build)/vmlinux$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) modules_install; \
 	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
-	  $(ECHO) "### Building the 'perf' tool..."; \
-	  $(MAKE) --directory=$(linux_src)/tools/perf; \
 	  $(ECHO) "### Building the SCST core and target drivers..."; \
 	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \
 	  -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/ \*\/$$//' \
@@ -3402,7 +3402,7 @@ blktrace.chroot: glibc.chroot Python.chroot
 	$(MAKE) --directory=$(tgt_src_dir) prefix=/usr install
 	$(TOUCH) $(@)
 
-hwloc.chroot: glibc.chroot
+hwloc.chroot: glibc.chroot libxml2.chroot ncurses.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
