@@ -1126,9 +1126,8 @@ esos_kernels.chroot: eio_src = $(wildcard /sources/EnhanceIO-*)
 esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
 esos_kernels.chroot: spl_src = $(wildcard /sources/spl-*)
 esos_kernels.chroot: zfs_src = $(wildcard /sources/zfs-*)
-esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot
-esos_kernels.chroot: $(if $(findstring yes,$(enable_zfs)),\
-	glibc.chroot gcc.chroot util-linux.chroot attr.chroot,)
+esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
+	glibc.chroot gcc.chroot util-linux.chroot attr.chroot
 	$(call chroot_only)
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
