@@ -1,3 +1,7 @@
+2018-10-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed PKG_CONFIG_PATH issue where udev rule for drbd was getting placed in the wrong directory; added a line for the 'mrproper' target in Linux (extra clean); enabled the BFQ I/O scheduler as an option for users; enabled several kernel options for RAID DMA and block tracing, rebuilt -debug patch
+
 2018-10-15  Marc A. Smith  <marc.smith@parodyne.com>
 
 	esos_kernels.chroot: install the perf tool at the very top of the recipe; several deps for hwloc.chroot

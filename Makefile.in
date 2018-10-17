@@ -464,7 +464,7 @@ esos_target		= x86_64-esos-linux-gnu
 temp_path		= /tools/bin:/bin:/usr/bin
 
 # This is used in the chroot environment
-export PKG_CONFIG_PATH = /usr/lib/pkgconfig
+export PKG_CONFIG_PATH = /usr/lib/pkgconfig:/usr/share/pkgconfig
 
 # A few common canned command sequences
 define check_if_root
@@ -1134,6 +1134,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
 	  $(MAKE) --directory=$(linux_src) clean; \
+	  $(MAKE) --directory=$(linux_src) mrproper; \
 	  $(MAKE) --directory=$(linux_src) distclean; \
 	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	  KDIR=$(linux_src) clean; \
