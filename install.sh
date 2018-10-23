@@ -182,7 +182,7 @@ fi
 # Print out a list of disk devices
 echo "### Here is a list of disk devices on this machine:"
 if [ "${this_os}" = "${LINUX}" ]; then
-    lsblk --nodeps --paths --exclude 11 \
+    lsblk --nodeps --paths --exclude 1,11,252 \
         --output NAME,VENDOR,MODEL,REV,SIZE,TRAN,SUBSYSTEMS
 elif [ "${this_os}" = "${MACOSX}" ]; then
     diskutil list
