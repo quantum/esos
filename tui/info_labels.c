@@ -273,7 +273,13 @@ int readTargetData(char *label_msg[]) {
             /* Make the port name match a SCST target name */
             temp_pstr = strchr(attr_val, 'x');
             if (temp_pstr != NULL) {
-                temp_pstr++;
+                /* In sysfs, if the WWPN begins with a '0' then in the
+                 * port_name sysfs attribute, the leading '0' character is
+                 * truncated, fix this by changing the 'x' to a '0' */
+                if (strlen(temp_pstr) != 17)
+                    *temp_pstr = '0';
+                else
+                    temp_pstr++;
                 while ((temp_int = strlen(temp_pstr)) != 0) {
                     if (!((temp_int - 2) < 0)) {
                         if (port_name_size >= MAX_SYSFS_ATTR_SIZE) {
