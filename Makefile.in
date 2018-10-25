@@ -175,7 +175,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		drbd-utils-8.9.6.tar.gz \
 		lvm2-2_02_168.tar.gz \
 		xfsprogs-4.10.0.tar.xz \
-		mdadm-4.0.tar.xz \
+		mdadm-4.1.tar.xz \
 		parted-3.1.tar.xz \
 		libqb-1.0.1.tar.xz \
 		pacemaker-1.1.16.tar.gz \
