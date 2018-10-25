@@ -65,6 +65,8 @@ int getPVSelection(CDKSCREEN *cdk_screen, boolean avail_only,
                     shell_cmd) != NULL) {
                 if (pv_cnt < MAX_LVM_PVS) {
                     strtok_result = strtok(output_line, ",");
+                    if (strtok_result == NULL)
+                        continue;
                     SAFE_ASPRINTF(&pv_names[pv_cnt], "%s",
                             strStrip(strtok_result));
                     strtok_result = strtok(NULL, ",");
@@ -211,6 +213,8 @@ int getVGChoice(CDKSCREEN *cdk_screen, char name[], char size[],
                     shell_cmd) != NULL) {
                 if (vg_cnt < MAX_LVM_VGS) {
                     strtok_result = strtok(output_line, ",");
+                    if (strtok_result == NULL)
+                        continue;
                     SAFE_ASPRINTF(&vg_names[vg_cnt], "%s",
                             strStrip(strtok_result));
                     strtok_result = strtok(NULL, ",");
@@ -349,6 +353,8 @@ int getLVChoice(CDKSCREEN *cdk_screen, char path[], char size[], char attr[]) {
                     shell_cmd) != NULL) {
                 if (lv_cnt < MAX_LVM_LVS) {
                     strtok_result = strtok(output_line, ",");
+                    if (strtok_result == NULL)
+                        continue;
                     SAFE_ASPRINTF(&lv_paths[lv_cnt], "%s",
                             strStrip(strtok_result));
                     strtok_result = strtok(NULL, ",");

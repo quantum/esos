@@ -65,6 +65,8 @@ int getCtrlrChoice(CDKSCREEN *cdk_screen, char type[], char id_num[],
                     shell_cmd) != NULL) {
                 if (ctrlr_cnt < MAX_HWRAID_CTRLRS) {
                     strtok_result = strtok(output_line, ",");
+                    if (strtok_result == NULL)
+                        continue;
                     SAFE_ASPRINTF(&ctrlr_types[ctrlr_cnt], "%s",
                             strStrip(strtok_result));
                     strtok_result = strtok(NULL, ",");
@@ -197,6 +199,8 @@ int getPDSelection(CDKSCREEN *cdk_screen, boolean avail_only, char type[],
                     shell_cmd) != NULL) {
                 if (pd_cnt < MAX_HWRAID_PDRVS) {
                     strtok_result = strtok(output_line, ",");
+                    if (strtok_result == NULL)
+                        continue;
                     strtok_result = strtok(NULL, ",");
                     strtok_result = strtok(NULL, ",");
                     SAFE_ASPRINTF(&pd_encl_ids[pd_cnt], "%s",
@@ -356,6 +360,8 @@ int getPDChoice(CDKSCREEN *cdk_screen, boolean avail_only, char type[],
                     shell_cmd) != NULL) {
                 if (pd_cnt < MAX_HWRAID_PDRVS) {
                     strtok_result = strtok(output_line, ",");
+                    if (strtok_result == NULL)
+                        continue;
                     strtok_result = strtok(NULL, ",");
                     strtok_result = strtok(NULL, ",");
                     SAFE_ASPRINTF(&pd_encl_ids[pd_cnt], "%s",
@@ -500,6 +506,8 @@ int getLDChoice(CDKSCREEN *cdk_screen, char type[], char id_num[],
                     shell_cmd) != NULL) {
                 if (ld_cnt < MAX_HWRAID_LDRVS) {
                     strtok_result = strtok(output_line, ",");
+                    if (strtok_result == NULL)
+                        continue;
                     strtok_result = strtok(NULL, ",");
                     strtok_result = strtok(NULL, ",");
                     SAFE_ASPRINTF(&ld_ids[ld_cnt], "%s",

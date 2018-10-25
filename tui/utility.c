@@ -28,6 +28,7 @@
 char *strStrip(char *string) {
     size_t size = 0;
     char *end = NULL;
+    assert(string != NULL);
     while (isspace(*string))
         ++string;
     size = strlen(string);
