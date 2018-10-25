@@ -1,3 +1,27 @@
+2018-10-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed a typo in the 'image' Makefile target and updated several lines to be more verbose; normalized some kernel options after several were enabled recently for DMA
+
+	updated mdadm to version 4.1
+
+	in the "all" target (default) don't run if we're the root user; in the "clean-esos_tui.chroot" target make sure the Makefile exists before attempting to clean (in case the directory was already manually removed); in the "image" target cleanup any remaining remnants from a previous image creation (including a failure), unmount image file mounts, remove partition devices and loop device (if they appear to exist); in the "pkg_dist" target cleanup files created from a previous run
+
+	Merge branch 'fix_buggy_strtok'
+
+2018-10-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	TUI: if strtok() returns NULL after the first parse, then skip the line we're attempting to parse; in strStrip() assert if the string passed in is NULL so at least isspace() won't cause a segmentation fault
+
+2018-10-23  Marc A. Smith  <marc.smith@parodyne.com>
+
+	Merge branch 'fc_info_fix'
+
+	Merge branch 'fc_info_fix' into 1.x.x
+
+	for Fibre Channel adapters whose WWPN (port name) begins with a '0' in the sysfs attribute tree, the port_name attribute file truncuates this and doesn't include the leading zero... this causes a sysfs port_name and SCST target name mistmatch in readTargetData() -- resolves GH issue #221
+
+	install.sh: exclude a few more device types that we don't need to show when calling the lsblk tool
+
 2018-10-16  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed PKG_CONFIG_PATH issue where udev rule for drbd was getting placed in the wrong directory; added a line for the 'mrproper' target in Linux (extra clean); enabled the BFQ I/O scheduler as an option for users; enabled several kernel options for RAID DMA and block tracing, rebuilt -debug patch
@@ -47,6 +71,8 @@
 2018-09-13  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Merge branch 'health_chk_fix'
+
+	Merge branch 'health_chk_fix' into 1.x.x
 
 	formatted ESOS Community license file to fit better in scrolling window widget; don't generate a default iSCSI initiator name file during build; include the correct license file in pkg_dist; rc.iscsid: generate a unique iSCSI initiator name file in start() if one doesn't already exist; decreased size (columns) of EULA scrolling window widget in TUI; fixed screen refresh issue in TUI for Community edition; added a note to the EULA scrolling window title line informing user to scroll down
 

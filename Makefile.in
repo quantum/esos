@@ -3434,21 +3434,21 @@ image: loop_dev = $$($(CAT) $(WORK_DIR)/loop_dev)
 image:
 	$(call no_chroot)
 	$(call check_if_root)
-	$(QUIET) if [ -f "$(WORK_DIR)/loop_dev)" ]; then \
+	$(QUIET) if [ -f "$(WORK_DIR)/loop_dev" ]; then \
 	  $(ECHO) "### Cleaning up any remnants from a previous run..."; \
 	  if $(MOUNT) | $(GREP) $(MOUNT_DIR)/boot > /dev/null; then \
-	    $(UMOUNT) $(MOUNT_DIR)/boot; \
+	    $(UMOUNT) -v $(MOUNT_DIR)/boot; \
 	  fi; \
 	  if $(MOUNT) | $(GREP) $(MOUNT_DIR) > /dev/null; then \
-	    $(UMOUNT) $(MOUNT_DIR); \
+	    $(UMOUNT) -v $(MOUNT_DIR); \
 	  fi; \
 	  if $(LOSETUP) $(loop_dev) > /dev/null 2>&1; then \
-	    $(KPARTX) -d $(loop_dev); \
-	    $(LOSETUP) -d $(loop_dev); \
+	    $(KPARTX) -v -d $(loop_dev); \
+	    $(LOSETUP) -v -d $(loop_dev); \
 	  fi; \
-	  $(RM) $(BUILD_DIR)/esos_*.img; \
-	  $(RM) $(BUILD_DIR)/esos_*.bz2; \
-	  $(RM) $(BUILD_DIR)/dist_*.txt; \
+	  $(RM) -v $(BUILD_DIR)/esos_*.img; \
+	  $(RM) -v $(BUILD_DIR)/esos_*.bz2; \
+	  $(RM) -v $(BUILD_DIR)/dist_*.txt; \
 	fi
 	$(QUIET) $(ECHO) "### Creating initramfs image..."
 	$(RM) $(INITRAMFS_DIR)/dev/*
