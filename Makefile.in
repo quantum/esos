@@ -496,6 +496,10 @@ endif
 
 # all - The default goal; complete everything up to bootstrap'ing.
 all:
+	$(QUIET) if [ `whoami` = "root" ]; then \
+	  $(ECHO) "### This target cannot be made with the root user!"; \
+	  exit 1; \
+	fi
 	$(MAKE) -C $(BUILD_DIR) fetch
 	$(MAKE) -C $(BUILD_DIR) extract
 	$(MAKE) -C $(BUILD_DIR) bootstrap
@@ -530,7 +534,9 @@ $(clean_system_tgts)::
 	$(RM) $(chroot_build)/$(target)
 
 clean-esos_tui.chroot::
-	$(MAKE) --directory=$(chroot_build)/tui clean
+	$(QUIET) if [ -f "$(chroot_build)/tui/Makefile" ]; then \
+	  $(MAKE) --directory=$(chroot_build)/tui clean; \
+	fi
 
 
 # distclean - Remove everything including build configuration settings.
@@ -3428,6 +3434,22 @@ image: loop_dev = $$($(CAT) $(WORK_DIR)/loop_dev)
 image:
 	$(call no_chroot)
 	$(call check_if_root)
+	$(QUIET) if [ -f "$(WORK_DIR)/loop_dev)" ]; then \
+	  $(ECHO) "### Cleaning up any remnants from a previous run..."; \
+	  if $(MOUNT) | $(GREP) $(MOUNT_DIR)/boot > /dev/null; then \
+	    $(UMOUNT) $(MOUNT_DIR)/boot; \
+	  fi; \
+	  if $(MOUNT) | $(GREP) $(MOUNT_DIR) > /dev/null; then \
+	    $(UMOUNT) $(MOUNT_DIR); \
+	  fi; \
+	  if $(LOSETUP) $(loop_dev) > /dev/null 2>&1; then \
+	    $(KPARTX) -d $(loop_dev); \
+	    $(LOSETUP) -d $(loop_dev); \
+	  fi; \
+	  $(RM) $(BUILD_DIR)/esos_*.img; \
+	  $(RM) $(BUILD_DIR)/esos_*.bz2; \
+	  $(RM) $(BUILD_DIR)/dist_*.txt; \
+	fi
 	$(QUIET) $(ECHO) "### Creating initramfs image..."
 	$(RM) $(INITRAMFS_DIR)/dev/*
 	$(MKNOD) $(INITRAMFS_DIR)/dev/null c 1 3
@@ -3664,6 +3686,8 @@ pkg_dist: license_file =  $(if $(findstring yes,$(enable_commercial)),\
 PROF_LICENSE,COMM_LICENSE)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
+	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
+	$(RM) $(BUILD_DIR)/esos_*.zip
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
 	$(LN) $(BUILD_DIR) $(pkg_prefix)
 	$(ZIP) -9 $(pkg_prefix).zip $(pkg_prefix)/$(notdir $(bz2_img_file)) \
