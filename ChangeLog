@@ -1,3 +1,7 @@
+2018-10-29  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated sg3_utils to version 1.44; updated nvme-cli to version 1.6
+
 2018-10-25  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed a typo in the 'image' Makefile target and updated several lines to be more verbose; normalized some kernel options after several were enabled recently for DMA

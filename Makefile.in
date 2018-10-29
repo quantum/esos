@@ -165,7 +165,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		e2fsprogs-1.43.3.tar.gz \
 		zlib-1.2.8.tar.xz \
 		lsscsi-0.28.tar.gz \
-		sg3_utils-1.42.tar.gz \
+		sg3_utils-1.44.tar.xz \
 		groff-1.22.3.tar.gz \
 		qlogic_fw-20140928.tar.gz \
 		iniparser-3.2.tar.gz \
@@ -279,7 +279,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		swig-3.0.10.tar.gz \
 		userspace-rcu-0.9.2.tar.bz2 \
 		tzdata-2016i.tar.gz \
-		nvme-cli-1.4.tar.gz \
+		nvme-cli-1.6.tar.gz \
 		freetype-2.7.tar.bz2 \
 		ledmon-0.80.tar.gz \
 		nvmetcli-master_20180523.tar.xz \
