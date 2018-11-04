@@ -16,6 +16,8 @@ ALUA_STATES="active nonoptimized standby unavailable offline transitioning"
 REMOTE_INACT_STATE="offline"
 TRANSITION_STATE="transitioning"
 SCST_DEV_MAPS="/etc/esos_dev_maps/scst"
+LUN_MAP_FLOCK="/tmp/lun_map_flock"
+FLOCK_TIMEOUT=10
 
 
 alua_start() {
@@ -55,9 +57,10 @@ alua_start() {
         # was supported, however, it is not currently. Revisit in the future.
         #real_to_redirect_dev
         # We are likley using iSCSI with redirect mode, rescan here
-        ocf_log debug "Rescanning all running iSCSI initiator sessions..."
+        ocf_log debug "alua_start() -> Rescanning all running iSCSI" \
+            "initiator sessions..."
         iscsiadm --mode session --rescan
-        ocf_log debug "Issuing a SCSI bus rescan..."
+        ocf_log debug "alua_start() -> Issuing a SCSI bus rescan..."
         rescan-scsi-bus.sh
         # Try to set the devices to the redirected backing device to start
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
@@ -73,9 +76,7 @@ alua_start() {
                 continue
             fi
             echo "${new_filename}" > ${i}/filename || exit ${OCF_ERR_GENERIC}
-            if ! sg_turs ${new_filename}; then
-                ocf_log warn "The backing SCSI disk '${new_filename}'" \
-                    "is not ready yet (TUR failed), skipping..."
+            if ! test_if_dev_ready ${new_filename}; then
                 continue
             fi
             echo 1 > ${i}/active || exit ${OCF_ERR_GENERIC}
@@ -553,6 +554,23 @@ get_redirect_filename() {
 }
 
 
+test_if_dev_ready() {
+    # Perform several checks on the given block device to see if it's working
+    block_dev="${1}"
+    if ! sg_turs ${block_dev}; then
+        ocf_log warn "The backing SCSI disk '${block_dev}'" \
+            "is not ready yet (TUR failed), skipping..."
+        return 1
+    fi
+    if ! sg_read if=${block_dev} bs=512 count=1; then
+        ocf_log warn "The backing SCSI disk '${block_dev}'" \
+            "is not ready yet (read failed), skipping..."
+        return 1
+    fi
+    return 0
+}
+
+
 bio_dev_to_real() {
     # Loop over each SCST device in the device group and modify the filename
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
@@ -620,9 +638,10 @@ bio_dev_to_redirect() {
                 ocf_log debug "The 'filename' attribute value is already" \
                     "what it should be..."
                 if [ "x${active_val}" = "x0" ]; then
-                    if ! sg_turs ${new_filename}; then
-                        ocf_log warn "The backing SCSI disk '${new_filename}'" \
-                            "is not ready yet (TUR failed), skipping..."
+                    ocf_log debug "Rescanning all running iSCSI" \
+                        "initiator sessions..."
+                    iscsiadm --mode session --rescan
+                    if ! test_if_dev_ready ${new_filename}; then
                         continue
                     fi
                     ocf_log debug "Setting device '${dev_name}' to active..."
@@ -638,9 +657,7 @@ bio_dev_to_redirect() {
             ocf_log info "Changing 'filename' attribute for device" \
                 "'${dev_name}' to the redirected backing device..."
             echo "${new_filename}" > ${i}/filename
-            if ! sg_turs ${new_filename}; then
-                ocf_log warn "The backing SCSI disk '${new_filename}'" \
-                    "is not ready yet (TUR failed), skipping..."
+            if ! test_if_dev_ready ${new_filename}; then
                 continue
             fi
             if [ ${?} -eq 0 ]; then
@@ -744,17 +761,20 @@ alua_promote() {
             if [ ${lun_exists} -eq 1 ]; then
                 continue
             fi
-	    lun_val="$(ls ${lun_path} | grep -v mgmt | sort -nr | head -1)"
-	    if [ -n "${lun_val}" ]; then
-                lun_val="$(expr ${lun_val} + 1)"
-                ocf_log debug "Attempting to use LUN value '${lun_val}'..."
-                ocf_run scstadmin -add_lun ${lun_val} -driver iscsi \
-                    -target ${OCF_RESKEY_redirect_tgt} \
-                    -group ${OCF_RESKEY_redirect_grp} -device ${dev_name}
-            else
-                ocf_log warn "A suitable LUN value was not found," \
-                    "not mapping '${dev_name}' to the redirection target..."
-            fi
+            (
+                flock --verbose -w ${FLOCK_TIMEOUT} 200 || continue
+                lun_val="$(ls ${lun_path} | grep -v mgmt | sort -nr | head -1)"
+                if [ -n "${lun_val}" ]; then
+                    lun_val="$(expr ${lun_val} + 1)"
+                    ocf_log debug "Attempting to use LUN value '${lun_val}'..."
+                    ocf_run scstadmin -add_lun ${lun_val} -driver iscsi \
+                        -target ${OCF_RESKEY_redirect_tgt} \
+                        -group ${OCF_RESKEY_redirect_grp} -device ${dev_name}
+                else
+                    ocf_log warn "A suitable LUN value was not found," \
+                        "not mapping '${dev_name}' to the redirection target..."
+                fi
+            ) 200>${LUN_MAP_FLOCK}
         done
     elif ocf_is_true ${OCF_RESKEY_set_dev_active}; then
         ocf_log debug "alua_promote() -> Changing the group's devices to active..."
@@ -888,23 +908,26 @@ alua_demote() {
             ocf_log info "Removing the LUN mapping for device '${dev_name}'" \
                 "from the redirection target..."
             dev_exports="/sys/kernel/scst_tgt/devices/${dev_name}/exported"
-            lun_val=""
-            for j in $(ls ${dev_exports}); do
-                lun_path="$(readlink -f ${dev_exports}/${j})"
-                if echo ${lun_path} | grep "${OCF_RESKEY_redirect_tgt}" | \
-                    grep "${OCF_RESKEY_redirect_grp}" > /dev/null 2>&1; then
-                    lun_val="$(basename ${lun_path})"
-                    break
+            (
+                flock --verbose -w ${FLOCK_TIMEOUT} 200 || continue
+                lun_val=""
+                for j in $(ls ${dev_exports}); do
+                    lun_path="$(readlink -f ${dev_exports}/${j})"
+                    if echo ${lun_path} | grep "${OCF_RESKEY_redirect_tgt}" | \
+                        grep "${OCF_RESKEY_redirect_grp}" > /dev/null 2>&1; then
+                        lun_val="$(basename ${lun_path})"
+                        break
+                    fi
+                done
+                if [ -n "${lun_val}" ]; then
+                    ocf_run scstadmin -noprompt -rem_lun ${lun_val} \
+                        -driver iscsi -target ${OCF_RESKEY_redirect_tgt} \
+                        -group ${OCF_RESKEY_redirect_grp}
+                else
+                    ocf_log warn "No LUN mapping found for device"\
+                        "'${dev_name}' on the internal redirection target!"
                 fi
-            done
-	    if [ -n "${lun_val}" ]; then
-                ocf_run scstadmin -noprompt -rem_lun ${lun_val} -driver iscsi \
-                    -target ${OCF_RESKEY_redirect_tgt} \
-                    -group ${OCF_RESKEY_redirect_grp}
-            else
-                ocf_log warn "No LUN mapping found for device '${dev_name}'" \
-                    "on the internal redirection target!"
-            fi
+            ) 200>${LUN_MAP_FLOCK}
         done
     elif ocf_is_true ${OCF_RESKEY_set_dev_active}; then
         ocf_log debug "alua_demote() -> Changing the group's" \

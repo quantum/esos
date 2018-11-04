@@ -32,13 +32,13 @@ start() {
     eval ${ISCSID} ${USER_OPTS} || exit 1
     /bin/touch ${ISCSID_LOCK}
     /bin/echo "Setting up iSCSI targets..."
-    ${ISCSIADM} -m node --loginall=automatic || exit 1
+    /bin/sh -c "/usr/bin/nohup ${ISCSIADM} -m node --loginall=automatic &"
 }
 
 stop() {
     /bin/echo "Stopping iSCSI initiator service..."
     ${SYNC}
-    ${ISCSIADM} -m node --logoutall=all || exit 1
+    ${ISCSIADM} -m node --logoutall=all
     ${ISCSIADM} -k 0 && /bin/rm -f ${ISCSID_LOCK}
 }
 
