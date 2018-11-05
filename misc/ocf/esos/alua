@@ -353,6 +353,11 @@ alua_meta_data() {
 	      <shortdesc lang="en">The 'redirect_grp' parameter.</shortdesc>
 	      <content type="string" default="" />
 	    </parameter>
+	    <parameter name="issue_lip" unique="0" required="0">
+	      <longdesc lang="en">Issue Fibre Channel LIP requests during key operations (may improve initiator responsiveness during fail-over or fail-back).</longdesc>
+	      <shortdesc lang="en">The 'issue_lip' parameter.</shortdesc>
+	      <content type="boolean" default="false" />
+	    </parameter>
 	  </parameters>
 	  <actions>
 	    <action name="meta-data" timeout="5" />
@@ -821,9 +826,11 @@ alua_promote() {
         fi
     done
 
-    # Issue a delayed Fibre Channel LIP
-    ocf_log debug "Issuing a LIP for all drivers and targets..."
-    ocf_run sleep 5 && scstadmin -issue_lip
+    if ocf_is_true ${OCF_RESKEY_issue_lip}; then
+        # Issue a delayed Fibre Channel LIP
+        ocf_log debug "Issuing a LIP for all drivers and targets..."
+        ocf_run sleep 5 && scstadmin -issue_lip
+    fi
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
@@ -966,9 +973,11 @@ alua_demote() {
         fi
     done
 
-    # Issue a delayed Fibre Channel LIP
-    ocf_log debug "Issuing a LIP for all drivers and targets..."
-    ocf_run sleep 5 && scstadmin -issue_lip
+    if ocf_is_true ${OCF_RESKEY_issue_lip}; then
+        # Issue a delayed Fibre Channel LIP
+        ocf_log debug "Issuing a LIP for all drivers and targets..."
+        ocf_run sleep 5 && scstadmin -issue_lip
+    fi
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}

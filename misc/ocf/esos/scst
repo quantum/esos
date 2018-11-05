@@ -75,7 +75,11 @@ scst_start() {
             sed -i 's/active 1/active 0/g' ${SCST_CFG}
         fi
         ocf_log info "Applying SCST configuration..."
-        ocf_run scstadmin -config "${SCST_CFG}" -lip
+        if ocf_is_true ${OCF_RESKEY_issue_lip}; then
+            ocf_run scstadmin -config "${SCST_CFG}" -lip
+        else
+            ocf_run scstadmin -config "${SCST_CFG}"
+        fi
         # Prevent scst_stop() from clobbering the configuration file
         if [ ${?} -ne 0 ]; then
             ocf_log err "Something is wrong with the SCST configuration!"
@@ -144,9 +148,11 @@ scst_start() {
         sleep 1
     done
 
-    # Issue a delayed Fibre Channel LIP
-    ocf_log debug "Issuing a LIP for all drivers and targets..."
-    ocf_run sleep 5 && scstadmin -issue_lip
+    if ocf_is_true ${OCF_RESKEY_issue_lip}; then
+        # Issue a delayed Fibre Channel LIP
+        ocf_log debug "Issuing a LIP for all drivers and targets..."
+        ocf_run sleep 5 && scstadmin -issue_lip
+    fi
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
@@ -444,6 +450,11 @@ scst_meta_data() {
 	      <shortdesc lang="en">The 'redirect_mode' parameter.</shortdesc>
 	      <content type="boolean" default="false" />
 	    </parameter>
+	    <parameter name="issue_lip" unique="0" required="0">
+	      <longdesc lang="en">Issue Fibre Channel LIP requests during key operations (may improve initiator responsiveness during fail-over or fail-back).</longdesc>
+	      <shortdesc lang="en">The 'issue_lip' parameter.</shortdesc>
+	      <content type="boolean" default="false" />
+	    </parameter>
 	  </parameters>
 	  <actions>
 	    <action name="meta-data" timeout="5" />
@@ -701,9 +712,11 @@ scst_promote() {
         fi
     done
 
-    # Issue a delayed Fibre Channel LIP
-    ocf_log debug "Issuing a LIP for all drivers and targets..."
-    ocf_run sleep 5 && scstadmin -issue_lip
+    if ocf_is_true ${OCF_RESKEY_issue_lip}; then
+        # Issue a delayed Fibre Channel LIP
+        ocf_log debug "Issuing a LIP for all drivers and targets..."
+        ocf_run sleep 5 && scstadmin -issue_lip
+    fi
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}
@@ -801,9 +814,11 @@ scst_demote() {
         fi
     done
 
-    # Issue a delayed Fibre Channel LIP
-    ocf_log debug "Issuing a LIP for all drivers and targets..."
-    ocf_run sleep 5 && scstadmin -issue_lip
+    if ocf_is_true ${OCF_RESKEY_issue_lip}; then
+        # Issue a delayed Fibre Channel LIP
+        ocf_log debug "Issuing a LIP for all drivers and targets..."
+        ocf_run sleep 5 && scstadmin -issue_lip
+    fi
 
     # Only return $OCF_SUCCESS if _everything_ succeeded as expected
     return ${OCF_SUCCESS}

@@ -1,3 +1,9 @@
+2018-11-04  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the 'issue_lip' parameter to the ocf:esos:scst and ocf:esos:alua resource agents to make issuing a FC LIP optional (some initiators work better with target-side LIP's during transition, and others don't)
+
+	modprobe.conf: set qlini_mode="disabled" for the SCST in-tree qla2xxx driver as well; rc.iscsid: background the --loginall command in start() and don't exit with 1 for --logoutall in stop(); increased the max number of CPU's to 128 in the kernel config; several updates/improvements in the ocf:esos:alua RA (use flock to keep concurrency sane when adding/removing LUN maps for the interal redirection target, use --rescan with iscsiadm in several spots to re-establish the block device operation, check the block device with test_if_dev_ready())
+
 2018-10-29  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated sg3_utils to version 1.44; updated nvme-cli to version 1.6
