@@ -1,3 +1,7 @@
+2018-11-06  Marc A. Smith  <marc.smith@parodyne.com>
+
+	rc.iscsid: hide the nohup message/output in start(); updated the ocf:esos:alua and ocf:esos:scst resource agents to support specifying the remote node inactive/offline ALUA state as a RA parameter; usb_sync.sh: added the '--update' flag for the initial call to rsync which should prevent clobbering files that already exist and are newer in the cpio image (after extraction)
+
 2018-11-04  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the 'issue_lip' parameter to the ocf:esos:scst and ocf:esos:alua resource agents to make issuing a FC LIP optional (some initiators work better with target-side LIP's during transition, and others don't)

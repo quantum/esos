@@ -65,7 +65,7 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
     fi
     # Use rsync for the other directories/files
     mkdir -p ${USB_RSYNC} || exit 1
-    rsync --archive --exclude "System Volume Information" \
+    rsync --archive --update --exclude "System Volume Information" \
         --exclude "lost+found" ${USB_RSYNC}/ ${ROOT_PATH} || exit 1
 else
     # During an upgrade, the user may wipe esos_conf, so recreate if needed

@@ -13,7 +13,6 @@
 . ${OCF_FUNCTIONS_DIR}/ocf-shellfuncs
 SCST_SYSFS="/sys/kernel/scst_tgt"
 ALUA_STATES="active nonoptimized standby unavailable offline transitioning"
-REMOTE_INACT_STATE="offline"
 TRANSITION_STATE="transitioning"
 SCST_DEV_MAPS="/etc/esos_dev_maps/scst"
 LUN_MAP_FLOCK="/tmp/lun_map_flock"
@@ -127,11 +126,11 @@ alua_stop() {
     check_alua
     ocf_log debug "alua_stop() -> Setting target group" \
         "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
-        "'${REMOTE_INACT_STATE}'..."
+        "'${OCF_RESKEY_remote_inact_state}'..."
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_remote_inact_state} || exit ${OCF_ERR_GENERIC}
 
     if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
         # TODO: Using the dev_disk handler would be better if PR pass-through
@@ -199,14 +198,16 @@ alua_monitor() {
     # We handle detecting if the remote node is offline/unavailable here
     if remote_inactive; then
         # Remote does not exist, so set the remote target group to offline
-        if [ "x${r_tgt_grp_state}" != "x${REMOTE_INACT_STATE}" ]; then
+        if [ "x${r_tgt_grp_state}" != \
+            "x${OCF_RESKEY_remote_inact_state}" ]; then
             ocf_log debug "alua_monitor() -> Setting target group" \
                 "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-                "'${REMOTE_INACT_STATE}'..."
+                "'${OCF_RESKEY_remote_inact_state}'..."
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
+                state\=${OCF_RESKEY_remote_inact_state} \
+                || exit ${OCF_ERR_GENERIC}
         fi
     else
         if [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
@@ -357,6 +358,11 @@ alua_meta_data() {
 	      <longdesc lang="en">Issue Fibre Channel LIP requests during key operations (may improve initiator responsiveness during fail-over or fail-back).</longdesc>
 	      <shortdesc lang="en">The 'issue_lip' parameter.</shortdesc>
 	      <content type="boolean" default="false" />
+	    </parameter>
+	    <parameter name="remote_inact_state" unique="0" required="0">
+	      <longdesc lang="en">The ALUA state for an inactive / offline node.</longdesc>
+	      <shortdesc lang="en">The 'remote_inact_state' parameter.</shortdesc>
+	      <content type="string" default="offline" />
 	    </parameter>
 	  </parameters>
 	  <actions>
@@ -798,11 +804,11 @@ alua_promote() {
     if remote_inactive; then
         ocf_log debug "alua_promote() -> Setting target group" \
             "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-            "'${REMOTE_INACT_STATE}'..."
+            "'${OCF_RESKEY_remote_inact_state}'..."
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_remote_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${REMOTE_INACT_STATE} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_remote_inact_state} || exit ${OCF_ERR_GENERIC}
     else
         ocf_log debug "alua_promote() -> Setting target group" \
             "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \

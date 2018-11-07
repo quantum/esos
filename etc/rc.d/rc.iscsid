@@ -32,7 +32,8 @@ start() {
     eval ${ISCSID} ${USER_OPTS} || exit 1
     /bin/touch ${ISCSID_LOCK}
     /bin/echo "Setting up iSCSI targets..."
-    /bin/sh -c "/usr/bin/nohup ${ISCSIADM} -m node --loginall=automatic &"
+    /bin/sh -c "/usr/bin/nohup ${ISCSIADM} -m node \
+        --loginall=automatic > /dev/null 2>&1 &"
 }
 
 stop() {
