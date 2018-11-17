@@ -1,3 +1,7 @@
+2018-11-17  Marc A. Smith  <marc.smith@parodyne.com>
+
+	enabled most Virtio drivers in kernel config
+
 2018-11-06  Marc A. Smith  <marc.smith@parodyne.com>
 
 	rc.iscsid: hide the nohup message/output in start(); updated the ocf:esos:alua and ocf:esos:scst resource agents to support specifying the remote node inactive/offline ALUA state as a RA parameter; usb_sync.sh: added the '--update' flag for the initial call to rsync which should prevent clobbering files that already exist and are newer in the cpio image (after extraction)
