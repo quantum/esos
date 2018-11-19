@@ -1167,8 +1167,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
 	  fi; \
 	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
-	    $(SED) -i 's/-m 0744 -o root -g root/-m 0644/g' \
-	    $(celerity_16_32_dir)/src/Makefile; \
 	    $(SED) -i 's/@depmod/#depmod/' \
 	    $(celerity_16_32_dir)/src/Makefile; \
 	    $(MAKE) --directory=$(celerity_16_32_dir)/src KDIR=$(linux_src) \
@@ -1344,9 +1342,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  fi; \
 	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
 	    $(ECHO) "### Building the ATTO Celerity 16/32 HBA module..."; \
-	    $(MAKE) --directory=$(celerity_16_32_dir)/src \
-	    KERNELRELEASE=$(kernel_ver)$$i KDIR=$(linux_src) \
-	    MODULE_ROOT=/lib/modules/$(kernel_ver)$$i/kernel/drivers \
+	    $(MAKE) --directory=$(celerity_16_32_dir)/src KDIR=$(linux_src) \
 	    DRIVER_NAME=celerity16fc PWD=$(celerity_16_32_dir)/src install; \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \

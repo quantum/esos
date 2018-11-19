@@ -58,7 +58,7 @@ else
 fi
 /bin/sleep 5
 
-if [ -f "/lib/modules/$(/bin/uname -r)/kernel/drivers/scsi/celerity16fc.ko" ]; then
+if [ -f "/lib/modules/$(/bin/uname -r)/extra/celerity16fc.ko" ]; then
     /bin/echo "Loading the ATTO Celerity 16Gb/32Gb FC HBA module..."
     /sbin/modprobe -s celerity16fc
 fi
