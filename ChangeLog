@@ -1,3 +1,7 @@
+2018-11-20  Marc A. Smith  <marc.smith@parodyne.com>
+
+	fixed issue with leading whitespace in a variable value of the pkg_dist target
+
 2018-11-18  Marc A. Smith  <marc.smith@parodyne.com>
 
 	Makefile.in: build fixes for new ATTO Celerity Gen6 FC driver version; etc/rc.d/rc.d: ATTO FC driver now installs to the extra/ module directory

@@ -3679,7 +3679,7 @@ image:
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
 pkg_dist: license_file =  $(if $(findstring yes,$(enable_commercial)),\
-PROF_LICENSE,COMM_LICENSE)
+	PROF_LICENSE,COMM_LICENSE)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
@@ -3693,7 +3693,7 @@ pkg_dist: $(bz2_img_file)
 	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/ChangeLog \
 	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
 	$(pkg_prefix)/INSTALL $(pkg_prefix)/README \
-	$(pkg_prefix)/$(license_file)
+	$(pkg_prefix)/$(strip $(license_file))
 	$(RM) $(pkg_prefix)
 	$(LN) $(wildcard $(SOURCES_DIR)/win_binaries-*) $(pkg_prefix)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/*
