@@ -1,3 +1,9 @@
+2018-12-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added some default virtual memory tweaks to /etc/sysctl.conf (systems using vdisk_fileio with small amounts of memory may experience stability issues without this)
+
+	use the real blkdiscard utility (from util-linux) instead of the Busybox variant
+
 2018-11-20  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed issue with leading whitespace in a variable value of the pkg_dist target
