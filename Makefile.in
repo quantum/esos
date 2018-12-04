@@ -648,6 +648,7 @@ bootstrap: symlink $(bootstrap_tgts)
 	$(ECHO) -e "#!/bin/sh\n/tools/bin/env -i\nexport HOME=/\n\
 	export TERM=$$TERM\nexport PS1='\u:\w\$$ '\n\
 	export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin\n\
+	export LC_ALL=C\n\
 	/tools/bin/make \$$@ -C /build build" > \
 	$(chroot_build)/build_all.sh
 	$(CHMOD) +x $(chroot_build)/build_all.sh
@@ -1927,6 +1928,8 @@ sg3_utils.chroot: glibc.chroot
 
 groff.chroot: glibc.chroot gcc.chroot
 	$(call chroot_only)
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir) CCC="g++ -std=c++98 \
 	-I$(wildcard /tools/include/c++/*) \
@@ -3270,8 +3273,7 @@ libtool.chroot: glibc.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install-ltdlincludeHEADERS
-	$(MAKE) --directory=$(tgt_src_dir) install-libLTLIBRARIES
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
 etckeeper.chroot: git.chroot

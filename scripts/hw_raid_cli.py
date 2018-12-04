@@ -31,7 +31,8 @@ class MegaRAID():
             return 0
         # Get the number of controllers
         command = STORCLI_BIN + ' show ctrlcount 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit == 0:
@@ -52,7 +53,7 @@ class MegaRAID():
         for each in range(first_id, last_id):
             command = STORCLI_BIN + ' /c' + str(each) + ' show 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -76,7 +77,7 @@ class MegaRAID():
         for each in range(first_id, last_id):
             command = STORCLI_BIN + ' /c' + str(each) + '/eall/sall show 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -114,7 +115,7 @@ class MegaRAID():
         for each in range(first_id, last_id):
             command = STORCLI_BIN + ' /c' + str(each) + '/vall show 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -152,7 +153,8 @@ class MegaRAID():
         command = STORCLI_BIN + ' /c' + str(ctrlr_id) + ' add vd r' + \
                   raid_lvl + ' drives=' + phys_drives + ' ' + read_opt + \
                   ' ' + write_opt + ' 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -163,7 +165,8 @@ class MegaRAID():
         # All arguments are required, so build the command and execute it
         command = STORCLI_BIN + ' /c' + str(ctrlr_id) + '/v' + \
                   str(ld_id) + ' del force 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -175,7 +178,8 @@ class MegaRAID():
         command = STORCLI_BIN + ' /c' + str(ctrlr_id) + '/e' + \
                   str(encl_id) + '/s' + str(slot_num) + \
                   ' add hotsparedrive 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -187,7 +191,8 @@ class MegaRAID():
         command = STORCLI_BIN + ' /c' + str(ctrlr_id) + '/e' + \
                   str(encl_id) + '/s' + str(slot_num) + \
                   ' delete hotsparedrive 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -209,7 +214,8 @@ class PERC():
             return 0
         # Get the number of controllers
         command = PERCCLI_BIN + ' show ctrlcount 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit == 0:
@@ -230,7 +236,7 @@ class PERC():
         for each in range(first_id, last_id):
             command = PERCCLI_BIN + ' /c' + str(each) + ' show 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -254,7 +260,7 @@ class PERC():
         for each in range(first_id, last_id):
             command = PERCCLI_BIN + ' /c' + str(each) + '/eall/sall show 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -292,7 +298,7 @@ class PERC():
         for each in range(first_id, last_id):
             command = PERCCLI_BIN + ' /c' + str(each) + '/vall show 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -330,7 +336,8 @@ class PERC():
         command = PERCCLI_BIN + ' /c' + str(ctrlr_id) + ' add vd r' + \
                   raid_lvl + ' drives=' + phys_drives + ' ' + read_opt + \
                   ' ' + write_opt + ' 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -341,7 +348,8 @@ class PERC():
         # All arguments are required, so build the command and execute it
         command = PERCCLI_BIN + ' /c' + str(ctrlr_id) + '/v' + \
                   str(ld_id) + ' del force 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -353,7 +361,8 @@ class PERC():
         command = PERCCLI_BIN + ' /c' + str(ctrlr_id) + '/e' + \
                   str(encl_id) + '/s' + str(slot_num) + \
                   ' add hotsparedrive 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -365,7 +374,8 @@ class PERC():
         command = PERCCLI_BIN + ' /c' + str(ctrlr_id) + '/e' + \
                   str(encl_id) + '/s' + str(slot_num) + \
                   ' delete hotsparedrive 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -387,7 +397,8 @@ class AACRAID():
             return 0
         # Get the number of controllers
         command = ARCCONF_BIN + ' getversion 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit == 0:
@@ -408,7 +419,7 @@ class AACRAID():
         for each in range(first_id, last_id):
             command = ARCCONF_BIN + ' getconfig ' + str(each) + ' ad 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -432,7 +443,7 @@ class AACRAID():
         for each in range(first_id, last_id):
             command = ARCCONF_BIN + ' getconfig ' + str(each) + ' pd 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -483,7 +494,7 @@ class AACRAID():
         for each in range(first_id, last_id):
             command = ARCCONF_BIN + ' getconfig ' + str(each) + ' ld 2>&1'
             process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       shell=True)
+                                       shell=True, universal_newlines=True)
             stdout, stderr = process.communicate()
             cmd_exit = process.returncode
             if cmd_exit == 0:
@@ -530,7 +541,8 @@ class AACRAID():
             encl_slot = each.split(':')
             command = command + ' ' + encl_slot[0] + ' ' + encl_slot[1]
         command = command + ' 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -541,7 +553,8 @@ class AACRAID():
         # All arguments are required, so build the command and execute it
         command = ARCCONF_BIN + ' delete ' + str(ctrlr_id) + \
                   ' logicaldrive ' + str(ld_id) + ' noprompt 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -553,7 +566,8 @@ class AACRAID():
         command = ARCCONF_BIN + ' setstate ' + str(ctrlr_id) + \
                   ' device ' + str(encl_id) + ' ' + str(slot_num) + \
                   ' hsp noprompt 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:
@@ -565,7 +579,8 @@ class AACRAID():
         command = ARCCONF_BIN + ' setstate ' + str(ctrlr_id) + \
                   ' device ' + str(encl_id) + ' ' + str(slot_num) + \
                   ' rdy noprompt 2>&1'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                                   universal_newlines=True)
         stdout, stderr = process.communicate()
         cmd_exit = process.returncode
         if cmd_exit != 0:

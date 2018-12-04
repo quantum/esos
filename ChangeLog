@@ -1,3 +1,7 @@
+2018-12-03  Marc A. Smith  <marc.smith@parodyne.com>
+
+	silence perl warnings in chroot environment by using LC_ALL=C (set via bootstrap); fixed groff parallel make issue (against 1.22.3); hw_raid_cli.py: fixed an issue with subprocess.Popen() where stdout data being returned was in binary (after Python 2-to-3 transition)
+
 2018-12-01  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added some default virtual memory tweaks to /etc/sysctl.conf (systems using vdisk_fileio with small amounts of memory may experience stability issues without this)
