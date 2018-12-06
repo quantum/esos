@@ -1997,6 +1997,8 @@ xfsprogs.chroot: glibc.chroot util-linux.chroot
 
 drbd-utils.chroot: glibc.chroot eudev.chroot
 	$(call chroot_only)
+	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
+	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
 	$(SED) -e '/install -d $$(DESTDIR)$$(INITDIR)/ s/^#*/#/' -i \
 	$(tgt_src_dir)/scripts/Makefile.in
 	$(SED) -e '/install -m 755 drbd $$(DESTDIR)$$(INITDIR)\// s/^#*/#/' -i \
@@ -3138,6 +3140,7 @@ coreutils.chroot: glibc.chroot perl.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/df /bin/df
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/dd /bin/dd
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/pr /bin/pr
+	$(INSTALL) -m 0755 $(tgt_src_dir)/src/readlink /usr/bin/readlink
 	$(TOUCH) $(@)
 
 open-vm-tools.chroot: glibc.chroot gcc.chroot glib.chroot libdnet.chroot

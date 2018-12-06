@@ -1,5 +1,5 @@
 --- a/heartbeat/Raid1	2016-02-03 05:57:55.000000000 -0500
-+++ b/heartbeat/Raid1	2018-10-10 20:52:11.763223336 -0400
++++ b/heartbeat/Raid1	2018-12-06 10:11:45.706670697 -0500
 @@ -182,7 +182,7 @@
  
  md_assemble() {
@@ -47,8 +47,8 @@
  raid1_monitor_one() {
  	local mddev=$1
 -	local md=`echo $mddev | sed 's,/dev/,,'`
-+	if [ -e "$mddev" ]; then
-+		local md=`readlink -f $mddev | sed 's,/dev/,,'`
++	if [ -L "$mddev" ]; then
++		local md=`readlink -m $mddev | sed 's,/dev/,,'`
 +	else
 +		local md=`echo $mddev | sed 's,/dev/,,'`
 +	fi

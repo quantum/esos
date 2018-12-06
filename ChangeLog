@@ -1,3 +1,7 @@
+2018-12-06  Marc A. Smith  <marc.smith@parodyne.com>
+
+	introduced a patch for the ocf:linbit:drbd RA which uses a delay in promote() before attempting to promote the resource via drbdadm (solves timing issue that occurs with same larger volumes); used the real readlink (from coreutils) instead of the Busybox variant; updated ocf:heartbeat:Raid1 patch to handle issue where symlink for MD devices was being detected even after array was stopped causing a false-positive "array failed to stop" event
+
 2018-12-03  Marc A. Smith  <marc.smith@parodyne.com>
 
 	silence perl warnings in chroot environment by using LC_ALL=C (set via bootstrap); fixed groff parallel make issue (against 1.22.3); hw_raid_cli.py: fixed an issue with subprocess.Popen() where stdout data being returned was in binary (after Python 2-to-3 transition)
