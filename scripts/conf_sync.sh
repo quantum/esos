@@ -6,7 +6,7 @@ if [ -f "/tmp/conf_sync_lock" ]; then
     exit 1
 fi
 # Write the SCST configuration to a file (we don't hide stderr)
-/usr/sbin/scstadmin -force -nonkey -write_config /etc/scst.conf > /dev/null
+/usr/sbin/scstadmin -force -write_config /etc/scst.conf > /dev/null
 # Commit any changed files to the local Git repo
 cd /etc && /usr/bin/git add -A || exit 1
 cd /etc && /usr/bin/git diff-index --quiet HEAD || \

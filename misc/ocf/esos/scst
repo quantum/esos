@@ -71,7 +71,13 @@ scst_start() {
             ocf_log debug "Redirect mode is enabled, adjusting the SCST" \
                 "configuration file..."
             cp -f ${SCST_CFG} ${SCST_CFG}.redirect_mode_backup
-            sed -i 's/active 1/active 0/g' ${SCST_CFG}
+            sed -i '/^\t\tactive /d' ${SCST_CFG}
+            cat ${SCST_CFG} | perl -n \
+                -e '$in_handler = 1 if (/^HANDLER vdisk_blockio/);' \
+                -e '$in_dev = 1 if (/^\tDEVICE /);' \
+                -e 'if ($in_handler && $in_dev && /^\t}/) {' \
+                -e 'print "\t\tactive 0\n"; $in_dev=0; } print;' \
+                -e '$in_handler = 0 if (/^}/);' > ${SCST_CFG}
         fi
         ocf_log info "Applying SCST configuration..."
         if ocf_is_true ${OCF_RESKEY_issue_lip}; then
@@ -248,7 +254,7 @@ scst_stop() {
         ocf_log warn "The '${NO_CLOBBER}' file exists," \
             "not writing configuration!"
     else
-        ocf_run scstadmin -force -nonkey -write_config \
+        ocf_run scstadmin -force -write_config \
             ${SCST_CFG} || exit ${OCF_ERR_GENERIC}
     fi
 

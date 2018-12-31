@@ -96,7 +96,7 @@ apply_config() {
 
 write_config() {
     /bin/echo "Saving SCST configuration..."
-    ${SCSTADMIN} -force -nonkey -write_config ${SCST_CFG} || return 1
+    ${SCSTADMIN} -force -write_config ${SCST_CFG} || return 1
     return 0
 }
 
