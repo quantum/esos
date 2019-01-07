@@ -43,6 +43,7 @@ if [ -e /proc/vmcore ]; then
 	mount ${logs_fs_dev} /mnt/tmp || rescue_shell
 	makedumpfile -E -d 31 /proc/vmcore /mnt/tmp/dumpfile-`date +"%s"` || \
 	rescue_shell
+	echo "Unmounting the ESOS log file system and rebooting..."
 	umount /mnt/tmp || rescue_shell
 	reboot -f || rescue_shell
 fi
