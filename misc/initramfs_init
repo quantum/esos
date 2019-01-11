@@ -40,11 +40,12 @@ if [ -e /proc/vmcore ]; then
 	logs_fs_dev="$(findfs LABEL=esos_logs)" || \
 	(echo "Error resolving the logs device node!"; rescue_shell)
 	echo "Saving /proc/vmcore to the ESOS log file system..."
-	mount ${logs_fs_dev} /mnt/tmp || rescue_shell
+	mount -o sync ${logs_fs_dev} /mnt/tmp || rescue_shell
 	makedumpfile -E -d 31 /proc/vmcore /mnt/tmp/dumpfile-`date +"%s"` || \
 	rescue_shell
-	echo "Unmounting the ESOS log file system and rebooting..."
+	echo "Unmounting the ESOS log file system..."
 	umount /mnt/tmp || rescue_shell
+	echo "Rebooting..."
 	reboot -f || rescue_shell
 fi
 
