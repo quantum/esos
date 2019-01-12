@@ -170,7 +170,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20140928.tar.gz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.3.x_r7866.tar.xz \
+		scst-3.3.x_r7871.tar.xz \
 		kexec-tools-2.0.17.tar.xz \
 		drbd-utils-8.9.6.tar.gz \
 		lvm2-2_02_168.tar.gz \
@@ -1135,10 +1135,14 @@ esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
 esos_kernels.chroot: spl_src = $(wildcard /sources/spl-*)
 esos_kernels.chroot: zfs_src = $(wildcard /sources/zfs-*)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
-	glibc.chroot gcc.chroot util-linux.chroot attr.chroot
+	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(linux_src)/tools/perf
 	$(INSTALL) -m 0755 $(linux_src)/tools/perf/perf /usr/bin/perf
+	$(MAKE) --directory=$(linux_src)/tools/power/x86/\
+	x86_energy_perf_policy install
+	$(MAKE) --directory=$(linux_src)/tools/power/x86/turbostat install
+	$(MAKE) --directory=$(linux_src)/tools/power/cpupower install
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
 	  $(MAKE) --directory=$(linux_src) clean; \
