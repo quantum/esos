@@ -1141,7 +1141,11 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	$(INSTALL) -m 0755 $(linux_src)/tools/perf/perf /usr/bin/perf
 	$(MAKE) --directory=$(linux_src)/tools/power/x86/\
 	x86_energy_perf_policy install
-	$(MAKE) --directory=$(linux_src)/tools/power/x86/turbostat install
+	$(MAKE) --directory=$(linux_src)/tools/power/x86/\
+	turbostat install
+	$(SED) -i 's/\/bin\/true/true/' \
+	$(linux_src)/tools/power/cpupower/Makefile
+	$(MAKE) --directory=$(linux_src)/tools/power/cpupower
 	$(MAKE) --directory=$(linux_src)/tools/power/cpupower install
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
@@ -2718,8 +2722,9 @@ sysstat.chroot: glibc.chroot
 
 pciutils.chroot: glibc.chroot zlib.chroot
 	$(call chroot_only)
-	$(MAKE) --directory=$(tgt_src_dir) PREFIX=/usr
-	$(MAKE) --directory=$(tgt_src_dir) PREFIX=/usr install
+	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr
+	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr install
+	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr install-lib
 	$(TOUCH) $(@)
 
 tar.chroot: glibc.chroot acl.chroot

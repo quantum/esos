@@ -36,6 +36,9 @@ fi
 /bin/echo "Configuring kernel parameters..."
 /sbin/sysctl -p /etc/sysctl.conf
 
+/bin/echo "Setting the x86 energy MSR policy for maximum performance..."
+/usr/bin/x86_energy_perf_policy performance
+
 if [ -f "/var/lib/esos/random-seed" ]; then
     /bin/echo "Initializing random number generator..."
     /bin/cat /var/lib/esos/random-seed > /dev/urandom
