@@ -35,10 +35,18 @@ mdev -s || rescue_shell
 if [ -e /proc/vmcore ]; then
 	echo "It appears a crash dump kernel is running."
 	echo "Attempting to resolve the 'esos_logs' file system device..."
-	echo 1 > /sys/bus/pci/rescan
-	uevent mdev & mdev -s
 	logs_fs_dev="$(findfs LABEL=esos_logs)" || \
 	(echo "Error resolving the logs device node!"; rescue_shell)
+	if [ -z "${logs_fs_dev}" ]; then
+		echo "An empty result for the logs device node was returned!"
+		echo "Re-enumerating the PCIe bus/tree..."
+		echo 1 > /sys/bus/pci/rescan
+		echo "Processing uevents via mdev..."
+		uevent mdev & mdev -s
+		echo "Trying to resolve the 'esos_logs' FS device (again)..."
+		logs_fs_dev="$(findfs LABEL=esos_logs)" || \
+		(echo "Error resolving the logs device node!"; rescue_shell)
+	fi
 	echo "Saving /proc/vmcore to the ESOS log file system..."
 	mount -o sync ${logs_fs_dev} /mnt/tmp || rescue_shell
 	makedumpfile -E -d 31 /proc/vmcore /mnt/tmp/dumpfile-`date +"%s"` || \

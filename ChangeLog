@@ -1,3 +1,45 @@
+2019-01-14  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated SCST to version 3.3.x/r7899; updated initramfs script crash dump kernel handling to only rescan PCIe bus and process uevents if we couldn't find the FS label the first time (PCIe rescan causes strange behavior afterwards, so only do it if we need to)
+
+2019-01-13  Marc A. Smith  <marc.smith@parodyne.com>
+
+	build fixes for turbostat and cpupower in esos_kernels target; updated pciutils to build the shared library and install include files; rc.sysinit: set the MSR policy to maximum performance via x86_energy_perf_policy
+
+2019-01-12  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated SCST to version 3.3.x/r7871; build and install several power-related tools from the Linux kernel source
+
+2019-01-10  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated initramfs script to mount the file system with sync flag when saving vmcore via makedumpfile; enhanced config for -debug kernel
+
+2019-01-07  Marc A. Smith  <marc.smith@parodyne.com>
+
+	updated GCC to version 7.4.0 (supports retpoline to build newer kernels)
+
+	updated Linux to version 4.14.91
+
+	added a line in the initramfs script to increase verbosity during crash dump capture
+
+2019-01-05  Marc A. Smith  <marc.smith@parodyne.com>
+
+	enable Microsemi PQI Driver in the kernel config
+
+	updated SCST to version 3.3.x/r7866 (stable)
+
+2019-01-03  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the mstflint package (tools for Mellanox adapters)
+
+2019-01-01  Marc A. Smith  <marc.smith@parodyne.com>
+
+	install.sh: exclude nullb* devices when running lsblk
+
+2018-12-31  Marc A. Smith  <marc.smith@parodyne.com>
+
+	when writing the SCST configuration file, don't use the '-nonkey' parameter with scstadmin so we can rely on SCST's method for using default values; updated the logic for filtering (adding) the 'active' attribute in the ocf:esos:scst RA
+
 2018-12-06  Marc A. Smith  <marc.smith@parodyne.com>
 
 	introduced a patch for the ocf:linbit:drbd RA which uses a delay in promote() before attempting to promote the resource via drbdadm (solves timing issue that occurs with same larger volumes); used the real readlink (from coreutils) instead of the Busybox variant; updated ocf:heartbeat:Raid1 patch to handle issue where symlink for MD devices was being detected even after array was stopped causing a false-positive "array failed to stop" event
