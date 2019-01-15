@@ -1270,7 +1270,11 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage \
 	  /boot/PRIMARY-bzImage$$i; \
 	  $(ECHO) "### Compressing 'vmlinux' for later use..."; \
-	  $(XZ) -z -c $(linux_src)/vmlinux > $(chroot_build)/vmlinux$$i.xz; \
+	  $(XZ) -z -c $(linux_src)/vmlinux > \
+	  $(chroot_build)/vmlinux$$i.xz; \
+	  $(ECHO) "### Compressing 'System.map' for later use..."; \
+	  $(XZ) -z -c $(linux_src)/System.map > \
+	  $(chroot_build)/System.map$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) modules_install; \
 	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
 	  $(ECHO) "### Building the SCST core and target drivers..."; \
@@ -3723,5 +3727,6 @@ pkg_dist: $(bz2_img_file)
 	$(RM) $(pkg_prefix)
 	$(LN) $(chroot_build) $(pkg_prefix)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/vmlinux*.xz
+	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/System.map*.xz
 	$(RM) $(pkg_prefix)
 

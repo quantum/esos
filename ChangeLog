@@ -1,3 +1,7 @@
+2019-01-15  Marc A. Smith  <marc.smith@parodyne.com>
+
+	include the kernel System.map files in ESOS distribution packages (useful for debugging kernel panics via crash)
+
 2019-01-14  Marc A. Smith  <marc.smith@parodyne.com>
 
 	fixed a bug in the ocf:esos:scst RA script
