@@ -77,7 +77,8 @@ scst_start() {
                 -e '$in_dev = 1 if (/^\tDEVICE /);' \
                 -e 'if ($in_handler && $in_dev && /^\t}/) {' \
                 -e 'print "\t\tactive 0\n"; $in_dev=0; } print;' \
-                -e '$in_handler = 0 if (/^}/);' > ${SCST_CFG}
+                -e '$in_handler = 0 if (/^}/);' > /tmp/scst.conf
+            mv -f /tmp/scst.conf ${SCST_CFG}
         fi
         ocf_log info "Applying SCST configuration..."
         if ocf_is_true ${OCF_RESKEY_issue_lip}; then

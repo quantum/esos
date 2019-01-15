@@ -1,5 +1,7 @@
 2019-01-14  Marc A. Smith  <marc.smith@parodyne.com>
 
+	fixed a bug in the ocf:esos:scst RA script
+
 	updated SCST to version 3.3.x/r7899; updated initramfs script crash dump kernel handling to only rescan PCIe bus and process uevents if we couldn't find the FS label the first time (PCIe rescan causes strange behavior afterwards, so only do it if we need to)
 
 2019-01-13  Marc A. Smith  <marc.smith@parodyne.com>
