@@ -6,9 +6,6 @@
 #   the list of devices that should be "owned" by the node. This RA
 #   was inspired by the 'syncrovd' agent from author Felix Zachlod.
 #
-#   License: GNU General Public License (GPL)
-#   (c) 2016 Marc A. Smith
-#
 
 # Initialization
 : ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}

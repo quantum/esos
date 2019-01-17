@@ -4,9 +4,6 @@
 #   Resource Agent for managing the SCST ALUA port states; this RA
 #   does not manage the SCST service (modules/daemons) itself.
 #
-#   License: GNU General Public License (GPL)
-#   (c) 2016 Marc A. Smith
-#
 
 # Initialization
 : ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}

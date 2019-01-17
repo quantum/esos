@@ -4,9 +4,6 @@
 #   Resource Agent for managing the Generic SCSI Target Subsystem
 #   for Linux (SCST) and related daemons.
 #
-#   License: GNU General Public License (GPL)
-#   (c) 2012-2016 Marc A. Smith
-#
 
 # Initialization
 : ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}
