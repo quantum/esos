@@ -1,3 +1,13 @@
+2019-01-16  Marc A. Smith  <marc.smith@parodyne.com>
+
+	ESOS project copyright transfer from Marc A. Smith to Parodyne Inc.
+
+	updated copyright notice in source files
+
+	re-license the ESOS OSS project to Apache 2.0; ESOS RA's inherit project license and copyright
+
+	TUI syncConfig(): don't use the '-nonkey' attribute when writing the SCST config file
+
 2019-01-15  Marc A. Smith  <marc.smith@parodyne.com>
 
 	include the kernel System.map files in ESOS distribution packages (useful for debugging kernel panics via crash)

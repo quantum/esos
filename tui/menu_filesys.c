@@ -1,7 +1,7 @@
 /**
  * @file menu_filesys.c
  * @brief Contains the menu actions for the 'File Systems' menu.
- * @author Copyright (c) 2019 Marc A. Smith
+ * @author Copyright (c) 2019 Parodyne Inc.
  */
 
 #ifndef _GNU_SOURCE

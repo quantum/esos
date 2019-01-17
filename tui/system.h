@@ -1,7 +1,7 @@
 /**
  * @file system.h
  * @brief System settings and configuration options for the program.
- * @author Copyright (c) 2019 Marc A. Smith
+ * @author Copyright (c) 2019 Parodyne Inc.
  */
 
 #ifndef _SYSTEM_H

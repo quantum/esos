@@ -1,7 +1,7 @@
 /**
  * @file menu_interface.c
  * @brief Contains the menu actions for the 'Interface' menu.
- * @author Copyright (c) 2019 Marc A. Smith
+ * @author Copyright (c) 2019 Parodyne Inc.
  */
 
 #ifndef _GNU_SOURCE
@@ -271,7 +271,7 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     SAFE_ASPRINTF(&message[4], " ");
     SAFE_ASPRINTF(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
     SAFE_ASPRINTF(&message[6], " ");
-    SAFE_ASPRINTF(&message[7], "</B>Copyright (C) 2018 Parodyne Inc. "
+    SAFE_ASPRINTF(&message[7], "</B>Copyright (C) 2019 Parodyne Inc. "
             "All rights reserved.");
     SAFE_ASPRINTF(&message[8], " ");
     SAFE_ASPRINTF(&message[9], "ESOS and Enterprise Storage OS are "

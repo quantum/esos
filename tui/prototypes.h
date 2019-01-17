@@ -1,7 +1,7 @@
 /**
  * @file prototypes.h
  * @brief Contains the function prototypes for just about everything.
- * @author Copyright (c) 2019 Marc A. Smith
+ * @author Copyright (c) 2019 Parodyne Inc.
  */
 
 #ifndef _PROTOTYPES_H
