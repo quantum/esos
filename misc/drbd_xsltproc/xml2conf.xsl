@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-  Adapted for DRBD configuration files by Marc A. Smith (marc@astersmith.com).
+  Adapted for DRBD configuration files by Marc A. Smith.
 
   Originally "xml2conf.xsl" from the Corosync project:
   Copyright (c) 2011 Red Hat, Inc. All rights reserved.

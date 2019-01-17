@@ -280,7 +280,7 @@ AC_SUBST(rpc_agent_dir, ${rpc_agent_dir})
 AC_SUBST(with_rpc_agent, ${with_rpc_agent})
 AC_MSG_NOTICE([rpc_agent: ${with_rpc_agent}])
 
-dnl Optional commerical edition of ESOS (GPL is default)
+dnl Optional commerical edition of ESOS (Apache 2.0 is default)
 AC_ARG_ENABLE(commercial,
 	AS_HELP_STRING([--enable-commercial], [build the commercial edition]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],

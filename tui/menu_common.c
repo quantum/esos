@@ -1,7 +1,7 @@
 /**
  * @file menu_common.c
  * @brief Contains the common menu actions used by most menus.
- * @author Copyright (c) 2012-2018 Marc A. Smith
+ * @author Copyright (c) 2019 Marc A. Smith
  */
 
 #ifndef _GNU_SOURCE
