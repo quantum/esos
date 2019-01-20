@@ -1,3 +1,11 @@
+2019-01-20  Marc A. Smith  <marc.smith@parodyne.com>
+
+	include sync'ing root's .ssh directory via rsync with usb_sync.sh
+
+	remove un-needed lines for packages that are no longer used in the checksum files
+
+	ZFS + SPL are now permanent packages in ESOS (no more build-time option)
+
 2019-01-16  Marc A. Smith  <marc.smith@parodyne.com>
 
 	ESOS project copyright transfer from Marc A. Smith to Parodyne Inc.

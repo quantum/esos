@@ -3622,6 +3622,7 @@ image:
 	$(CHMOD) 600 $(STAGING_DIR)/etc/crontab
 	$(CHMOD) 1777 $(STAGING_DIR)/tmp
 	$(CHMOD) 1777 $(STAGING_DIR)/var/tmp
+	$(CHMOD) 700 $(STAGING_DIR)/root/.ssh
 	$(QUIET) if [ "$(enable_mhvtl)" = "yes" ]; then \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtltape; \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtllibrary; \

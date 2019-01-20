@@ -8,7 +8,7 @@
 CONF_MNT="/mnt/conf"
 USB_RSYNC="${CONF_MNT}/rsync_dirs"
 ETCKEEPER_REPO="${CONF_MNT}/etckeeper.git"
-RSYNC_DIRS="/var/lib /opt" # These are absolute paths (leading '/' required)
+RSYNC_DIRS="/var/lib /opt /root/.ssh" # Absolute paths (leading '/' required)
 INITIAL_SYNC=0
 ROOT_PATH="/"
 
