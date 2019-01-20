@@ -183,16 +183,6 @@ AS_IF([test "x$enable_qla" = "xyes"],
 AC_SUBST(enable_qla, ${enable_qla})
 AC_MSG_NOTICE([qla: ${enable_qla}])
 
-dnl Optional feature zfs
-AC_ARG_ENABLE(zfs,
-	AS_HELP_STRING([--enable-zfs], [build and include ZFS]),
-	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
-	[enable_zfs="${enableval}"], [enable_zfs="no"]), enable_zfs="no")
-AS_IF([test "x$enable_zfs" = "xyes"],
-	[build_opts="${build_opts} zfs"; opt_suffix="${opt_suffix}z"])
-AC_SUBST(enable_zfs, ${enable_zfs})
-AC_MSG_NOTICE([zfs: ${enable_zfs}])
-
 dnl Optional feature mhvtl
 AC_ARG_ENABLE(mhvtl,
 	AS_HELP_STRING([--enable-mhvtl], [build and include mhVTL (broken)]),
