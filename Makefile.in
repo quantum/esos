@@ -61,6 +61,7 @@ enable_gdb		:= @enable_gdb@
 enable_valgrind		:= @enable_valgrind@
 enable_strace		:= @enable_strace@
 enable_qla		:= @enable_qla@
+enable_zfs		:= @enable_zfs@
 enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
@@ -253,8 +254,6 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		stunnel-5.44.tar.gz \
 		sudo-1.8.18p1.tar.gz \
 		rsync-3.1.2.tar.gz \
-		spl-0.7.4.tar.gz \
-		zfs-0.7.4.tar.gz \
 		eudev-master_20180525.tar.xz \
 		gperf-3.0.4.tar.gz \
 		multipath-tools-0.7.7.tar.xz \
@@ -354,8 +353,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		iperf2.chroot iperf3.chroot libpcap.chroot iftop.chroot \
 		nmon.chroot munin-c.chroot open-iscsi.chroot open-isns.chroot \
 		coreutils.chroot open-vm-tools.chroot libdnet.chroot \
-		libffi.chroot openwsman.chroot swig.chroot spl.chroot \
-		zfs.chroot userspace-rcu.chroot tzdata.chroot nvme-cli.chroot \
+		libffi.chroot openwsman.chroot swig.chroot \
+		userspace-rcu.chroot tzdata.chroot nvme-cli.chroot \
 		freetype.chroot ledmon.chroot nvmetcli.chroot bc.chroot \
 		libtool.chroot etckeeper.chroot git.chroot nfs-utils.chroot \
 		rpcbind.chroot libtirpc.chroot libevent.chroot \
@@ -382,6 +381,12 @@ endif
 ifeq ($(enable_qla),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
 	scst_qla2xxx_unified-master_20181008.tar.xz)
+endif
+ifeq ($(enable_zfs),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.7.4.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.7.4.tar.gz)
+	chroot_tgts += spl.chroot
+	chroot_tgts += zfs.chroot
 endif
 ifeq ($(enable_mhvtl),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
@@ -1199,11 +1204,13 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    FIRMWARE_PATH="$(uwire_dir)/src/network/firmware" \
 	    KDIR=$(linux_src) clean; \
 	  fi; \
-	  if [ -f "$(spl_src)/Makefile" ]; then \
-	    $(MAKE) --directory=$(spl_src) distclean; \
-	  fi; \
-          if [ -f "$(zfs_src)/Makefile" ]; then \
-	    $(MAKE) --directory=$(zfs_src) distclean; \
+	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
+	    if [ -f "$(spl_src)/Makefile" ]; then \
+	      $(MAKE) --directory=$(spl_src) distclean; \
+	    fi; \
+	    if [ -f "$(zfs_src)/Makefile" ]; then \
+	      $(MAKE) --directory=$(zfs_src) distclean; \
+	    fi; \
 	  fi; \
 	  if [ "$$i" = "$(prod_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
@@ -1419,24 +1426,25 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    KVER=$(kernel_ver)$$i \
 	    modules_install; \
 	  fi; \
-	  $(ECHO) "### Building the SPL and ZFS modules..."; \
-	  if [ ! -f "$(spl_src)/configure" ]; then \
-	    cd $(spl_src) && ./autogen.sh; \
+	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
+	    $(ECHO) "### Building the SPL and ZFS modules..."; \
+	    if [ ! -f "$(spl_src)/configure" ]; then \
+	      cd $(spl_src) && ./autogen.sh; \
+	    fi; \
+	    cd $(spl_src) && ./configure --prefix=/usr --sysconfdir=/etc \
+	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src); \
+	    $(MAKE) --directory=$(spl_src)/module modules; \
+	    $(MAKE) --directory=$(spl_src)/module modules_install; \
+	    if [ ! -f "$(zfs_src)/configure" ]; then \
+	      cd $(zfs_src) && ./autogen.sh; \
+	    fi; \
+	    cd $(zfs_src) && ./configure --prefix=/usr --sysconfdir=/etc \
+	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src) \
+	    --with-spl=$(spl_src) --with-spl-obj=$(spl_src) \
+	    --with-udevdir="/usr/lib/udev"; \
+	    $(MAKE) --directory=$(zfs_src)/module modules; \
+	    $(MAKE) --directory=$(zfs_src)/module modules_install; \
 	  fi; \
-	  cd $(spl_src) && ./configure --prefix=/usr --sysconfdir=/etc \
-	  --with-linux=$(linux_src) --with-linux-obj=$(linux_src); \
-	  $(MAKE) --directory=$(spl_src)/module modules; \
-	  $(MAKE) --directory=$(spl_src)/module modules_install; \
-	  if [ ! -f "$(zfs_src)/configure" ]; then \
-	    cd $(zfs_src) && ./autogen.sh; \
-	  fi; \
-	  $(SED) -i 's/CDDL/GPL/' $(zfs_src)/META; \
-	  cd $(zfs_src) && ./configure --prefix=/usr --sysconfdir=/etc \
-	  --with-linux=$(linux_src) --with-linux-obj=$(linux_src) \
-	  --with-spl=$(spl_src) --with-spl-obj=$(spl_src) \
-	  --with-udevdir="/usr/lib/udev"; \
-	  $(MAKE) --directory=$(zfs_src)/module modules; \
-	  $(MAKE) --directory=$(zfs_src)/module modules_install; \
 	done
 	$(TOUCH) $(@)
 

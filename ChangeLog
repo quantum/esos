@@ -1,3 +1,7 @@
+2019-01-24  Marc A. Smith  <marc.smith@parodyne.com>
+
+	re-instate the '--enable-zfs' build option (OSS public image will build with this) -- the ESOS debug kernel has features that are not compatible with the CDDL, so we only build ZFS kernel modules for the production config
+
 2019-01-20  Marc A. Smith  <marc.smith@parodyne.com>
 
 	include sync'ing root's .ssh directory via rsync with usb_sync.sh
