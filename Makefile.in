@@ -301,6 +301,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		blktrace-master_20181015.tar.xz \
 		hwloc-2.0.2.tar.bz2 \
 		mstflint-4.11.0.tar.gz \
+		switchtec-kernel_20190125.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -1134,6 +1135,7 @@ esos_kernels.chroot: eio_src = $(wildcard /sources/EnhanceIO-*)
 esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
 esos_kernels.chroot: spl_src = $(wildcard /sources/spl-*)
 esos_kernels.chroot: zfs_src = $(wildcard /sources/zfs-*)
+esos_kernels.chroot: switchtec_src = $(wildcard /sources/switchtec-*)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot
 	$(call chroot_only)
@@ -1445,6 +1447,11 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(zfs_src)/module modules; \
 	    $(MAKE) --directory=$(zfs_src)/module modules_install; \
 	  fi; \
+	  $(ECHO) "### Building Microsemi's Switchtec NTB driver..."; \
+	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \
+	  KVER=$(kernel_ver)$$i modules; \
+	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \
+	  KVER=$(kernel_ver)$$i install; \
 	done
 	$(TOUCH) $(@)
 
@@ -3630,6 +3637,7 @@ image:
 	$(CHMOD) 600 $(STAGING_DIR)/etc/crontab
 	$(CHMOD) 1777 $(STAGING_DIR)/tmp
 	$(CHMOD) 1777 $(STAGING_DIR)/var/tmp
+	$(CHMOD) 755 $(STAGING_DIR)/root
 	$(CHMOD) 700 $(STAGING_DIR)/root/.ssh
 	$(QUIET) if [ "$(enable_mhvtl)" = "yes" ]; then \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtltape; \
