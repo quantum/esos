@@ -1,7 +1,7 @@
 /**
  * @file menu_common.c
  * @brief Contains the common menu actions used by most menus.
- * @author Copyright (c) 2019 Parodyne Inc.
+ * @author Copyright (c) 2019 Quantum Corporation
  */
 
 #ifndef _GNU_SOURCE

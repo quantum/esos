@@ -1,7 +1,7 @@
 /**
  * @file menu_hosts.c
  * @brief Contains the menu actions for the 'Hosts' menu.
- * @author Copyright (c) 2019 Parodyne Inc.
+ * @author Copyright (c) 2019 Quantum Corporation
  */
 
 #ifndef _GNU_SOURCE

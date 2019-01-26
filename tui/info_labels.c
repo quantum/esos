@@ -1,7 +1,7 @@
 /**
  * @file info_labels.c
  * @brief Functions for the TUI main screen information labels.
- * @author Copyright (c) 2019 Parodyne Inc.
+ * @author Copyright (c) 2019 Quantum Corporation
  */
 
 #ifndef _GNU_SOURCE

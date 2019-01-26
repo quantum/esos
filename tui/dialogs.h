@@ -1,7 +1,7 @@
 /**
  * @file dialogs.h
  * @brief Settings related to the TUI dialogs.
- * @author Copyright (c) 2019 Parodyne Inc.
+ * @author Copyright (c) 2019 Quantum Corporation
  */
 
 #ifndef _DIALOGS_H

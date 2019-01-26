@@ -1,7 +1,7 @@
 /**
  * @file utility.c
  * @brief Contains common utility functions used by other functions.
- * @author Copyright (c) 2019 Parodyne Inc.
+ * @author Copyright (c) 2019 Quantum Corporation
  */
 
 #ifndef _GNU_SOURCE

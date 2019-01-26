@@ -1,7 +1,7 @@
 /**
  * @file strings.c
  * @brief Common string variables used throughout the entire program.
- * @author Copyright (c) 2019 Parodyne Inc.
+ * @author Copyright (c) 2019 Quantum Corporation
  */
 
 #include <stddef.h>

@@ -1,7 +1,7 @@
 /**
  * @file strings.h
  * @brief Common string macros used throughout the entire program.
- * @author Copyright (c) 2019 Parodyne Inc.
+ * @author Copyright (c) 2019 Quantum Corporation
  */
 
 #ifndef STRINGS_H

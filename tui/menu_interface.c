@@ -1,7 +1,7 @@
 /**
  * @file menu_interface.c
  * @brief Contains the menu actions for the 'Interface' menu.
- * @author Copyright (c) 2019 Parodyne Inc.
+ * @author Copyright (c) 2019 Quantum Corporation
  */
 
 #ifndef _GNU_SOURCE
@@ -271,11 +271,11 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     SAFE_ASPRINTF(&message[4], " ");
     SAFE_ASPRINTF(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
     SAFE_ASPRINTF(&message[6], " ");
-    SAFE_ASPRINTF(&message[7], "</B>Copyright (C) 2019 Parodyne Inc. "
+    SAFE_ASPRINTF(&message[7], "</B>Copyright (c) 2019 Quantum Corporation. "
             "All rights reserved.");
     SAFE_ASPRINTF(&message[8], " ");
     SAFE_ASPRINTF(&message[9], "ESOS and Enterprise Storage OS are "
-            "registered trademarks of Parodyne Inc.");
+            "registered trademarks of Quantum Corporation.");
     SAFE_ASPRINTF(&message[10], "The full ESOS license agreement (EULA) "
             "is available at this path:");
     SAFE_ASPRINTF(&message[11], "%s", ESOS_LICENSE);
