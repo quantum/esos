@@ -233,7 +233,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		freeipmi-1.5.4.tar.gz \
 		libgcrypt-1.7.3.tar.bz2 \
 		libgpg-error-1.24.tar.bz2 \
-		smartmontools-6.5.tar.gz \
+		smartmontools-7.0.tar.gz \
 		cryptsetup-1.7.2.tar.xz \
 		popt-1.16.tar.gz \
 		makedumpfile-1.6.4.tar.gz \
@@ -1756,6 +1756,10 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install django-widget-tweaks==1.4.2
 	pip3 install django-session-timeout==0.0.3
 	pip3 install uWSGI==2.0.17.1
+	pip3 install pySMART.smartx==0.3.9
+	pip3 install mdstat==1.0.4
+	pip3 install py-dmidecode==0.0.2
+	pip3 install netifaces==0.10.9
 	$(RM) /.cache
 	$(TOUCH) $(@)
 
