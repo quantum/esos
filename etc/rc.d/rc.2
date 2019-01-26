@@ -27,6 +27,12 @@ fi
 /bin/echo "Loading the Mellanox ConnectX-4 and Connect-IB core driver..."
 /sbin/modprobe mlx5_core
 
+/bin/echo "Loading the Microsemi Switchtec NTB driver..."
+/sbin/modprobe ntb_hw_switchtec
+
+/bin/echo "Loading the Virtual Ethernet over NTB Transport driver..."
+/sbin/modprobe -s ntb_netdev
+
 /bin/echo "Loading the Linux Ethernet Bonding driver..."
 /sbin/modprobe bonding
 
