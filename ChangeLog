@@ -1,3 +1,21 @@
+2019-01-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the lshw package; esos_kernels.chroot: clean the switchtec-kernel source between builds
+
+2019-01-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated switchtec kernel driver to newer version; rc.local: put startup.sh script into the background to prevent hanging for a timeout and silence any messages; add Python.chroot as a dep for mstflint.chroot
+
+	updated smartmontools to version 7.0; Python.chroot: install additional packages via pip3 (pySMART.smartx, mdstat, py-dmidecode, netifaces)
+
+	updated copyright notices from Parodyne Inc. to Quantum Corporation
+
+	rc.2: load the Switchtec NTB and Virtual Ethernet NTB drivers at boot (before network start)
+
+2019-01-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	add the Microsemi Switchtec NTB driver (out of tree); fix permissions on /root (build host umask may not be the desired value); include the CONFIG_NTB_IDT driver; build CONFIG_NTB_NETDEV as a module
+
 2019-01-24  Marc A. Smith  <marc.smith@parodyne.com>
 
 	re-instate the '--enable-zfs' build option (OSS public image will build with this) -- the ESOS debug kernel has features that are not compatible with the CDDL, so we only build ZFS kernel modules for the production config
