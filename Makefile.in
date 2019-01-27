@@ -301,7 +301,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		blktrace-master_20181015.tar.xz \
 		hwloc-2.0.2.tar.bz2 \
 		mstflint-4.11.0.tar.gz \
-		switchtec-kernel_20190125.tar.xz \
+		switchtec-kernel_20190126.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -3442,7 +3442,7 @@ hwloc.chroot: glibc.chroot libxml2.chroot ncurses.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
-mstflint.chroot: glibc.chroot openssl.chroot libibmad.chroot
+mstflint.chroot: glibc.chroot openssl.chroot libibmad.chroot Python.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
