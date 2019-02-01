@@ -443,8 +443,8 @@ redirect_to_real_dev() {
         for j in $(lsscsi); do
             vendor="$(echo ${j} | awk '{print $3}' | tr -d \"[:space:]\")"
             product="$(echo ${j} | awk '{print $4}' | tr -d \"[:space:]\")"
-            if [ "x${vendor}" = "xSCST_BIO" ] && \
-                [ "x${product}" = "x${dev_name}" ]; then
+            # The vendor may vary, so we assume product should be unique
+            if [ "x${product}" = "x${dev_name}" ]; then
                 scsi_hctl="$(echo ${j} | awk '{print $1}' | \
                     tr -d \"[:space:]\" | tr -d [ | tr -d ])"
             fi
@@ -492,8 +492,8 @@ real_to_redirect_dev() {
         for j in $(lsscsi); do
             vendor="$(echo ${j} | awk '{print $3}' | tr -d \"[:space:]\")"
             product="$(echo ${j} | awk '{print $4}' | tr -d \"[:space:]\")"
-            if [ "x${vendor}" = "xSCST_BIO" ] && \
-                [ "x${product}" = "x${dev_name}" ]; then
+            # The vendor may vary, so we assume product should be unique
+            if [ "x${product}" = "x${dev_name}" ]; then
                 scsi_hctl="$(echo ${j} | awk '{print $1}' | \
                     tr -d \"[:space:]\" | tr -d [ | tr -d ])"
             fi
@@ -550,8 +550,8 @@ get_redirect_filename() {
     for i in $(lsscsi); do
         vendor="$(echo ${i} | awk '{print $3}' | tr -d \"[:space:]\")"
         product="$(echo ${i} | awk '{print $4}' | tr -d \"[:space:]\")"
-        if [ "x${vendor}" = "xSCST_BIO" ] && \
-            [ "x${product}" = "x${dev_name}" ]; then
+        # The vendor may vary, so we assume product should be unique
+        if [ "x${product}" = "x${dev_name}" ]; then
             filename="$(echo ${i} | awk '{print $6}' | tr -d \"[:space:]\")"
             break
         fi
