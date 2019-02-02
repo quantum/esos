@@ -1,0 +1,41 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+INITTAB="/etc/inittab"
+SETSERIAL="/bin/setserial"
+
+check_args ${@}
+
+start() {
+    local ports update
+    update=0
+    ports=$(${SETSERIAL} -g /dev/ttyS[0123] | /bin/grep -vi unknown | \
+        /usr/bin/sed -e 's/,.*//' | /usr/bin/sed -e 's@/dev/ttyS@@')
+    for f in ${ports}; do
+        /bin/grep "^s${f}" ${INITTAB}
+        if [ $? -ne 0 ]; then
+            /bin/echo "Adding serial port '${f}' to inittab..."
+            /bin/echo "s${f}:2345:respawn:/sbin/agetty -L ttyS${f} 9600 vt100" \
+                >> ${INITTAB}
+            update=1
+        fi
+    done
+    if [ ${update} -eq 1 ]; then
+        /bin/sync
+        /sbin/init q
+    fi
+}
+
+stop() {
+    # Do nothing
+    :
+}
+
+status() {
+    # We don't know anything
+    exit ${UNKNOWN}
+}
+
+# Perform specified action
+${1}

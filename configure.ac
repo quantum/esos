@@ -57,7 +57,12 @@ MY_PATH_PROG([zip])
 MY_PATH_PROG([xz])
 MY_PATH_PROG([readlink])
 MY_PATH_PROG([strip])
-MY_PATH_PROG([bzip2])
+AC_CHECK_PROG(PBZIP2,pbzip2,yes)
+if test x"${PBZIP2}" = x"yes"; then
+	bzip2=pbzip2
+else
+	MY_PATH_PROG([bzip2])
+fi
 MY_PATH_PROG([git])
 MY_PATH_PROG([flock])
 MY_PATH_PROG([zic])
@@ -69,7 +74,7 @@ if test x"${PWD}" != x; then
 	work_dir="${PWD}/work"
 	${mkdir} -p ${work_dir} || exit 1
 	AC_SUBST(work_dir, ${work_dir})
-	dist_files_dir="${work_dir}/dist_files"
+	dist_files_dir="${PWD}/dist_files"
 	${mkdir} -p ${dist_files_dir} || exit 1
 	AC_SUBST(dist_files_dir, ${dist_files_dir})
 	chroot_dir="${work_dir}/chroot"
@@ -235,6 +240,47 @@ AS_IF([test "x$enable_simple_tui" = "xyes"],
 AC_SUBST(enable_simple_tui, ${enable_simple_tui})
 AC_MSG_NOTICE([simple_tui: ${enable_simple_tui}])
 
+dnl Optional auto DHCP for Ethernet interfaces that have link
+AC_ARG_ENABLE(auto_dhcp,
+	AS_HELP_STRING([--enable-auto_dhcp], [start DHCP on interfaces with link]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_auto_dhcp="${enableval}"], [enable_auto_dhcp="no"]),
+	enable_auto_dhcp="no")
+AS_IF([test "x$enable_auto_dhcp" = "xyes"],
+	[build_opts="${build_opts} auto_dhcp"; opt_suffix="${opt_suffix}D"])
+AC_SUBST(enable_auto_dhcp, ${enable_auto_dhcp})
+AC_MSG_NOTICE([auto_dhcp: ${enable_auto_dhcp}])
+
+dnl Optional EULA acceptance in TUI
+AC_ARG_ENABLE(tui_eula,
+	AS_HELP_STRING([--disable-tui_eula], [disable the TUI EULA prompt]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_tui_eula="${enableval}"], [enable_tui_eula="yes"]),
+	enable_tui_eula="yes")
+dnl No build option / suffix (enabled by default)
+AC_SUBST(enable_tui_eula, ${enable_tui_eula})
+AC_MSG_NOTICE([tui_eula: ${enable_tui_eula}])
+
+dnl Optional launch TUI at login
+AC_ARG_ENABLE(login_tui,
+	AS_HELP_STRING([--disable-login_tui], [disable the TUI on login]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_login_tui="${enableval}"], [enable_login_tui="yes"]),
+	enable_login_tui="yes")
+dnl No build option / suffix (enabled by default)
+AC_SUBST(enable_login_tui, ${enable_login_tui})
+AC_MSG_NOTICE([login_tui: ${enable_login_tui}])
+
+dnl Optional debug kernel feature
+AC_ARG_ENABLE(debug_kernel,
+	AS_HELP_STRING([--disable-debug_kernel], [disable the debug kernel]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_debug_kernel="${enableval}"], [enable_debug_kernel="yes"]),
+	enable_debug_kernel="yes")
+dnl No build option / suffix (enabled by default)
+AC_SUBST(enable_debug_kernel, ${enable_debug_kernel})
+AC_MSG_NOTICE([debug_kernel: ${enable_debug_kernel}])
+
 dnl Optional package web_ui (user provides package file)
 AC_ARG_WITH(web_ui,
 	AS_HELP_STRING([--with-web_ui=PATH],
@@ -258,28 +304,27 @@ AC_SUBST(web_ui_dir, ${web_ui_dir})
 AC_SUBST(with_web_ui, ${with_web_ui})
 AC_MSG_NOTICE([web_ui: ${with_web_ui}])
 
-dnl Optional package rpc_agent (user provides package file)
-AC_ARG_WITH(rpc_agent,
-	AS_HELP_STRING([--with-rpc_agent=PATH],
-	[build and include rpc_agent; PATH is the rpc_agent package file to use]),
-	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
-	[rpc_agent_file="${withval}"; with_rpc_agent="yes"],
-	[with_rpc_agent="no"]), with_rpc_agent="no")
-if test "x${with_rpc_agent}" = "xyes"; then
-	if test -f "${rpc_agent_file}"; then
-		AC_MSG_NOTICE([extracting the rpc_agent package file...])
-		rpc_agent_dir="${chroot_dir}/build/rpc_agent"
-		${mkdir} -p ${rpc_agent_dir} || exit 1
-		${tar} xfJ ${rpc_agent_file} --strip-components=1 -C ${rpc_agent_dir} || exit 1
-	else
-		AC_MSG_ERROR([unable to access the rpc_agent file: ${rpc_agent_file}])
-	fi
-fi
-AS_IF([test "x$with_rpc_agent" = "xyes"],
+dnl Optional package rpc_agent (source provided via customization path)
+AC_ARG_ENABLE(rpc_agent,
+	AS_HELP_STRING([--enable-rpc_agent], [build and include ESOS RPC Agent]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_rpc_agent="${enableval}"], [enable_rpc_agent="no"]), enable_rpc_agent="no")
+AS_IF([test "x$enable_rpc_agent" = "xyes"],
 	[build_opts="${build_opts} rpc_agent"; opt_suffix="${opt_suffix}r"])
-AC_SUBST(rpc_agent_dir, ${rpc_agent_dir})
-AC_SUBST(with_rpc_agent, ${with_rpc_agent})
-AC_MSG_NOTICE([rpc_agent: ${with_rpc_agent}])
+AC_SUBST(enable_rpc_agent, ${enable_rpc_agent})
+AC_MSG_NOTICE([rpc_agent: ${enable_rpc_agent}])
+
+dnl Optional OpenSSL DH key size for ESOS RPC Agent
+AC_ARG_WITH(ssl_key_size,
+	AS_HELP_STRING([--with-ssl_key_size=NUM],
+	[ESOS RPC Agent SSL key length; NUM is the size, 2048 is default]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[key_length="${withval}"; with_ssl_key_size="yes"],
+	[with_ssl_key_size="no"]), with_ssl_key_size="no")
+AS_IF([test "x$with_ssl_key_size" = "xyes"],
+	[ssl_dh_key_size="${key_length}"], [ssl_dh_key_size="2048"])
+AC_SUBST(ssl_dh_key_size, ${ssl_dh_key_size})
+AC_MSG_NOTICE([ssl_dh_key_size: ${ssl_dh_key_size}])
 
 dnl Optional commerical edition of ESOS (Apache 2.0 is default)
 AC_ARG_ENABLE(commercial,
@@ -396,6 +441,27 @@ AS_IF([test "x$with_uwire" = "xyes"],
 AC_SUBST(uwire_dir, ${uwire_dir})
 AC_SUBST(with_uwire, ${with_uwire})
 AC_MSG_NOTICE([uwire: ${with_uwire}])
+
+dnl Optional customization directory path (used by Makefile)
+AC_ARG_WITH(customize_dir,
+	AS_HELP_STRING([--with-customize_dir=PATH],
+	[PATH is a directory containing the customization bits]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[customize_path="${withval}"; with_customize_dir="yes"],
+	[with_customize_dir="no"]), with_customize_dir="no")
+if test "x${with_customize_dir}" = "xyes"; then
+	if test -d "${customize_path}"; then
+		AC_MSG_NOTICE([copying contents of the customization path...])
+		customize_dir="${chroot_dir}/build/customize"
+		${mkdir} -p ${customize_dir} || exit 1
+		${cp} -Rp ${customize_path}/* ${customize_dir}/ || exit 1
+	else
+		AC_MSG_ERROR([unable to access the customization path: ${customize_path}])
+	fi
+fi
+AC_SUBST(customize_dir, ${customize_dir})
+AC_SUBST(with_customize_dir, ${with_customize_dir})
+AC_MSG_NOTICE([customize_dir: ${with_customize_dir}])
 
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],

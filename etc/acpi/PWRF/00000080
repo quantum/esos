@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Handle ACPI button power event
+/sbin/shutdown -h -P now
+
