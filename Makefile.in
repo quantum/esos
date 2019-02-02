@@ -66,11 +66,15 @@ enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
 enable_simple_tui	:= @enable_simple_tui@
+enable_auto_dhcp	:= @enable_auto_dhcp@
+enable_tui_eula		:= @enable_tui_eula@
+enable_login_tui	:= @enable_login_tui@
+enable_debug_kernel	:= @enable_debug_kernel@
 enable_commercial	:= @enable_commercial@
 with_web_ui		:= @with_web_ui@
 web_ui_dir		:= $(subst $(CHROOT_DIR),,@web_ui_dir@)
-with_rpc_agent		:= @with_rpc_agent@
-rpc_agent_dir		:= $(subst $(CHROOT_DIR),,@rpc_agent_dir@)
+enable_rpc_agent	:= @enable_rpc_agent@
+ssl_dh_key_size		:= @ssl_dh_key_size@
 with_celerity_16_32	:= @with_celerity_16_32@
 celerity_16_32_dir	:= $(subst $(CHROOT_DIR),,@celerity_16_32_dir@)
 with_atto_scst		:= @with_atto_scst@
@@ -79,6 +83,8 @@ with_ocs_sdk		:= @with_ocs_sdk@
 ocs_sdk_dir		:= $(subst $(CHROOT_DIR),,@ocs_sdk_dir@)
 with_uwire		:= @with_uwire@
 uwire_dir		:= $(subst $(CHROOT_DIR),,@uwire_dir@)
+with_customize_dir	:= @with_customize_dir@
+customize_dir		:= @customize_dir@
 build_opts		:= @build_opts@
 opt_suffix		:= @opt_suffix@
 
@@ -95,7 +101,9 @@ rel_name	:= $(git_tag)$(opt_suffix)
 dev_name	:= $(git_branch)_$(git_hash)$(opt_suffix)
 esos_ver	:= $(if $(filter %.x,$(git_branch)),$(rel_name),$(dev_name))
 prod_suffix	:= -esos.prod
+ifeq ($(enable_debug_kernel),yes)
 debug_suffix	:= -esos.debug
+endif
 ifeq ($(enable_commercial),yes)
 edition = Professional
 pkg_name = esos_prof
@@ -306,6 +314,10 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
+ifeq ($(with_customize_dir),yes)
+include $(customize_dir)/overwrites.mk
+endif
+
 # These targets are required before entering the chroot environment
 bootstrap_tgts	:= binutils.pass1 gcc.pass1 gmp mpfr mpc kernel_headers \
 		glibc gcc.libstdc++ binutils.pass2 gcc.pass2 tcl expect \
@@ -362,7 +374,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		rpcbind.chroot libtirpc.chroot libevent.chroot \
 		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot \
 		pcre.chroot nginx.chroot dosfstools.chroot lsof.chroot \
-		blktrace.chroot hwloc.chroot mstflint.chroot lshw.chroot
+		blktrace.chroot hwloc.chroot mstflint.chroot lshw.chroot \
+		iozone3.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -415,7 +428,7 @@ endif
 ifeq ($(with_web_ui),yes)
 	chroot_tgts += web_ui.chroot
 endif
-ifeq ($(with_rpc_agent),yes)
+ifeq ($(enable_rpc_agent),yes)
 	chroot_tgts += rpc_agent.chroot
 endif
 ifeq ($(with_celerity_16_32),yes)
@@ -1559,8 +1572,11 @@ web_ui.chroot: Python.chroot nginx.chroot sudo.chroot
 	> /etc/sudoers.d/webui
 	$(TOUCH) $(@)
 
+rpc_agent.chroot: rpc_agent_dir = $(customize_dir)/rpc_agent
 rpc_agent.chroot: stunnel.chroot
 	$(call chroot_only)
+	$(MKDIR) $(rpc_agent_dir)/obj
+	$(MAKE) --directory=$(rpc_agent_dir) --file=Makefile.esos
 	$(CP) -f $(rpc_agent_dir)/stunnel.conf /etc/stunnel/stunnel.conf
 	$(INSTALL) -D -m 0755 $(rpc_agent_dir)/rpc_agent /opt/sbin/rpc_agent
 	$(TOUCH) $(@)
@@ -2649,6 +2665,7 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/taskset /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/flock /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/blkdiscard /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/agetty /sbin/
 	$(TOUCH) $(@)
 
 thin-provisioning-tools.chroot: glibc.chroot gcc.chroot expat.chroot \
@@ -3458,6 +3475,14 @@ lshw.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 
+iozone3.chroot: glibc.chroot
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir)/src/current linux-AMD64
+	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/iozone /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/fileop /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/pit_server /usr/bin/
+	$(TOUCH) $(@)
+
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot
@@ -3640,6 +3665,8 @@ image:
 	$(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/vmware-tools -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(STAGING_DIR)/etc/acpi -type f -print0 | \
+	$(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/etckeeper/*.d -type f ! -path "*/README" \
 	-print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
@@ -3663,12 +3690,14 @@ image:
 	  $(SED) -i 's/^rc\.webui_enable=.*/rc\.webui_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
 	fi
-	$(QUIET) if [ "$(with_rpc_agent)" = "yes" ]; then \
+	$(QUIET) if [ "$(enable_rpc_agent)" = "yes" ]; then \
 	  $(SED) -i 's/^rc\.stunnel_enable=.*/rc\.stunnel_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
 	  $(SED) -i 's/^rc\.rpcagent_enable=.*/rc\.rpcagent_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
 	fi
+	$(SED) -i 's/ssl_dh_key_size/@@ssl_dh_key_size@@/' \
+	$(STAGING_DIR)/etc/rc.d/rc.rpcagent
 	$(CHOWN) 101:101 $(STAGING_DIR)/var/lib/corosync
 	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/pacemaker
 	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/heartbeat
@@ -3697,7 +3726,12 @@ image:
 	$(FIND) . -type f ! -path "*.gz" -exec $(GZIP) {} \;
 	$(QUIET) if [ "x$(enable_debug)" != "xyes" ]; then \
 	  $(FIND) $(STAGING_DIR)/{,usr/}{lib,bin,sbin} -type f \
-	  -exec $(STRIP) --strip-debug '{}' ';'; \
+	  -executable -exec $(STRIP) --strip-debug '{}' ';'; \
+	fi
+	$(QUIET) if [ "$(with_customize_dir)" = "yes" ]; then \
+	  if [ -x "$(customize_dir)/inject.sh" ]; then \
+	    $(customize_dir)/inject.sh $(STAGING_DIR); \
+	  fi; \
 	fi
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Creating the root archive file..."
@@ -3750,4 +3784,8 @@ pkg_dist: $(bz2_img_file)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/vmlinux*.xz
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/System.map*.xz
 	$(RM) $(pkg_prefix)
+
+ifeq ($(with_customize_dir),yes)
+include $(customize_dir)/extra-support.mk
+endif
 

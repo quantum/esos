@@ -74,7 +74,7 @@ if test x"${PWD}" != x; then
 	work_dir="${PWD}/work"
 	${mkdir} -p ${work_dir} || exit 1
 	AC_SUBST(work_dir, ${work_dir})
-	dist_files_dir="${PWD}/dist_files"
+	dist_files_dir="${work_dir}/dist_files"
 	${mkdir} -p ${dist_files_dir} || exit 1
 	AC_SUBST(dist_files_dir, ${dist_files_dir})
 	chroot_dir="${work_dir}/chroot"
