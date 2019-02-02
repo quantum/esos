@@ -106,10 +106,10 @@ debug_suffix	:= -esos.debug
 endif
 ifeq ($(enable_commercial),yes)
 edition = Professional
-pkg_name = esos_prof
+pkg_name = esos
 else
 edition = Community
-pkg_name = esos_comm
+pkg_name = esos
 endif
 
 dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
