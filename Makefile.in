@@ -311,6 +311,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		mstflint-4.11.0.tar.gz \
 		switchtec-kernel_20190126.tar.xz \
 		lshw-B.02.18.tar.gz \
+		iozone3-487.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -420,6 +421,9 @@ ifeq ($(enable_btier),yes)
 endif
 ifeq ($(enable_simple_tui),yes)
 	tui_cpp_flags += -DSIMPLE_TUI
+endif
+ifeq ($(enable_tui_eula),yes)
+	tui_cpp_flags += -DEULA_PROMPT
 endif
 ifeq ($(enable_commercial),yes)
 	tui_cpp_flags += -DCOMMERCIAL
@@ -1572,7 +1576,8 @@ web_ui.chroot: Python.chroot nginx.chroot sudo.chroot
 	> /etc/sudoers.d/webui
 	$(TOUCH) $(@)
 
-rpc_agent.chroot: rpc_agent_dir = $(customize_dir)/rpc_agent
+rpc_agent.chroot: chroot_cutomize_dir = $(subst $(CHROOT_DIR),,@customize_dir@)
+rpc_agent.chroot: rpc_agent_dir = $(chroot_cutomize_dir)/rpc_agent
 rpc_agent.chroot: stunnel.chroot
 	$(call chroot_only)
 	$(MKDIR) $(rpc_agent_dir)/obj
@@ -3695,6 +3700,12 @@ image:
 	  $(STAGING_DIR)/etc/rc.conf; \
 	  $(SED) -i 's/^rc\.rpcagent_enable=.*/rc\.rpcagent_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
+	fi
+	$(QUIET) if [ "$(enable_login_tui)" = "no" ]; then \
+	  $(TOUCH) $(STAGING_DIR)/var/state/esos/no_login_tui; \
+	fi
+	$(QUIET) if [ "$(enable_auto_dhcp)" = "yes" ]; then \
+	  $(TOUCH) $(STAGING_DIR)/var/state/esos/auto_dhcp; \
 	fi
 	$(SED) -i 's/ssl_dh_key_size/@@ssl_dh_key_size@@/' \
 	$(STAGING_DIR)/etc/rc.d/rc.rpcagent

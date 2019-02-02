@@ -114,6 +114,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p -m 1777 ${chroot_dir}/tmp || exit 1
 	${mkdir} -p ${chroot_dir}/var/{spool,lock,run,state,cache,log} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lock/subsys || exit 1
+	${mkdir} -p ${chroot_dir}/var/state/esos || exit 1
 	${mkdir} -p -m 755 ${chroot_dir}/var/empty || exit 1
 	${mkdir} -p -m 1777 ${chroot_dir}/var/tmp || exit 1
 	${mkdir} -p -m 710 ${chroot_dir}/var/cron || exit 1
@@ -141,7 +142,8 @@ fi
 
 dnl Optional feature debug
 AC_ARG_ENABLE(debug,
-	AS_HELP_STRING([--enable-debug], [build for debugging (do not strip userland binaries)]),
+	AS_HELP_STRING([--enable-debug],
+	[build for debugging (do not strip userland binaries)]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_debug="${enableval}"], [enable_debug="no"]), enable_debug="no")
 AS_IF([test "x$enable_debug" = "xyes"],
@@ -181,7 +183,8 @@ AC_MSG_NOTICE([strace: ${enable_strace}])
 
 dnl Optional feature qla
 AC_ARG_ENABLE(qla,
-	AS_HELP_STRING([--enable-qla], [use the Cavium Fibre Channel scst_qla2xxx driver instead of the SCST in-tree driver]),
+	AS_HELP_STRING([--enable-qla],
+	[use the Cavium FC qla2xxx driver instead of the SCST in-tree driver]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_qla="${enableval}"], [enable_qla="no"]), enable_qla="no")
 AS_IF([test "x$enable_qla" = "xyes"],
@@ -242,7 +245,8 @@ AC_MSG_NOTICE([simple_tui: ${enable_simple_tui}])
 
 dnl Optional auto DHCP for Ethernet interfaces that have link
 AC_ARG_ENABLE(auto_dhcp,
-	AS_HELP_STRING([--enable-auto_dhcp], [start DHCP on interfaces with link]),
+	AS_HELP_STRING([--enable-auto_dhcp],
+	[start DHCP on interfaces with link (developer use)]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_auto_dhcp="${enableval}"], [enable_auto_dhcp="no"]),
 	enable_auto_dhcp="no")
@@ -304,11 +308,38 @@ AC_SUBST(web_ui_dir, ${web_ui_dir})
 AC_SUBST(with_web_ui, ${with_web_ui})
 AC_MSG_NOTICE([web_ui: ${with_web_ui}])
 
+dnl Optional customization directory path (used by Makefile)
+AC_ARG_WITH(customize_dir,
+	AS_HELP_STRING([--with-customize_dir=PATH],
+	[PATH is a directory containing the customization bits]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[customize_path="${withval}"; with_customize_dir="yes"],
+	[with_customize_dir="no"]), with_customize_dir="no")
+if test "x${with_customize_dir}" = "xyes"; then
+	if test -d "${customize_path}"; then
+		AC_MSG_NOTICE([copying contents of the customization path...])
+		customize_dir="${chroot_dir}/build/customize"
+		${mkdir} -p ${customize_dir} || exit 1
+		${cp} -Rp ${customize_path}/* ${customize_dir}/ || exit 1
+	else
+		AC_MSG_ERROR([unable to access the customization path: ${customize_path}])
+	fi
+fi
+AC_SUBST(customize_dir, ${customize_dir})
+AC_SUBST(with_customize_dir, ${with_customize_dir})
+AC_MSG_NOTICE([customize_dir: ${with_customize_dir}])
+
 dnl Optional package rpc_agent (source provided via customization path)
 AC_ARG_ENABLE(rpc_agent,
-	AS_HELP_STRING([--enable-rpc_agent], [build and include ESOS RPC Agent]),
+	AS_HELP_STRING([--enable-rpc_agent],
+	[build and include ESOS RPC Agent]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_rpc_agent="${enableval}"], [enable_rpc_agent="no"]), enable_rpc_agent="no")
+if test "x${enable_rpc_agent}" = "xyes"; then
+	if test "x${with_customize_dir}" != "xyes"; then
+		AC_MSG_ERROR([the rpc_agent requires the customize_dir build option])
+	fi
+fi
 AS_IF([test "x$enable_rpc_agent" = "xyes"],
 	[build_opts="${build_opts} rpc_agent"; opt_suffix="${opt_suffix}r"])
 AC_SUBST(enable_rpc_agent, ${enable_rpc_agent})
@@ -403,6 +434,7 @@ AC_ARG_WITH(ocs_sdk,
 	[ocs_sdk_file="${withval}"; with_ocs_sdk="yes"],
 	[with_ocs_sdk="no"]), with_ocs_sdk="no")
 if test "x${with_ocs_sdk}" = "xyes"; then
+	AC_MSG_ERROR([support for Emulex OCS adapters is broken])
 	if test -f "${ocs_sdk_file}"; then
 		AC_MSG_NOTICE([extracting the ocs_sdk package file...])
 		ocs_sdk_dir="${chroot_dir}/build/ocs_sdk"
@@ -441,27 +473,6 @@ AS_IF([test "x$with_uwire" = "xyes"],
 AC_SUBST(uwire_dir, ${uwire_dir})
 AC_SUBST(with_uwire, ${with_uwire})
 AC_MSG_NOTICE([uwire: ${with_uwire}])
-
-dnl Optional customization directory path (used by Makefile)
-AC_ARG_WITH(customize_dir,
-	AS_HELP_STRING([--with-customize_dir=PATH],
-	[PATH is a directory containing the customization bits]),
-	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
-	[customize_path="${withval}"; with_customize_dir="yes"],
-	[with_customize_dir="no"]), with_customize_dir="no")
-if test "x${with_customize_dir}" = "xyes"; then
-	if test -d "${customize_path}"; then
-		AC_MSG_NOTICE([copying contents of the customization path...])
-		customize_dir="${chroot_dir}/build/customize"
-		${mkdir} -p ${customize_dir} || exit 1
-		${cp} -Rp ${customize_path}/* ${customize_dir}/ || exit 1
-	else
-		AC_MSG_ERROR([unable to access the customization path: ${customize_path}])
-	fi
-fi
-AC_SUBST(customize_dir, ${customize_dir})
-AC_SUBST(with_customize_dir, ${with_customize_dir})
-AC_MSG_NOTICE([customize_dir: ${with_customize_dir}])
 
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],

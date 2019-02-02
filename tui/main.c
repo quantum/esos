@@ -148,6 +148,7 @@ start:
         FREE_NULL(error_msg);
     }
 
+#ifdef EULA_PROMPT
     /* Check if license has been accepted */
     if (!acceptLicense(cdk_screen)) {
         errorDialog(cdk_screen,
@@ -155,6 +156,7 @@ start:
                 "agreement to use this software. Hit ENTER to exit.");
         goto quit;
     }
+#endif
 
     /* Usage count (only if we have Internet) */
     if (inet_works)
