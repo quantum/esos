@@ -285,6 +285,23 @@ dnl No build option / suffix (enabled by default)
 AC_SUBST(enable_debug_kernel, ${enable_debug_kernel})
 AC_MSG_NOTICE([debug_kernel: ${enable_debug_kernel}])
 
+dnl Optional install authorized_keys file for root (SSH)
+AC_ARG_WITH(ssh_auth_key,
+	AS_HELP_STRING([--with-ssh_auth_key=FILE],
+	[FILE is an SSH authorized_keys file (developer use)]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[auth_key_file="${withval}"; with_ssh_auth_key="yes"],
+	[with_ssh_auth_key="no"]), with_ssh_auth_key="no")
+if test "x${with_ssh_auth_key}" = "xyes"; then
+	if test -f "${auth_key_file}"; then
+		AC_MSG_NOTICE([copying SSH authorized_keys file...])
+		${cp} -p ${auth_key_file} ${chroot_dir}/root/.ssh/ || exit 1
+	else
+		AC_MSG_ERROR([unable to access the authorized_keys file: ${auth_key_file}])
+	fi
+fi
+AC_MSG_NOTICE([ssh_auth_key: ${with_ssh_auth_key}])
+
 dnl Optional package web_ui (user provides package file)
 AC_ARG_WITH(web_ui,
 	AS_HELP_STRING([--with-web_ui=PATH],

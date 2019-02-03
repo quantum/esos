@@ -1,5 +1,7 @@
 2019-02-03  Marc A. Smith  <marc.smith@quantum.com>
 
+	added a symlink for 'esos.img' used by custom build bits; added --with-ssh_auth_key=FILE autoconf option; updated naming variable in TUI and strings in aboutDialog()
+
 	Merge branch '20190201'
 
 	fixed missing line in autoconf script; fixed typos in rc.network and adjust auto-DHCP link-up delay

@@ -254,13 +254,8 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     int i = 0;
 
     /* Set the message */
-#ifdef COMMERCIAL
     snprintf(esos_ver, MAX_SYSFS_ATTR_SIZE,
-            "ESOS Professional %s", ESOS_VERSION);
-#else
-    snprintf(esos_ver, MAX_SYSFS_ATTR_SIZE,
-            "ESOS Community %s", ESOS_VERSION);
-#endif
+            "%s %s", PRODUCT_NAME, ESOS_VERSION);
     if (gethostname(hostname, ((sizeof hostname) - 1)) == -1)
         snprintf(hostname, sizeof (hostname), "hostname");
     SAFE_ASPRINTF(&message[0], "<C></%d/B>About ESOS (Enterprise Storage OS)",
@@ -271,11 +266,11 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
     SAFE_ASPRINTF(&message[4], " ");
     SAFE_ASPRINTF(&message[5], "</B>Build Options:<!B>\t%-.40s", BUILD_OPTS);
     SAFE_ASPRINTF(&message[6], " ");
-    SAFE_ASPRINTF(&message[7], "</B>Copyright (c) 2019 Quantum Corporation. "
+    SAFE_ASPRINTF(&message[7], "</B>Copyright (c) 2019 Quantum Corp. "
             "All rights reserved.");
     SAFE_ASPRINTF(&message[8], " ");
     SAFE_ASPRINTF(&message[9], "ESOS and Enterprise Storage OS are "
-            "registered trademarks of Quantum Corporation.");
+            "registered trademarks of Quantum Corp.");
     SAFE_ASPRINTF(&message[10], "The full ESOS license agreement (EULA) "
             "is available at this path:");
     SAFE_ASPRINTF(&message[11], "%s", ESOS_LICENSE);

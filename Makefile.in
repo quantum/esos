@@ -479,6 +479,7 @@ tarball_src_dirs	= $(addprefix $(SOURCES_DIR)/,$(subst .tar.xz,,\
 			$(notdir $(dist_files))))))
 img_file		:= $(BUILD_DIR)/$(pkg_name)-$(esos_ver).img
 bz2_img_file		:= $(img_file).bz2
+stable_img_file		:= $(BUILD_DIR)/$(pkg_name).img
 esos_target		= x86_64-esos-linux-gnu
 temp_path		= /tools/bin:/bin:/usr/bin
 
@@ -537,6 +538,7 @@ clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.bz2
+	$(RM) $(BUILD_DIR)/$(pkg_name).img
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(RM) $(BUILD_DIR)/chroot_build.sh
 
@@ -3754,6 +3756,7 @@ image:
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
 	$(LOSETUP) -d $(loop_dev)
+	$(LN) $(img_file) $(stable_img_file)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Compressing image file..."
 	$(BZIP2) -z -9 -c $(img_file) > $(bz2_img_file)
