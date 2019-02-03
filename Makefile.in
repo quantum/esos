@@ -105,10 +105,10 @@ ifeq ($(enable_debug_kernel),yes)
 debug_suffix	:= -esos.debug
 endif
 ifeq ($(enable_commercial),yes)
-edition = Professional
+product = Quantum ESOS
 pkg_name = esos
 else
-edition = Community
+product = ESOS OSS
 pkg_name = esos
 endif
 
@@ -427,7 +427,6 @@ ifeq ($(enable_tui_eula),yes)
 endif
 ifeq ($(enable_commercial),yes)
 	tui_cpp_flags += -DCOMMERCIAL
-	tui_cpp_flags += -DSIMPLE_TUI
 endif
 ifeq ($(with_web_ui),yes)
 	chroot_tgts += web_ui.chroot
@@ -1486,6 +1485,7 @@ esos_tui.chroot: glibc.chroot ncurses.chroot cdk.chroot iniparser.chroot \
 	$(MAKE) --directory=$(chroot_build)/tui \
 	CFLAGS="-DBUILD_OPTS=\"\\\"$(build_opts)\\\"\" \
 	-DESOS_VERSION=\"\\\"$(esos_ver)\\\"\" \
+	-DPRODUCT_NAME=\"\\\"$(product)\\\"\" \
 	-DGIT_BRANCH=\"\\\"$(git_branch)\\\"\" $(tui_cpp_flags)"
 	$(INSTALL) -m 755 $(chroot_build)/tui/esos_tui /usr/local/bin
 	$(TOUCH) $(@)
@@ -3661,7 +3661,7 @@ image:
 	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
 	$(INSTALL) $(SRC_DIR)/perf-agent/* $(STAGING_DIR)/usr/local/perf-agent/
 	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
-	$(ECHO) "ESOS $(edition) $(esos_ver)" > \
+	$(ECHO) "$(product) $(esos_ver)" > \
 	$(STAGING_DIR)/etc/esos-release
 	$(CHOWN) -R root:root $(STAGING_DIR)/*
 	$(FIND) $(STAGING_DIR)/etc -type f -print0 | $(XARGS) -0 $(CHMOD) 0644

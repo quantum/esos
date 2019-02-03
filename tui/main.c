@@ -169,7 +169,7 @@ start:
                 "functions will not work. Check the '/var/log/boot' file.");
     }
 
-#ifdef COMMERCIAL
+#if defined(COMMERCIAL) && defined(SIMPLE_TUI)
     /* Variables */
     CDKLABEL *lic_status_label = 0, *ip_addr_label = 0, *web_ui_label = 0,
             *rpc_agent_label = 0;
@@ -622,7 +622,7 @@ refreshCDKScreen(cdk_screen);
                 FREE_NULL(scroll_title);
                 for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)
                     FREE_NULL(simple_menu_opts[i]);
-#ifdef COMMERCIAL
+#if defined(COMMERCIAL) && defined(SIMPLE_TUI)
                 for (i = 0; i < LIC_STATUS_INFO_LINES; i++)
                     FREE_NULL(lic_status_msg[i]);
                 for (i = 0; i < IP_ADDR_INFO_LINES; i++)
@@ -1204,7 +1204,7 @@ quit:
     }
     delwin(sub_window);
     delwin(main_window);
-#ifdef COMMERCIAL
+#if defined(COMMERCIAL) && defined(SIMPLE_TUI)
     for (i = 0; i < LIC_STATUS_INFO_LINES; i++)
         FREE_NULL(lic_status_msg[i]);
     for (i = 0; i < IP_ADDR_INFO_LINES; i++)
@@ -1378,13 +1378,8 @@ void statusBar(WINDOW *window) {
     chtype *status_bar = NULL;
 
     /* Set the ESOS status bar name/version */
-#ifdef COMMERCIAL
     snprintf(long_ver_str, MISC_STRING_LEN,
-            "ESOS Professional %s", ESOS_VERSION);
-#else
-    snprintf(long_ver_str, MISC_STRING_LEN,
-            "ESOS Community %s", ESOS_VERSION);
-#endif
+            "%s %s", PRODUCT_NAME, ESOS_VERSION);
     snprintf(esos_ver_str, STAT_BAR_ESOS_VER_MAX,
             prettyShrinkStr((STAT_BAR_ESOS_VER_MAX - 1), long_ver_str));
     esos_ver_size = strlen(esos_ver_str);
@@ -1481,15 +1476,9 @@ boolean acceptLicense(CDKSCREEN *main_cdk_screen) {
                 break;
             } else {
                 /* Setup scrolling window widget */
-#ifdef COMMERCIAL
-                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>ESOS Professional "
+                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>%s "
                         "License - Scroll Down to Read/Accept\n",
-                        g_color_dialog_title[g_curr_theme]);
-#else
-                SAFE_ASPRINTF(&swindow_title, "<C></%d/B>ESOS Community "
-                        "License - Scroll Down to Read/Accept\n",
-                        g_color_dialog_title[g_curr_theme]);
-#endif
+                        g_color_dialog_title[g_curr_theme], PRODUCT_NAME);
                 esos_license = newCDKSwindow(main_cdk_screen, CENTER, CENTER,
                         (ESOS_LICENSE_ROWS + 2), (ESOS_LICENSE_COLS + 2),
                         swindow_title, MAX_ESOS_LICENSE_LINES, TRUE, FALSE);
