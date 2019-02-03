@@ -363,6 +363,7 @@ AC_ARG_ENABLE(commercial,
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_commercial="${enableval}"], [enable_commercial="no"]),
 	enable_commercial="no")
+if test "x${enable_commercial}" = "xyes"; then
 	if test "x${with_rpc_agent}" != "xyes"; then
 		AC_MSG_ERROR([the commercial edition requires the rpc_agent build option])
 	fi

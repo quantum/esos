@@ -79,10 +79,10 @@ if ($ARGV[0] eq "start") {
         }
     }
 
-    # Handle auto DHCP mode
-    if (-e "$auto_dhcp_file") {
+    # Handle auto DHCP mode if state file set and no sections exist
+    if ((-e "$auto_dhcp_file") && (scalar(@sections) == 1)) {
         print("Auto DHCP mode enabled, waiting for link...\n");
-        sleep(3);
+        sleep(5);
         foreach my $each (@net_ifaces) {
             my $iface = (split(/\//, $each))[-1];
             if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) ||
