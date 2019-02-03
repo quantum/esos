@@ -26,11 +26,11 @@ start() {
         /bin/echo "The X.509 certificate doesn't exist, generating one..."
         temp_key_file="/tmp/rpc_agent_key.pem"
         /usr/bin/openssl req -new -x509 -days 3650 -nodes \
-            -subj "/C=US/ST=MI/L=Flint/O=Parodyne Inc./CN=localhost" \
+            -subj "/C=US/ST=CA/L=San Jose/O=Quantum Corp./CN=localhost" \
             -out ${CERT_KEY_FILE} -keyout ${temp_key_file} || exit 1
         /usr/bin/openssl rsa -in ${temp_key_file} >> ${CERT_KEY_FILE} || exit 1
         /bin/rm -f ${temp_key_file}
-        /usr/bin/openssl gendh 2048 >> ${CERT_KEY_FILE} || exit 1
+        /usr/bin/openssl gendh @@ssl_dh_key_size@@ >> ${CERT_KEY_FILE} || exit 1
         /bin/chmod 0600 ${CERT_KEY_FILE} || exit 1
     fi
     # Now we can start RPC agent

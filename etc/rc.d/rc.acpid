@@ -1,0 +1,40 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+ACPID="/sbin/acpid"
+ACPID_LOCK="/var/lock/acpid"
+DFLT_OPTS=""
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting acpid..."
+    eval ${ACPID} ${USER_OPTS} || exit 1
+    /bin/touch ${ACPID_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping acpid..."
+    /bin/kill -TERM $(/bin/pidof ${ACPID}) || exit 1
+    wait_for_stop ${ACPID} && /bin/rm -f ${ACPID_LOCK}
+}
+
+status() {
+    /bin/pidof ${ACPID} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

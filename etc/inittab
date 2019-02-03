@@ -14,12 +14,9 @@ ca:12345:ctrlaltdel:/bin/echo "CTRL-ALT-DEL is disabled!"
 
 su:S1:respawn:/sbin/sulogin
 
-#s0:2345:respawn:/sbin/getty -L ttyS0 9600 vt100
-#s1:2345:respawn:/sbin/getty -L ttyS1 9600 vt100
-
-c1:2345:respawn:/sbin/getty 38400 tty1 linux
-c2:2345:respawn:/sbin/getty 38400 tty2 linux
-c3:2345:respawn:/sbin/getty 38400 tty3 linux
-c4:2345:respawn:/sbin/getty 38400 tty4 linux
-c5:2345:respawn:/sbin/getty 38400 tty5 linux
-c6:2345:respawn:/sbin/getty 38400 tty6 linux
+c1:2345:respawn:/sbin/agetty 38400 tty1 linux
+c2:2345:respawn:/sbin/agetty 38400 tty2 linux
+c3:2345:respawn:/sbin/agetty 38400 tty3 linux
+c4:2345:respawn:/sbin/agetty 38400 tty4 linux
+c5:2345:respawn:/sbin/agetty 38400 tty5 linux
+c6:2345:respawn:/sbin/agetty 38400 tty6 linux

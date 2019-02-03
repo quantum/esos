@@ -11,6 +11,7 @@ my $ini_file = "/etc/network.conf";
 my $hosts_file = "/etc/hosts";
 my $extra_hosts_file = "/etc/xtra_hosts";
 my $resolv_file = "/etc/resolv.conf";
+my $auto_dhcp_file = "/var/state/esos/auto_dhcp";
 my $default_hostname = "localhost";
 my $dhcp_prog = "/sbin/udhcpc";
 my $ifconfig_prog = "/sbin/ifconfig";
@@ -74,6 +75,41 @@ if ($ARGV[0] eq "start") {
             if ($exit_status != 0) {
                 print("ERROR: The $ifconfig_prog program exited with value $exit_status.\n");
                 next;
+            }
+        }
+    }
+
+    # Handle auto DHCP mode if state file set and no sections exist
+    if ((-e "$auto_dhcp_file") && (scalar(@sections) == 1)) {
+        print("Auto DHCP mode enabled, waiting for link...\n");
+        sleep(5);
+        foreach my $each (@net_ifaces) {
+            my $iface = (split(/\//, $each))[-1];
+            if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) ||
+                ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) ||
+                ($iface =~ /bond\d+/)) {
+                my $iface_carrier_file = "$net_if_dir" . "/" .
+                    "$iface" . "/carrier";
+                open(IFACE_CARRIER, "$iface_carrier_file") ||
+                    die("ERROR: Can't open $iface_carrier_file: $!");
+                my @iface_carrier_lines = <IFACE_CARRIER>;
+                close(IFACE_CARRIER);
+                if ($iface_carrier_lines[0] =~ /1/) {
+                    print("Interface $iface has link, running $dhcp_prog...\n");
+                    system($dhcp_prog . " -i " . $iface . " -b " . " -q 2>&1");
+                    if ($? == -1) {
+                        print("ERROR: Running $dhcp_prog failed: $!\n");
+                        next;
+                    }
+                    my $exit_status = $? >> 8;
+                    if ($exit_status != 0) {
+                        print("ERROR: The $dhcp_prog program exited with " .
+                            "value $exit_status.\n");
+                        next;
+                    }
+                    # We only run DHCP on the first interface that has link
+                    last;
+                }
             }
         }
     }

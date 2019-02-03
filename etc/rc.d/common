@@ -7,7 +7,7 @@ LATE_SERVICES="rc.sshd rc.iscsid rc.multipathd rc.mdraid rc.lvm2 rc.zfs rc.eio \
 rc.dmcache rc.btier rc.drbd rc.rbdmap rc.corosync rc.dlm rc.clvmd rc.lvmlockd \
 rc.pacemaker rc.fsmount rc.mhvtl rc.scst rc.nvmet rc.nfsd rc.perfagent rc.nrpe \
 rc.munin rc.snmpd rc.snmptrapd rc.nut rc.smartd rc.rpcagent rc.stunnel \
-rc.webui rc.nginx rc.vmtoolsd"
+rc.webui rc.nginx rc.vmtoolsd rc.acpid rc.serial"
 
 # Script status values
 RUNNING=0

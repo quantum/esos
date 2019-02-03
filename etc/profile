@@ -17,6 +17,10 @@ if [[ $(tty) =~ /dev/ttyS[0-9] ]]; then
     # Don't run the TUI if we're connected via serial
     echo "Connected via serial ($(tty))..."
     :
+elif [ -f "/var/state/esos/no_login_tui" ]; then
+    # Don't run the TUI as requested (build option)
+    echo "No TUI at login..."
+    :
 else
     # Run the TUI binary and if it doesn't exit
     # cleanly, fall through to the shell

@@ -1,3 +1,25 @@
+2019-02-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20190201'
+
+	fixed missing line in autoconf script; fixed typos in rc.network and adjust auto-DHCP link-up delay
+
+	started moving product name strings into the Makefile -- needs more work to control all name strings from one config option; updated rc.network to handle the auto-DHCP feature -- needs testing
+
+2019-02-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	include downloading the iozone3 package; implement no TUI EULA prompt; implement /var/state/esos/ directory for build option control; autoconf script updates
+
+	use the original "esos" package name (prefix)
+
+	updated Makefile.in to accomodate for new updates in autoconf script
+
+2019-02-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the iozone3 package; copyright updates / name changes; autoconf script enhancements and new build time options; switch from getty to agetty (inittab); enabled use of acpid via the rc.acpid script; issue file updates; new rc.serial script to handle launching agetty on detected serial ports; optional feature to disable building the ESOS -debug kernel; TUI getUsableBlockDevs() fix to support Virt-IO block devices
+
+	in the ocf:esos:alua RA, don't check for the vendor name when searching for devices (redirect mode), only the device (product) name is needed
+
 2019-01-27  Marc A. Smith  <marc.smith@quantum.com>
 
 	added the lshw package; esos_kernels.chroot: clean the switchtec-kernel source between builds
