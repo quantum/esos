@@ -9,6 +9,7 @@
 /config.log
 /config.status
 /work/
+/.work*
 /tui/esos_tui
 /tui/*.o
 /ChangeLog-*.txt

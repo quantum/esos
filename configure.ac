@@ -325,42 +325,44 @@ AC_SUBST(web_ui_dir, ${web_ui_dir})
 AC_SUBST(with_web_ui, ${with_web_ui})
 AC_MSG_NOTICE([web_ui: ${with_web_ui}])
 
-dnl Optional customization directory path (used by Makefile)
+dnl Optional customization directory path (used by non-chroot Makefile)
 AC_ARG_WITH(customize_dir,
 	AS_HELP_STRING([--with-customize_dir=PATH],
 	[PATH is a directory containing the customization bits]),
 	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
-	[customize_path="${withval}"; with_customize_dir="yes"],
+	[customize_dir="${withval}"; with_customize_dir="yes"],
 	[with_customize_dir="no"]), with_customize_dir="no")
 if test "x${with_customize_dir}" = "xyes"; then
-	if test -d "${customize_path}"; then
-		AC_MSG_NOTICE([copying contents of the customization path...])
-		customize_dir="${chroot_dir}/build/customize"
-		${mkdir} -p ${customize_dir} || exit 1
-		${cp} -Rp ${customize_path}/* ${customize_dir}/ || exit 1
-	else
-		AC_MSG_ERROR([unable to access the customization path: ${customize_path}])
+	if ! test -d "${customize_dir}"; then
+		AC_MSG_ERROR([unable to access the customization directory: ${customize_dir}])
 	fi
 fi
 AC_SUBST(customize_dir, ${customize_dir})
 AC_SUBST(with_customize_dir, ${with_customize_dir})
 AC_MSG_NOTICE([customize_dir: ${with_customize_dir}])
 
-dnl Optional package rpc_agent (source provided via customization path)
-AC_ARG_ENABLE(rpc_agent,
-	AS_HELP_STRING([--enable-rpc_agent],
-	[build and include ESOS RPC Agent]),
-	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
-	[enable_rpc_agent="${enableval}"], [enable_rpc_agent="no"]), enable_rpc_agent="no")
-if test "x${enable_rpc_agent}" = "xyes"; then
-	if test "x${with_customize_dir}" != "xyes"; then
-		AC_MSG_ERROR([the rpc_agent requires the customize_dir build option])
+dnl Optional package rpc_agent (user provides source directory)
+AC_ARG_WITH(rpc_agent,
+	AS_HELP_STRING([--with-rpc_agent=PATH],
+	[build and include rpc_agent; PATH is the rpc_agent source directory]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[rpc_agent_path="${withval}"; with_rpc_agent="yes"],
+	[with_rpc_agent="no"]), with_rpc_agent="no")
+if test "x${with_rpc_agent}" = "xyes"; then
+	if test -d "${rpc_agent_path}"; then
+		AC_MSG_NOTICE([copying contents of the rpc_agent path...])
+		rpc_agent_dir="${chroot_dir}/build/rpc_agent"
+		${mkdir} -p ${rpc_agent_dir} || exit 1
+		${cp} -Rp ${rpc_agent_path}/* ${rpc_agent_dir}/ || exit 1
+	else
+		AC_MSG_ERROR([unable to access the rpc_agent path: ${rpc_agent_path}])
 	fi
 fi
-AS_IF([test "x$enable_rpc_agent" = "xyes"],
+AS_IF([test "x$with_rpc_agent" = "xyes"],
 	[build_opts="${build_opts} rpc_agent"; opt_suffix="${opt_suffix}r"])
-AC_SUBST(enable_rpc_agent, ${enable_rpc_agent})
-AC_MSG_NOTICE([rpc_agent: ${enable_rpc_agent}])
+AC_SUBST(rpc_agent_dir, ${rpc_agent_dir})
+AC_SUBST(with_rpc_agent, ${with_rpc_agent})
+AC_MSG_NOTICE([rpc_agent: ${with_rpc_agent}])
 
 dnl Optional OpenSSL DH key size for ESOS RPC Agent
 AC_ARG_WITH(ssl_key_size,

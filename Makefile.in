@@ -73,7 +73,8 @@ enable_debug_kernel	:= @enable_debug_kernel@
 enable_commercial	:= @enable_commercial@
 with_web_ui		:= @with_web_ui@
 web_ui_dir		:= $(subst $(CHROOT_DIR),,@web_ui_dir@)
-enable_rpc_agent	:= @enable_rpc_agent@
+with_rpc_agent		:= @with_rpc_agent@
+rpc_agent_dir		:= $(subst $(CHROOT_DIR),,@rpc_agent_dir@)
 ssl_dh_key_size		:= @ssl_dh_key_size@
 with_celerity_16_32	:= @with_celerity_16_32@
 celerity_16_32_dir	:= $(subst $(CHROOT_DIR),,@celerity_16_32_dir@)
@@ -315,8 +316,20 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
+# Check if we're chroot'd or not
+ifeq ($(shell if [ "`awk '$$5=="/" {print $$1}' </proc/1/mountinfo`" != \
+	"`awk '$$5=="/" {print $$1}' </proc/$$PPID/mountinfo`" ]; then \
+	echo chroot; fi),chroot)
+	in_chroot = yes
+else
+	in_chroot = no
+endif
+
+# Handle variable overrides via customization directory
+ifeq ($(in_chroot),no)
 ifeq ($(with_customize_dir),yes)
 include $(customize_dir)/overwrites.mk
+endif
 endif
 
 # These targets are required before entering the chroot environment
@@ -431,7 +444,7 @@ endif
 ifeq ($(with_web_ui),yes)
 	chroot_tgts += web_ui.chroot
 endif
-ifeq ($(enable_rpc_agent),yes)
+ifeq ($(with_rpc_agent),yes)
 	chroot_tgts += rpc_agent.chroot
 endif
 ifeq ($(with_celerity_16_32),yes)
@@ -445,15 +458,6 @@ ifeq ($(with_ocs_sdk),yes)
 endif
 ifeq ($(with_uwire),yes)
 	chroot_tgts += uwire.chroot
-endif
-
-# Check if we're chroot'd or not
-ifeq ($(shell if [ "`awk '$$5=="/" {print $$1}' </proc/1/mountinfo`" != \
-	"`awk '$$5=="/" {print $$1}' </proc/$$PPID/mountinfo`" ]; then \
-	echo chroot; fi),chroot)
-	in_chroot = yes
-else
-	in_chroot = no
 endif
 
 # Common variables used throughout
@@ -598,11 +602,11 @@ $(tarball_src_dirs): src_file = $(wildcard $(DIST_FILES_DIR)/$(notdir $(@)).*)
 $(tarball_src_dirs):
 	$(MKDIR) $(SOURCES_DIR)
 	$(QUIET) if [ "$(suffix $(src_file))" = ".gz" ]; then \
-	  $(TAR) xvfz $(src_file) -C $(SOURCES_DIR); \
+	  $(TAR) xfz $(src_file) -C $(SOURCES_DIR); \
 	elif [ "$(suffix $(src_file))" = ".bz2" ]; then \
-	  $(TAR) xvfj $(src_file) -C $(SOURCES_DIR); \
+	  $(TAR) xfj $(src_file) -C $(SOURCES_DIR); \
 	elif [ "$(suffix $(src_file))" = ".xz" ]; then \
-	  $(TAR) xvfJ $(src_file) -C $(SOURCES_DIR); \
+	  $(TAR) xfJ $(src_file) -C $(SOURCES_DIR); \
 	else \
 	  $(ECHO) "### Unhandled file extension: $(suffix $(src_file))"; \
 	  exit 1; \
@@ -662,8 +666,9 @@ bootstrap: symlink $(bootstrap_tgts)
 	$(QUIET) if [ ! -e "$(CHROOT_DIR)/bin/sh" ]; then \
 	  $(LN) -v bash $(CHROOT_DIR)/bin/sh; \
 	fi
-	$(ECHO) -e "#!/bin/sh\nchroot --userspec=$(shell id -u):$(shell id -g) \
-	\"$(CHROOT_DIR)\" /build/build_all.sh \$$@" > \
+	$(ECHO) -e "#!/bin/sh\nmake pre_chroot\nchroot \
+	--userspec=$(shell id -u):$(shell id -g) \
+	\"$(CHROOT_DIR)\" /build/build_all.sh \$$@\nmake post_chroot" > \
 	$(BUILD_DIR)/chroot_build.sh
 	$(CHMOD) +x $(BUILD_DIR)/chroot_build.sh
 	$(ECHO) -e "#!/bin/sh\n/tools/bin/env -i\nexport HOME=/\n\
@@ -1078,11 +1083,12 @@ flex: make
 .PHONY: pre_chroot
 pre_chroot:
 	$(call check_if_root)
-	$(MOUNT) -v --bind /dev $(CHROOT_DIR)/dev
-	$(MOUNT) -vt devpts devpts $(CHROOT_DIR)/dev/pts -o gid=5,mode=620
-	$(MOUNT) -vt proc proc $(CHROOT_DIR)/proc
-	$(MOUNT) -vt sysfs sysfs $(CHROOT_DIR)/sys
-	$(MOUNT) -vt tmpfs tmpfs $(CHROOT_DIR)/run
+	$(QUIET) $(MOUNT) -v --bind /dev $(CHROOT_DIR)/dev
+	$(QUIET) $(MOUNT) -vt devpts devpts $(CHROOT_DIR)/dev/pts \
+	-o gid=5,mode=620
+	$(QUIET) $(MOUNT) -vt proc proc $(CHROOT_DIR)/proc
+	$(QUIET) $(MOUNT) -vt sysfs sysfs $(CHROOT_DIR)/sys
+	$(QUIET) $(MOUNT) -vt tmpfs tmpfs $(CHROOT_DIR)/run
 
 
 # build - Configure/compile/build all of the required projects.
@@ -1578,9 +1584,8 @@ web_ui.chroot: Python.chroot nginx.chroot sudo.chroot
 	> /etc/sudoers.d/webui
 	$(TOUCH) $(@)
 
-rpc_agent.chroot: chroot_cutomize_dir = $(subst $(CHROOT_DIR),,@customize_dir@)
-rpc_agent.chroot: rpc_agent_dir = $(chroot_cutomize_dir)/rpc_agent
-rpc_agent.chroot: stunnel.chroot
+rpc_agent.chroot: glibc.chroot stunnel.chroot xmlrpc-c.chroot \
+	libxml2.chroot iniparser.chroot
 	$(call chroot_only)
 	$(MKDIR) $(rpc_agent_dir)/obj
 	$(MAKE) --directory=$(rpc_agent_dir) --file=Makefile.esos
@@ -1786,6 +1791,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install mdstat==1.0.4
 	pip3 install py-dmidecode==0.0.2
 	pip3 install netifaces==0.10.9
+	pip3 install deepdiff==3.3.0
 	$(RM) /.cache
 	$(TOUCH) $(@)
 
@@ -3495,11 +3501,11 @@ iozone3.chroot: glibc.chroot
 .PHONY: post_chroot
 post_chroot:
 	$(call check_if_root)
-	$(UMOUNT) -vl $(CHROOT_DIR)/run
-	$(UMOUNT) -vl $(CHROOT_DIR)/sys
-	$(UMOUNT) -vl $(CHROOT_DIR)/proc
-	$(UMOUNT) -vl $(CHROOT_DIR)/dev/pts
-	$(UMOUNT) -vl $(CHROOT_DIR)/dev
+	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/run
+	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/sys
+	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/proc
+	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/dev/pts
+	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/dev
 
 
 # image - Create the ESOS disk image file.
@@ -3697,7 +3703,7 @@ image:
 	  $(SED) -i 's/^rc\.webui_enable=.*/rc\.webui_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
 	fi
-	$(QUIET) if [ "$(enable_rpc_agent)" = "yes" ]; then \
+	$(QUIET) if [ "$(with_rpc_agent)" = "yes" ]; then \
 	  $(SED) -i 's/^rc\.stunnel_enable=.*/rc\.stunnel_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
 	  $(SED) -i 's/^rc\.rpcagent_enable=.*/rc\.rpcagent_enable=YES/' \
@@ -3799,7 +3805,10 @@ pkg_dist: $(bz2_img_file)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/System.map*.xz
 	$(RM) $(pkg_prefix)
 
+# Handle additional targets via customization directory
+ifeq ($(in_chroot),no)
 ifeq ($(with_customize_dir),yes)
 include $(customize_dir)/extra-support.mk
+endif
 endif
 
