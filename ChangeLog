@@ -1,5 +1,9 @@
 2019-02-04  Marc A. Smith  <marc.smith@quantum.com>
 
+	added a header/footer echo line to all package targets so output is easier to parse
+
+	fix ssl_dh_key_size variable find/replace
+
 	fixes for rpc_agent build option, added Python deepdiff module, several other build tweaks/fixes
 
 2019-02-03  Marc A. Smith  <marc.smith@quantum.com>
