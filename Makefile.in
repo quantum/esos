@@ -327,9 +327,13 @@ endif
 
 # Handle variable overrides via customization directory
 ifeq ($(in_chroot),no)
-ifeq ($(with_customize_dir),yes)
-include $(customize_dir)/overwrites.mk
-endif
+  ifeq ($(with_customize_dir),yes)
+    include $(customize_dir)/overwrites.mk
+  endif
+else
+  ifeq ($(with_customize_dir),yes)
+    include overwrites.mk
+  endif
 endif
 
 # These targets are required before entering the chroot environment
@@ -4272,8 +4276,8 @@ pkg_dist: $(bz2_img_file)
 
 # Handle additional targets via customization directory
 ifeq ($(in_chroot),no)
-ifeq ($(with_customize_dir),yes)
-include $(customize_dir)/extra-support.mk
-endif
+  ifeq ($(with_customize_dir),yes)
+    include $(customize_dir)/extra-support.mk
+  endif
 endif
 

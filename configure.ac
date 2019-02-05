@@ -333,7 +333,10 @@ AC_ARG_WITH(customize_dir,
 	[customize_dir="${withval}"; with_customize_dir="yes"],
 	[with_customize_dir="no"]), with_customize_dir="no")
 if test "x${with_customize_dir}" = "xyes"; then
-	if ! test -d "${customize_dir}"; then
+	if test -d "${customize_dir}"; then
+		AC_MSG_NOTICE([copying overwrites.mk to build directory...])
+		${cp} -f ${customize_dir}/overwrites.mk ${chroot_dir}/build/ || exit 1
+	else
 		AC_MSG_ERROR([unable to access the customization directory: ${customize_dir}])
 	fi
 fi
