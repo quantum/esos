@@ -1,3 +1,7 @@
+2019-02-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	in the generated chroot_build.sh script, we need to capture the exit status of the chroot command and exit the script using that value to catch build errors, otherwise we exit with the status from 'make post_chroot'; added build dep to Python.chroot (at least one third-party module requires libuuid)
+
 2019-02-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	rc.rpcagent SSL key length fix (the real fix, thanks Lars)

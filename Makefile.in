@@ -670,7 +670,8 @@ bootstrap: symlink $(bootstrap_tgts)
 	fi
 	$(ECHO) -e "#!/bin/sh\nmake pre_chroot\nchroot \
 	--userspec=$(shell id -u):$(shell id -g) \
-	\"$(CHROOT_DIR)\" /build/build_all.sh \$$@\nmake post_chroot" > \
+	\"$(CHROOT_DIR)\" /build/build_all.sh \
+	\$$@\nchroot_exit=\$$?\nmake post_chroot\nexit \$$chroot_exit" > \
 	$(BUILD_DIR)/chroot_build.sh
 	$(CHMOD) +x $(BUILD_DIR)/chroot_build.sh
 	$(ECHO) -e "#!/bin/sh\n/tools/bin/env -i\nexport HOME=/\n\
@@ -1886,7 +1887,7 @@ perl.chroot: glibc.chroot db.chroot
 Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	openssl.chroot zlib.chroot sqlite-autoconf.chroot ncurses.chroot \
 	db.chroot libxml2.chroot libxslt.chroot curl.chroot postgresql.chroot \
-	mysql.chroot
+	mysql.chroot util-linux.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared \
