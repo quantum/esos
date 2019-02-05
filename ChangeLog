@@ -1,5 +1,7 @@
 2019-02-04  Marc A. Smith  <marc.smith@quantum.com>
 
+	rc.rpcagent SSL key length fix (the real fix, thanks Lars)
+
 	added a header/footer echo line to all package targets so output is easier to parse
 
 	fix ssl_dh_key_size variable find/replace

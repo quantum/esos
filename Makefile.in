@@ -4179,7 +4179,7 @@ image:
 	$(QUIET) if [ "$(enable_auto_dhcp)" = "yes" ]; then \
 	  $(TOUCH) $(STAGING_DIR)/var/state/esos/auto_dhcp; \
 	fi
-	$(SED) -i 's/@@ssl_dh_key_size@@/$(ssl_dh_key_size)/' \
+	$(SED) -i 's/ssl_dh_key_size/$(ssl_dh_key_size)/' \
 	$(STAGING_DIR)/etc/rc.d/rc.rpcagent
 	$(CHOWN) 101:101 $(STAGING_DIR)/var/lib/corosync
 	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/pacemaker
