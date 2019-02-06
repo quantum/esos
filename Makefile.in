@@ -23,7 +23,7 @@ TAR		:= @tar@
 CP		:= @cp@
 FIND		:= @find@
 CPIO		:= @cpio@
-GZIP		:= @gzip@ -9
+GZIP		:= @gzip@ -9f
 ECHO		:= @echo@
 SFDISK		:= @sfdisk@
 CAT		:= @cat@
@@ -1390,7 +1390,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(SED) -i 's/# CONFIG_FRAME_POINTER is not set/CONFIG_FRAME_POINTER=y/' \
 	    $(linux_src)/.config; \
 	  fi; \
-	  $(ECHO) "### Building the Linux kernel..."; \
+	  $(ECHO) "### Compiling the Linux kernel..."; \
 	  $(MAKE) --directory=$(linux_src); \
 	  $(INSTALL) $(linux_src)/arch/x86_64/boot/bzImage \
 	  /boot/PRIMARY-bzImage$$i; \
@@ -1402,7 +1402,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(chroot_build)/System.map$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) modules_install; \
 	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
-	  $(ECHO) "### Building the SCST core and target drivers..."; \
+	  $(ECHO) "### Compiling the SCST core and target drivers..."; \
 	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \
 	  -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/ \*\/$$//' \
 	  $(scst_src)/scst/include/scst.h; \
@@ -1438,7 +1438,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i fcst_install; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
-	    $(ECHO) "### Building the Cavium Fibre Channel target driver..."; \
+	    $(ECHO) "### Compiling the Cavium Fibre Channel target driver..."; \
 	    $(PATCH) -r - -N -d $(qla2xxx_src) -p4 < \
 	    $(qla2xxx_src)/drivers/scsi/qla2xxx/extras/export_target_list.dif; \
 	    $(PATCH) -r - -N -d $(qla2xxx_src) -p4 < \
@@ -1451,7 +1451,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    QLA_DIR=qla2x00t_git/qla2xxx-unified-target qla_install; \
 	  fi; \
 	  if [ "$(enable_mhvtl)" = "yes" ]; then \
-	    $(ECHO) "### Building the mhVTL module..."; \
+	    $(ECHO) "### Compiling the mhVTL module..."; \
 	    $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i; \
 	    $(MKDIR) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi; \
@@ -1459,7 +1459,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/; \
 	  fi; \
 	  if [ "$(enable_eio)" = "yes" ]; then \
-	    $(ECHO) "### Building the EnhanceIO driver..."; \
+	    $(ECHO) "### Compiling the EnhanceIO driver..."; \
 	    $(MAKE) --directory=$(eio_src)/Driver/enhanceio \
 	    RHEL5_VER="" KERNEL_SOURCE_VERSION=$(kernel_ver)$$i \
 	    KERNEL_TREE=$(linux_src) PWD=$(eio_src)/Driver/enhanceio; \
@@ -1468,7 +1468,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    /lib/modules/$(kernel_ver)$$i/extra/enhanceio/; \
 	  fi; \
 	  if [ "$(enable_btier)" = "yes" ]; then \
-	    $(ECHO) "### Building the BTIER module..."; \
+	    $(ECHO) "### Compiling the BTIER module..."; \
 	    if [ ! -d $(btier_src)/$(notdir $(btier_src)).patch ]; then \
 	      $(PATCH) -d $(btier_src) -b \
 	      -B $(btier_src)/$(notdir $(btier_src)).patch/ -p1 < \
@@ -1480,12 +1480,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    /lib/modules/$(kernel_ver)$$i/kernel/drivers/block/btier.ko; \
 	  fi; \
 	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
-	    $(ECHO) "### Building the ATTO Celerity 16/32 HBA module..."; \
+	    $(ECHO) "### Compiling the ATTO Celerity 16/32 HBA module..."; \
 	    $(MAKE) --directory=$(celerity_16_32_dir)/src KDIR=$(linux_src) \
 	    DRIVER_NAME=celerity16fc PWD=$(celerity_16_32_dir)/src install; \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
-	    $(ECHO) "### Building the ATTO SCST Target module..."; \
+	    $(ECHO) "### Compiling the ATTO SCST Target module..."; \
 	    $(CAT) $(celerity_16_32_dir)/src/Module.symvers \
 	    /usr/include/scst/Module.symvers > \
 	    $(atto_scst_dir)/Module.symvers; \
@@ -1498,7 +1498,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    /lib/modules/$(kernel_ver)$$i/extra/atto_scst_16fc.ko; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
-	    $(ECHO) "### Building the Emulex OCS SCST module..."; \
+	    $(ECHO) "### Compiling the Emulex OCS SCST module..."; \
 	    $(CP) /usr/include/scst/Module.symvers \
 	    $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/; \
 	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
@@ -1509,7 +1509,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    /lib/modules/$(kernel_ver)$$i/extra/ocs_fc_scst.ko; \
 	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
-	    $(ECHO) "### Building the Chelsio Uwire SCST module..."; \
+	    $(ECHO) "### Compiling the Chelsio Uwire SCST module..."; \
 	    if [ ! -d $(uwire_dir)/cxgb4_pofcoe.patch ]; then \
 	      $(PATCH) -F 3 -d $(uwire_dir)/src/network/cxgb4 -b \
 	      -B $(uwire_dir)/cxgb4_pofcoe.patch/ -p1 < \
@@ -1552,7 +1552,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    modules_install; \
 	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
-	    $(ECHO) "### Building the SPL and ZFS modules..."; \
+	    $(ECHO) "### Compiling the SPL and ZFS modules..."; \
 	    if [ ! -f "$(spl_src)/configure" ]; then \
 	      cd $(spl_src) && ./autogen.sh; \
 	    fi; \
@@ -1570,7 +1570,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(zfs_src)/module modules; \
 	    $(MAKE) --directory=$(zfs_src)/module modules_install; \
 	  fi; \
-	  $(ECHO) "### Building Microsemi's Switchtec NTB driver..."; \
+	  $(ECHO) "### Compiling Microsemi's Switchtec NTB driver..."; \
 	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i modules; \
 	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \

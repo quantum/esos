@@ -1,3 +1,7 @@
+2019-02-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	use the -f flag for gzip; updated build/compile info messages in esos_kernels.chroot to avoid conflicting with log parser
+
 2019-02-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated handling of '--with-customize_dir' in Makefile.in and configure.ac; fixed package name handling in install.sh
