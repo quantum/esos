@@ -1,5 +1,7 @@
 2019-02-08  Marc A. Smith  <marc.smith@quantum.com>
 
+	clean the *.iso file
+
 	updated the initramfs script and install.sh to support the ESOS ISO
 
 2019-02-07  Marc A. Smith  <marc.smith@quantum.com>

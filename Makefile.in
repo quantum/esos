@@ -546,6 +546,7 @@ clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.bz2
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.iso
 	$(RM) $(BUILD_DIR)/$(pkg_name).img
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(RM) $(BUILD_DIR)/chroot_build.sh
