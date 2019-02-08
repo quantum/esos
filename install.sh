@@ -63,7 +63,8 @@ echo
 image_file="$(ls *.img.bz2)" || exit 1
 
 # Check if we're doing an upgrade
-if [ -f "/etc/esos-release" ]; then
+if test -f "/etc/esos-release" && \
+    ! grep esos_iso /proc/cmdline > /dev/null 2>&1; then
     # Prevent conf_sync.sh from running
     touch ${SYNC_LOCK} || exit 1
     trap 'rm -f ${SYNC_LOCK}' 0

@@ -63,9 +63,14 @@ if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3500000 ]; then
 	rescue_shell
 fi
 
-# Attempt to resolve the FS label here
-root_fs_dev="$(findfs LABEL=esos_root)" || \
-(echo "Error resolving the root device node!"; rescue_shell)
+if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+	# It's always the first CD-ROM device for the ESOS ISO
+	root_fs_dev="/dev/sr0"
+else
+	# Attempt to resolve the FS label here for regular boot
+	root_fs_dev="$(findfs LABEL=esos_root)" || \
+	(echo "Error resolving the root device node!"; rescue_shell)
+fi
 
 # Mount up
 mount -t tmpfs -o size=@@root_size@@ tmpfs /mnt/root || rescue_shell
@@ -100,6 +105,15 @@ cd /
 cp -a /dev/* /mnt/root/dev/
 ln -s busybox /mnt/root/bin/sh
 chroot /mnt/root /bin/sh -c "/bin/busybox --install -s"
+
+# Special setup for the ESOS ISO
+if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+	mkdir -p /mnt/root/var/state/esos
+	touch /mnt/root/var/state/esos/auto_dhcp
+	touch /mnt/root/var/state/esos/no_login_tui
+	chroot /mnt/root /usr/bin/sed -i \
+	's/^rc.rpcagent_enable.*/rc.rpcagent_enable=NO/' /etc/rc.conf
+fi
 
 # All done
 umount /mnt/tmp

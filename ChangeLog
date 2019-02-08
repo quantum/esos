@@ -1,3 +1,11 @@
+2019-02-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated the initramfs script and install.sh to support the ESOS ISO
+
+2019-02-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Python.chroot: install paramiko via pip3 (and deps)
+
 2019-02-06  Marc A. Smith  <marc.smith@quantum.com>
 
 	use the -f flag for gzip; updated build/compile info messages in esos_kernels.chroot to avoid conflicting with log parser
