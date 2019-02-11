@@ -14,9 +14,11 @@
 
 /bin/ln -sf bash /bin/sh
 
-/bin/echo "Performing initial configuration sync..."
-/bin/touch /etc/esos-release
-/usr/local/sbin/usb_sync.sh --initial
+if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+    /bin/echo "Performing initial configuration sync..."
+    /bin/touch /etc/esos-release
+    /usr/local/sbin/usb_sync.sh --initial
+fi
 
 if [ -x /etc/rc.d/rc.udev ]; then
     /etc/rc.d/rc.udev

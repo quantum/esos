@@ -1937,7 +1937,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install bcrypt==3.1.6
 	pip3 install PyNaCl==1.3.0
 	pip3 install asn1crypto==0.24.0
-	pip3 install cryptography==2.5
+	pip3 install cryptography==2.4.2
 	pip3 install paramiko==2.4.2
 	$(RM) /.cache
 	$(TOUCH) $(@)
@@ -4116,6 +4116,8 @@ image:
 	$(INSTALL) $(SRC_DIR)/scripts/support_pkg.sh \
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/raid_tools.py \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/iso_installer.sh \
 	$(STAGING_DIR)/usr/local/sbin/
 	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
 	  $(INSTALL) $(SRC_DIR)/scripts/install_lic.sh \

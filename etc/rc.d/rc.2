@@ -51,9 +51,11 @@ if [ -s /etc/ntp_server ]; then
     /usr/sbin/ntpd -n -q -N -p `/bin/cat /etc/ntp_server`
 fi
 
-if [ -x /etc/rc.d/rc.kdump ]; then
-    /bin/echo "Loading crash dump kernel (kexec)..."
-    /etc/rc.d/rc.kdump
+if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+    if [ -x /etc/rc.d/rc.kdump ]; then
+        /bin/echo "Loading crash dump kernel (kexec)..."
+        /etc/rc.d/rc.kdump
+    fi
 fi
 
 /bin/echo "Loading the QLogic Fibre Channel HBA module..."

@@ -1,3 +1,7 @@
+2019-02-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	keep the cryptography Python module at version 2.4.2 to avoid printed warnings when using; added the iso_installer.sh script to facilitate installing ESOS from an ISO; updated init/rc scripts to handle the ESOS ISO properly; updated the install.sh script for ESOS ISO
+
 2019-02-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	clean the *.iso file

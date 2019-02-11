@@ -13,6 +13,8 @@ SYNC_LOCK="/tmp/conf_sync_lock"
 
 echo "*** Enterprise Storage OS Install Script ***" && echo
 
+install_dev="${1}"
+
 # Need root privileges for installer
 if [ "x$(whoami)" != "xroot" ]; then
     echo "### This installer requires root privileges."
@@ -63,7 +65,7 @@ echo
 image_file="$(ls *.img.bz2)" || exit 1
 
 # Check if we're doing an upgrade
-if test -f "/etc/esos-release" && \
+if test -f "/etc/esos-release" && test -z "${install_dev}" && \
     ! grep esos_iso /proc/cmdline > /dev/null 2>&1; then
     # Prevent conf_sync.sh from running
     touch ${SYNC_LOCK} || exit 1
@@ -180,20 +182,26 @@ if test -f "/etc/esos-release" && \
     done
 fi
 
-# Print out a list of disk devices
-echo "### Here is a list of disk devices on this machine:"
-if [ "${this_os}" = "${LINUX}" ]; then
-    lsblk --nodeps --paths --exclude 1,11,251,252 \
-        --output NAME,VENDOR,MODEL,REV,SIZE,TRAN,SUBSYSTEMS
-elif [ "${this_os}" = "${MACOSX}" ]; then
-    diskutil list
+if [ -z "${install_dev}" ]; then
+    # Print out a list of disk devices
+    echo "### Here is a list of disk devices on this machine:"
+    if [ "${this_os}" = "${LINUX}" ]; then
+        lsblk --nodeps --paths --exclude 1,11,251,252 \
+            --output NAME,VENDOR,MODEL,REV,SIZE,TRAN,SUBSYSTEMS
+    elif [ "${this_os}" = "${MACOSX}" ]; then
+        diskutil list
+    fi
+    echo
 fi
-echo
 
 # Get desired install target device node and perform a few checks
-echo "### Please type the full path of your destination device node" \
-    "(eg, /dev/sdz):" && read dev_node
-echo
+if [ -z "${install_dev}" ]; then
+    echo "### Please type the full path of your destination device node" \
+        "(eg, /dev/sdz):" && read dev_node
+    echo
+else
+    dev_node="${install_dev}"
+fi
 if [ "${dev_node}" = "" ] || [ ! -e ${dev_node} ]; then
     echo "ERROR: That device node doesn't seem to exist."
     exit 1

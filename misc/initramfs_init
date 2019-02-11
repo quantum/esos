@@ -108,11 +108,23 @@ chroot /mnt/root /bin/sh -c "/bin/busybox --install -s"
 
 # Special setup for the ESOS ISO
 if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
-	mkdir -p /mnt/root/var/state/esos
-	touch /mnt/root/var/state/esos/auto_dhcp
-	touch /mnt/root/var/state/esos/no_login_tui
+	chroot /mnt/root /usr/bin/sed -i \
+	's/^rc.fsmount_enable.*/rc.fsmount_enable=NO/' /etc/rc.conf
 	chroot /mnt/root /usr/bin/sed -i \
 	's/^rc.rpcagent_enable.*/rc.rpcagent_enable=NO/' /etc/rc.conf
+	chroot /mnt/root /usr/bin/sed -i \
+	's/^rc.stunnel_enable.*/rc.stunnel_enable=NO/' /etc/rc.conf
+	iso_mode="$(cmdline esos_iso)"
+	if [ "${iso_mode}" = "live" ]; then
+		mkdir -p /mnt/root/var/state/esos
+		touch /mnt/root/var/state/esos/auto_dhcp
+		touch /mnt/root/var/state/esos/no_login_tui
+	fi
+	if [ "${iso_mode}" = "install" ]; then
+		chroot /mnt/root /usr/bin/sed -i \
+		'/^c1:/s,/sbin/agetty,/usr/local/sbin/iso_installer.sh,' \
+		/etc/inittab
+	fi
 fi
 
 # All done
