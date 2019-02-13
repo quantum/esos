@@ -11,9 +11,13 @@ LINUX="LINUX"
 MACOSX="MACOSX"
 SYNC_LOCK="/tmp/conf_sync_lock"
 
-echo "*** Enterprise Storage OS Install Script ***" && echo
+# Always bail on any error
+set -e
 
+# Optional installation device target parameter
 install_dev="${1}"
+
+echo "*** Enterprise Storage OS Install Script ***" && echo
 
 # Need root privileges for installer
 if [ "x$(whoami)" != "xroot" ]; then

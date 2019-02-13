@@ -1,5 +1,7 @@
 2019-02-13  Marc A. Smith  <marc.smith@quantum.com>
 
+	install.sh: bail on any error with set -e; initramfs_init: don't start rc.mdraid and rc.lvm2 when using the ESOS ISO; iso_installer.sh: bail on any error, and run bash if failure occurs on select scripts
+
 	rc.0: updates to handle the ESOS ISO (don't attempt to do things that we can't when booting off the ISO); rc.2: disable loading the Switchtec module at boot (for now); initramfs_init: don't start SCST when we're running the ISO; rc.serial: hide output from grep; iso_installer.sh: added a hook for installation extras/customization
 
 2019-02-10  Marc A. Smith  <marc.smith@quantum.com>

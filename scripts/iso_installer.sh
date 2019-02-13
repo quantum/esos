@@ -6,6 +6,9 @@
 # kernel parameter is also provided (eg, install_dev=/dev/sda), this value is
 # passed to the install.sh script as an argument.
 
+# Always bail on any error
+set -e
+
 # From: https://wiki.gentoo.org/wiki/Custom_Initramfs
 cmdline() {
     local value
@@ -16,25 +19,25 @@ cmdline() {
 }
 
 # Mount the CD-ROM
-mount /dev/sr0 /mnt
+mount /dev/sr0 /mnt || bash
 
 # Grab the install device (if any)
 install_dev="$(cmdline install_dev)"
 
 # Change to the mounted CD-ROM directory and run the installer
 cd /mnt
-./install.sh ${install_dev}
+./install.sh ${install_dev} || bash
 
 # Handle after-install customizations
 if [ -f "./extra_install.sh" ]; then
     echo
     echo "### Starting additional ESOS installation tasks..."
-    sh ./extra_install.sh
+    sh ./extra_install.sh || bash
 fi
 
 # Done with the CD-ROM
 cd
-umount /mnt
+umount /mnt || bash
 
 # Pause to print a message, then reboot
 echo

@@ -109,6 +109,10 @@ chroot /mnt/root /bin/sh -c "/bin/busybox --install -s"
 # Special setup for the ESOS ISO
 if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
 	chroot /mnt/root /usr/bin/sed -i \
+	's/^rc.mdraid_enable.*/rc.mdraid_enable=NO/' /etc/rc.conf
+	chroot /mnt/root /usr/bin/sed -i \
+	's/^rc.lvm2_enable.*/rc.lvm2_enable=NO/' /etc/rc.conf
+	chroot /mnt/root /usr/bin/sed -i \
 	's/^rc.fsmount_enable.*/rc.fsmount_enable=NO/' /etc/rc.conf
 	chroot /mnt/root /usr/bin/sed -i \
 	's/^rc.scst_enable.*/rc.scst_enable=NO/' /etc/rc.conf
