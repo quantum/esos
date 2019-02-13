@@ -25,12 +25,19 @@ install_dev="$(cmdline install_dev)"
 cd /mnt
 ./install.sh ${install_dev}
 
+# Handle after-install customizations
+if [ -f "./extra_install.sh" ]; then
+    echo
+    echo "### Starting additional ESOS installation tasks..."
+    sh ./extra_install.sh
+fi
+
 # Done with the CD-ROM
 cd
 umount /mnt
 
 # Pause to print a message, then reboot
 echo
-read -p "*** Press the ENTER key to reboot... ***"
+read -p "*** Press the ENTER key to reboot. ***"
 reboot
 

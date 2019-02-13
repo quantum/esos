@@ -13,7 +13,7 @@ start() {
     ports=$(${SETSERIAL} -g /dev/ttyS[0123] | /bin/grep -vi unknown | \
         /usr/bin/sed -e 's/,.*//' | /usr/bin/sed -e 's@/dev/ttyS@@')
     for f in ${ports}; do
-        /bin/grep "^s${f}" ${INITTAB}
+        /bin/grep "^s${f}" ${INITTAB} > /dev/null
         if [ $? -ne 0 ]; then
             /bin/echo "Adding serial port '${f}' to inittab..."
             /bin/echo "s${f}:2345:respawn:/sbin/agetty -L ttyS${f} 9600 vt100" \

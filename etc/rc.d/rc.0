@@ -46,11 +46,15 @@ case "$0" in
     ;;
 esac
 
-/bin/echo "Synchronizing configuration..."
-/usr/local/sbin/conf_sync.sh > /dev/null 2>&1
+if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+    /bin/echo "Synchronizing configuration..."
+    /usr/local/sbin/conf_sync.sh > /dev/null 2>&1
+fi
 
-/bin/echo "Saving log files..."
-/usr/local/sbin/archive_logs.sh
+if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+    /bin/echo "Saving log files..."
+    /usr/local/sbin/archive_logs.sh
+fi
 
 /bin/echo "Remounting root file system read-only..."
 /bin/mount -n -o remount,ro /

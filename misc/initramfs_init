@@ -111,6 +111,8 @@ if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
 	chroot /mnt/root /usr/bin/sed -i \
 	's/^rc.fsmount_enable.*/rc.fsmount_enable=NO/' /etc/rc.conf
 	chroot /mnt/root /usr/bin/sed -i \
+	's/^rc.scst_enable.*/rc.scst_enable=NO/' /etc/rc.conf
+	chroot /mnt/root /usr/bin/sed -i \
 	's/^rc.rpcagent_enable.*/rc.rpcagent_enable=NO/' /etc/rc.conf
 	chroot /mnt/root /usr/bin/sed -i \
 	's/^rc.stunnel_enable.*/rc.stunnel_enable=NO/' /etc/rc.conf
