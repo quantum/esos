@@ -1,3 +1,7 @@
+2019-02-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	install.sh: repeat block device path prompt if an empty value is given (eg, if enter is hit); iso_installer.sh: attempt to log script itself using tee (needs testing)
+
 2019-02-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	install.sh: bail on any error with set -e; initramfs_init: don't start rc.mdraid and rc.lvm2 when using the ESOS ISO; iso_installer.sh: bail on any error, and run bash if failure occurs on select scripts

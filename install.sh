@@ -200,13 +200,18 @@ fi
 
 # Get desired install target device node and perform a few checks
 if [ -z "${install_dev}" ]; then
-    echo "### Please type the full path of your destination device node" \
-        "(eg, /dev/sdz):" && read dev_node
-    echo
+    while : ; do
+        echo "### Please type the full path of your destination device node" \
+            "(eg, /dev/sdz):" && read dev_node
+        echo
+        if [ -n "${dev_node}" ]; then
+            break
+        fi
+    done
 else
     dev_node="${install_dev}"
 fi
-if [ "${dev_node}" = "" ] || [ ! -e ${dev_node} ]; then
+if [ "x${dev_node}" = "x" ] || [ ! -e ${dev_node} ]; then
     echo "ERROR: That device node doesn't seem to exist."
     exit 1
 fi

@@ -18,29 +18,31 @@ cmdline() {
     [ "$value" != "" ] && echo "$value"
 }
 
-# Mount the CD-ROM
-mount /dev/sr0 /mnt || bash
+{
+    # Mount the CD-ROM
+    mount /dev/sr0 /mnt || bash
 
-# Grab the install device (if any)
-install_dev="$(cmdline install_dev)"
+    # Grab the install device (if any)
+    install_dev="$(cmdline install_dev)"
 
-# Change to the mounted CD-ROM directory and run the installer
-cd /mnt
-./install.sh ${install_dev} || bash
+    # Change to the mounted CD-ROM directory and run the installer
+    cd /mnt
+    ./install.sh ${install_dev} || bash
 
-# Handle after-install customizations
-if [ -f "./extra_install.sh" ]; then
+    # Handle after-install customizations
+    if [ -f "./extra_install.sh" ]; then
+        echo
+        echo "### Starting additional ESOS installation tasks..."
+        sh ./extra_install.sh || bash
+    fi
+
+    # Done with the CD-ROM
+    cd
+    umount /mnt || bash
+
+    # Pause to print a message, then reboot
     echo
-    echo "### Starting additional ESOS installation tasks..."
-    sh ./extra_install.sh || bash
-fi
-
-# Done with the CD-ROM
-cd
-umount /mnt || bash
-
-# Pause to print a message, then reboot
-echo
-read -p "*** Press the ENTER key to reboot. ***"
-reboot
+    read -p "*** Press the ENTER key to reboot. ***"
+    reboot
+} | tee /tmp/iso_installer_$(date +%s).log
 
