@@ -31,7 +31,7 @@ cmdline() {
 
     # Handle after-install customizations
     if [ -f "./extra_install.sh" ]; then
-        echo
+        echo " "
         echo "### Starting additional ESOS installation tasks..."
         sh ./extra_install.sh || bash
     fi
@@ -40,9 +40,16 @@ cmdline() {
     cd
     umount /mnt || bash
 
-    # Pause to print a message, then reboot
-    echo
-    read -p "*** Press the ENTER key to reboot. ***"
+    # Pause until the user continues, then reboot
+    echo " "
+    while : ; do
+        echo "### ESOS ISO installer complete; type 'yes' to reboot:" && \
+            read confirm
+        echo " "
+        if [ "x${confirm}" = "xyes" ]; then
+            break
+        fi
+    done
     reboot
 } | tee /tmp/iso_installer_$(date +%s).log
 

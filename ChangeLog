@@ -1,5 +1,7 @@
 2019-02-14  Marc A. Smith  <marc.smith@quantum.com>
 
+	iso_installer.sh script updates (user must type 'yes' to continue instead of just ENTER)
+
 	install.sh: repeat block device path prompt if an empty value is given (eg, if enter is hit); iso_installer.sh: attempt to log script itself using tee (needs testing)
 
 2019-02-13  Marc A. Smith  <marc.smith@quantum.com>
