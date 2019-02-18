@@ -171,7 +171,7 @@ bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
 5e2bcbbf3018a4a5ce61fc15e264612e  crmsh-master_20180520.tar.xz
 7ab813b2e8921fc4e9f2f92cd5271b30  nmon-16c.tar.gz
 479ae323d545c4b9fb5f9dc3efecd6a6  linux_firmware-master_20180524.tar.xz
-afe45cba289bf7f974194ee49f140a3f  scst-3.3.x_r7899.tar.xz
+7840c8480e2fe788cfea5d1df3a8a352  scst-3.3.x_r7960.tar.xz
 f1e2f97e100e80e00ce3ead797538290  munin-c-0.0.9.tar.gz
 caf2c92bfe58c07f781ab74942e4b9f2  open-iscsi-2.0.874.tar.gz
 e0047d68b4d7a0b6104f67851b8b6475  open-isns-0.96.tar.gz
@@ -204,6 +204,6 @@ fc18afa0f14a25475cf097ee102a3e4f  pcre-8.42.tar.gz
 09a38a6fb8ba8500c28df647496d9381  blktrace-master_20181015.tar.xz
 978f37ba5382573f7807a060f92a10ac  hwloc-2.0.2.tar.bz2
 6b42d2f2ed1bf6fa34e9e62769ea1689  mstflint-4.11.0.tar.gz
-a370d4fc71865dffcd6ed7971072d503  switchtec-kernel_20190126.tar.xz
+5a6f3ee4836fd96b4a80e1234112606a  switchtec-kernel_20190215.tar.xz
 26ae57da0ddea4b3f809ee70cf3db0f3  lshw-B.02.18.tar.gz
 5887498480fa22ce512bec9cfd225627  iozone3-487.tar.xz

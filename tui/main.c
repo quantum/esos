@@ -111,8 +111,10 @@ int main(int argc, char** argv) {
     for (i = 1; i < argc; i++)
         DEBUG_LOG("Argument %d: %s", i, argv[i]);
 
+#ifdef USAGE_PROMPT
     /* Check if there is Internet access */
     inet_works = checkInetAccess();
+#endif
 
     /* Set the TUI interface theme (colors) */
     setTheme();
@@ -158,9 +160,11 @@ start:
     }
 #endif
 
+#ifdef USAGE_PROMPT
     /* Usage count (only if we have Internet) */
     if (inet_works)
         reportUsage(cdk_screen);
+#endif
 
     /* Check and see if SCST is loaded */
     if (!isSCSTLoaded()) {

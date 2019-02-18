@@ -68,6 +68,7 @@ enable_btier		:= @enable_btier@
 enable_simple_tui	:= @enable_simple_tui@
 enable_auto_dhcp	:= @enable_auto_dhcp@
 enable_tui_eula		:= @enable_tui_eula@
+enable_tui_usage	:= @enable_tui_usage@
 enable_login_tui	:= @enable_login_tui@
 enable_debug_kernel	:= @enable_debug_kernel@
 enable_commercial	:= @enable_commercial@
@@ -179,7 +180,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20140928.tar.gz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.3.x_r7899.tar.xz \
+		scst-3.3.x_r7960.tar.xz \
 		kexec-tools-2.0.17.tar.xz \
 		drbd-utils-8.9.6.tar.gz \
 		lvm2-2_02_168.tar.gz \
@@ -310,7 +311,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		blktrace-master_20181015.tar.xz \
 		hwloc-2.0.2.tar.bz2 \
 		mstflint-4.11.0.tar.gz \
-		switchtec-kernel_20190126.tar.xz \
+		switchtec-kernel_20190215.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
 		win_binaries-20180813.tar.xz)
@@ -441,6 +442,9 @@ ifeq ($(enable_simple_tui),yes)
 endif
 ifeq ($(enable_tui_eula),yes)
 	tui_cpp_flags += -DEULA_PROMPT
+endif
+ifeq ($(enable_tui_usage),yes)
+	tui_cpp_flags += -DUSAGE_PROMPT
 endif
 ifeq ($(enable_commercial),yes)
 	tui_cpp_flags += -DCOMMERCIAL
@@ -2579,7 +2583,7 @@ lessfs.chroot: glibc.chroot mhash.chroot openssl.chroot lzo.chroot fuse.chroot \
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-tokyocabinet.chroot: glibc.chroot bzip2.chroot
+tokyocabinet.chroot: glibc.chroot bzip2.chroot zlib.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr

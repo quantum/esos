@@ -265,6 +265,16 @@ dnl No build option / suffix (enabled by default)
 AC_SUBST(enable_tui_eula, ${enable_tui_eula})
 AC_MSG_NOTICE([tui_eula: ${enable_tui_eula}])
 
+dnl Optional usage count reporting in TUI
+AC_ARG_ENABLE(tui_usage,
+	AS_HELP_STRING([--disable-tui_usage], [disable the TUI usage prompt]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_tui_usage="${enableval}"], [enable_tui_usage="yes"]),
+	enable_tui_usage="yes")
+dnl No build option / suffix (enabled by default)
+AC_SUBST(enable_tui_usage, ${enable_tui_usage})
+AC_MSG_NOTICE([tui_usage: ${enable_tui_usage}])
+
 dnl Optional launch TUI at login
 AC_ARG_ENABLE(login_tui,
 	AS_HELP_STRING([--disable-login_tui], [disable the TUI on login]),
