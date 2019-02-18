@@ -4074,10 +4074,10 @@ image:
 	$(wildcard $(CHROOT_DIR)/usr/include/python*))/pyconfig.h
 	$(MKDIR) $(STAGING_DIR)/usr/share/doc/esos
 	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
-	  $(CP) $(SRC_DIR)/PROF_LICENSE \
+	  $(CP) $(SRC_DIR)/COMMERCIAL_EULA \
 	  $(STAGING_DIR)/usr/share/doc/esos/LICENSE; \
 	else \
-	  $(CP) $(SRC_DIR)/COMM_LICENSE \
+	  $(CP) $(SRC_DIR)/COPYING \
 	  $(STAGING_DIR)/usr/share/doc/esos/LICENSE; \
 	fi
 	$(INSTALL) -m 0644 $(SRC_DIR)/ChangeLog \
@@ -4265,7 +4265,7 @@ image:
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
 pkg_dist: license_file =  $(if $(findstring yes,$(enable_commercial)),\
-	PROF_LICENSE,COMM_LICENSE)
+	COMMERCIAL_EULA,COPYING)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt

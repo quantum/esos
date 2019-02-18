@@ -1,3 +1,7 @@
+2019-02-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated commercial EULA and handling
+
 2019-02-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated SCST to version 3.3.x/r7960 (resolves bug when setting numa_node_id attribute); updated switchtec-kernel driver to new version; added a autoconf script option to disable usage count reporting (no prompt in TUI); resolve build dep for tokyocabinet.chroot; enable loading the Switchtec driver in rc.2
