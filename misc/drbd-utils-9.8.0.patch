@@ -1,0 +1,10 @@
+--- a/scripts/drbd.ocf	2015-11-02 04:22:01.000000000 -0500
++++ b/scripts/drbd.ocf	2018-12-04 15:03:30.478521412 -0500
+@@ -804,6 +804,7 @@
+ 		status=$?
+ 		case "$status" in
+ 		$OCF_SUCCESS)
++			sleep 10
+ 			do_drbdadm primary $DRBD_RESOURCE
+ 			if [[ $? = 17 ]]; then
+ 				# All available disks are inconsistent,

@@ -1,3 +1,7 @@
+2019-02-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated drbd-utils to version 9.8.0 (supports the '--with-prebuiltman' option); updated SCST to version 3.3.x/r7994 (resolves use-after-free bug); don't print mkdir command string every time in tarball extract target
+
 2019-02-18  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated commercial EULA and handling
