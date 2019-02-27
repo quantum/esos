@@ -264,6 +264,8 @@ void addDevGrpDialog(CDKSCREEN *main_cdk_screen) {
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
+            } else {
+                writeSCSTConf(main_cdk_screen);
             }
         }
         break;
@@ -309,6 +311,8 @@ void remDevGrpDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 
@@ -465,6 +469,8 @@ void addTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
+            } else {
+                writeSCSTConf(main_cdk_screen);
             }
         }
         break;
@@ -523,6 +529,8 @@ void remTgtGrpDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 
@@ -564,6 +572,8 @@ void addDevToGrpDialog(CDKSCREEN *main_cdk_screen) {
                 strerror(temp_int));
         errorDialog(main_cdk_screen, error_msg, NULL);
         FREE_NULL(error_msg);
+    } else {
+        writeSCSTConf(main_cdk_screen);
     }
 
     /* Done */
@@ -612,6 +622,8 @@ void remDevFromGrpDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 
@@ -778,6 +790,8 @@ void addTgtToGrpDialog(CDKSCREEN *main_cdk_screen) {
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
                 break;
+            } else {
+                writeSCSTConf(main_cdk_screen);
             }
         }
         break;
@@ -844,6 +858,8 @@ void remTgtFromGrpDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 

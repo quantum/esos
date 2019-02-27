@@ -54,6 +54,7 @@ void getSCSTDevChoice(CDKSCREEN *cdk_screen, char dev_name[],
 void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
         char tgt_driver[], char tgt_group[], char initiator[]);
 void syncConfig(CDKSCREEN *main_cdk_screen);
+void writeSCSTConf(CDKSCREEN *main_cdk_screen);
 void getUserAcct(CDKSCREEN *cdk_screen, char user_acct[]);
 boolean questionDialog(CDKSCREEN *screen, char *msg_line_1, char *msg_line_2);
 void getFSChoice(CDKSCREEN *cdk_screen, char fs_name[], char fs_path[],
@@ -202,6 +203,7 @@ char *checkAgentLic();
 size_t g_scst_dev_types_size();
 size_t g_scst_handlers_size();
 size_t g_sync_label_msg_size();
+size_t g_save_label_msg_size();
 size_t g_add_ld_label_msg_size();
 size_t g_add_array_label_msg_size();
 size_t g_add_lv_label_msg_size();

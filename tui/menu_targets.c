@@ -194,6 +194,8 @@ void addiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
+            } else {
+                writeSCSTConf(main_cdk_screen);
             }
         }
         break;
@@ -239,6 +241,8 @@ void remiSCSITgtDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 
@@ -475,6 +479,8 @@ void enblDsblTgtDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
         }
@@ -563,6 +569,8 @@ void setRelTgtIDDialog(CDKSCREEN *main_cdk_screen) {
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
+            } else {
+                writeSCSTConf(main_cdk_screen);
             }
         }
         break;

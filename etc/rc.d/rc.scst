@@ -94,12 +94,6 @@ apply_config() {
     return 0
 }
 
-write_config() {
-    /bin/echo "Saving SCST configuration..."
-    ${SCSTADMIN} -force -write_config ${SCST_CFG} || return 1
-    return 0
-}
-
 start() {
     # If our pre-SCST file exists, run it
     if [ -f /etc/pre-scst_xtra_conf ]; then
@@ -120,8 +114,6 @@ start() {
 }
 
 stop() {
-    # Save the SCST configuration, just in case
-    write_config || exit 1
     # Stop all of the userland daemons
     stop_user_progs || exit 1
     # Unload all of the modules in reverse order
