@@ -817,13 +817,11 @@ void getSCSTInitChoice(CDKSCREEN *cdk_screen, char tgt_name[],
 
 
 /**
- * @brief Synchronize the ESOS configuration files to the USB drive; this will
- * also dump the SCST configuration to a flat file (before sync'ing).
+ * @brief Synchronize the ESOS configuration files to the USB drive.
  */
 void syncConfig(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *sync_msg = 0;
-    char scstadmin_cmd[MAX_SHELL_CMD_LEN] = {0},
-            sync_conf_cmd[MAX_SHELL_CMD_LEN] = {0};
+    char sync_conf_cmd[MAX_SHELL_CMD_LEN] = {0};
     char *error_msg = NULL;
     int ret_val = 0, exit_stat = 0;
 
@@ -836,6 +834,47 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
     }
     setCDKLabelBackgroundAttrib(sync_msg, g_color_dialog_text[g_curr_theme]);
     setCDKLabelBoxAttribute(sync_msg, g_color_dialog_box[g_curr_theme]);
+    refreshCDKScreen(main_cdk_screen);
+
+    while (1) {
+        /* Synchronize the ESOS configuration */
+        snprintf(sync_conf_cmd, MAX_SHELL_CMD_LEN, "%s > /dev/null 2>&1",
+                SYNC_CONF_TOOL);
+        ret_val = system(sync_conf_cmd);
+        if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
+            SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SYNC_CONF_TOOL,
+                    exit_stat);
+            errorDialog(main_cdk_screen, error_msg, NULL);
+            FREE_NULL(error_msg);
+            break;
+        }
+        break;
+    }
+
+    /* Done */
+    destroyCDKLabel(sync_msg);
+    return;
+}
+
+
+/**
+ * @brief Write (save) the entire SCST configuration to a flat file.
+ */
+void writeSCSTConf(CDKSCREEN *main_cdk_screen) {
+    CDKLABEL *save_msg = 0;
+    char scstadmin_cmd[MAX_SHELL_CMD_LEN] = {0};
+    char *error_msg = NULL;
+    int ret_val = 0, exit_stat = 0;
+
+    /* Display a nice short label message while we save the SCST config */
+    save_msg = newCDKLabel(main_cdk_screen, CENTER, CENTER,
+            g_save_label_msg, g_save_label_msg_size(), TRUE, FALSE);
+    if (!save_msg) {
+        errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
+        return;
+    }
+    setCDKLabelBackgroundAttrib(save_msg, g_color_dialog_text[g_curr_theme]);
+    setCDKLabelBoxAttribute(save_msg, g_color_dialog_box[g_curr_theme]);
     refreshCDKScreen(main_cdk_screen);
 
     while (1) {
@@ -853,23 +892,11 @@ void syncConfig(CDKSCREEN *main_cdk_screen) {
                 break;
             }
         }
-
-        /* Synchronize the ESOS configuration */
-        snprintf(sync_conf_cmd, MAX_SHELL_CMD_LEN, "%s > /dev/null 2>&1",
-                SYNC_CONF_TOOL);
-        ret_val = system(sync_conf_cmd);
-        if ((exit_stat = WEXITSTATUS(ret_val)) != 0) {
-            SAFE_ASPRINTF(&error_msg, CMD_FAILED_ERR, SYNC_CONF_TOOL,
-                    exit_stat);
-            errorDialog(main_cdk_screen, error_msg, NULL);
-            FREE_NULL(error_msg);
-            break;
-        }
         break;
     }
 
     /* Done */
-    destroyCDKLabel(sync_msg);
+    destroyCDKLabel(save_msg);
     return;
 }
 

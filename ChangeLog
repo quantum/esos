@@ -1,4 +1,12 @@
-2019-02-25  Marc A. Smith  <marc.smith@quantum.com>
+2019-02-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_conf'
+
+	writing (saving) the SCST configuration during every config sync and when stopping SCST is redundant, and mostly unneeded -- the bigger concern is it may cause an ESOS system to have a partial or incomplete SCST configuration if SCST is in an inconsistent state when dumping the config to a file (eg, not all SCST modules loaded, or config was only partially loaded); removed use the 'scstadmin -write_config' command from conf_sync.sh, rc.scst, the ocf:esos:scst RA, and in the TUI's syncConfig() function; added the writeSCSTConf() function in the TUI which is now called after each successful operation that modifies the SCST config (ALUA/Devices/Hosts/Targets menu dialogs)
+
+2019-02-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	install.sh: get confirmation to overwrite install target block device in a loop, checking input for yes/no
 
 	updated drbd-utils to version 9.8.0 (supports the '--with-prebuiltman' option); updated SCST to version 3.3.x/r7994 (resolves use-after-free bug); don't print mkdir command string every time in tarball extract target
 

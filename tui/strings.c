@@ -32,6 +32,8 @@ char *g_choice_char[] = {"[ ] ", "[*] "},
         *g_fio_types[] = {"<C>File System", "<C>Block Device"},
         *g_sync_label_msg[] = {"", "",
         "</B>   Synchronizing ESOS configuration...   ", "", ""},
+        *g_save_label_msg[] = {"", "",
+        "</B>   Writing the SCST configuration...   ", "", ""},
         *g_add_ld_label_msg[] = {"", "",
         "</B>   Adding the new logical drive...   ", "", ""},
         *g_add_array_label_msg[] = {"", "",
@@ -62,6 +64,9 @@ size_t g_scst_handlers_size() {
 }
 size_t g_sync_label_msg_size() {
     return (sizeof g_sync_label_msg) / (sizeof g_sync_label_msg[0]);
+}
+size_t g_save_label_msg_size() {
+    return (sizeof g_save_label_msg) / (sizeof g_save_label_msg[0]);
 }
 size_t g_add_ld_label_msg_size() {
     return (sizeof g_add_ld_label_msg) / (sizeof g_add_ld_label_msg[0]);

@@ -78,6 +78,8 @@ void addGroupDialog(CDKSCREEN *main_cdk_screen) {
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
+            } else {
+                writeSCSTConf(main_cdk_screen);
             }
         }
         break;
@@ -130,6 +132,8 @@ void remGroupDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 
@@ -294,6 +298,8 @@ void addInitDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
         break;
     }
@@ -357,6 +363,8 @@ void remInitDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 

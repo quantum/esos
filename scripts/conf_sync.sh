@@ -5,8 +5,6 @@ if [ -f "/tmp/conf_sync_lock" ]; then
     echo "Lock file exists, so we're not sync'ing!" 1>&2
     exit 1
 fi
-# Write the SCST configuration to a file (we don't hide stderr)
-/usr/sbin/scstadmin -force -write_config /etc/scst.conf > /dev/null
 # Commit any changed files to the local Git repo
 cd /etc && /usr/bin/git add -A || exit 1
 cd /etc && /usr/bin/git diff-index --quiet HEAD || \

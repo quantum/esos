@@ -268,6 +268,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
             break;
@@ -286,6 +288,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
             break;
@@ -341,6 +345,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                                 strerror(temp_int));
                         errorDialog(main_cdk_screen, error_msg, NULL);
                         FREE_NULL(error_msg);
+                    } else {
+                        writeSCSTConf(main_cdk_screen);
                     }
                 }
                 destroyCDKFselect(file_select);
@@ -533,6 +539,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
             break;
@@ -798,6 +806,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
             break;
@@ -952,6 +962,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
             break;
@@ -971,6 +983,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
             break;
@@ -990,6 +1004,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
             break;
@@ -1009,6 +1025,8 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                             strerror(temp_int));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
+                } else {
+                    writeSCSTConf(main_cdk_screen);
                 }
             }
             break;
@@ -1070,6 +1088,8 @@ void remDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 
@@ -1218,6 +1238,8 @@ void mapDeviceDialog(CDKSCREEN *main_cdk_screen) {
                         strerror(temp_int));
                 errorDialog(main_cdk_screen, error_msg, NULL);
                 FREE_NULL(error_msg);
+            } else {
+                writeSCSTConf(main_cdk_screen);
             }
         }
         break;
@@ -1280,6 +1302,8 @@ void unmapDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     strerror(temp_int));
             errorDialog(main_cdk_screen, error_msg, NULL);
             FREE_NULL(error_msg);
+        } else {
+            writeSCSTConf(main_cdk_screen);
         }
     }
 
