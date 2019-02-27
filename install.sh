@@ -244,22 +244,26 @@ elif [ "${this_os}" = "${MACOSX}" ]; then
 fi
 
 # Get a final confirmation before writing the image
-echo "### Proceeding will completely wipe the '${real_dev_node}' device." \
-    "Are you sure (yes/no)?" && read confirm
-echo
-if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
-    echo "### Writing ${image_file} to ${real_dev_node}; this may" \
-        "take a while..."
-    bunzip2 -d -c ${image_file} | dd of=${real_dev_node} bs=1${suffix} || exit 1
-    if [ "${this_os}" = "${LINUX}" ]; then
-        blockdev --rereadpt ${dev_node} || exit 1
-    fi
+while : ; do
+    echo "### Proceeding will completely wipe the '${real_dev_node}' device." \
+        "Are you sure (yes/no)?" && read confirm
     echo
-    echo "### It appears the image was successfully written to disk" \
-        "(no errors reported)!"
-else
-    exit 0
-fi
+    if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
+        echo "### Writing ${image_file} to ${real_dev_node}; this may" \
+            "take a while..."
+        bunzip2 -d -c ${image_file} | dd of=${real_dev_node} bs=1${suffix} || \
+            exit 1
+        if [ "${this_os}" = "${LINUX}" ]; then
+            blockdev --rereadpt ${dev_node} || exit 1
+        fi
+        echo
+        echo "### It appears the image was successfully written to disk" \
+            "(no errors reported)!"
+        break
+    elif [[ ${confirm} =~ [Nn]|[Nn][Oo] ]]; then
+        exit 1
+    fi
+done
 
 # We're all done, users can install RAID tools in the ESOS instance
 echo && echo
