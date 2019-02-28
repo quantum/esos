@@ -1,3 +1,7 @@
+2019-02-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	in the ocf:esos:scst RA, get rid of any 'cluster_mode' lines to prevent opening DLM lockspaces when loading config (this is done later by the RA itself)
+
 2019-02-27  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'scst_conf'

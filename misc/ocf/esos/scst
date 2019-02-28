@@ -68,6 +68,7 @@ scst_start() {
                 "configuration file..."
             cp -f ${SCST_CFG} ${SCST_CFG}.redirect_mode_backup
             sed -i '/^\t\tactive /d' ${SCST_CFG}
+            sed -i '/^\t\tcluster_mode /d' ${SCST_CFG}
             cat ${SCST_CFG} | perl -n \
                 -e '$in_handler = 1 if (/^HANDLER vdisk_blockio/);' \
                 -e '$in_dev = 1 if (/^\tDEVICE /);' \
