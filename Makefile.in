@@ -311,7 +311,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		blktrace-master_20181015.tar.xz \
 		hwloc-2.0.2.tar.bz2 \
 		mstflint-4.11.0.tar.gz \
-		switchtec-kernel_20190215.tar.xz \
+		switchtec-kernel_20190301.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
 		win_binaries-20180813.tar.xz)
