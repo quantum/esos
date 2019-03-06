@@ -1,3 +1,7 @@
+2019-03-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated the Microsemi Switchtec NTB kernel driver to the latest version
+
 2019-02-28  Marc A. Smith  <marc.smith@quantum.com>
 
 	in the ocf:esos:scst RA, get rid of any 'cluster_mode' lines to prevent opening DLM lockspaces when loading config (this is done later by the RA itself)
