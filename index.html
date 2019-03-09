@@ -13,7 +13,7 @@
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <header class="inner">
-          <a id="forkme_banner" href="https://github.com/parodyne/esos">View on GitHub</a>
+          <a id="forkme_banner" href="https://github.com/quantum/esos">View on GitHub</a>
           <h1 id="project_title">ESOS - Enterprise Storage OS</h1>
           <h2 id="project_tagline">An open source, high performance, block-level storage platform.</h2>
         </header>
@@ -22,16 +22,14 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <p align="center"><a href="http://download.esos-project.com/">Downloads</a> - <a href="https://github.com/parodyne/esos/wiki">Documentation</a> - <a href="http://groups.google.com/group/esos-users">Help/Support</a> - <a href="https://github.com/parodyne/esos/issues">Bugs/Issues</a> - <a href="http://download.esos-project.com/stats.php">Download Statistics</a> - <a href="http://usage.esos-project.com/stats.php">Usage Statistics</a></p>
+        <p align="center"><a href="http://download.esos-project.com/">Downloads</a> - <a href="https://github.com/quantum/esos/wiki">Documentation</a> - <a href="http://groups.google.com/group/esos-users">Help/Support</a> - <a href="https://github.com/quantum/esos/issues">Bugs/Issues</a> - <a href="http://download.esos-project.com/stats.php">Download Statistics</a> - <a href="http://usage.esos-project.com/stats.php">Usage Statistics</a></p>
         <p><br></p>
         <h3><a id="about" class="anchor" href="#about" aria-hidden="true"><span class="octicon octicon-link"></span></a>About</h3>
         <p>This is the project home for Enterprise Storage OS® (ESOS®). Enterprise Storage OS® is a quasi Linux distribution based on the excellent <a href="http://scst.sourceforge.net">SCST</a> project; its purpose is to provide SCSI targets via a compatible SAN (Fibre Channel, InfiniBand, iSCSI, FCoE). In a nutshell, ESOS® can easily turn a server with the appropriate hardware into a disk array that sits on your enterprise Storage Area Network (SAN) providing sharable block-level storage volumes. Typical uses for an ESOS® "storage server" include VMFS datastores on VMware ESX/ESXi, Windows NTFS volumes, Linux disks, etc.</p>
         <p><br></p>
         <h3><a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h3>
-        <p>ESOS® has been under heavy development since January 2012 and used by many in "production" environments. The list of features is still growing; see the <a href="https://github.com/parodyne/esos/wiki/01_About_ESOS">01_About_ESOS</a> wiki page for all of the details. Here are a few of the core ESOS® features:<br></p>
+        <p>ESOS® has been under heavy development since January 2012 and used by many in "production" environments. The list of features is still growing; see the <a href="https://github.com/quantum/esos/wiki/01_About_ESOS">01_About_ESOS</a> wiki page for all of the details. Here are a few of the core ESOS® features:<br></p>
         <ul>
-         <li><a href="https://www.parodyne.com/">Commercial ESOS® support and GUI/API management software options are available.</a><br>
-         </li>
          <li>A high performance, purpose-built (appliance like) Linux base built from scratch, with no relation to other Linux distributions.<br>
          </li>
          <li>ESOS® is memory resident -- it boots off a USB flash drive, and everything is loaded into RAM. If the USB flash drive fails, ESOS® will send an alert email, and you can simply build a new ESOS® USB flash drive, then replace the failed drive and sync the configuration.<br>
@@ -44,7 +42,7 @@
          </li>
          <li>ESOS® is compatible with most popular enterprise RAID controllers and Tier-1 server hardware. It currently supports the following front-end target types: Fibre Channel, iSCSI, InfiniBand (SRP), Fibre Channel over Ethernet (FCoE)<br>
          </li>
-         <li>A text-based user interface (TUI) that provides an easy to use interface with convenient storage provisioning functions; see how it looks on the <a href="https://github.com/parodyne/esos/wiki/02_Screenshots">02_Screenshots</a> wiki page.<br>
+         <li>A text-based user interface (TUI) that provides an easy to use interface with convenient storage provisioning functions; see how it looks on the <a href="https://github.com/quantum/esos/wiki/02_Screenshots">02_Screenshots</a> wiki page.<br>
          </li>
          <li>Clustering / high availability (HA) components: Pacemaker + Corosync + DRBD<br>
          </li>
@@ -69,16 +67,16 @@
        </ul>
        <p><br></p>
        <h3><a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting Started</h3>
-       <p>To get started setting up an ESOS® storage server, you will need a Linux host to use the Enterprise Storage OS® USB drive installer, a USB flash drive, and a decent server with a good RAID card, disks, HBAs/HCAs/CNAs, etc. to use as the storage server -- see the <a href="https://github.com/parodyne/esos/wiki/03_Supported_Hardware">03_Supported_Hardware</a> wiki page for more details. When you're ready to begin, grab the latest package on this <a href="http://download.esos-project.com/pkg_list.php">download</a> page and use the <a href="https://github.com/parodyne/esos/wiki/12_Installation">12_Installation</a> document. See the <a href="https://github.com/parodyne/esos/wiki/11_Building">11_Building</a> wiki page for directions on building ESOS® from source. Use the <a href="http://groups.google.com/group/esos-users">esos-users</a> Google Group for any questions/comments.</p>
+       <p>To get started setting up an ESOS® storage server, you will need a Linux host to use the Enterprise Storage OS® USB drive installer, a USB flash drive, and a decent server with a good RAID card, disks, HBAs/HCAs/CNAs, etc. to use as the storage server -- see the <a href="https://github.com/quantum/esos/wiki/03_Supported_Hardware">03_Supported_Hardware</a> wiki page for more details. When you're ready to begin, grab the latest package on this <a href="http://download.esos-project.com/pkg_list.php">download</a> page and use the <a href="https://github.com/quantum/esos/wiki/12_Installation">12_Installation</a> document. See the <a href="https://github.com/quantum/esos/wiki/11_Building">11_Building</a> wiki page for directions on building ESOS® from source. Use the <a href="http://groups.google.com/group/esos-users">esos-users</a> Google Group for any questions/comments.</p>
       </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">ESOS® and Enterprise Storage OS® are registered trademarks of Astersmith, LLC.</p>
-        <p class="copyright">Copyright © 2017 Parodyne Inc. All rights reserved.</p>
-        <p class="copyright">ESOS - Enterprise Storage OS maintained by <a href="https://github.com/parodyne">Parodyne Inc.</a></p>
+        <p class="copyright">ESOS® and Enterprise Storage OS® are registered trademarks of Quantum Corp.</p>
+        <p class="copyright">Copyright © 2019 Quantum Corp. All rights reserved.</p>
+        <p class="copyright">ESOS - Enterprise Storage OS maintained by <a href="https://github.com/quantum">Quantum Corp.</a></p>
         <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
