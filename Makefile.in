@@ -314,6 +314,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		switchtec-kernel_20190301.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
+		telegraf-1.9.5.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -394,7 +395,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot \
 		pcre.chroot nginx.chroot dosfstools.chroot lsof.chroot \
 		blktrace.chroot hwloc.chroot mstflint.chroot lshw.chroot \
-		iozone3.chroot
+		iozone3.chroot telegraf.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -3976,6 +3977,13 @@ iozone3.chroot: glibc.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/iozone /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/fileop /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/pit_server /usr/bin/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+telegraf.chroot:
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(INSTALL) -m 0755 $(tgt_src_dir)/usr/bin/telegraf /usr/bin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
