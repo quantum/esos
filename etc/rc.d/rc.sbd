@@ -1,0 +1,34 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+SBD_CONF="/etc/sysconfig/sbd"
+SBD="/usr/sbin/sbd"
+SBD_LOCK="/var/lock/sbd"
+
+check_args ${@}
+
+# Load the sbd configuration file
+if [ -e "${SBD_CONF}" ]; then
+    source ${SBD_CONF}
+fi
+
+start() {
+    /bin/echo "Starting sbd..."
+    ${SBD} ${SBD_OPTS} -p /var/run/sbd.pid watch || exit 1
+    /bin/touch ${SBD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping sbd..."
+    /bin/kill -TERM $(/bin/pidof ${SBD}) || exit 1
+    wait_for_stop ${SBD} && /bin/rm -f ${SBD_LOCK}
+}
+
+status() {
+    /bin/pidof ${SBD} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}
