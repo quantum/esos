@@ -3996,7 +3996,7 @@ sbd.chroot: glibc.chroot glib.chroot libqb.chroot corosync.chroot \
 	  cd $(tgt_src_dir) && autoreconf -fiv; \
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
-	--localstatedir=/var
+	--localstatedir=/var --enable-shared-disk
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
