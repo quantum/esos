@@ -316,6 +316,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iozone3-487.tar.xz \
 		telegraf-1.9.5.tar.xz \
 		sbd-1.4.0.tar.gz \
+		screen-4.6.2.tar.gz \
+		lftp-4.8.4.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -396,7 +398,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot \
 		pcre.chroot nginx.chroot dosfstools.chroot lsof.chroot \
 		blktrace.chroot hwloc.chroot mstflint.chroot lshw.chroot \
-		iozone3.chroot telegraf.chroot sbd.chroot
+		iozone3.chroot telegraf.chroot sbd.chroot screen.chroot \
+		lftp.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -3997,6 +4000,29 @@ sbd.chroot: glibc.chroot glib.chroot libqb.chroot corosync.chroot \
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--localstatedir=/var --enable-shared-disk
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+screen.chroot: glibc.chroot ncurses.chroot Linux-PAM.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-pam \
+	--enable-telnet --enable-colors256 --enable-rxvt_osc \
+	--with-socket-dir=/run/screen --with-sys-screenrc=/etc/screenrc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(INSTALL) -m 0644 $(tgt_src_dir)/etc/etcscreenrc /etc/screenrc
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+lftp.chroot: glibc.chroot openssl.chroot readline.chroot ncurses.chroot \
+	zlib.chroot expat.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(SED) -i 's/ncurses;/ncursesw;/' $(tgt_src_dir)/configure
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-gnutls
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
