@@ -2287,6 +2287,11 @@ mdadm.chroot: glibc.chroot corosync.chroot dlm.chroot
 	$(call chroot_only)
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(MAKE) --directory=$(tgt_src_dir) clean
+	$(MAKE) --directory=$(tgt_src_dir) mdadm.static
+	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdadm.static \
+	$(chroot_build)/initramfs/sbin/mdadm
+	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) \
 	MAP_DIR="/var/run/mdadm" RUN_DIR="/var/run/mdadm" \
 	CWFLAGS="-Wall -Wstrict-prototypes -Wextra -Wno-unused-parameter"
