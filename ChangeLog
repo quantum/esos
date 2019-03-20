@@ -1,3 +1,27 @@
+2019-03-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	mdadm.chroot: build a static mdadm binary and install for the initramfs image; added the 'backup_conf.sh' script which archives the entire ESOS config from the "esos_conf" FS and writes an archive tarball to /tmp; first draft of the 'boot_raid1.sh' script that converts a running ESOS single boot drive system into a mirrored (MD RAID1) redundant boot drive -- more pieces are needed to complete this implementation
+
+2019-03-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.sbd: sleep for a second after starting the daemon, as it may exit (intentionally) and we need to detect this in rc/init scripts that follow
+
+2019-03-16  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the screen and lftp packages
+
+2019-03-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.corosync: don't attempt to start Corosync unless SBD is running (if enabled); rc.pacemaker: don't attempt to start Pacemaker unless Corosync is running (if enabled)
+
+2019-03-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated build options for sbd.chroot; fixes for the rc.sbd init script
+
+	added the sbd package and associated default config file + rc/init script; updated build instructions in the INSTALL document
+
 2019-03-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'for_2.1'

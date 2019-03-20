@@ -20,6 +20,12 @@ else
 fi
 
 start() {
+    if check_enabled "rc.sbd"; then
+        if ! /etc/rc.d/rc.sbd status; then
+            /bin/echo "SBD is not running, skipping Corosync start!"
+            exit 1
+        fi
+    fi
     /bin/echo "Starting corosync..."
     eval ${COROSYNC} ${USER_OPTS} || exit 1
     /bin/touch ${COROSYNC_LOCK}
