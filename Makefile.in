@@ -4178,6 +4178,10 @@ image:
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/iso_installer.sh \
 	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/boot_raid1.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/backup_conf.sh \
+	$(STAGING_DIR)/usr/local/sbin/
 	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
 	  $(INSTALL) $(SRC_DIR)/scripts/install_lic.sh \
 	  $(STAGING_DIR)/usr/local/sbin/; \

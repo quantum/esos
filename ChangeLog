@@ -1,3 +1,9 @@
+2019-03-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	include the boot_raid1.sh and backup_conf.sh scripts in the image; rc.0: stop the ESOS boot MD arrays (if any) during shutdown; rc.mdraid: don't stop the ESOS boot MD arrays (if any) since this is handled later in rc.0; initramfs_init: assemble any ESOS boot MD arrays before init
+
 2019-03-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'for_2.1'
