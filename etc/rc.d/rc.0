@@ -56,6 +56,14 @@ if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
     /usr/local/sbin/archive_logs.sh
 fi
 
+mdadm --detail --scan | while read -r row; do
+    md_path="$(echo ${row} | awk '{ print $2 }')"
+    md_name="$(echo ${row} | awk '{ print $4 }' | cut -d= -f2 | cut -d: -f2)"
+    if echo ${md_name} | egrep 'boot|root|conf|logs|' > /dev/null; then
+        mdadm --stop ${md_path}
+    fi
+done
+
 /bin/echo "Remounting root file system read-only..."
 /bin/mount -n -o remount,ro /
 
