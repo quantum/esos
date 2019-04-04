@@ -61,14 +61,19 @@ if [ ! ${addtl_dev_size} -ge ${esos_dev_size} ]; then
     exit 1
 fi
 
-# Get final approval from the user before continuing
-echo "Proceeding will destroy any data on the '${addtl_blk_dev}' device," \
-    "and if the operation does not complete successfully, this may ruin" \
-    "your running ESOS instance. Be sure you have a backup of the ESOS" \
-    "configuration. Are you sure (yes/no) that you want to continue?" && \
-    read confirm
-if ! [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
-    exit 0
+if [ -n "${NO_PROMPT}" ] && [ ${NO_PROMPT} -eq 1 ]; then
+    # Don't get confirmation, print a warning and continue
+    echo "NO_PROMPT=1 is set, continuing..."
+else
+    # Get final approval from the user before continuing
+    echo "Proceeding will destroy any data on the '${addtl_blk_dev}' device," \
+        "and if the operation does not complete successfully, this may ruin" \
+        "your running ESOS instance. Be sure you have a backup of the ESOS" \
+        "configuration. Are you sure (yes/no) that you want to continue?" && \
+        read confirm
+    if ! [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
+        exit 0
+    fi
 fi
 
 # Prevent conf_sync.sh from running

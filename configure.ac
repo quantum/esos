@@ -136,6 +136,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${initramfs_dir}/mnt/{root,tmp} || exit 1
 	${mkdir} -p ${initramfs_dir}/usr/{bin,sbin} || exit 1
 	${mkdir} -p ${initramfs_dir}/lib/firmware || exit 1
+	${mkdir} -p ${initramfs_dir}/run/mdadm || exit 1
 else
 	AC_MSG_ERROR([the image directory does not exist])
 fi
