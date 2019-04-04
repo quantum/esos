@@ -1,3 +1,9 @@
+2019-04-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	more updates/fixes for boot MD RAID1
+
 2019-03-31  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'for_2.1'
