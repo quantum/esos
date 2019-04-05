@@ -171,7 +171,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		srptools-1.0.3.tar.gz \
 		openssh-7.4p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
-		openssl-1.0.2k.tar.gz \
+		openssl-1.0.2r.tar.gz \
 		e2fsprogs-1.43.3.tar.gz \
 		zlib-1.2.8.tar.xz \
 		lsscsi-0.28.tar.gz \
