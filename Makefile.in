@@ -270,7 +270,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		json-c-0.12.1.tar.gz \
 		archivemount-0.8.7.tar.gz \
 		libarchive-3.2.2.tar.gz \
-		mcelog-master_20161017.tar.gz \
+		rasdaemon-0.6.2.tar.bz2 \
 		edac-utils-0.18.tar.gz \
 		sysfsutils-2.1.0.tar.gz \
 		sqlite-autoconf-3150000.tar.gz \
@@ -385,7 +385,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		acl.chroot htop.chroot dmidecode.chroot xmlrpc-c.chroot \
 		stunnel.chroot sudo.chroot rsync.chroot eudev.chroot \
 		gperf.chroot multipath-tools.chroot json-c.chroot \
-		archivemount.chroot libarchive.chroot mcelog.chroot \
+		archivemount.chroot libarchive.chroot rasdaemon.chroot \
 		edac-utils.chroot sysfsutils.chroot sqlite-autoconf.chroot \
 		iperf2.chroot iperf3.chroot libpcap.chroot iftop.chroot \
 		nmon.chroot munin-c.chroot open-iscsi.chroot open-isns.chroot \
@@ -3486,9 +3486,11 @@ libarchive.chroot: glibc.chroot bzip2.chroot lzo.chroot zlib.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-mcelog.chroot: glibc.chroot
+rasdaemon.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --localstatedir=/var \
+	--sysconfdir=/etc --enable-aer --enable-mce
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
