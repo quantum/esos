@@ -503,20 +503,17 @@ if ($ARGV[0] eq "start") {
 
     # Write the /etc/resolv.conf file if any name servers are set
     if (exists($ini_hash{"general:nameserver1"}) || exists($ini_hash{"general:nameserver2"}) || exists($ini_hash{"general:nameserver3"})) {
+        my $nameserver1 = "";
         if (exists($ini_hash{"general:nameserver1"})) {
-            my $nameserver1 = $ini_hash{"general:nameserver1"};
-        } else {
-            my $nameserver1 = "";
+            $nameserver1 = $ini_hash{"general:nameserver1"};
         }
+        my $nameserver2 = "";
         if (exists($ini_hash{"general:nameserver2"})) {
-            my $nameserver2 = $ini_hash{"general:nameserver2"};
-        } else {
-            my $nameserver2 = "";
+            $nameserver2 = $ini_hash{"general:nameserver2"};
         }
+        my $nameserver3 = "";
         if (exists($ini_hash{"general:nameserver3"})) {
-            my $nameserver3 = $ini_hash{"general:nameserver3"};
-        } else {
-            my $nameserver3 = "";
+            $nameserver3 = $ini_hash{"general:nameserver3"};
         }
         if ($nameserver1 ne "" || $nameserver2 ne "" || $nameserver3 ne "") {
             print("Updating resolver configuration file...\n");

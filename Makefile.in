@@ -1948,6 +1948,8 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install asn1crypto==0.24.0
 	pip3 install cryptography==2.4.2
 	pip3 install paramiko==2.4.2
+	pip3 install tzlocal==1.5.1
+	pip3 install tzdata==1.2016.8
 	$(RM) /.cache
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
