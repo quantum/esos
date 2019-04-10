@@ -171,7 +171,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		srptools-1.0.3.tar.gz \
 		openssh-7.4p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
-		openssl-1.0.2k.tar.gz \
+		openssl-1.0.2r.tar.gz \
 		e2fsprogs-1.43.3.tar.gz \
 		zlib-1.2.8.tar.xz \
 		lsscsi-0.28.tar.gz \
@@ -270,7 +270,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		json-c-0.12.1.tar.gz \
 		archivemount-0.8.7.tar.gz \
 		libarchive-3.2.2.tar.gz \
-		mcelog-master_20161017.tar.gz \
+		rasdaemon-0.6.2.tar.bz2 \
 		edac-utils-0.18.tar.gz \
 		sysfsutils-2.1.0.tar.gz \
 		sqlite-autoconf-3150000.tar.gz \
@@ -385,7 +385,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		acl.chroot htop.chroot dmidecode.chroot xmlrpc-c.chroot \
 		stunnel.chroot sudo.chroot rsync.chroot eudev.chroot \
 		gperf.chroot multipath-tools.chroot json-c.chroot \
-		archivemount.chroot libarchive.chroot mcelog.chroot \
+		archivemount.chroot libarchive.chroot rasdaemon.chroot \
 		edac-utils.chroot sysfsutils.chroot sqlite-autoconf.chroot \
 		iperf2.chroot iperf3.chroot libpcap.chroot iftop.chroot \
 		nmon.chroot munin-c.chroot open-iscsi.chroot open-isns.chroot \
@@ -1948,6 +1948,8 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install asn1crypto==0.24.0
 	pip3 install cryptography==2.4.2
 	pip3 install paramiko==2.4.2
+	pip3 install tzlocal==1.5.1
+	pip3 install tzdata==1.2016.8
 	$(RM) /.cache
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -3486,9 +3488,11 @@ libarchive.chroot: glibc.chroot bzip2.chroot lzo.chroot zlib.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-mcelog.chroot: glibc.chroot
+rasdaemon.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --localstatedir=/var \
+	--sysconfdir=/etc --enable-aer --enable-mce
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)

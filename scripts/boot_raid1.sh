@@ -189,6 +189,11 @@ e2label /dev/md/${MD_ROOT} esos_root || exit 1
 e2label /dev/md/${MD_CONF} esos_conf || exit 1
 e2label /dev/md/${MD_LOGS} esos_logs || exit 1
 
+# GRUB setup
+mount boot || exit 1
+grub-bios-setup --directory=/boot/grub/i386-pc ${addtl_blk_dev} || exit 1
+umount boot || exit 1
+
 # Done
 echo "We made it this far, so RAID1 boot conversion is likely successful!"
 

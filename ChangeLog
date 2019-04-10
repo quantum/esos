@@ -1,3 +1,21 @@
+2019-04-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	TUI: updated getBlockDevChoice() and getUsableBlockDevs() to permit selecting bcache block devices (resolves GitHub issue #208)
+
+	Python.chroot: include the 'tzlocal' and 'tzdata' packages; added the rc.rasdaemon script and updated associated conf files (defaults on start on boot); rc.network: fixes for recent tertiary nameserver update; rc.sysinit: mount debugfs at boot (needed for rasdaemon and useful for kernel debugging); boot_raid1.sh: install GRUB to new/additional boot device (needs testing); enable the CONFIG_HOTPLUG_PCI_PCIE kernel option (PCIe hotplug support)
+
+2019-04-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	replaced 'mcelog' with the rasdaemon package -- needs testing, and still needs an rc script to start/stop the daemon(s)
+
+	rc.network + TUI: updated to handle a third (tertiary) name server value in /etc/network.conf -- needs testing
+
+2019-04-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated OpenSSL to version 1.0.2r
+
 2019-04-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'for_2.1'

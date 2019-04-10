@@ -1,0 +1,41 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+RASDAEMON="/usr/sbin/rasdaemon"
+RASDAEMON_LOCK="/var/lock/rasdaemon"
+DFLT_OPTS=""
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting rasdaemon..."
+    eval ${RASDAEMON} ${USER_OPTS} || exit 1
+    /bin/touch ${RASDAEMON_LOCK}
+    /bin/sleep 1
+}
+
+stop() {
+    /bin/echo "Stopping rasdaemon..."
+    /bin/kill -TERM $(/bin/pidof ${RASDAEMON}) || exit 1
+    wait_for_stop ${RASDAEMON} && /bin/rm -f ${RASDAEMON_LOCK}
+}
+
+status() {
+    /bin/pidof ${RASDAEMON} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

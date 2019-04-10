@@ -9,6 +9,7 @@
 /bin/mkdir /dev/shm
 /bin/mount /dev/shm
 /bin/mount -t configfs none /sys/kernel/config
+/bin/mount -t debugfs nodev /sys/kernel/debug
 
 /sbin/bootlogd -c
 
