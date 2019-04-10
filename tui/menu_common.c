@@ -1207,6 +1207,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
             SAFE_ASPRINTF(&block_dev, "/dev/%s", blk_dev_name[blk_dev_choice]);
             if ((strstr(block_dev, "/dev/sd") != NULL) ||
                     (strstr(block_dev, "/dev/md") != NULL) ||
+                    (strstr(block_dev, "/dev/bcache") != NULL) ||
                     (strstr(block_dev, "/dev/zd") != NULL)) {
                 /* Get a unique symbolic link to the block device */
                 SAFE_ASPRINTF(&cmd_str,
