@@ -1,3 +1,7 @@
+2019-04-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	enable the CONFIG_HOTPLUG_PCI_PCIE kernel option (PCIe hotplug support)
+
 2019-03-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated the Microsemi Switchtec NTB kernel driver to the latest version
