@@ -30,7 +30,7 @@ stop() {
         md_name="$(echo ${row} | awk '{ print $4 }' | \
             cut -d= -f2 | cut -d: -f2)"
         # Only stop arrays that aren't the ESOS boot media
-        if ! echo ${md_name} | egrep 'boot|root|conf|logs|' > /dev/null; then
+        if ! echo ${md_name} | egrep 'boot|root|conf|logs' > /dev/null; then
             ${MDADM} --stop ${md_path} || exit 1
         fi
     done
