@@ -81,39 +81,43 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             echo "ERROR: We couldn't find the LABEL=esos_root file system!"
             exit 1
         fi
-        esos_blk_dev="$(echo ${esos_root} | \
-            sed -e '/\/dev\/sd/s/2//; /\/dev\/nvme/s/p2//')"
-        # Make sure the image disk label and the ESOS boot drive match
-        image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
-        disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
-        image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
-        bunzip2 -d -c ${image_file} | dd of=${image_mbr} bs=512 count=1 > \
-        /dev/null 2>&1 || exit 1
-        fdisk -u -l ${esos_blk_dev} | egrep "^${esos_blk_dev}" | \
-            sed -e 's/\*//' | awk '{ print $2 }' > ${disk_parts}
-        fdisk -u -l ${image_mbr} | egrep "^${image_mbr}" | sed -e 's/\*//' | \
-            awk '{ print $2 }' > ${image_parts}
-        if ! diff ${disk_parts} ${image_parts} > /dev/null 2>&1; then
-            echo "### The image file and current ESOS disk labels do not" \
-                "match! An in-place upgrade is not supported, continuing..."
-            echo
-            rm -f ${image_mbr} ${disk_parts} ${image_parts}
-            break
+        # We only support upgrading if using a MD RAID boot drive
+        if echo ${esos_root} | grep -q "/dev/md"; then
+            using_md=1
+        else
+            using_md=0
         fi
-        # Get confirmation for an upgrade
-        echo "### This installation script is running on a live ESOS host." \
-            "Okay to perform an in-place upgrade (yes/no)? Log file system" \
-            "data will persist and you will not be prompted to install" \
-            "propietary CLI tools. If you decline, a full installation will" \
-            "continue." && read confirm
-            echo
-        if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
-            echo "### Increasing the /tmp file system..."
-            mount -o remount,size=6G /tmp || exit 1
-            echo
-            echo "### Mounting the ESOS boot drive file systems..."
-            usb_esos_mnt="${TEMP_DIR}/old_esos"
-            mkdir -p ${usb_esos_mnt} || exit 1
+        if [ ${using_md} -eq 1 ]; then
+            # Set block device variables for below
+            esos_blk_root="$(findfs LABEL=esos_root)"
+            esos_blk_boot="$(findfs LABEL=ESOS_BOOT)"
+            # Get confirmation for an upgrade (only option for MD boot)
+            echo "### This installation script is running on a live ESOS" \
+                "host. We've detected ESOS is using a MD RAID boot drive." \
+                "Upgrading in-place is the only supported install option," \
+                "please type 'yes' to continue the upgrade. If you decline," \
+                "this installation script will exit." && read confirm
+                echo
+        else
+            # Make sure the image disk label and the ESOS boot drive match
+            esos_blk_dev="$(echo ${esos_root} | \
+                sed -e '/\/dev\/sd/s/2//; /\/dev\/nvme/s/p2//')"
+            image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
+            disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
+            image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
+            bunzip2 -d -c ${image_file} | dd of=${image_mbr} bs=512 count=1 > \
+                /dev/null 2>&1 || exit 1
+            fdisk -u -l ${esos_blk_dev} | egrep "^${esos_blk_dev}" | \
+                sed -e 's/\*//' | awk '{ print $2 }' > ${disk_parts}
+            fdisk -u -l ${image_mbr} | egrep "^${image_mbr}" | \
+                sed -e 's/\*//' | awk '{ print $2 }' > ${image_parts}
+            if ! diff ${disk_parts} ${image_parts} > /dev/null 2>&1; then
+                echo "### The image file and current ESOS disk labels do not" \
+                    "match! An in-place upgrade is not supported, continuing..."
+                echo
+                rm -f ${image_mbr} ${disk_parts} ${image_parts}
+                break
+            fi
             if echo ${esos_blk_dev} | grep -q "/dev/nvme"; then
                 # For NVMe drives
                 esos_blk_root="${esos_blk_dev}p2"
@@ -123,6 +127,21 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 esos_blk_root="${esos_blk_dev}2"
                 esos_blk_boot="${esos_blk_dev}1"
             fi
+            # Get confirmation for an upgrade
+            echo "### This installation script is running on a live ESOS" \
+                "host. Okay to perform an in-place upgrade (yes/no)? Log" \
+                "file system data will persist and you will not be" \
+                "prompted to install propietary CLI tools. If you decline," \
+                "a full installation will continue." && read confirm
+                echo
+        fi
+        if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
+            echo "### Increasing the /tmp file system..."
+            mount -o remount,size=6G /tmp || exit 1
+            echo
+            echo "### Mounting the ESOS boot drive file systems..."
+            usb_esos_mnt="${TEMP_DIR}/old_esos"
+            mkdir -p ${usb_esos_mnt} || exit 1
             mount ${esos_blk_root} ${usb_esos_mnt} || exit 1
             mount ${esos_blk_boot} ${usb_esos_mnt}/boot || exit 1
             echo
@@ -181,7 +200,11 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             echo "Secondary slot version: ${usb_ver}"
             exit 0
         else
-            break
+            if [ ${using_md} -eq 1 ]; then
+                exit 1
+            else
+                break
+            fi
         fi
     done
 fi

@@ -1939,7 +1939,8 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install mdstat==1.0.4
 	pip3 install py-dmidecode==0.0.2
 	pip3 install netifaces==0.10.9
-	pip3 install deepdiff==3.3.0
+	pip3 install ordered-set==3.1
+	pip3 install deepdiff==4.0.6
 	pip3 install pyasn1==0.4.5
 	pip3 install pycparser==2.19
 	pip3 install cffi==1.11.5
