@@ -1,3 +1,9 @@
+2019-04-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	updated QLogic firmware package (qlogic_fw) -- includes firmware images for 2600's and 2700's; updated modprobe.conf to use the ql2xfwloadbin=2 option (attempts to fetch firmware image via hotplug on load) for both QLogic modules
+
 2019-04-18  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'for_2.1'
