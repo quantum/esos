@@ -1,5 +1,9 @@
 2019-05-02  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'fix_tui_sync' into 2.x.x
+
+	the syncConfig() TUI dialog should use conf_sync.sh and not usb_sync.sh
+
 	Merge branch 'alua_ra_fix' into 2.x.x
 
 2019-04-18  Marc A. Smith  <marc.smith@quantum.com>
