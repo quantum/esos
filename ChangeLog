@@ -1,3 +1,7 @@
+2019-05-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'alua_ra_fix'
+
 2019-04-30  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'for_2.1'
@@ -10,7 +14,11 @@
 
 	updated deepdiff (Python) version to 4.0.6 and added ordered-set (dep for new deepdiff); rc.mdraid: fixed bug in stop()
 
+	ocf:esos:alua RA: updated lines that call the sg_* tools to use the 'timeout' command (from Busybox) so we can forcefully timeout these commands if they hang (in some cases the commands hang for a long time and a resource timeout occurs)
+
 2019-04-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	enable the CONFIG_HOTPLUG_PCI_PCIE kernel option (PCIe hotplug support)
 
 	install.sh: handle upgrading ESOS systems with a MD RAID boot drive
 
