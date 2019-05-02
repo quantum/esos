@@ -155,7 +155,7 @@ extern "C" {
 #define LVDISPLAY_BIN   "/usr/sbin/lvdisplay"
 #define UDEVADM_BIN     "/usr/sbin/udevadm"
 #define SCSTADMIN_TOOL  "/usr/sbin/scstadmin"
-#define SYNC_CONF_TOOL  "/usr/local/sbin/usb_sync.sh"
+#define SYNC_CONF_TOOL  "/usr/local/sbin/conf_sync.sh"
 #define MEGACLI_BIN     "/opt/sbin/MegaCli64"
 #define CHPASSWD_BIN    "/usr/sbin/chpasswd"
 #define ADDUSER_BIN     "/usr/sbin/adduser"
