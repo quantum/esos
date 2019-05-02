@@ -1,3 +1,11 @@
+2019-05-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'alua_ra_fix' into 2.x.x
+
+2019-04-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	ocf:esos:alua RA: updated lines that call the sg_* tools to use the 'timeout' command (from Busybox) so we can forcefully timeout these commands if they hang (in some cases the commands hang for a long time and a resource timeout occurs)
+
 2019-04-15  Marc A. Smith  <marc.smith@quantum.com>
 
 	enable the CONFIG_HOTPLUG_PCI_PCIE kernel option (PCIe hotplug support)
