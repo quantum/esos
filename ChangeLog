@@ -1,6 +1,20 @@
+2019-05-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	updated getNetConfChoice() in the TUI so the Ethernet interface name has some space between the field to it's right
+
+	an issue with stunnel was discovered where it continually consumes memory until the daemon exits -- issue is related to the resource cleanup with pthreads; we will work around this bug by using fork as the threading model in stunnel (instead of the default pthreads)
+
 2019-05-02  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'fix_tui_sync'
+
+	the syncConfig() TUI dialog should use conf_sync.sh and not usb_sync.sh
+
 	Merge branch 'alua_ra_fix'
+
+	Merge branch 'alua_ra_fix' into 2.x.x
 
 2019-04-30  Marc A. Smith  <marc.smith@quantum.com>
 
