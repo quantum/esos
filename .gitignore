@@ -55,3 +55,6 @@
 /automake
 /libtool
 /flex
+/Python
+/re-configure
+/goto-chroot

@@ -1,0 +1,67 @@
+diff -Naur resource-agents-4.2.0.orig/heartbeat/Raid1 resource-agents-4.2.0/heartbeat/Raid1
+--- resource-agents-4.2.0.orig/heartbeat/Raid1	2018-10-24 01:12:09.000000000 -0700
++++ resource-agents-4.2.0/heartbeat/Raid1	2019-05-01 10:58:13.399354818 -0700
+@@ -182,7 +182,7 @@
+ 
+ md_assemble() {
+ 	local mddev=$1
+-	$MDADM --assemble $mddev --config=$RAIDCONF $MDADM_HOMEHOST
++	ocf_run $MDADM --assemble $mddev --verbose --config=$RAIDCONF $MDADM_HOMEHOST
+ 	udev_settle --exit-if-exists=$mddev
+ }
+ #
+@@ -226,7 +226,7 @@
+ 	local mddev=$1
+ 	local rc
+ 	ocf_log info "Attempting to mark array $mddev readonly"
+-	$MDADM --readonly $mddev --config=$RAIDCONF
++	ocf_run $MDADM --readonly $mddev --config=$RAIDCONF
+ 	rc=$?
+ 	if [ $rc -ne 0 ]; then
+ 		ocf_exit_reason "Failed to set $mddev readonly (rc=$rc)"
+@@ -246,7 +246,7 @@
+ 	rm -f $tmp_block_file
+ 	ocf_log info "block device file $1 missing, creating one in order to stop the array"
+ 	mknod $tmp_block_file b 9 $n
+-	$MDADM --stop $tmp_block_file --config=$RAIDCONF
++	ocf_run $MDADM --stop $tmp_block_file --config=$RAIDCONF
+ 	rc=$?
+ 	rm -f $tmp_block_file
+ 	return $rc
+@@ -254,12 +254,12 @@
+ raid1_stop_one() {
+ 	ocf_log info "Stopping array $1"
+ 	if [ -b "$1" ]; then
+-		$MDADM --stop $1 --config=$RAIDCONF &&
++		ocf_run $MDADM --stop $1 --config=$RAIDCONF &&
+ 			return
+ 	else
+ 		# newer mdadm releases can stop arrays when given the
+ 		# basename; try that first
+-		$MDADM --stop `basename $1` --config=$RAIDCONF &&
++		ocf_run $MDADM --stop `basename $1` --config=$RAIDCONF &&
+ 			return
+ 		# otherwise create a block device file
+ 		mknod_raid1_stop $1
+@@ -375,7 +375,7 @@
+ 		return $OCF_NOT_RUNNING
+ 	fi
+ 	if [ $HAVE_RAIDTOOLS != "true" ]; then
+-		$MDADM --detail --test $mddev >/dev/null 2>&1 ; rc=$?
++		ocf_run $MDADM --detail --test $mddev >/dev/null 2>&1 ; rc=$?
+ 		case $rc in
+ 		0)	;;
+ 		1)	ocf_log warn "$mddev has at least one failed device."
+@@ -403,9 +403,9 @@
+ 	if [ "$__OCF_ACTION" = "monitor" -a "$OCF_RESKEY_CRM_meta_interval" != 0 \
+ 		-a $TRY_READD -eq 1 -a $OCF_CHECK_LEVEL -gt 0 ]; then
+ 		ocf_log info "Attempting recovery sequence to re-add devices on $mddev:"
+-		$MDADM $mddev --fail detached
+-		$MDADM $mddev --remove failed
+-		$MDADM $mddev --re-add missing
++		ocf_run $MDADM $mddev --fail detached
++		ocf_run $MDADM $mddev --remove failed
++		ocf_run $MDADM $mddev --re-add missing
+ 		# TODO: At this stage, there's nothing to actually do
+ 		# here. Either this worked or it did not.
+ 	fi
