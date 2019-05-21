@@ -1,3 +1,9 @@
+2019-05-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qla_nvme_fc_off' into 2.x.x
+
+	modprobe.conf: use 'ql2xnvmeenable=0' for the qla2xxx module to disable FC-NVMe as leaving this enabled causes FCP connectivity issues for some initiator-side adapters
+
 2019-05-02  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'fix_tui_sync' into 2.x.x
