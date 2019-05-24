@@ -318,6 +318,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		sbd-1.4.0.tar.gz \
 		screen-4.6.2.tar.gz \
 		lftp-4.8.4.tar.xz \
+		ndctl-65.tar.gz \
+		kmod-26.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -399,7 +401,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		pcre.chroot nginx.chroot dosfstools.chroot lsof.chroot \
 		blktrace.chroot hwloc.chroot mstflint.chroot lshw.chroot \
 		iozone3.chroot telegraf.chroot sbd.chroot screen.chroot \
-		lftp.chroot
+		lftp.chroot ndctl.chroot kmod.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -4035,6 +4037,32 @@ lftp.chroot: glibc.chroot openssl.chroot readline.chroot ncurses.chroot \
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-gnutls
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+ndctl.chroot: glibc.chroot eudev.chroot util-linux.chroot json-c.chroot \
+	keyutils.chroot kmod.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--without-bash --without-systemd --with-keyutils --disable-docs
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install-exec
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+kmod.chroot: glibc.chroot zlib.chroot openssl.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--without-xz --with-zlib --without-openssl
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install-exec
+	$(MAKE) --directory=$(tgt_src_dir) install-includeHEADERS
+	$(MAKE) --directory=$(tgt_src_dir) install-pkgconfigDATA
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
