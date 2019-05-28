@@ -171,13 +171,13 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		srptools-1.0.3.tar.gz \
 		openssh-7.4p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
-		openssl-1.0.2k.tar.gz \
+		openssl-1.0.2r.tar.gz \
 		e2fsprogs-1.43.3.tar.gz \
 		zlib-1.2.8.tar.xz \
 		lsscsi-0.28.tar.gz \
 		sg3_utils-1.44.tar.xz \
 		groff-1.22.3.tar.gz \
-		qlogic_fw-20140928.tar.gz \
+		qlogic_fw-20190427.tar.gz \
 		iniparser-3.2.tar.gz \
 		cdk-5.0-20161210.tar.gz \
 		scst-3.3.x_r7994.tar.xz \
@@ -261,7 +261,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		htop-2.0.2.tar.gz \
 		dmidecode-3.2.tar.xz \
 		xmlrpc-c-1.39.11.tar.gz \
-		stunnel-5.44.tar.gz \
+		stunnel-5.53.tar.gz \
 		sudo-1.8.18p1.tar.gz \
 		rsync-3.1.2.tar.gz \
 		eudev-master_20180525.tar.xz \
@@ -270,7 +270,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		json-c-0.12.1.tar.gz \
 		archivemount-0.8.7.tar.gz \
 		libarchive-3.2.2.tar.gz \
-		mcelog-master_20161017.tar.gz \
+		rasdaemon-0.6.2.tar.bz2 \
 		edac-utils-0.18.tar.gz \
 		sysfsutils-2.1.0.tar.gz \
 		sqlite-autoconf-3150000.tar.gz \
@@ -314,6 +314,12 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		switchtec-kernel_20190301.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
+		telegraf-1.9.5.tar.xz \
+		sbd-1.4.0.tar.gz \
+		screen-4.6.2.tar.gz \
+		lftp-4.8.4.tar.xz \
+		ndctl-65.tar.gz \
+		kmod-26.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -381,7 +387,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		acl.chroot htop.chroot dmidecode.chroot xmlrpc-c.chroot \
 		stunnel.chroot sudo.chroot rsync.chroot eudev.chroot \
 		gperf.chroot multipath-tools.chroot json-c.chroot \
-		archivemount.chroot libarchive.chroot mcelog.chroot \
+		archivemount.chroot libarchive.chroot rasdaemon.chroot \
 		edac-utils.chroot sysfsutils.chroot sqlite-autoconf.chroot \
 		iperf2.chroot iperf3.chroot libpcap.chroot iftop.chroot \
 		nmon.chroot munin-c.chroot open-iscsi.chroot open-isns.chroot \
@@ -394,7 +400,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot \
 		pcre.chroot nginx.chroot dosfstools.chroot lsof.chroot \
 		blktrace.chroot hwloc.chroot mstflint.chroot lshw.chroot \
-		iozone3.chroot
+		iozone3.chroot telegraf.chroot sbd.chroot screen.chroot \
+		lftp.chroot ndctl.chroot kmod.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -1934,7 +1941,8 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install mdstat==1.0.4
 	pip3 install py-dmidecode==0.0.2
 	pip3 install netifaces==0.10.9
-	pip3 install deepdiff==3.3.0
+	pip3 install ordered-set==3.1
+	pip3 install deepdiff==4.0.6
 	pip3 install pyasn1==0.4.5
 	pip3 install pycparser==2.19
 	pip3 install cffi==1.11.5
@@ -1943,6 +1951,8 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install asn1crypto==0.24.0
 	pip3 install cryptography==2.4.2
 	pip3 install paramiko==2.4.2
+	pip3 install tzlocal==1.5.1
+	pip3 install tzdata==1.2016.8
 	$(RM) /.cache
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -2282,6 +2292,11 @@ mdadm.chroot: glibc.chroot corosync.chroot dlm.chroot
 	$(call chroot_only)
 	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
 	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(MAKE) --directory=$(tgt_src_dir) clean
+	$(MAKE) --directory=$(tgt_src_dir) mdadm.static
+	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdadm.static \
+	$(chroot_build)/initramfs/sbin/mdadm
+	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) \
 	MAP_DIR="/var/run/mdadm" RUN_DIR="/var/run/mdadm" \
 	CWFLAGS="-Wall -Wstrict-prototypes -Wextra -Wno-unused-parameter"
@@ -3380,7 +3395,7 @@ stunnel.chroot: glibc.chroot openssl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
-	--with-ssl="/usr"
+	--with-ssl="/usr" --with-threads=fork
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/src install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/doc install-data
@@ -3476,9 +3491,11 @@ libarchive.chroot: glibc.chroot bzip2.chroot lzo.chroot zlib.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-mcelog.chroot: glibc.chroot
+rasdaemon.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --localstatedir=/var \
+	--sysconfdir=/etc --enable-aer --enable-mce
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -3979,6 +3996,76 @@ iozone3.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
+telegraf.chroot:
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(INSTALL) -m 0755 $(tgt_src_dir)/usr/bin/telegraf /usr/bin/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+sbd.chroot: glibc.chroot glib.chroot libqb.chroot corosync.chroot \
+	pacemaker.chroot libxml2.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && autoreconf -fiv; \
+	fi
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--localstatedir=/var --enable-shared-disk
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+screen.chroot: glibc.chroot ncurses.chroot Linux-PAM.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-pam \
+	--enable-telnet --enable-colors256 --enable-rxvt_osc \
+	--with-socket-dir=/run/screen --with-sys-screenrc=/etc/screenrc
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(INSTALL) -m 0644 $(tgt_src_dir)/etc/etcscreenrc /etc/screenrc
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+lftp.chroot: glibc.chroot openssl.chroot readline.chroot ncurses.chroot \
+	zlib.chroot expat.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(SED) -i 's/ncurses;/ncursesw;/' $(tgt_src_dir)/configure
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-gnutls
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+ndctl.chroot: glibc.chroot eudev.chroot util-linux.chroot json-c.chroot \
+	keyutils.chroot kmod.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--without-bash --without-systemd --with-keyutils --disable-docs
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install-exec
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+kmod.chroot: glibc.chroot zlib.chroot openssl.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
+	--without-xz --with-zlib --without-openssl
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install-exec
+	$(MAKE) --directory=$(tgt_src_dir) install-includeHEADERS
+	$(MAKE) --directory=$(tgt_src_dir) install-pkgconfigDATA
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot
@@ -4123,6 +4210,10 @@ image:
 	$(INSTALL) $(SRC_DIR)/scripts/raid_tools.py \
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/iso_installer.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/boot_raid1.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/backup_conf.sh \
 	$(STAGING_DIR)/usr/local/sbin/
 	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
 	  $(INSTALL) $(SRC_DIR)/scripts/install_lic.sh \

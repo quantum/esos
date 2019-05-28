@@ -25,7 +25,15 @@ start() {
 
 stop() {
     /bin/echo "Stopping MD RAID arrays..."
-    ${MDADM} --stop --scan || exit 1
+    ${MDADM} --detail --scan | while read -r row; do
+        md_path="$(echo ${row} | awk '{ print $2 }')"
+        md_name="$(echo ${row} | awk '{ print $4 }' | \
+            cut -d= -f2 | cut -d: -f2)"
+        # Only stop arrays that aren't the ESOS boot media
+        if ! echo ${md_name} | egrep 'boot|root|conf|logs' > /dev/null; then
+            ${MDADM} --stop ${md_path} || exit 1
+        fi
+    done
 }
 
 status() {

@@ -19,10 +19,8 @@ The following should work in most cases (adjust -jN flag to your liking):
 autoconf
 ./configure
 sudo make symlink
-make -j5 > /tmp/bootstrap.out 2>&1
-sudo make pre_chroot
-sudo ./chroot_build.sh -j5 > /tmp/chroot.out 2>&1
-sudo make post_chroot
+make -j5 -w -Orecurse > /tmp/bootstrap.out 2>&1
+sudo ./chroot_build.sh -j5 -w -Orecurse > /tmp/chroot.out 2>&1
 sudo rm /tools
 sudo make image
 

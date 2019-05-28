@@ -30,8 +30,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     CDKSCREEN *net_screen = 0;
     CDKLABEL *net_label = 0, *short_label = 0;
     CDKENTRY *host_name = 0, *domain_name = 0, *default_gw = 0,
-            *name_server_1 = 0, *name_server_2 = 0, *ip_addy = 0, *netmask = 0,
-            *broadcast = 0, *iface_mtu = 0;
+            *name_server_1 = 0, *name_server_2 = 0, *name_server_3 = 0,
+            *ip_addy = 0, *netmask = 0, *broadcast = 0, *iface_mtu = 0;
     CDKMENTRY *bond_opts = 0, *ethtool_opts = 0;
     CDKRADIO *ip_config = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
@@ -51,11 +51,11 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             *poten_br_members[MAX_NET_IFACE] = {NULL};
     char *conf_hostname = NULL, *conf_domainname = NULL, *conf_defaultgw = NULL,
             *conf_nameserver1 = NULL, *conf_nameserver2 = NULL,
-            *conf_bootproto = NULL, *conf_ipaddr = NULL, *conf_netmask = NULL,
-            *conf_broadcast = NULL, *error_msg = NULL, *conf_if_mtu = NULL,
-            *temp_pstr = NULL, *conf_slaves = NULL, *conf_brmembers = NULL,
-            *strtok_result = NULL, *conf_bondopts = NULL,
-            *conf_ethtoolopts = NULL;
+            *conf_nameserver3 = NULL, *conf_bootproto = NULL,
+            *conf_ipaddr = NULL, *conf_netmask = NULL, *conf_broadcast = NULL,
+            *error_msg = NULL, *conf_if_mtu = NULL, *temp_pstr = NULL,
+            *conf_slaves = NULL, *conf_brmembers = NULL, *strtok_result = NULL,
+            *conf_bondopts = NULL, *conf_ethtoolopts = NULL;
     char net_if_name[MISC_STRING_LEN] = {0}, net_if_mac[MISC_STRING_LEN] = {0},
             net_if_speed[MISC_STRING_LEN] = {0},
             net_if_duplex[MISC_STRING_LEN] = {0},
@@ -119,6 +119,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                     "general:nameserver1", "");
             conf_nameserver2 = iniparser_getstring(ini_dict,
                     "general:nameserver2", "");
+            conf_nameserver3 = iniparser_getstring(ini_dict,
+                    "general:nameserver3", "");
 
             /* Information label */
             net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
@@ -223,6 +225,22 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                     g_color_dialog_text[g_curr_theme]);
             setCDKEntryValue(name_server_2, conf_nameserver2);
 
+            /* Tertiary name server field */
+            name_server_3 = newCDKEntry(net_screen, (window_x + 1),
+                    (window_y + 12), NULL, "</B>NS 3: ",
+                    g_color_dialog_select[g_curr_theme],
+                    '_' | g_color_dialog_input[g_curr_theme], vMIXED,
+                    MAX_IPV4_ADDR_LEN, 0, MAX_IPV4_ADDR_LEN, FALSE, FALSE);
+            if (!name_server_3) {
+                errorDialog(main_cdk_screen, ENTRY_ERR_MSG, NULL);
+                break;
+            }
+            setCDKEntryBoxAttribute(name_server_3,
+                    g_color_dialog_input[g_curr_theme]);
+            setCDKEntryBackgroundAttrib(name_server_3,
+                    g_color_dialog_text[g_curr_theme]);
+            setCDKEntryValue(name_server_3, conf_nameserver3);
+
             /* Buttons */
             ok_button = newCDKButton(net_screen, (window_x + 26),
                     (window_y + 14), g_ok_cancel_msg[0], ok_cb, FALSE, FALSE);
@@ -292,6 +310,15 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                     }
                 }
 
+                /* Check the name server (3) value (field entry) */
+                if (strlen(getCDKEntryValue(name_server_3)) != 0) {
+                    if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
+                            getCDKEntryValue(name_server_3))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
+                }
+
                 /* Write to network config. file */
                 if (iniparser_set(ini_dict, "general", NULL) == -1) {
                     errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
@@ -319,6 +346,11 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 }
                 if (iniparser_set(ini_dict, "general:nameserver2",
                         getCDKEntryValue(name_server_2)) == -1) {
+                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
+                    break;
+                }
+                if (iniparser_set(ini_dict, "general:nameserver3",
+                        getCDKEntryValue(name_server_3)) == -1) {
                     errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
                     break;
                 }

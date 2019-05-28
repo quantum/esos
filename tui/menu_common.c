@@ -1207,6 +1207,7 @@ char *getBlockDevChoice(CDKSCREEN *cdk_screen) {
             SAFE_ASPRINTF(&block_dev, "/dev/%s", blk_dev_name[blk_dev_choice]);
             if ((strstr(block_dev, "/dev/sd") != NULL) ||
                     (strstr(block_dev, "/dev/md") != NULL) ||
+                    (strstr(block_dev, "/dev/bcache") != NULL) ||
                     (strstr(block_dev, "/dev/zd") != NULL)) {
                 /* Get a unique symbolic link to the block device */
                 SAFE_ASPRINTF(&cmd_str,
@@ -1894,7 +1895,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                 if (stat(temp_str, &bridge_test) == 0) {
                     net_if_bridge[j] = TRUE;
                     snprintf(temp_str, MISC_STRING_LEN, "Ethernet Bridge");
-                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-9s%-21s%-42s",
+                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-11s%-21s%-42s",
                             net_if_name[j], net_if_mac[j], temp_str);
                     /* We can continue to the next iteration if its a bridge */
                     j++;
@@ -1909,7 +1910,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                     net_if_bonding[j] = MASTER;
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
                             g_bonding_map[net_if_bonding[j]]);
-                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-9s%-21s%-42s",
+                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-11s%-21s%-42s",
                             net_if_name[j], net_if_mac[j], temp_str);
                     /* We can continue to the next iteration if its a master */
                     j++;
@@ -1958,7 +1959,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                 if (eth_speed == 0 || eth_speed == (__be32) (-1)) {
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
                             g_bonding_map[net_if_bonding[j]]);
-                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-9s%-21s%-16s%-26s",
+                    SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-11s%-21s%-16s%-26s",
                             net_if_name[j], net_if_mac[j],
                             temp_str, "No Link");
                 } else {
@@ -1981,7 +1982,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                     snprintf(temp_str, MISC_STRING_LEN, "Bonding: %s",
                             g_bonding_map[net_if_bonding[j]]);
                     SAFE_ASPRINTF(&net_scroll_msg[j],
-                            "<C>%-9s%-21s%-16s%-12s%-14s",
+                            "<C>%-11s%-21s%-16s%-12s%-14s",
                             net_if_name[j], net_if_mac[j],
                             temp_str, net_if_speed[j],
                             net_if_duplex[j]);
@@ -1998,7 +1999,7 @@ void getNetConfChoice(CDKSCREEN* cdk_screen, boolean *general_opt,
                         "%02X:%02X:%02X:%02X:%02X:%02X...",
                         mac_addy[0], mac_addy[1], mac_addy[2],
                         mac_addy[3], mac_addy[4], mac_addy[5]);
-                SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-9s%-21s%-42s",
+                SAFE_ASPRINTF(&net_scroll_msg[j], "<C>%-11s%-21s%-42s",
                             net_if_name[j], net_if_mac[j], "IPoIB");
                 j++;
             }

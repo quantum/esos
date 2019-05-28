@@ -20,6 +20,12 @@ else
 fi
 
 start() {
+    if check_enabled "rc.corosync"; then
+        if ! /etc/rc.d/rc.corosync status; then
+            /bin/echo "Corosync is not running, skipping Pacemaker start!"
+            exit 1
+        fi
+    fi
     /bin/echo "Starting pacemakerd..."
     /bin/sh -c "/usr/bin/nohup ${PACEMAKERD} ${USER_OPTS} &"
     /bin/touch ${PACEMAKERD_LOCK}
