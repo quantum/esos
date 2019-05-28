@@ -1,0 +1,40 @@
+diff -Naur cdk-5.0-20190303.orig/configure cdk-5.0-20190303/configure
+--- cdk-5.0-20190303.orig/configure	2019-02-14 02:16:11.000000000 -0800
++++ cdk-5.0-20190303/configure	2019-05-01 14:13:31.000722354 -0700
+@@ -6340,7 +6340,7 @@
+ echo "$as_me: error: Cannot find libtool" >&2;}
+    { (exit 1); exit 1; }; }
+ 	fi
+-	LIB_CREATE='${LIBTOOL} --mode=link ${CC} -rpath ${libdir} ${LIBTOOL_VERSION} `cut -f1 ${top_srcdir}/VERSION` ${LIBTOOL_OPTS} ${LT_UNDEF} $(LIBS) -o'
++	LIB_CREATE='${LIBTOOL} --mode=link ${CC} -rpath ${DESTDIR}${libdir} ${LIBTOOL_VERSION} `cut -f1 ${top_srcdir}/VERSION` ${LDFLAGS} ${LIBTOOL_OPTS} ${LT_UNDEF} $(LIBS) -o'
+ 	LIB_OBJECT='${OBJECTS:.o=.lo}'
+ 	LIB_SUFFIX=.la
+ 	LIB_CLEAN='${LIBTOOL} --mode=clean'
+diff -Naur cdk-5.0-20190303.orig/menu.c cdk-5.0-20190303/menu.c
+--- cdk-5.0-20190303.orig/menu.c	2016-11-20 10:56:05.000000000 -0800
++++ cdk-5.0-20190303/menu.c	2019-05-01 14:15:23.370716288 -0700
+@@ -61,8 +61,22 @@
+       /* *INDENT-EQLS* */
+       int x1   = (menuLocation[x] == LEFT) ? x : rightcount--;
+       int x2;
+-      int y1   = (menuPos == BOTTOM) ? (ymax - 1) : 0;
+-      int y2   = (menuPos == BOTTOM) ? (ymax - subsize[x] - 2) : TITLELINES;
++      int y1, y2;
++      if (menuPos == BOTTOM)
++      {
++         y1 = ymax - 1;
++         y2 = ymax - subsize[x] - 2;
++      }
++      else if (menuPos == TOP)
++      {
++         y1 = 0;
++         y2 = TITLELINES;
++      }
++      else
++      {
++         y1 = menuPos;
++         y2 = menuPos + TITLELINES;
++      }
+       int high = subsize[x] + TITLELINES;
+       int max  = -1;
+ 
