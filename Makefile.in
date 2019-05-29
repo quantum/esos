@@ -3471,7 +3471,8 @@ btrfs-progs.chroot: glibc.chroot util-linux.chroot attr.chroot zlib.chroot \
 attr.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -3479,7 +3480,7 @@ attr.chroot: glibc.chroot
 acl.chroot: glibc.chroot attr.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static --libexecdir=/usr/lib
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -3542,7 +3543,7 @@ sudo.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-rsync.chroot: glibc.chroot
+rsync.chroot: glibc.chroot attr.chroot acl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
@@ -3756,26 +3757,10 @@ open-isns.chroot: glibc.chroot openssl.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-gettext.chroot: glibc.chroot perl.chroot
+coreutils.chroot: glibc.chroot perl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(SED) -i '/^TESTS =/d' $(tgt_src_dir)/gettext-runtime/tests/Makefile.in
-	- $(SED) -i 's/test-lock..EXEEXT.//' $(tgt_src_dir)/gettext-tools/gnulib-tests/Makefile.in
-	- $(SED) -e '/AppData/{N;N;p;s/\.appdata\./.metainfo./}' \
-	  -i $(tgt_src_dir)/gettext-tools/its/appdata.loc
-	cd $(tgt_src_dir) && ./configure --prefix=/tools --disable-shared
-	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-coreutils.chroot: glibc.chroot perl.chroot gettext.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	$(SED) -i '/test.lock/s/^/#/' $(tgt_src_dir)/gnulib-tests/gnulib.mk
-	cd $(tgt_src_dir) && autoreconf -fiv \
-	  && FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr \
-	  -enable-no-install-program=kill,uptime
+	cd $(tgt_src_dir) && FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/df /bin/df
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/dd /bin/dd
