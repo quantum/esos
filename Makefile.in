@@ -1265,6 +1265,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	- $(PATCH) -r - -N -d $(linux_src) -p1 < \
+	$(SRC_DIR)/misc/$(notdir $(linux_src)).patch
 	$(MAKE) --directory=$(linux_src)/tools/perf
 	$(INSTALL) -m 0755 $(linux_src)/tools/perf/perf /usr/bin/perf
 	$(MAKE) --directory=$(linux_src)/tools/power/x86/\
