@@ -56,5 +56,5 @@
 /libtool
 /flex
 /Python
-/re-configure
-/goto-chroot
+/cmake
+
