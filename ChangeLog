@@ -1,3 +1,15 @@
+2019-05-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qla_patch' into 2.0.x
+
+	esos_kernels.chroot: apply Linux kernel patch using correct location
+
+2019-05-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qla_patch' into 2.0.x
+
+	introduced a patch for Linux 4.14.91 which resolves two issues with the QLogic FC target driver (qla2xxx)
+
 2019-05-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'qla_nvme_fc_off' into 2.x.x
