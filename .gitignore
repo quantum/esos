@@ -55,6 +55,9 @@
 /automake
 /libtool
 /flex
+/zlib
 /Python
 /cmake
+/ninja
+/meson
 

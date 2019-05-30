@@ -38,6 +38,8 @@ f6e931e319531b736fadc017f470e68a  pkg-config-0.29.2.tar.gz
 2882e3179748cc9f9c23ec593d6adc8d  flex-2.6.4.tar.gz
 51aac91bdf8be95ec0a62d174890821a  Python-3.6.8.tar.xz
 1495548397cbfef325a8d153a8720d72  cmake-3.14.4.tar.gz
+f340be768a76724b83e6daab69009902  ninja-1.9.0.tar.gz
+24a6527796115828d2ebc75880e18d62  meson-0.50.1.tar.gz
 d10dabb9f74830008244a5e356f837df  e2fsprogs-1.45.1.tar.xz
 bf050f002fe510e1daecd39044e1122d  openssh-8.0p1.tar.gz
 65b4e0df4934a6cd08c506cabcbe584f  ssmtp-2.64.tar.bz2
@@ -215,5 +217,3 @@ b75c43797e817529d486be640232d708  lftp-4.8.4.tar.xz
 794c442ed391f3d2c59c4c58edb83775  ndctl-65.tar.gz
 1129c243199bdd7db01b55a61aa19601  kmod-26.tar.xz
 2666d1488d6ced1551d15f31d7ed8c38  docbook-xsl-nons-1.79.2.tar.bz2
-24a6527796115828d2ebc75880e18d62  meson-0.50.1.tar.gz
-f340be768a76724b83e6daab69009902  ninja-1.9.0.tar.gz

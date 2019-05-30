@@ -155,6 +155,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		flex-2.6.4.tar.gz \
 		Python-3.6.8.tar.xz \
 		cmake-3.14.4.tar.gz \
+		ninja-1.9.0.tar.gz \
+		meson-0.50.1.tar.gz \
 		Linux-PAM-1.3.1.tar.xz \
 		busybox-1.30.1.tar.bz2 \
 		grub-2.02.tar.xz \
@@ -196,8 +198,6 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		glib-2.61.0.tar.xz \
 		libxml2-2.9.9.tar.gz \
 		libxslt-1.1.33.tar.gz \
-		ninja-1.9.0.tar.gz \
-		meson-0.50.1.tar.gz \
 		crmsh-3.0.4.tar.gz \
 		libaio-0.3.111.tar.xz \
 		glue-1.0.12.tar.bz2 \
@@ -353,7 +353,7 @@ bootstrap_tgts	:= binutils.pass1 gcc.pass1 gmp mpfr mpc kernel_headers \
 		dejagnu check ncurses bash bison bzip2 coreutils diffutils \
 		file findutils gawk gettext grep gzip m4 make patch perl \
 		sed tar texinfo util-linux xz pkg-config which autoconf \
-		automake libtool flex Python cmake
+		automake libtool flex zlib Python cmake ninja meson
 
 # All targets which are built/installed in the chroot environment
 chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
@@ -1201,7 +1201,17 @@ flex: make
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-Python: make
+zlib: make
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call no_chroot)
+	cd $(tgt_src_dir) && ./configure --prefix=/tools
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(MAKE) --directory=$(tgt_src_dir) distclean
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+Python: make zlib
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
 	if [ ! -f $(tgt_src_dir)/setup.py.orig ]; then \
@@ -1209,10 +1219,11 @@ Python: make
 	  $(SED) -i '/def add_multiarch_paths/a \        return' \
 	  $(tgt_src_dir)/setup.py; \
 	fi
-	cd $(tgt_src_dir) && ./configure --prefix=/tools --without-ensurepip
+	cd $(tgt_src_dir) && ./configure --prefix=/tools --with-ensurepip
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(MV) $(tgt_src_dir)/setup.py.orig $(tgt_src_dir)/setup.py
+	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1222,6 +1233,22 @@ cmake: make
 	cd $(tgt_src_dir) && ./bootstrap --prefix=/tools --no-system-libs
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+ninja: Python
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call no_chroot)
+	cd $(tgt_src_dir) && python3 configure.py --bootstrap
+	$(INSTALL) -m 0755 $(tgt_src_dir)/ninja /tools/bin/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+meson: Python
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call no_chroot)
+	cd $(tgt_src_dir) && python3 setup.py build
+	cd $(tgt_src_dir) && python3 setup.py install --root=/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2009,28 +2036,6 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-ninja.chroot: Python.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	$(SED) -i '/int Guess/a \
-	  int   j = 0;\
-		char* jobs = getenv( "NINJAJOBS" );\
-		if ( jobs != NULL ) j = atoi( jobs );\
-		if ( j > 0 ) return j;\
-	' $(tgt_src_dir)/src/ninja.cc
-	cd $(tgt_src_dir) && python3 configure.py --bootstrap
-	$(INSTALL) -m 0755 $(tgt_src_dir)/ninja /usr/bin/
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-meson.chroot: Python.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(tgt_src_dir) && python3 setup.py build && python3 setup.py install --root=dest
-	$(CP) -rv $(tgt_src_dir)/dest/* /
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
 qlogic_fw.chroot:
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -2521,12 +2526,14 @@ nss.chroot: glibc.chroot gcc.chroot sqlite-autoconf.chroot zlib.chroot
 	$(QUIET) $(ECHO) "### Done $(@)"
 
 glib.chroot: glibc.chroot zlib.chroot libffi.chroot util-linux.chroot \
-	elfutils.chroot Python.chroot meson.chroot ninja.chroot
+	elfutils.chroot Python.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(MKDIR) $(tgt_src_dir)/build
-	cd $(tgt_src_dir)/build && meson --prefix=/usr -Dselinux=disabled -Dinternal_pcre=true .. \
-	  && ninja && ninja install
+	cd $(tgt_src_dir)/build && \
+	meson --prefix=/usr -Dselinux=disabled -Dinternal_pcre=true ..
+	cd $(tgt_src_dir)/build && ninja
+	cd $(tgt_src_dir)/build && ninja install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
