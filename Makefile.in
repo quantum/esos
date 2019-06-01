@@ -528,6 +528,14 @@ define no_chroot
 	  exit 1; \
 	fi
 endef
+define apply_pkg_patch
+	$(QUIET) if [ ! -d $(tgt_src_dir)/$(notdir $(tgt_src_dir)).patch ]; \
+	  then \
+	  $(PATCH) -d $(tgt_src_dir) -b \
+	  -B $(tgt_src_dir)/$(notdir $(tgt_src_dir)).patch/ -p1 < \
+	  $(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch; \
+	fi
+endef
 
 # Set the PATH variable for default goal or specific targets
 ifeq ($(MAKECMDGOALS),)
@@ -1289,13 +1297,12 @@ glibc.chroot: gcc_inc_dir = /usr/lib/gcc/x86_64-pc-linux-gnu/$(gcc_ver)/include
 glibc.chroot: kernel_headers.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	$(LN) -v /tools/lib/gcc /usr/lib
 	$(LN) -v ../lib/ld-linux-x86-64.so.2 /lib64/ld-lsb-x86-64.so.3
 	$(RM) /usr/include/limits.h
 	$(RM) $(chroot_build)/glibc-build
 	$(MKDIR) $(chroot_build)/glibc-build
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	  $(chroot_build)/misc/glibc-2.29.patch
 	cd $(chroot_build)/glibc-build && \
 	CC="gcc -isystem $(gcc_inc_dir) -isystem /usr/include" \
 	$(tgt_src_dir)/configure --prefix=/usr --disable-werror \
@@ -1914,8 +1921,7 @@ elfutils.chroot: glibc.chroot zlib.chroot
 sysvinit.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(MAKE) --directory=$(tgt_src_dir)/src SULOGINLIBS=-lcrypt \
 	CFLAGS="-O2 -fomit-frame-pointer"
 	$(MAKE) --directory=$(tgt_src_dir)/src ROOT=/ install
@@ -1925,8 +1931,7 @@ sysvinit.chroot: glibc.chroot
 grub.chroot: glibc.chroot lvm2.chroot freetype.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	  $(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-grub-mkfont \
 	--enable-device-mapper --disable-efiemu --with-platform=pc \
 	--target=i386 --disable-werror
@@ -2085,8 +2090,7 @@ vixie-cron.chroot: glibc.chroot
 openssl.chroot: glibc.chroot gcc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./config shared zlib-dynamic \
 	--prefix=/usr --openssldir=/etc/ssl
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
@@ -2106,8 +2110,7 @@ zlib.chroot: glibc.chroot
 ncurses.chroot: glibc.chroot gcc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-shared \
 	--without-gpm --mandir=/usr/share/man --enable-widec
 	$(MAKE) --directory=$(tgt_src_dir)
@@ -2275,8 +2278,7 @@ sg3_utils.chroot: glibc.chroot
 groff.chroot: glibc.chroot gcc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir) CCC="g++ -std=c++98 \
 	-I$(wildcard /tools/include/c++/*) \
@@ -2310,8 +2312,7 @@ iniparser.chroot: glibc.chroot
 cdk.chroot: glibc.chroot ncurses.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-ncursesw \
 	--with-libtool --mandir=/usr/share/man --with-shared
 	$(MAKE) --directory=$(tgt_src_dir) LIBS="-lncursesw"
@@ -2356,8 +2357,7 @@ xfsprogs.chroot: glibc.chroot util-linux.chroot
 drbd-utils.chroot: glibc.chroot eudev.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(SED) -e '/install -d $$(DESTDIR)$$(INITDIR)/ s/^#*/#/' -i \
 	$(tgt_src_dir)/scripts/Makefile.in
 	$(SED) -e '/install -m 755 drbd $$(DESTDIR)$$(INITDIR)\// s/^#*/#/' -i \
@@ -2375,8 +2375,7 @@ drbd-utils.chroot: glibc.chroot eudev.chroot
 mdadm.chroot: glibc.chroot corosync.chroot dlm.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) mdadm.static \
 	CXFLAGS="-Wno-address-of-packed-member -Wno-absolute-value"
@@ -2496,8 +2495,7 @@ corosync.chroot: glibc.chroot libqb.chroot nss.chroot librdmacm.chroot \
 nss.chroot: glibc.chroot gcc.chroot sqlite-autoconf.chroot zlib.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(SED) -i 's#$$(LIBRARY) ##' $(tgt_src_dir)/nspr/config/rules.mk
 	cd $(tgt_src_dir)/nspr && ./configure --prefix=/usr --with-mozilla \
 	--with-pthreads --enable-64bit
@@ -2623,8 +2621,7 @@ readline.chroot: glibc.chroot
 resource-agents.chroot: glib.chroot glue.chroot docbook-xsl-nons.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
@@ -2686,8 +2683,7 @@ lessfs.chroot: glibc.chroot mhash.chroot openssl.chroot lzo.chroot fuse.chroot \
 	db.chroot tokyocabinet.chroot snappy.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && \
 	DEPS_LIBS="-ltokyocabinet -lfuse -lbz2 -lssl -lcrypto -lpthread" \
         ./configure --prefix=/usr --with-crypto --with-lzo --with-snappy \
@@ -2919,8 +2915,7 @@ ipmitool.chroot: glibc.chroot openssl.chroot ncurses.chroot readline.chroot \
 	libedit.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && \
 	LIBS="-lncursesw -lreadline -ledit" \
 	./configure --prefix=/usr --enable-intf-lan --enable-intf-lanplus
@@ -3060,8 +3055,7 @@ nrpe.chroot: glibc.chroot openssl.chroot e2fsprogs.chroot
 bcache-tools.chroot: glibc.chroot util-linux.chroot openssl.chroot eudev.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(MAKE) --directory=$(tgt_src_dir) \
 	LDLIBS="-lssl -lcrypto -ldl -lblkid -luuid" \
 	make-bcache probe-bcache bcache-register
@@ -3087,8 +3081,7 @@ bcache-tools.chroot: glibc.chroot util-linux.chroot openssl.chroot eudev.chroot
 EnhanceIO.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/CLI/eio_cli /usr/sbin/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/CLI/eio_cli.8 /usr/share/man/man8/
 	$(TOUCH) $(@)
@@ -3236,8 +3229,7 @@ tar.chroot: glibc.chroot acl.chroot
 net-snmp.chroot: glibc.chroot gcc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr \
 	--with-default-snmp-version="3" --with-sys-contact="@@no.where" \
 	--with-sys-location="Unknown" --with-logfile="/var/log/snmpd.log" \
@@ -3456,7 +3448,7 @@ btrfs-progs.chroot: glibc.chroot util-linux.chroot attr.chroot zlib.chroot \
 attr.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -3465,7 +3457,7 @@ attr.chroot: glibc.chroot
 acl.chroot: glibc.chroot attr.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -3763,8 +3755,7 @@ coreutils.chroot: glibc.chroot perl.chroot
 open-vm-tools.chroot: glibc.chroot gcc.chroot glib.chroot libdnet.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(SED) -i '/CFLAGS/s/-Werror//' $(tgt_src_dir)/configure
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-deploypkg \
 	--disable-grabbitmqproxy --disable-vgauth --without-root-privileges \
@@ -3987,8 +3978,7 @@ nfs-utils.chroot: glibc.chroot rpcbind.chroot libevent.chroot keyutils.chroot \
 rpcbind.chroot: glibc.chroot libtirpc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr \
 	--bindir=/sbin --sbindir=/sbin --with-rpcuser=root \
 	--enable-warmstarts --without-systemdsystemunitdir
@@ -4045,8 +4035,7 @@ hdparm.chroot: glibc.chroot
 kbd.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(SED) -i 's/\(RESIZECONS_PROGS=\)yes/\1no/g' $(tgt_src_dir)/configure
 	$(SED) -i 's/resizecons.8 //' $(tgt_src_dir)/docs/man/man8/Makefile.in
 	cd $(tgt_src_dir) && PKG_CONFIG_PATH=/tools/lib/pkgconfig \
@@ -4217,8 +4206,7 @@ docbook-xsl-nons.chroot: stylesheets = $(docbook)/xsl-stylesheets-nons-1.79.2
 docbook-xsl-nons.chroot: libxml2.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	- $(PATCH) -r - -N -d $(tgt_src_dir) -p1 < \
-	$(chroot_build)/misc/$(notdir $(tgt_src_dir)).patch
+	$(call apply_pkg_patch)
 	$(INSTALL) -v -m 0755 -d $(stylesheets)
 	cd $(tgt_src_dir) && $(CP) -v -R VERSION assembly common eclipse epub \
 	epub3 extensions fo highlighting html htmlhelp images javahelp lib \
@@ -4318,7 +4306,7 @@ image:
 	! -path "*.la" ! -path "./usr/share/doc*" ! -path "./boot*" \
 	! -path "./build*" ! -path "./sources*" ! -path "./tools*" \
 	! -path "./usr/lib/pkgconfig*" ! -path "./usr/lib/gcc" \
-	! -path "./usr/lib/cmake" ! -path "./bin/cat" ! -path "./bin/echo" \
+	! -path "./usr/lib/cmake*" ! -path "./bin/cat" ! -path "./bin/echo" \
 	! -path "./bin/ln" ! -path "./bin/pwd" ! -path "./bin/rm" \
 	! -path "./bin/stty" ! -path "./bin/sh" ! -path "./usr/bin/install" \
 	! -path "./usr/bin/env" ! -path "./etc/resolv.conf" | \
