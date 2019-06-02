@@ -1,3 +1,49 @@
+2019-06-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'lholowko-pkg-update-2019-05-17'
+
+	build fixes: patches for new versions of groff and rpcbind no longer needed, add patch for ncurses 6.1, fix patch format for openssl
+
+2019-06-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the 'apply_pkg_patch' command sequence to better handle applying package patches, and updated all package targets that use patches; specify --sysconfdir for attr.chroot and acl.chroot; updated image target to filter un-needed files
+
+	several updates to refine build process, more tweaks to come...
+
+2019-05-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	several updates to refine build process, more tweaks to come...
+
+2019-05-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	several updates to refine build process, more tweaks to come...
+
+2019-05-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	several updates to refine build process, more tweaks to come...
+
+	Merge branch 'pkg-update-2019-05-17' of https://github.com/lholowko/esos into lholowko-pkg-update-2019-05-17
+
+	Merge branch 'for_2.1' into 2.x.x
+
+2019-05-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	enabled kernel options for NVDIMM support; added the ndctl package (and kmod dep)
+
+2019-05-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qla_nvme_fc_off'
+
+	Merge branch 'qla_nvme_fc_off' into 2.x.x
+
+	modprobe.conf: use 'ql2xnvmeenable=0' for the qla2xxx module to disable FC-NVMe as leaving this enabled causes FCP connectivity issues for some initiator-side adapters
+
+2019-05-17  Lars Holowko  <lars.holowko@quantum.com>
+
+	update most package to current versions as of 2019-05-17
+
 2019-05-10  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'for_2.1'
@@ -10,9 +56,13 @@
 
 	Merge branch 'fix_tui_sync'
 
+	Merge branch 'fix_tui_sync' into 2.x.x
+
 	the syncConfig() TUI dialog should use conf_sync.sh and not usb_sync.sh
 
 	Merge branch 'alua_ra_fix'
+
+	Merge branch 'alua_ra_fix' into 2.x.x
 
 2019-04-30  Marc A. Smith  <marc.smith@quantum.com>
 

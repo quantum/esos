@@ -1,0 +1,24 @@
+diff -Naur net-snmp-5.8-orig/agent/mibgroup/target/snmpTargetAddrEntry_data.c net-snmp-5.8/agent/mibgroup/target/snmpTargetAddrEntry_data.c
+--- net-snmp-5.8-orig/agent/mibgroup/target/snmpTargetAddrEntry_data.c	2018-07-16 14:33:40.000000000 +0000
++++ net-snmp-5.8/agent/mibgroup/target/snmpTargetAddrEntry_data.c	2019-04-30 21:45:33.195282093 +0000
+@@ -25,6 +25,8 @@
+ #include "snmpTargetAddrEntry_data.h"
+ #include "util_funcs/header_generic.h"
+ 
++netsnmp_feature_require(container_compare_mem)
++
+ static struct targetAddrTable_struct *aAddrTable = NULL;
+ static int _active = 0;
+ 
+diff -Naur net-snmp-5.8-orig/agent/mibgroup/target/snmpTargetParamsEntry_data.c net-snmp-5.8/agent/mibgroup/target/snmpTargetParamsEntry_data.c
+--- net-snmp-5.8-orig/agent/mibgroup/target/snmpTargetParamsEntry_data.c	2018-07-16 14:33:40.000000000 +0000
++++ net-snmp-5.8/agent/mibgroup/target/snmpTargetParamsEntry_data.c	2019-04-30 21:46:03.787280441 +0000
+@@ -23,6 +23,8 @@
+ 
+ #include "snmpTargetParamsEntry_data.h"
+ 
++netsnmp_feature_require(container_compare_mem)
++
+ static struct targetParamTable_struct *aPTable = NULL;
+ static int _active = 0;
+ 

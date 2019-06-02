@@ -1,0 +1,31 @@
+diff -Naur open-vm-tools-10.3.10-12406962.orig/lib/include/guest_os.h open-vm-tools-10.3.10-12406962/lib/include/guest_os.h
+--- open-vm-tools-10.3.10-12406962.orig/lib/include/guest_os.h	2019-02-20 02:17:51.000000000 -0800
++++ open-vm-tools-10.3.10-12406962/lib/include/guest_os.h	2019-04-25 08:17:03.678182914 -0700
+@@ -249,6 +249,7 @@
+ #define STR_OS_DEBIAN_8            "debian8"
+ #define STR_OS_DEBIAN_9            "debian9"
+ #define STR_OS_DEBIAN_10           "debian10"
++#define STR_OS_ESOS                "ESOS"
+ #define STR_OS_FEDORA              "Fedora"
+ #define STR_OS_GENTOO              "Gentoo"
+ #define STR_OS_IMMUNIX             "Immunix"
+diff -Naur open-vm-tools-10.3.10-12406962.orig/lib/misc/hostinfoPosix.c open-vm-tools-10.3.10-12406962/lib/misc/hostinfoPosix.c
+--- open-vm-tools-10.3.10-12406962.orig/lib/misc/hostinfoPosix.c	2019-02-20 02:17:24.000000000 -0800
++++ open-vm-tools-10.3.10-12406962/lib/misc/hostinfoPosix.c	2019-04-25 08:19:32.084174904 -0700
+@@ -188,6 +188,7 @@
+    {"Conectiva",          "/etc/conectiva-release"},
+    {"Debian",             "/etc/debian_release"},
+    {"Debian",             "/etc/debian_version"},
++   {"ESOS",               "/etc/esos-release"},
+    {"Fedora Core",        "/etc/fedora-release"},
+    {"Gentoo",             "/etc/gentoo-release"},
+    {"Immunix",            "/etc/immunix-release"},
+@@ -835,6 +836,8 @@
+       } else {
+          Str_Strcpy(distroShort, STR_OS_ORACLE, distroShortSize);
+       }
++   } else if (strstr(distroLower, "esos")) {
++      Str_Strcpy(distroShort, STR_OS_ESOS, distroShortSize);
+    } else if (strstr(distroLower, "fedora")) {
+       Str_Strcpy(distroShort, STR_OS_FEDORA, distroShortSize);
+    } else if (strstr(distroLower, "gentoo")) {
