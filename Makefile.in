@@ -2278,7 +2278,6 @@ sg3_utils.chroot: glibc.chroot
 groff.chroot: glibc.chroot gcc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir) CCC="g++ -std=c++98 \
 	-I$(wildcard /tools/include/c++/*) \
@@ -3978,7 +3977,6 @@ nfs-utils.chroot: glibc.chroot rpcbind.chroot libevent.chroot keyutils.chroot \
 rpcbind.chroot: glibc.chroot libtirpc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr \
 	--bindir=/sbin --sbindir=/sbin --with-rpcuser=root \
 	--enable-warmstarts --without-systemdsystemunitdir
