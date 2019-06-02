@@ -12,13 +12,101 @@
 
 	Merge branch 'alua_ra_fix' into 2.x.x
 
+2019-04-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	updated QLogic firmware package (qlogic_fw) -- includes firmware images for 2600's and 2700's; updated modprobe.conf to use the ql2xfwloadbin=2 option (attempts to fetch firmware image via hotplug on load) for both QLogic modules
+
 2019-04-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	updated deepdiff (Python) version to 4.0.6 and added ordered-set (dep for new deepdiff); rc.mdraid: fixed bug in stop()
 
 	ocf:esos:alua RA: updated lines that call the sg_* tools to use the 'timeout' command (from Busybox) so we can forcefully timeout these commands if they hang (in some cases the commands hang for a long time and a resource timeout occurs)
 
 2019-04-15  Marc A. Smith  <marc.smith@quantum.com>
 
 	enable the CONFIG_HOTPLUG_PCI_PCIE kernel option (PCIe hotplug support)
+
+	install.sh: handle upgrading ESOS systems with a MD RAID boot drive
+
+2019-04-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	updated stunnel to version 5.53
+
+2019-04-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	TUI: updated getBlockDevChoice() and getUsableBlockDevs() to permit selecting bcache block devices (resolves GitHub issue #208)
+
+	Python.chroot: include the 'tzlocal' and 'tzdata' packages; added the rc.rasdaemon script and updated associated conf files (defaults on start on boot); rc.network: fixes for recent tertiary nameserver update; rc.sysinit: mount debugfs at boot (needed for rasdaemon and useful for kernel debugging); boot_raid1.sh: install GRUB to new/additional boot device (needs testing); enable the CONFIG_HOTPLUG_PCI_PCIE kernel option (PCIe hotplug support)
+
+2019-04-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	replaced 'mcelog' with the rasdaemon package -- needs testing, and still needs an rc script to start/stop the daemon(s)
+
+	rc.network + TUI: updated to handle a third (tertiary) name server value in /etc/network.conf -- needs testing
+
+2019-04-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated OpenSSL to version 1.0.2r
+
+2019-04-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	more updates/fixes for boot MD RAID1
+
+2019-03-31  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	initramfs_init: MD array name must be full value at this stage when assembling; enabled the CONFIG_BNXT Ethernet driver in kernel config
+
+2019-03-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	include the boot_raid1.sh and backup_conf.sh scripts in the image; rc.0: stop the ESOS boot MD arrays (if any) during shutdown; rc.mdraid: don't stop the ESOS boot MD arrays (if any) since this is handled later in rc.0; initramfs_init: assemble any ESOS boot MD arrays before init
+
+2019-03-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	mdadm.chroot: build a static mdadm binary and install for the initramfs image; added the 'backup_conf.sh' script which archives the entire ESOS config from the "esos_conf" FS and writes an archive tarball to /tmp; first draft of the 'boot_raid1.sh' script that converts a running ESOS single boot drive system into a mirrored (MD RAID1) redundant boot drive -- more pieces are needed to complete this implementation
+
+2019-03-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.sbd: sleep for a second after starting the daemon, as it may exit (intentionally) and we need to detect this in rc/init scripts that follow
+
+2019-03-16  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the screen and lftp packages
+
+2019-03-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.corosync: don't attempt to start Corosync unless SBD is running (if enabled); rc.pacemaker: don't attempt to start Pacemaker unless Corosync is running (if enabled)
+
+2019-03-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated build options for sbd.chroot; fixes for the rc.sbd init script
+
+	added the sbd package and associated default config file + rc/init script; updated build instructions in the INSTALL document
+
+2019-03-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	added the rc.watchdog init script to handle starting/stopping the watchdog daemon
+
+2019-03-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the telegraf package (pre-compiled Go binary), associated rc/init script (disabled by default), and default config file
 
 2019-03-01  Marc A. Smith  <marc.smith@quantum.com>
 
