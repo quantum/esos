@@ -5,7 +5,7 @@
  md_assemble() {
  	local mddev=$1
 -	$MDADM --assemble $mddev --config=$RAIDCONF $MDADM_HOMEHOST
-+	ocf_run $MDADM --assemble $mddev --verbose --config=$RAIDCONF $MDADM_HOMEHOST
++	ocf_run $MDADM --assemble --run $mddev --verbose --config=$RAIDCONF $MDADM_HOMEHOST
  	udev_settle --exit-if-exists=$mddev
  }
  #
