@@ -1,6 +1,20 @@
 2019-06-02  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'raid1_fix'
+
+	updated patch for the ocf:heartbeat:Raid1 RA
+
+	copied Linux kernel patch for new version
+
+	copied Linux kernel patch for new version
+
+	Merge branch 'qla_patch'
+
+	Merge branch 'qla_patch' into 2.x.x
+
 	Merge branch 'lholowko-pkg-update-2019-05-17'
+
+	Merge branch 'lholowko-pkg-update-2019-05-17' into 2.x.x
 
 	build fixes: patches for new versions of groff and rpcbind no longer needed, add patch for ncurses 6.1, fix patch format for openssl
 
@@ -16,9 +30,13 @@
 
 2019-05-29  Marc A. Smith  <marc.smith@quantum.com>
 
+	esos_kernels.chroot: apply Linux kernel patch using correct location
+
 	several updates to refine build process, more tweaks to come...
 
 2019-05-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	introduced a patch for Linux 4.14.91 which resolves two issues with the QLogic FC target driver (qla2xxx)
 
 	several updates to refine build process, more tweaks to come...
 
