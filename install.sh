@@ -14,8 +14,10 @@ SYNC_LOCK="/tmp/conf_sync_lock"
 # Always bail on any error
 set -e
 
-# Optional installation device target parameter
+# Optional installation block device path parameter
 install_dev="${1}"
+# Optional installation device transport type parameter
+install_tran="${2}"
 
 echo "*** Enterprise Storage OS Install Script ***" && echo
 
@@ -70,7 +72,8 @@ image_file="$(ls *.img.bz2)" || exit 1
 
 # Check if we're doing an upgrade
 if test -f "/etc/esos-release" && test -z "${install_dev}" && \
-    ! grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+    test -z "${install_tran}" && ! grep esos_iso /proc/cmdline > \
+    /dev/null 2>&1; then
     # Prevent conf_sync.sh from running
     touch ${SYNC_LOCK} || exit 1
     trap 'rm -f ${SYNC_LOCK}' 0
@@ -209,7 +212,7 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
     done
 fi
 
-if [ -z "${install_dev}" ]; then
+if [ -z "${install_dev}" ] && [ -z "${install_tran}" ]; then
     # Print out a list of disk devices
     echo "### Here is a list of disk devices on this machine:"
     if [ "${this_os}" = "${LINUX}" ]; then
@@ -222,7 +225,18 @@ if [ -z "${install_dev}" ]; then
 fi
 
 # Get desired install target device node and perform a few checks
-if [ -z "${install_dev}" ]; then
+if [ -n "${install_dev}" ]; then
+    dev_node="${install_dev}"
+    echo "### Using block device '${dev_node}' given via argument..."
+    echo
+elif [ -n "${install_tran}" ]; then
+    tran_dev=$(lsblk -o NAME,TYPE,TRAN | grep "${install_tran}\$" | \
+        head -1 | awk '{print $1}')
+    dev_node="/dev/${tran_dev}"
+    echo "### Using block device '${dev_node}' resolved via" \
+        "transport '${install_tran}' argument..."
+    echo
+else
     while : ; do
         echo "### Please type the full path of your destination device node" \
             "(eg, /dev/sdz):" && read dev_node
@@ -231,8 +245,6 @@ if [ -z "${install_dev}" ]; then
             break
         fi
     done
-else
-    dev_node="${install_dev}"
 fi
 if [ "x${dev_node}" = "x" ] || [ ! -e ${dev_node} ]; then
     echo "ERROR: That device node doesn't seem to exist."

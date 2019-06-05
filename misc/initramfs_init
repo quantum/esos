@@ -64,8 +64,9 @@ if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3500000 ]; then
 fi
 
 if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
-	# It's always the first CD-ROM device for the ESOS ISO
-	root_fs_dev="/dev/sr0"
+	# Resolve the CD-ROM device using the ESOS ISO name
+	root_fs_dev="$(findfs LABEL=ESOS-ISO)" || \
+	(echo "Error resolving the ESOS-ISO device!"; rescue_shell)
 else
 	# Assemble ESOS boot drive MD arrays here (if any)
 	mdadm --examine --brief --scan --config=partitions | \
