@@ -40,6 +40,7 @@ f6e931e319531b736fadc017f470e68a  pkg-config-0.29.2.tar.gz
 1495548397cbfef325a8d153a8720d72  cmake-3.14.4.tar.gz
 f340be768a76724b83e6daab69009902  ninja-1.9.0.tar.gz
 24a6527796115828d2ebc75880e18d62  meson-0.50.1.tar.gz
+7a07fe2796aa98631d50dc107e266368  setuptools-28.6.0.tar.gz
 d10dabb9f74830008244a5e356f837df  e2fsprogs-1.45.1.tar.xz
 bf050f002fe510e1daecd39044e1122d  openssh-8.0p1.tar.gz
 65b4e0df4934a6cd08c506cabcbe584f  ssmtp-2.64.tar.bz2
