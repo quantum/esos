@@ -157,6 +157,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		cmake-3.14.4.tar.gz \
 		ninja-1.9.0.tar.gz \
 		meson-0.50.1.tar.gz \
+		setuptools-28.6.0.tar.gz \
 		Linux-PAM-1.3.1.tar.xz \
 		busybox-1.30.1.tar.bz2 \
 		grub-2.02.tar.xz \
@@ -353,7 +354,7 @@ bootstrap_tgts	:= binutils.pass1 gcc.pass1 gmp mpfr mpc kernel_headers \
 		dejagnu check ncurses bash bison bzip2 coreutils diffutils \
 		file findutils gawk gettext grep gzip m4 make patch perl \
 		sed tar texinfo util-linux xz pkg-config which autoconf \
-		automake libtool flex zlib Python cmake ninja meson
+		automake libtool flex zlib Python cmake ninja meson setuptools
 
 # All targets which are built/installed in the chroot environment
 chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
@@ -1230,18 +1231,24 @@ Python: make zlib
 	  $(SED) -i '/def add_multiarch_paths/a \        return' \
 	  $(tgt_src_dir)/setup.py; \
 	fi
-	cd $(tgt_src_dir) && ./configure --prefix=/tools --with-ensurepip
+	cd $(tgt_src_dir) && ./configure --prefix=/tools --without-ensurepip \
+	--without-system-ffi
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(MV) $(tgt_src_dir)/setup.py.orig $(tgt_src_dir)/setup.py
-	$(MAKE) --directory=$(tgt_src_dir) distclean
+	- $(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
 cmake: make
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
-	cd $(tgt_src_dir) && ./bootstrap --prefix=/tools --no-system-libs
+	cd $(tgt_src_dir) && ./bootstrap --prefix=/tools --no-system-libs \
+	--verbose -- -DCMAKE_USE_OPENSSL:BOOL=OFF \
+	-DCURSES_INCLUDE_PATH:PATH=/tools/include \
+	-DGTK2_FONTCONFIG_INCLUDE_DIR:PATH=/tools/include \
+	-DGTK2_X11_INCLUDE_DIR:PATH=/tools/include \
+	-DQT_HEADERS_DIR:INTERNAL=/tools/include
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -1255,11 +1262,18 @@ ninja: Python
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-meson: Python
+meson: Python setuptools
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
 	cd $(tgt_src_dir) && python3 setup.py build
 	cd $(tgt_src_dir) && python3 setup.py install --root=/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+setuptools: Python
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call no_chroot)
+	cd $(tgt_src_dir) && python3 setup.py install --prefix=/tools
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

@@ -60,4 +60,5 @@
 /cmake
 /ninja
 /meson
+/setuptools
 

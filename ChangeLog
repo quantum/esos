@@ -1,6 +1,14 @@
+2019-06-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'build_fixes'
+
+	added the setuptools package for bootstrap stage (needed for meson package); build fixes for Python (pre-chroot); build fixes for cmake
+
 2019-06-02  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'raid1_fix'
+
+	Merge branch 'raid1_fix' into 2.x.x
 
 	updated patch for the ocf:heartbeat:Raid1 RA
 
