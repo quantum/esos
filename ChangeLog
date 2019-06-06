@@ -1,6 +1,20 @@
 2019-06-05  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'debug_pkg_updates'
+
+	updated the gdb, valgrind, and strace packages to the latest versions (thanks Lars)
+
+	Merge branch 'install_updates'
+
+	Merge branch 'install_updates' into 2.x.x
+
+	updated the ISO installer script to use the ESOS ISO name with findfs to resolve the CD-ROM device, and pass the installation transport type ISO option to the ESOS installation script
+
+	install.sh: updated installer script to handle accepting an optional second argument for specifying a device transport type... if given (and first argument is an empty string), we attempt to find the block device from the TRAN column of lsblk and use first device found; initramfs_init: for the ESOS ISO, use findfs to resolve the CD-ROM device (using ISO name)
+
 	Merge branch 'build_fixes'
+
+	Merge branch 'build_fixes' into 2.x.x
 
 	added the setuptools package for bootstrap stage (needed for meson package); build fixes for Python (pre-chroot); build fixes for cmake
 
