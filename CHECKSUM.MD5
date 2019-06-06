@@ -114,9 +114,9 @@ ae308cfb07fdb3b8fac52f3b50f9ecbb  sysstat-12.1.4.tar.xz
 b2d97e20db9b81b460ce1b9dad5bf54e  freeipmi-1.6.3.tar.gz
 fbfdaebbbc6d7e5fbbf6ffdb3e139573  libgcrypt-1.8.4.tar.bz2
 eff437f397e858a9127b76c0d87fa5ed  libgpg-error-1.36.tar.bz2
-bb45869f8126a84ea2ba13a8c0e7c90e  gdb-8.0.1.tar.gz
-6eb03c0c10ea917013a7622e483d61bb  valgrind-3.12.0.tar.bz2
-846a9a26e74e797f42d77a0348104072  strace-4.19.tar.xz
+bbd95b2f9b34621ad7a19a3965476314  gdb-8.3.tar.xz
+46e5fbdcbc3502a5976a317a0860a975  valgrind-3.15.0.tar.bz2
+8c7c4866beeecf3a964934cc6e5d49c9  strace-5.1.tar.xz
 b2a80e4789af23d67dfe1e88a997abbf  smartmontools-7.0.tar.gz
 d2d668223e795dcf750da44dc3e7076b  cryptsetup-1.7.5.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
