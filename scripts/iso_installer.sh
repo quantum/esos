@@ -20,14 +20,15 @@ cmdline() {
 
 {
     # Mount the CD-ROM
-    mount /dev/sr0 /mnt || bash
+    mount $(findfs LABEL=ESOS-ISO) /mnt || bash
 
-    # Grab the install device (if any)
+    # Grab the install device / install transport type (if any)
     install_dev="$(cmdline install_dev)"
+    install_tran="$(cmdline install_tran)"
 
     # Change to the mounted CD-ROM directory and run the installer
     cd /mnt
-    ./install.sh ${install_dev} || bash
+    ./install.sh "${install_dev}" "${install_tran}" || bash
 
     # Handle after-install customizations
     if [ -f "./extra_install.sh" ]; then
