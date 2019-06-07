@@ -1,3 +1,11 @@
+2019-06-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'switchtec_update' into 2.0.x
+
+2019-06-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	don't install and don't attempt to load the ntb_hw_switchtec kernel module (buggy, causes stability issues)
+
 2019-06-02  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'raid1_fix' into 2.0.x

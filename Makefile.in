@@ -1580,8 +1580,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(ECHO) "### Compiling Microsemi's Switchtec NTB driver..."; \
 	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i modules; \
-	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i install; \
+	  $(INSTALL) -D -m 0644 $(switchtec_src)/cls.ko \
+	  /lib/modules/$(kernel_ver)$$i/extra/cls.ko; \
 	done
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
