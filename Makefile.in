@@ -315,7 +315,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		blktrace-master_20181015.tar.xz \
 		hwloc-2.0.3.tar.bz2 \
 		mstflint-4.11.0-3.tar.xz \
-		switchtec-kernel_20190301.tar.xz \
+		cls_switchtec-4.0.0.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
 		telegraf-1.9.5.tar.xz \
@@ -1366,7 +1366,10 @@ esos_kernels.chroot: eio_src = $(wildcard /sources/EnhanceIO-*)
 esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
 esos_kernels.chroot: spl_src = $(wildcard /sources/spl-*)
 esos_kernels.chroot: zfs_src = $(wildcard /sources/zfs-*)
-esos_kernels.chroot: switchtec_src = $(wildcard /sources/switchtec-*)
+esos_kernels.chroot: switchtec_src = $(wildcard /sources/cls_switchtec-*)
+esos_kernels.chroot: cls_base = $(switchtec_src)/Driver/Switchtec
+esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.13_to_4.14
+esos_kernels.chroot: cls_switchtec = $(cls_base)/$(switchtec_kern)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
@@ -1452,7 +1455,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	      $(MAKE) --directory=$(zfs_src) distclean; \
 	    fi; \
 	  fi; \
-	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \
+	  $(MAKE) --directory=$(cls_switchtec) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i clean; \
 	  if [ "$$i" = "$(prod_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(prod_suffix)\"/' \
@@ -1687,11 +1690,18 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(zfs_src)/module modules; \
 	    $(MAKE) --directory=$(zfs_src)/module modules_install; \
 	  fi; \
-	  $(ECHO) "### Compiling Microsemi's Switchtec NTB driver..."; \
-	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i modules; \
-	  $(MAKE) --directory=$(switchtec_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i install; \
+	  $(ECHO) "### Compiling the Celestica Switchtec NTB driver..."; \
+	  $(CP) -f $(switchtec_src)/Driver/Switchtec/switchtec_sg.c \
+	  $(cls_switchtec)/; \
+	  $(CP) -f $(switchtec_src)/Driver/Switchtec/switchtec_sg.h \
+	  $(cls_switchtec)/; \
+	  $(CHMOD) +x $(cls_switchtec)/VERSION-GEN; \
+	  $(MAKE) --directory=$(cls_switchtec) MODULE_NAME=cls_switchtec \
+	  KDIR=$(linux_src) KVER=$(kernel_ver)$$i; \
+	  $(INSTALL) -m 0644 $(cls_switchtec)/cls_switchtec.ko \
+	  /lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
+	  $(INSTALL) -m 0644 $(cls_switchtec)/ntb_hw_switchtec.ko \
+	  /lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
 	done
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
