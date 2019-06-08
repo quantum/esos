@@ -284,7 +284,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iftop-1.0pre4.tar.gz \
 		nmon-16j.tar.xz \
 		munin-c-0.0.13.tar.xz \
-		open-iscsi-2.0.875.tar.gz \
+		open-iscsi-2.0.876.tar.gz \
 		open-isns-0.99.tar.gz \
 		open-vm-tools-10.3.10-12406962.tar.gz \
 		libdnet-1.11.tar.gz \
@@ -708,6 +708,8 @@ bootstrap: symlink $(bootstrap_tgts)
 	export TERM=$$TERM\nexport PS1='\u:\w\$$ '\n\
 	export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin\n\
 	export LC_ALL=C\n\
+	export CFLAGS=\"-Os\"\n\
+	export CXXFLAGS=\"-Os\"\n\
 	/tools/bin/make \$$@ -C /build build" > \
 	$(chroot_build)/build_all.sh
 	$(CHMOD) +x $(chroot_build)/build_all.sh
@@ -1389,7 +1391,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	$(SED) -i 's/\/bin\/true/true/' \
 	$(linux_src)/tools/power/cpupower/Makefile
 	$(MAKE) --directory=$(linux_src)/tools/power/cpupower
-	$(MAKE) --directory=$(linux_src)/tools/power/cpupower install
+	$(MAKE) --directory=$(linux_src)/tools/power/cpupower \
+	mandir=/usr/share/man install
 	$(QUIET) set -e; for i in $(prod_suffix) $(debug_suffix); do \
 	  $(ECHO) "### Cleaning source directories..."; \
 	  $(MAKE) --directory=$(linux_src) clean; \
@@ -3728,25 +3731,11 @@ munin-c.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-open-iscsi.chroot: glibc.chroot open-isns.chroot util-linux.chroot
+open-iscsi.chroot: glibc.chroot open-isns.chroot util-linux.chroot kmod.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(QUIET) if ! $(GREP) -q '#include <sys/sysmacros.h' \
-	  $(tgt_src_dir)/iscsiuio/src/unix/libs/bnx2.c; then \
-	  $(SED) -i '/^#include <unistd.h>/a #include <sys/sysmacros.h>' \
-	  $(tgt_src_dir)/iscsiuio/src/unix/libs/bnx2.c; \
-	fi
-	$(QUIET) if ! $(GREP) -q '#include <sys/sysmacros.h' \
-	  $(tgt_src_dir)/iscsiuio/src/unix/libs/bnx2x.c; then \
-	  $(SED) -i '/^#include <unistd.h>/a #include <sys/sysmacros.h>' \
-	  $(tgt_src_dir)/iscsiuio/src/unix/libs/bnx2x.c; \
-	fi
-	$(QUIET) if ! $(GREP) -q '#include <sys/sysmacros.h' \
-	  $(tgt_src_dir)/iscsiuio/src/unix/libs/qedi.c; then \
-	  $(SED) -i '/^#include <unistd.h>/a #include <sys/sysmacros.h>' \
-	  $(tgt_src_dir)/iscsiuio/src/unix/libs/qedi.c; \
-	fi
-	$(MAKE) --directory=$(tgt_src_dir) user
+	$(MAKE) --directory=$(tgt_src_dir) LIBADD="-lkmod" \
+	OPTFLAGS="-Os -Wno-format-truncation" user
 	$(MAKE) --directory=$(tgt_src_dir) install_programs
 	$(MAKE) --directory=$(tgt_src_dir) install_doc
 	$(MAKE) --directory=$(tgt_src_dir) install_etc
@@ -4118,7 +4107,8 @@ blktrace.chroot: glibc.chroot Python.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) prefix=/usr install
+	$(MAKE) --directory=$(tgt_src_dir) \
+	prefix=/usr mandir=/usr/share/man install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
