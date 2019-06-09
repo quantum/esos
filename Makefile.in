@@ -2049,11 +2049,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install py-dateutil==2.2
 	pip3 install PyYAML==3.13
 	pip3 install pytz==2018.5
-	pip3 install Django==2.0.5
 	pip3 install python-pam==1.8.4
-	pip3 install django-pam==1.4.1
-	pip3 install django-widget-tweaks==1.4.2
-	pip3 install django-session-timeout==0.0.3
 	LDFLAGS=-fno-lto pip3 install uWSGI==2.0.17.1
 	pip3 install pySMART.smartx==0.3.9
 	pip3 install mdstat==1.0.4
