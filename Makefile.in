@@ -72,8 +72,6 @@ enable_tui_usage	:= @enable_tui_usage@
 enable_login_tui	:= @enable_login_tui@
 enable_debug_kernel	:= @enable_debug_kernel@
 enable_commercial	:= @enable_commercial@
-with_web_ui		:= @with_web_ui@
-web_ui_dir		:= $(subst $(CHROOT_DIR),,@web_ui_dir@)
 with_rpc_agent		:= @with_rpc_agent@
 rpc_agent_dir		:= $(subst $(CHROOT_DIR),,@rpc_agent_dir@)
 ssl_dh_key_size		:= @ssl_dh_key_size@
@@ -460,9 +458,6 @@ ifeq ($(enable_tui_usage),yes)
 endif
 ifeq ($(enable_commercial),yes)
 	tui_cpp_flags += -DCOMMERCIAL
-endif
-ifeq ($(with_web_ui),yes)
-	chroot_tgts += web_ui.chroot
 endif
 ifeq ($(with_rpc_agent),yes)
 	chroot_tgts += rpc_agent.chroot
@@ -1805,25 +1800,6 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/cmd install
 	$(MAKE) --directory=$(tgt_src_dir)/man install
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-web_ui.chroot: Python.chroot nginx.chroot sudo.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	$(CP) -f $(web_ui_dir)/nginx.conf /etc/nginx/nginx.conf
-	$(INSTALL) -D -m 0755 $(web_ui_dir)/manage.py \
-	/opt/lib/web_ui/manage.py
-	$(INSTALL) -D -m 0755 $(web_ui_dir)/uwsgi_params \
-	/opt/lib/web_ui/uwsgi_params
-	$(CP) -R $(web_ui_dir)/esos /opt/lib/web_ui/
-	$(CP) -R $(web_ui_dir)/web_ui /opt/lib/web_ui/
-	$(CP) -R $(web_ui_dir)/static /opt/lib/web_ui/
-	$(CP) -R $(web_ui_dir)/templates /opt/lib/web_ui/
-	$(INSTALL) -D -m 0644 $(web_ui_dir)/uwsgi.ini /etc/web_ui/uwsgi.ini
-	$(ECHO) "webui ALL=(root) NOPASSWD: /etc/rc.d/rc.rpcagent,\
-	/usr/local/sbin/install_lic.sh,/usr/local/sbin/read_cert.sh" \
-	> /etc/sudoers.d/webui
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4439,13 +4415,6 @@ image:
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtltape; \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtllibrary; \
 	fi
-	$(QUIET) if [ "$(with_web_ui)" = "yes" ]; then \
-	  $(CHOWN) -R 104:104 $(STAGING_DIR)/opt/lib/web_ui; \
-	  $(SED) -i 's/^rc\.nginx_enable=.*/rc\.nginx_enable=YES/' \
-	  $(STAGING_DIR)/etc/rc.conf; \
-	  $(SED) -i 's/^rc\.webui_enable=.*/rc\.webui_enable=YES/' \
-	  $(STAGING_DIR)/etc/rc.conf; \
-	fi
 	$(QUIET) if [ "$(with_rpc_agent)" = "yes" ]; then \
 	  $(SED) -i 's/^rc\.stunnel_enable=.*/rc\.stunnel_enable=YES/' \
 	  $(STAGING_DIR)/etc/rc.conf; \
@@ -4467,7 +4436,6 @@ image:
 	$(CHOWN) 65534:65534 $(STAGING_DIR)/var/run/stunnel
 	$(CHOWN) 0:65534 $(STAGING_DIR)/var/lib/stunnel
 	$(CHMOD) 1770 $(STAGING_DIR)/var/lib/stunnel
-	$(CHOWN) 104:104 $(STAGING_DIR)/var/run/web_ui
 	$(LN) rc.0 $(STAGING_DIR)/etc/rc.d/rc.6
 	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.5
 	$(LN) rc.2 $(STAGING_DIR)/etc/rc.d/rc.4
