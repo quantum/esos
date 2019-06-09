@@ -62,6 +62,7 @@ enable_valgrind		:= @enable_valgrind@
 enable_strace		:= @enable_strace@
 enable_qla		:= @enable_qla@
 enable_zfs		:= @enable_zfs@
+enable_lessfs		:= @enable_lessfs@
 enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
@@ -203,12 +204,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		readline-8.0.tar.gz \
 		resource-agents-4.2.0.tar.gz \
 		lzo-2.10.tar.gz \
-		mhash-0.9.9.9.tar.bz2 \
-		lessfs-1.7.0.tar.gz \
-		tokyocabinet-1.4.48.tar.gz \
 		fuse-2.9.7.tar.gz \
 		db-5.3.28.tar.gz \
-		snappy-1.1.7.tar.gz \
 		fence-agents-4.3.3.tar.gz \
 		opensm-3.3.20.tar.gz \
 		curl-7.64.1.tar.xz \
@@ -371,8 +368,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		libqb.chroot pacemaker.chroot corosync.chroot nss.chroot \
 		glib.chroot libxml2.chroot libxslt.chroot bzip2.chroot \
 		crmsh.chroot libaio.chroot glue.chroot readline.chroot \
-		resource-agents.chroot lzo.chroot mhash.chroot lessfs.chroot \
-		tokyocabinet.chroot fuse.chroot db.chroot snappy.chroot \
+		resource-agents.chroot lzo.chroot fuse.chroot db.chroot \
 		fence-agents.chroot curl.chroot Net-Telnet.chroot fio.chroot \
 		open-fcoe.chroot open-lldp.chroot libconfig.chroot \
 		libnl.chroot libpciaccess.chroot linux_firmware.chroot \
@@ -431,6 +427,16 @@ ifeq ($(enable_zfs),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.7.4.tar.gz)
 	chroot_tgts += spl.chroot
 	chroot_tgts += zfs.chroot
+endif
+ifeq ($(enable_lessfs),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,lessfs-1.7.0.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,tokyocabinet-1.4.48.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,snappy-1.1.7.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,mhash-0.9.9.9.tar.bz2)
+	chroot_tgts += lessfs.chroot
+	chroot_tgts += tokyocabinet.chroot
+	chroot_tgts += snappy.chroot
+	chroot_tgts += mhash.chroot
 endif
 ifeq ($(enable_mhvtl),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\

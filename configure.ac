@@ -203,6 +203,17 @@ AS_IF([test "x$enable_zfs" = "xyes"],
 AC_SUBST(enable_zfs, ${enable_zfs})
 AC_MSG_NOTICE([zfs: ${enable_zfs}])
 
+dnl Optional feature lessfs
+AC_ARG_ENABLE(lessfs,
+	AS_HELP_STRING([--enable-lessfs], [build and include Lessfs]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_lessfs="${enableval}"], [enable_lessfs="no"]),
+	enable_lessfs="no")
+AS_IF([test "x$enable_lessfs" = "xyes"],
+	[build_opts="${build_opts} lessfs"; opt_suffix="${opt_suffix}l"])
+AC_SUBST(enable_lessfs, ${enable_lessfs})
+AC_MSG_NOTICE([lessfs: ${enable_lessfs}])
+
 dnl Optional feature mhvtl
 AC_ARG_ENABLE(mhvtl,
 	AS_HELP_STRING([--enable-mhvtl], [build and include mhVTL (broken)]),
