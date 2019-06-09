@@ -1,3 +1,9 @@
+2019-06-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_deepdiff' into 2.0.x
+
+	use the deepdiff 4.0.6 version (ordered-set 3.1 is a requirement)
+
 2019-06-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'switchtec_update' into 2.0.x
