@@ -1,6 +1,44 @@
+2019-06-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'addtl_tweaks'
+
+	Python SQL support (psycopg2, mysqlclient, SQLAlchemy, and all required libraries) is now a build-time option (disabled by default)
+
+	removed perf-agent (deprecated) and associated scripts / config files
+
+2019-06-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated to make nginx a build-time option to enable (along with the pcre dependency) which is disabled by default
+
+	updated to make lessfs (now deprecated) a build-time option to enable (along with required dependencies) which is disabled by default
+
+	removed ESOS Web UI bits
+
+	Makefile.in: don't install Django and related plugins
+
+2019-06-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated open-iscsi package; set CFLAGS and CXXFLAGS in the build_all.sh script (chroot); fixed man page installation path for a couple packages
+
+2019-06-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'minor_tweaks'
+
+	Merge branch 'minor_tweaks' into 2.x.x
+
+	Makefile.in: adjusted the esos_ver variable to use rel_name if a Git tag was found, otherwise use dev_name; grub.cfg: use search to set 'root' using the ESOS_BOOT file system label
+
+	Merge branch 'switchtec_update'
+
+	Merge branch 'switchtec_update' into 2.x.x
+
+	updated the switchtec-kernel package to the new Celestica Switchtec driver (4.0.0)
+
 2019-06-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'debug_pkg_updates'
+
+	Merge branch 'debug_pkg_updates' into 2.x.x
 
 	updated the gdb, valgrind, and strace packages to the latest versions (thanks Lars)
 
