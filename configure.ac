@@ -122,7 +122,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${chroot_dir}/var/lib/corosync || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/pacemaker/{cores,pengine,cib,blackbox} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/pacemaker/cores/{root,hacluster} || exit 1
-	${mkdir} -p ${chroot_dir}/var/run/{crm,mdadm,stunnel,web_ui} || exit 1
+	${mkdir} -p ${chroot_dir}/var/run/{crm,mdadm,stunnel} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/heartbeat/{cores,lrm} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/scst/{pr,vdev_mode_pages} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lib/stunnel || exit 1
@@ -166,7 +166,8 @@ dnl Optional feature valgrind
 AC_ARG_ENABLE(valgrind,
 	AS_HELP_STRING([--enable-valgrind], [build and include valgrind]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
-	[enable_valgrind="${enableval}"], [enable_valgrind="no"]), enable_valgrind="no")
+	[enable_valgrind="${enableval}"], [enable_valgrind="no"]),
+	enable_valgrind="no")
 AS_IF([test "x$enable_valgrind" = "xyes"],
 	[build_opts="${build_opts} valgrind"; opt_suffix="${opt_suffix}v"])
 AC_SUBST(enable_valgrind, ${enable_valgrind})
@@ -181,6 +182,29 @@ AS_IF([test "x$enable_strace" = "xyes"],
 	[build_opts="${build_opts} strace"; opt_suffix="${opt_suffix}s"])
 AC_SUBST(enable_strace, ${enable_strace})
 AC_MSG_NOTICE([strace: ${enable_strace}])
+
+dnl Optional feature nginx
+AC_ARG_ENABLE(nginx,
+	AS_HELP_STRING([--enable-nginx], [build and include nginx]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_nginx="${enableval}"], [enable_nginx="no"]),
+	enable_nginx="no")
+AS_IF([test "x$enable_nginx" = "xyes"],
+	[build_opts="${build_opts} nginx"; opt_suffix="${opt_suffix}n"])
+AC_SUBST(enable_nginx, ${enable_nginx})
+AC_MSG_NOTICE([nginx: ${enable_nginx}])
+
+dnl Optional feature python_sql
+AC_ARG_ENABLE(python_sql,
+	AS_HELP_STRING([--enable-python_sql],
+	[build and include Python SQL modules]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_python_sql="${enableval}"], [enable_python_sql="no"]),
+	enable_python_sql="no")
+AS_IF([test "x$enable_python_sql" = "xyes"],
+	[build_opts="${build_opts} python_sql"; opt_suffix="${opt_suffix}p"])
+AC_SUBST(enable_python_sql, ${enable_python_sql})
+AC_MSG_NOTICE([python_sql: ${enable_python_sql}])
 
 dnl Optional feature qla
 AC_ARG_ENABLE(qla,
@@ -202,6 +226,17 @@ AS_IF([test "x$enable_zfs" = "xyes"],
 	[build_opts="${build_opts} zfs"; opt_suffix="${opt_suffix}z"])
 AC_SUBST(enable_zfs, ${enable_zfs})
 AC_MSG_NOTICE([zfs: ${enable_zfs}])
+
+dnl Optional feature lessfs
+AC_ARG_ENABLE(lessfs,
+	AS_HELP_STRING([--enable-lessfs], [build and include Lessfs]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_lessfs="${enableval}"], [enable_lessfs="no"]),
+	enable_lessfs="no")
+AS_IF([test "x$enable_lessfs" = "xyes"],
+	[build_opts="${build_opts} lessfs"; opt_suffix="${opt_suffix}l"])
+AC_SUBST(enable_lessfs, ${enable_lessfs})
+AC_MSG_NOTICE([lessfs: ${enable_lessfs}])
 
 dnl Optional feature mhvtl
 AC_ARG_ENABLE(mhvtl,
@@ -312,29 +347,6 @@ if test "x${with_ssh_auth_key}" = "xyes"; then
 	fi
 fi
 AC_MSG_NOTICE([ssh_auth_key: ${with_ssh_auth_key}])
-
-dnl Optional package web_ui (user provides package file)
-AC_ARG_WITH(web_ui,
-	AS_HELP_STRING([--with-web_ui=PATH],
-	[build and include web_ui; PATH is the web_ui package file to use]),
-	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
-	[web_ui_file="${withval}"; with_web_ui="yes"],
-	[with_web_ui="no"]), with_web_ui="no")
-if test "x${with_web_ui}" = "xyes"; then
-	if test -f "${web_ui_file}"; then
-		AC_MSG_NOTICE([extracting the web_ui package file...])
-		web_ui_dir="${chroot_dir}/build/web_ui"
-		${mkdir} -p ${web_ui_dir} || exit 1
-		${tar} xfJ ${web_ui_file} --strip-components=1 -C ${web_ui_dir} || exit 1
-	else
-		AC_MSG_ERROR([unable to access the web_ui file: ${web_ui_file}])
-	fi
-fi
-AS_IF([test "x$with_web_ui" = "xyes"],
-	[build_opts="${build_opts} web_ui"; opt_suffix="${opt_suffix}w"])
-AC_SUBST(web_ui_dir, ${web_ui_dir})
-AC_SUBST(with_web_ui, ${with_web_ui})
-AC_MSG_NOTICE([web_ui: ${with_web_ui}])
 
 dnl Optional customization directory path (used by non-chroot Makefile)
 AC_ARG_WITH(customize_dir,

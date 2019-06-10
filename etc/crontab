@@ -18,5 +18,3 @@ HOME=/
 # Set the system time
 40 * * * * root if [ -s "/etc/ntp_server" ]; then /usr/sbin/ntpd -n -q -N -p `/bin/cat /etc/ntp_server`; fi > /dev/null 2>&1
 
-# Compact any configured DB (if perfagent is enabled)
-0 23 * * * root source /etc/rc.d/common && if check_enabled "rc.perfagent"; then /usr/local/bin/db_compact.py; fi > /dev/null
