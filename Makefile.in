@@ -4355,8 +4355,6 @@ image:
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/crm_mon_email.sh \
 	$(STAGING_DIR)/usr/local/bin/
-	$(INSTALL) $(SRC_DIR)/scripts/db_compact.py \
-	$(STAGING_DIR)/usr/local/bin/
 	$(INSTALL) $(SRC_DIR)/scripts/hw_raid_cli.py \
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/support_pkg.sh \
@@ -4396,8 +4394,6 @@ image:
 	$(STAGING_DIR)/usr/lib/udev/rules.d/
 	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/ceph-rbdnamer \
 	$(STAGING_DIR)/usr/bin/
-	$(MKDIR) $(STAGING_DIR)/usr/local/perf-agent
-	$(INSTALL) $(SRC_DIR)/perf-agent/* $(STAGING_DIR)/usr/local/perf-agent/
 	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
 	$(ECHO) "$(product) $(esos_ver)" > \
 	$(STAGING_DIR)/etc/esos-release
