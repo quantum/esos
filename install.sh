@@ -289,7 +289,8 @@ while : ; do
         bunzip2 -d -c ${image_file} | dd of=${real_dev_node} bs=1${suffix} || \
             exit 1
         if [ "${this_os}" = "${LINUX}" ]; then
-            blockdev --rereadpt ${dev_node} || exit 1
+            # Re-read the partition table (not fatal)
+            blockdev --rereadpt ${dev_node}
         fi
         echo
         echo "### It appears the image was successfully written to disk" \

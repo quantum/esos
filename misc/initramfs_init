@@ -140,7 +140,7 @@ if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
 	fi
 	if [ "${iso_mode}" = "install" ]; then
 		chroot /mnt/root /usr/bin/sed -i \
-		'/^c1:/s,/sbin/agetty,/usr/local/sbin/iso_installer.sh,' \
+		'/^c1:/s,respawn:/sbin/agetty,once:/usr/local/sbin/iso_installer.sh,' \
 		/etc/inittab
 	fi
 fi
