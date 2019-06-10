@@ -61,6 +61,7 @@ enable_gdb		:= @enable_gdb@
 enable_valgrind		:= @enable_valgrind@
 enable_strace		:= @enable_strace@
 enable_nginx		:= @enable_nginx@
+enable_python_sql	:= @enable_python_sql@
 enable_qla		:= @enable_qla@
 enable_zfs		:= @enable_zfs@
 enable_lessfs		:= @enable_lessfs@
@@ -223,8 +224,6 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		less-530.tar.gz \
 		irqbalance-1.5.0.tar.gz \
 		ethtool-5.0.tar.xz \
-		postgresql-9.6.13.tar.bz2 \
-		mysql-5.0.96.tar.gz \
 		infiniband-diags-1.6.7.tar.gz \
 		libibmad-1.3.13.tar.gz \
 		perftest-4.4-0.5.tar.xz \
@@ -372,10 +371,10 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		open-fcoe.chroot open-lldp.chroot libconfig.chroot \
 		libnl.chroot libpciaccess.chroot linux_firmware.chroot \
 		dlm.chroot ipmitool.chroot sysklogd.chroot less.chroot \
-		irqbalance.chroot ethtool.chroot postgresql.chroot \
-		mysql.chroot infiniband-diags.chroot libibmad.chroot \
-		perftest.chroot nrpe.chroot bcache-tools.chroot \
-		util-linux.chroot thin-provisioning-tools.chroot expat.chroot \
+		irqbalance.chroot ethtool.chroot infiniband-diags.chroot \
+		libibmad.chroot perftest.chroot nrpe.chroot \
+		bcache-tools.chroot util-linux.chroot \
+		thin-provisioning-tools.chroot expat.chroot \
 		boost.chroot librdmacm.chroot sysstat.chroot pciutils.chroot \
 		net-snmp.chroot nut.chroot libusb.chroot libusb_compat.chroot \
 		freeipmi.chroot libgcrypt.chroot libgpg-error.chroot \
@@ -422,6 +421,12 @@ ifeq ($(enable_nginx),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,pcre-8.43.tar.gz)
 	chroot_tgts += nginx.chroot
 	chroot_tgts += pcre.chroot
+endif
+ifeq ($(enable_python_sql),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,postgresql-9.6.13.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,mysql-5.0.96.tar.gz)
+	chroot_tgts += postgresql.chroot
+	chroot_tgts += mysql.chroot
 endif
 ifeq ($(enable_qla),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
@@ -2007,8 +2012,9 @@ perl.chroot: glibc.chroot db.chroot
 
 Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	openssl.chroot zlib.chroot sqlite-autoconf.chroot ncurses.chroot \
-	db.chroot libxml2.chroot libxslt.chroot curl.chroot postgresql.chroot \
-	mysql.chroot util-linux.chroot
+	db.chroot libxml2.chroot libxslt.chroot curl.chroot util-linux.chroot \
+	$(if $(findstring yes,$(enable_python_sql)),\
+	postgresql.chroot mysql.chroot,)
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared \
@@ -2026,12 +2032,9 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install ptyprocess==0.5.1
 	pip3 install pexpect==4.2.1
 	PYCURL_SSL_LIBRARY=openssl pip3 install pycurl==7.43.0
-	pip3 install psycopg2==2.6.2
 	pip3 install pyparsing==2.1.10
 	pip3 install requests==2.11.1
 	pip3 install six==1.10.0
-	pip3 install mysqlclient==1.3.12
-	pip3 install SQLAlchemy==1.1.1
 	pip3 install parallax==1.0.4
 	pip3 install py-dateutil==2.2
 	pip3 install PyYAML==3.13
@@ -2054,6 +2057,11 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install paramiko==2.4.2
 	pip3 install tzlocal==1.5.1
 	pip3 install tzdata==1.2016.8
+	$(QUIET) if [ "$(enable_python_sql)" = "yes" ]; then \
+	  pip3 install psycopg2==2.6.2; \
+	  pip3 install mysqlclient==1.3.12; \
+	  pip3 install SQLAlchemy==1.1.1; \
+	fi
 	$(RM) /.cache
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"

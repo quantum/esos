@@ -194,6 +194,18 @@ AS_IF([test "x$enable_nginx" = "xyes"],
 AC_SUBST(enable_nginx, ${enable_nginx})
 AC_MSG_NOTICE([nginx: ${enable_nginx}])
 
+dnl Optional feature python_sql
+AC_ARG_ENABLE(python_sql,
+	AS_HELP_STRING([--enable-python_sql],
+	[build and include Python SQL modules]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_python_sql="${enableval}"], [enable_python_sql="no"]),
+	enable_python_sql="no")
+AS_IF([test "x$enable_python_sql" = "xyes"],
+	[build_opts="${build_opts} python_sql"; opt_suffix="${opt_suffix}p"])
+AC_SUBST(enable_python_sql, ${enable_python_sql})
+AC_MSG_NOTICE([python_sql: ${enable_python_sql}])
+
 dnl Optional feature qla
 AC_ARG_ENABLE(qla,
 	AS_HELP_STRING([--enable-qla],
