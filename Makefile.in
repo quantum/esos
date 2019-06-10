@@ -60,6 +60,7 @@ enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
 enable_valgrind		:= @enable_valgrind@
 enable_strace		:= @enable_strace@
+enable_nginx		:= @enable_nginx@
 enable_qla		:= @enable_qla@
 enable_zfs		:= @enable_zfs@
 enable_lessfs		:= @enable_lessfs@
@@ -303,8 +304,6 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libnfsidmap-0.26.tar.bz2 \
 		hdparm-9.58.tar.gz \
 		kbd-2.0.4.tar.xz \
-		pcre-8.43.tar.gz \
-		nginx-1.16.0.tar.gz \
 		dosfstools-4.1.tar.xz \
 		lsof-4.91.tar.xz \
 		blktrace-master_20181015.tar.xz \
@@ -397,7 +396,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		libtool.chroot etckeeper.chroot git.chroot nfs-utils.chroot \
 		rpcbind.chroot libtirpc.chroot libevent.chroot \
 		keyutils.chroot libnfsidmap.chroot hdparm.chroot kbd.chroot \
-		pcre.chroot nginx.chroot dosfstools.chroot lsof.chroot \
+		dosfstools.chroot lsof.chroot \
 		blktrace.chroot hwloc.chroot mstflint.chroot lshw.chroot \
 		iozone3.chroot telegraf.chroot sbd.chroot screen.chroot \
 		lftp.chroot ndctl.chroot kmod.chroot docbook-xsl-nons.chroot
@@ -417,6 +416,12 @@ endif
 ifeq ($(enable_strace),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,strace-5.1.tar.xz)
 	chroot_tgts += strace.chroot
+endif
+ifeq ($(enable_nginx),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,nginx-1.16.0.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,pcre-8.43.tar.gz)
+	chroot_tgts += nginx.chroot
+	chroot_tgts += pcre.chroot
 endif
 ifeq ($(enable_qla),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\

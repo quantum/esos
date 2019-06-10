@@ -166,7 +166,8 @@ dnl Optional feature valgrind
 AC_ARG_ENABLE(valgrind,
 	AS_HELP_STRING([--enable-valgrind], [build and include valgrind]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
-	[enable_valgrind="${enableval}"], [enable_valgrind="no"]), enable_valgrind="no")
+	[enable_valgrind="${enableval}"], [enable_valgrind="no"]),
+	enable_valgrind="no")
 AS_IF([test "x$enable_valgrind" = "xyes"],
 	[build_opts="${build_opts} valgrind"; opt_suffix="${opt_suffix}v"])
 AC_SUBST(enable_valgrind, ${enable_valgrind})
@@ -181,6 +182,17 @@ AS_IF([test "x$enable_strace" = "xyes"],
 	[build_opts="${build_opts} strace"; opt_suffix="${opt_suffix}s"])
 AC_SUBST(enable_strace, ${enable_strace})
 AC_MSG_NOTICE([strace: ${enable_strace}])
+
+dnl Optional feature nginx
+AC_ARG_ENABLE(nginx,
+	AS_HELP_STRING([--enable-nginx], [build and include nginx]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_nginx="${enableval}"], [enable_nginx="no"]),
+	enable_nginx="no")
+AS_IF([test "x$enable_nginx" = "xyes"],
+	[build_opts="${build_opts} nginx"; opt_suffix="${opt_suffix}n"])
+AC_SUBST(enable_nginx, ${enable_nginx})
+AC_MSG_NOTICE([nginx: ${enable_nginx}])
 
 dnl Optional feature qla
 AC_ARG_ENABLE(qla,
