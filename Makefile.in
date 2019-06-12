@@ -1897,10 +1897,8 @@ Linux-PAM.chroot: glibc.chroot
 busybox.chroot: glibc.chroot Linux-PAM.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(SED) -i 's/\/\/if (--loop_on_fail == 0)/if (--loop_on_fail == 0)/' \
-	$(tgt_src_dir)/networking/ntpd.c
-	$(SED) -i 's/\/\/\txfunc_die();/\txfunc_die();/' \
-	$(tgt_src_dir)/networking/ntpd.c
+	$(SED) -i 's/bb_basename(p->exe)/p->exe/' \
+	$(tgt_src_dir)/libbb/find_pid_by_name.c
 	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(SED) -e 's/.*CONFIG_STATIC.*/CONFIG_STATIC=y/' \
@@ -4471,7 +4469,7 @@ image:
 	$(FIND) . -type f ! -path "*.gz" -exec $(GZIP) {} \;
 	$(QUIET) if [ "x$(enable_debug)" != "xyes" ]; then \
 	  $(FIND) $(STAGING_DIR)/{,usr/}{lib,bin,sbin} -type f \
-	  -executable -exec $(STRIP) --strip-debug '{}' ';'; \
+	  -executable -exec $(STRIP) -s -R .comment -R .gnu.version '{}' ';'; \
 	fi
 	$(QUIET) if [ "$(with_customize_dir)" = "yes" ]; then \
 	  if [ -x "$(customize_dir)/inject.sh" ]; then \
