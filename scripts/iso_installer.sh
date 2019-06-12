@@ -6,9 +6,6 @@
 # kernel parameter is also provided (eg, install_dev=/dev/sda), this value is
 # passed to the install.sh script as an argument.
 
-# Always bail on any error
-set -e
-
 # From: https://wiki.gentoo.org/wiki/Custom_Initramfs
 cmdline() {
     local value
