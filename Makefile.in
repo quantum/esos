@@ -4469,7 +4469,7 @@ image:
 	$(FIND) . -type f ! -path "*.gz" -exec $(GZIP) {} \;
 	$(QUIET) if [ "x$(enable_debug)" != "xyes" ]; then \
 	  $(FIND) $(STAGING_DIR)/{,usr/}{lib,bin,sbin} -type f \
-	  -executable -exec $(STRIP) -s -R .comment -R .gnu.version '{}' ';'; \
+	  -executable -exec $(STRIP) --strip-debug '{}' ';'; \
 	fi
 	$(QUIET) if [ "$(with_customize_dir)" = "yes" ]; then \
 	  if [ -x "$(customize_dir)/inject.sh" ]; then \
