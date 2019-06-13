@@ -3729,6 +3729,7 @@ open-iscsi.chroot: glibc.chroot open-isns.chroot util-linux.chroot kmod.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install_doc
 	$(MAKE) --directory=$(tgt_src_dir) install_etc
 	$(MAKE) --directory=$(tgt_src_dir) install_iface
+	$(MAKE) --directory=$(tgt_src_dir) install_libopeniscsiusr
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
