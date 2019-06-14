@@ -219,7 +219,7 @@ AC_MSG_NOTICE([qla: ${enable_qla}])
 
 dnl Optional feature zfs
 AC_ARG_ENABLE(zfs,
-	AS_HELP_STRING([--enable-zfs], [build and include ZFS]),
+	AS_HELP_STRING([--enable-zfs], [build and include ZFS on Linux]),
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_zfs="${enableval}"], [enable_zfs="no"]), enable_zfs="no")
 AS_IF([test "x$enable_zfs" = "xyes"],

@@ -433,9 +433,7 @@ ifeq ($(enable_qla),yes)
 	scst_qla2xxx_unified-master_20181008.tar.xz)
 endif
 ifeq ($(enable_zfs),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,spl-0.7.4.tar.gz)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.7.4.tar.gz)
-	chroot_tgts += spl.chroot
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.8.0.tar.gz)
 	chroot_tgts += zfs.chroot
 endif
 ifeq ($(enable_lessfs),yes)
@@ -1377,7 +1375,6 @@ esos_kernels.chroot: qla2xxx_src = $(wildcard /sources/scst_qla2xxx_unified-*)
 esos_kernels.chroot: mhvtl_src = $(wildcard /sources/mhvtl-*)
 esos_kernels.chroot: eio_src = $(wildcard /sources/EnhanceIO-*)
 esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
-esos_kernels.chroot: spl_src = $(wildcard /sources/spl-*)
 esos_kernels.chroot: zfs_src = $(wildcard /sources/zfs-*)
 esos_kernels.chroot: switchtec_src = $(wildcard /sources/cls_switchtec-*)
 esos_kernels.chroot: cls_base = $(switchtec_src)/Driver/Switchtec
@@ -1462,9 +1459,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    KDIR=$(linux_src) clean; \
 	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
-	    if [ -f "$(spl_src)/Makefile" ]; then \
-	      $(MAKE) --directory=$(spl_src) distclean; \
-	    fi; \
 	    if [ -f "$(zfs_src)/Makefile" ]; then \
 	      $(MAKE) --directory=$(zfs_src) distclean; \
 	    fi; \
@@ -1686,21 +1680,13 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    modules_install; \
 	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
-	    $(ECHO) "### Compiling the SPL and ZFS modules..."; \
-	    if [ ! -f "$(spl_src)/configure" ]; then \
-	      cd $(spl_src) && ./autogen.sh; \
-	    fi; \
-	    cd $(spl_src) && ./configure --prefix=/usr --sysconfdir=/etc \
-	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src); \
-	    $(MAKE) --directory=$(spl_src)/module modules; \
-	    $(MAKE) --directory=$(spl_src)/module modules_install; \
+	    $(ECHO) "### Compiling the ZFS on Linux modules..."; \
 	    if [ ! -f "$(zfs_src)/configure" ]; then \
 	      cd $(zfs_src) && ./autogen.sh; \
 	    fi; \
 	    cd $(zfs_src) && ./configure --prefix=/usr --sysconfdir=/etc \
 	    --with-linux=$(linux_src) --with-linux-obj=$(linux_src) \
-	    --with-spl=$(spl_src) --with-spl-obj=$(spl_src) \
-	    --with-udevdir="/usr/lib/udev"; \
+	    --with-udevdir="/usr/lib/udev" --disable-silent-rules; \
 	    $(MAKE) --directory=$(zfs_src)/module modules; \
 	    $(MAKE) --directory=$(zfs_src)/module modules_install; \
 	  fi; \
@@ -1794,24 +1780,9 @@ strace.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-spl.chroot: esos_kernels.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	$(MAKE) --directory=$(tgt_src_dir)/lib
-	$(MAKE) --directory=$(tgt_src_dir)/cmd
-	$(MAKE) --directory=$(tgt_src_dir)/man
-	$(MAKE) --directory=$(tgt_src_dir)/cmd install
-	$(MAKE) --directory=$(tgt_src_dir)/man install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
 zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(MAKE) --directory=$(tgt_src_dir)/lib
-	$(MAKE) --directory=$(tgt_src_dir)/cmd
-	$(MAKE) --directory=$(tgt_src_dir)/man
-	$(MAKE) --directory=$(tgt_src_dir)/udev
 	$(MAKE) --directory=$(tgt_src_dir)/lib install
 	$(MAKE) --directory=$(tgt_src_dir)/cmd install
 	$(MAKE) --directory=$(tgt_src_dir)/man install
