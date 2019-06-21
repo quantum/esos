@@ -173,37 +173,17 @@ start:
                 "functions will not work. Check the '/var/log/boot' file.");
     }
 
-#if defined(COMMERCIAL) && defined(SIMPLE_TUI)
+#ifdef SIMPLE_TUI
     /* Variables */
-    CDKLABEL *lic_status_label = 0, *ip_addr_label = 0, *web_ui_label = 0,
-            *rpc_agent_label = 0;
-    char *lic_status_msg[LIC_STATUS_INFO_LINES] = {NULL},
-            *ip_addr_msg[IP_ADDR_INFO_LINES] = {NULL},
-            *web_ui_msg[WEB_UI_INFO_LINES] = {NULL},
-            *rpc_agent_msg[RPC_AGENT_INFO_LINES] = {NULL};
+    CDKLABEL *ip_addr_label = 0;
+    CDKSCROLL *simple_menu_list = 0;
+    char *ip_addr_msg[IP_ADDR_INFO_LINES] = {NULL},
+        *simple_menu_opts[MAX_SIMPLE_MENU_OPTS] = {NULL};
+    char *scroll_title = NULL;
     struct ifaddrs *first_ifaddrs = NULL, *next_ifaddrs = NULL;
     void *tmp_addr_ptr = NULL;
     char addr_buffer[INET_ADDRSTRLEN] = {0};
-    int addr_line_cnt = 0;
-
-    /* License status information label */
-    SAFE_ASPRINTF(&lic_status_msg[0],
-            "</%d/B/U>ESOS License Status<!%d><!B><!U>"
-            "                           ",
-            g_color_info_header[g_curr_theme],
-            g_color_info_header[g_curr_theme]);
-    SAFE_ASPRINTF(&lic_status_msg[1], "%s",
-            prettyShrinkStr(46, checkAgentLic()));
-    lic_status_label = newCDKLabel(cdk_screen, 31, 1, lic_status_msg,
-            LIC_STATUS_INFO_LINES, TRUE, FALSE);
-    if (!lic_status_label) {
-        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
-        goto quit;
-    }
-    setCDKLabelBoxAttribute(lic_status_label,
-            g_color_main_box[g_curr_theme]);
-    setCDKLabelBackgroundAttrib(lic_status_label,
-            g_color_main_text[g_curr_theme]);
+    int addr_line_cnt = 0, simple_menu_choice = 0;
 
     /* IP address information label */
     SAFE_ASPRINTF(&ip_addr_msg[0],
@@ -242,7 +222,7 @@ start:
         if (first_ifaddrs != NULL)
             freeifaddrs(first_ifaddrs);
     }
-    ip_addr_label = newCDKLabel(cdk_screen, 31, 5, ip_addr_msg,
+    ip_addr_label = newCDKLabel(cdk_screen, 31, 1, ip_addr_msg,
             IP_ADDR_INFO_LINES, TRUE, FALSE);
     if (!ip_addr_label) {
         errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
@@ -252,56 +232,6 @@ start:
             g_color_main_box[g_curr_theme]);
     setCDKLabelBackgroundAttrib(ip_addr_label,
             g_color_main_text[g_curr_theme]);
-
-    /* Web UI information label */
-    SAFE_ASPRINTF(&web_ui_msg[0],
-            "</%d/B/U>ESOS Web UI Services<!%d><!B><!U>"
-            "                          ",
-            g_color_info_header[g_curr_theme],
-            g_color_info_header[g_curr_theme]);
-    SAFE_ASPRINTF(&web_ui_msg[1], "rc.webui: %s",
-            prettyShrinkStr(36, rcSvcStatus("rc.webui")));
-    SAFE_ASPRINTF(&web_ui_msg[2], "rc.nginx: %s",
-            prettyShrinkStr(36, rcSvcStatus("rc.nginx")));
-    web_ui_label = newCDKLabel(cdk_screen, 31, 13, web_ui_msg,
-            WEB_UI_INFO_LINES, TRUE, FALSE);
-    if (!web_ui_label) {
-        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
-        goto quit;
-    }
-    setCDKLabelBoxAttribute(web_ui_label,
-            g_color_main_box[g_curr_theme]);
-    setCDKLabelBackgroundAttrib(web_ui_label,
-            g_color_main_text[g_curr_theme]);
-
-    /* RPC agent information label */
-    SAFE_ASPRINTF(&rpc_agent_msg[0],
-            "</%d/B/U>ESOS RPC Agent Services<!%d><!B><!U>"
-            "                       ",
-            g_color_info_header[g_curr_theme],
-            g_color_info_header[g_curr_theme]);
-    SAFE_ASPRINTF(&rpc_agent_msg[1], "rc.rpcagent: %s",
-            prettyShrinkStr(33, rcSvcStatus("rc.rpcagent")));
-    SAFE_ASPRINTF(&rpc_agent_msg[2], "rc.stunnel:  %s",
-            prettyShrinkStr(33, rcSvcStatus("rc.stunnel")));
-    rpc_agent_label = newCDKLabel(cdk_screen, 31, 18, rpc_agent_msg,
-            RPC_AGENT_INFO_LINES, TRUE, FALSE);
-    if (!rpc_agent_label) {
-        errorDialog(cdk_screen, LABEL_ERR_MSG, NULL);
-        goto quit;
-    }
-    setCDKLabelBoxAttribute(rpc_agent_label,
-            g_color_main_box[g_curr_theme]);
-    setCDKLabelBackgroundAttrib(rpc_agent_label,
-            g_color_main_text[g_curr_theme]);
-#endif
-
-#ifdef SIMPLE_TUI
-    /* Variables */
-    char *simple_menu_opts[MAX_SIMPLE_MENU_OPTS] = {NULL};
-    char *scroll_title = NULL;
-    CDKSCROLL *simple_menu_list = 0;
-    int simple_menu_choice = 0;
 
     /* Create a simple menu scroll options list */
     SAFE_ASPRINTF(&simple_menu_opts[0], "<C></B>Quit the TUI<!B>");
@@ -626,16 +556,8 @@ refreshCDKScreen(cdk_screen);
                 FREE_NULL(scroll_title);
                 for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)
                     FREE_NULL(simple_menu_opts[i]);
-#if defined(COMMERCIAL) && defined(SIMPLE_TUI)
-                for (i = 0; i < LIC_STATUS_INFO_LINES; i++)
-                    FREE_NULL(lic_status_msg[i]);
                 for (i = 0; i < IP_ADDR_INFO_LINES; i++)
                     FREE_NULL(ip_addr_msg[i]);
-                for (i = 0; i < WEB_UI_INFO_LINES; i++)
-                    FREE_NULL(web_ui_msg[i]);
-                for (i = 0; i < RPC_AGENT_INFO_LINES; i++)
-                    FREE_NULL(rpc_agent_msg[i]);
-#endif
                 destroyCDKScreenObjects(cdk_screen);
                 destroyCDKScreen(cdk_screen);
                 endCDK();
@@ -1208,17 +1130,9 @@ quit:
     }
     delwin(sub_window);
     delwin(main_window);
-#if defined(COMMERCIAL) && defined(SIMPLE_TUI)
-    for (i = 0; i < LIC_STATUS_INFO_LINES; i++)
-        FREE_NULL(lic_status_msg[i]);
+#ifdef SIMPLE_TUI
     for (i = 0; i < IP_ADDR_INFO_LINES; i++)
         FREE_NULL(ip_addr_msg[i]);
-    for (i = 0; i < WEB_UI_INFO_LINES; i++)
-        FREE_NULL(web_ui_msg[i]);
-    for (i = 0; i < RPC_AGENT_INFO_LINES; i++)
-        FREE_NULL(rpc_agent_msg[i]);
-#endif
-#ifdef SIMPLE_TUI
     FREE_NULL(scroll_title);
     for (i = 0; i < MAX_SIMPLE_MENU_OPTS; i++)
         FREE_NULL(simple_menu_opts[i]);
