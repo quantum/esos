@@ -183,7 +183,7 @@ int readTargetData(char *label_msg[]) {
     /* Set the initial label messages; the number of characters
      * controls the label width (using white space as padding for width) */
     SAFE_ASPRINTF(&label_msg[0],
-            "</%d/B/U>Target<!%d><!B><!U>                            "
+            "</%d/B/U>Target<!%d><!B><!U>                           "
             "</%d/B/U>Driver<!%d><!B><!U>     "
             "</%d/B/U>State<!%d><!B><!U>      "
             "</%d/B/U>Link Speed<!%d><!B><!U>          ",
