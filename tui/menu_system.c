@@ -2369,7 +2369,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
         curr_second = curr_date_info->tm_sec;
 
         /* Calendar widget for displaying/setting current date */
-        calendar = newCDKCalendar(date_screen, (window_x + 39), (window_y + 3),
+        calendar = newCDKCalendar(date_screen, (window_x + 40), (window_y + 3),
                 "</B>Current Date", curr_day, curr_month, curr_year,
                 g_color_dialog_text[g_curr_theme],
                 g_color_dialog_text[g_curr_theme],
