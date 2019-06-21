@@ -74,7 +74,6 @@ enable_tui_eula		:= @enable_tui_eula@
 enable_tui_usage	:= @enable_tui_usage@
 enable_login_tui	:= @enable_login_tui@
 enable_debug_kernel	:= @enable_debug_kernel@
-enable_commercial	:= @enable_commercial@
 with_rpc_agent		:= @with_rpc_agent@
 rpc_agent_dir		:= $(subst $(CHROOT_DIR),,@rpc_agent_dir@)
 ssl_dh_key_size		:= @ssl_dh_key_size@
@@ -104,15 +103,10 @@ rel_name	:= $(git_tag)$(opt_suffix)
 dev_name	:= $(git_branch)_$(git_hash)$(opt_suffix)
 esos_ver	:= $(if $(git_tag),$(rel_name),$(dev_name))
 prod_suffix	:= -esos.prod
+product		:= Enterprise Storage OS
+pkg_name	:= esos
 ifeq ($(enable_debug_kernel),yes)
 debug_suffix	:= -esos.debug
-endif
-ifeq ($(enable_commercial),yes)
-product = Quantum ESOS
-pkg_name = esos
-else
-product = ESOS OSS
-pkg_name = esos
 endif
 
 dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
@@ -469,9 +463,6 @@ ifeq ($(enable_tui_eula),yes)
 endif
 ifeq ($(enable_tui_usage),yes)
 	tui_cpp_flags += -DUSAGE_PROMPT
-endif
-ifeq ($(enable_commercial),yes)
-	tui_cpp_flags += -DCOMMERCIAL
 endif
 ifeq ($(with_rpc_agent),yes)
 	chroot_tgts += rpc_agent.chroot
@@ -4293,13 +4284,7 @@ image:
 	$(STAGING_DIR)/usr/include/$(notdir \
 	$(wildcard $(CHROOT_DIR)/usr/include/python*))/pyconfig.h
 	$(MKDIR) $(STAGING_DIR)/usr/share/doc/esos
-	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
-	  $(CP) $(SRC_DIR)/COMMERCIAL_EULA \
-	  $(STAGING_DIR)/usr/share/doc/esos/LICENSE; \
-	else \
-	  $(CP) $(SRC_DIR)/COPYING \
-	  $(STAGING_DIR)/usr/share/doc/esos/LICENSE; \
-	fi
+	$(CP) $(SRC_DIR)/COPYING $(STAGING_DIR)/usr/share/doc/esos/LICENSE
 	$(INSTALL) -m 0644 $(SRC_DIR)/ChangeLog \
 	$(STAGING_DIR)/usr/share/doc/esos/ChangeLog
 	cd $(SRC_DIR)/etc && $(FIND) . -depth ! -path "*/.git*" | \
@@ -4345,12 +4330,6 @@ image:
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/backup_conf.sh \
 	$(STAGING_DIR)/usr/local/sbin/
-	$(QUIET) if [ "$(enable_commercial)" = "yes" ]; then \
-	  $(INSTALL) $(SRC_DIR)/scripts/install_lic.sh \
-	  $(STAGING_DIR)/usr/local/sbin/; \
-	  $(INSTALL) $(SRC_DIR)/scripts/read_cert.sh \
-	  $(STAGING_DIR)/usr/local/sbin/; \
-	fi
 	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d
 	$(CP) -R $(SRC_DIR)/misc/ocf/esos \
 	$(STAGING_DIR)/usr/lib/ocf/resource.d/
@@ -4476,8 +4455,6 @@ image:
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
-pkg_dist: license_file =  $(if $(findstring yes,$(enable_commercial)),\
-	COMMERCIAL_EULA,COPYING)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
@@ -4490,8 +4467,7 @@ pkg_dist: $(bz2_img_file)
 	$(LN) $(SRC_DIR) $(pkg_prefix)
 	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/ChangeLog \
 	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
-	$(pkg_prefix)/INSTALL $(pkg_prefix)/README \
-	$(pkg_prefix)/$(strip $(license_file))
+	$(pkg_prefix)/INSTALL $(pkg_prefix)/README $(pkg_prefix)/COPYING
 	$(RM) $(pkg_prefix)
 	$(LN) $(wildcard $(SOURCES_DIR)/win_binaries-*) $(pkg_prefix)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/*
