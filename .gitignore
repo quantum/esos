@@ -1,8 +1,8 @@
-/nbproject/
 /*.img
 /*.img.bz2
 /*.zip
 /dist_*.txt
+/VERSION
 /autom4te.cache/
 /configure
 /Makefile

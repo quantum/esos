@@ -258,8 +258,8 @@ void aboutDialog(CDKSCREEN *main_cdk_screen) {
             "%s %s", PRODUCT_NAME, ESOS_VERSION);
     if (gethostname(hostname, ((sizeof hostname) - 1)) == -1)
         snprintf(hostname, sizeof (hostname), "hostname");
-    SAFE_ASPRINTF(&message[0], "<C></%d/B>About ESOS (Enterprise Storage OS)",
-            g_color_dialog_title[g_curr_theme]);
+    SAFE_ASPRINTF(&message[0], "<C></%d/B>About %s",
+            g_color_dialog_title[g_curr_theme], PRODUCT_NAME);
     SAFE_ASPRINTF(&message[1], " ");
     SAFE_ASPRINTF(&message[2], "</B>This Host:<!B>\t%-.40s", hostname);
     SAFE_ASPRINTF(&message[3], "</B>Running:<!B>\t%-.40s", esos_ver);

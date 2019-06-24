@@ -102,9 +102,10 @@ git_tag		:= $(shell if tag="$$($(GIT) --git-dir=$(SRC_DIR)/.git \
 rel_name	:= $(git_tag)$(opt_suffix)
 dev_name	:= $(git_branch)_$(git_hash)$(opt_suffix)
 esos_ver	:= $(if $(git_tag),$(rel_name),$(dev_name))
-prod_suffix	:= -esos.prod
 product		:= Enterprise Storage OS
+short_prod	:= ESOS
 pkg_name	:= esos
+prod_suffix	:= -esos.prod
 ifeq ($(enable_debug_kernel),yes)
 debug_suffix	:= -esos.debug
 endif
@@ -566,6 +567,7 @@ clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts) $(clean_system_tgts)
 	fi
 	$(RM) $(INITRAMFS_DIR)/*
 	$(RM) $(CHROOT_DIR)/*
+	$(RM) $(BUILD_DIR)/VERSION
 	$(RM) $(BUILD_DIR)/dist_*.txt
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img
@@ -4304,7 +4306,8 @@ image:
 	--grub-probe=$(chroot_build)/grub-probe \
 	--efi-directory=$(MOUNT_DIR)/boot --root-directory=$(MOUNT_DIR) \
 	--no-nvram --removable --recheck --debug
-	$(INSTALL) $(SRC_DIR)/misc/grub.cfg $(MOUNT_DIR)/boot/grub/
+	$(SED) 's/@@short_prod@@/$(short_prod)/g' $(SRC_DIR)/misc/grub.cfg > \
+	$(MOUNT_DIR)/boot/grub/grub.cfg
 	$(ECHO) "set slot_ver=$(esos_ver)" > $(MOUNT_DIR)/boot/PRIMARY-version
 	$(INSTALL) $(SRC_DIR)/scripts/conf_sync.sh \
 	$(STAGING_DIR)/usr/local/sbin/
@@ -4457,6 +4460,7 @@ image:
 pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
 pkg_dist: $(bz2_img_file)
 	$(call no_chroot)
+	$(ECHO) "$(product) $(esos_ver)" > $(BUILD_DIR)/VERSION
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(RM) $(BUILD_DIR)/esos_*.zip
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
@@ -4467,7 +4471,8 @@ pkg_dist: $(bz2_img_file)
 	$(LN) $(SRC_DIR) $(pkg_prefix)
 	$(ZIP) -9 -g $(pkg_prefix).zip $(pkg_prefix)/ChangeLog \
 	$(pkg_prefix)/install.sh $(pkg_prefix)/install.vbs \
-	$(pkg_prefix)/INSTALL $(pkg_prefix)/README $(pkg_prefix)/COPYING
+	$(pkg_prefix)/INSTALL $(pkg_prefix)/README $(pkg_prefix)/COPYING \
+	$(pkg_prefix)/VERSION
 	$(RM) $(pkg_prefix)
 	$(LN) $(wildcard $(SOURCES_DIR)/win_binaries-*) $(pkg_prefix)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/*

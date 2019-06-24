@@ -19,7 +19,7 @@ install_dev="${1}"
 # Optional installation device transport type parameter
 install_tran="${2}"
 
-echo "*** Enterprise Storage OS Install Script ***" && echo
+echo "*** $(cat VERSION) Install Script ***" && echo
 
 # Need root privileges for installer
 if [ "x$(whoami)" != "xroot" ]; then
