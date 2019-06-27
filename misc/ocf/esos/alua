@@ -566,12 +566,12 @@ get_redirect_filename() {
 test_if_dev_ready() {
     # Perform several checks on the given block device to see if it's working
     block_dev="${1}"
-    if ! timeout -t ${SG_CMD_TIMEOUT} sg_turs ${block_dev}; then
+    if ! timeout ${SG_CMD_TIMEOUT} sg_turs ${block_dev}; then
         ocf_log warn "The backing SCSI disk '${block_dev}'" \
             "is not ready yet (TUR failed), skipping..."
         return 1
     fi
-    if ! timeout -t ${SG_CMD_TIMEOUT} sg_read if=${block_dev} \
+    if ! timeout ${SG_CMD_TIMEOUT} sg_read if=${block_dev} \
         bs=512 count=1; then
         ocf_log warn "The backing SCSI disk '${block_dev}'" \
             "is not ready yet (read failed), skipping..."
