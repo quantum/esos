@@ -558,15 +558,19 @@ all:
 	$(MAKE) -C $(BUILD_DIR) bootstrap
 
 
-# clean - Remove temporary files, any image/package files, and target files.
+# clean - Remove chroot directory files and any image/package files.
 .PHONY: clean
-clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts) $(clean_system_tgts)
+clean: $(clean_chroot_tgts) $(clean_system_tgts)
 	$(QUIET) if $(MOUNT) | $(GREP) $(CHROOT_DIR) > /dev/null 2>&1; then \
 	  $(ECHO) "### One or more mounts still exist for chroot!"; \
 	  exit 1; \
 	fi
+	cd $(CHROOT_DIR) && $(FIND) . -maxdepth 1 ! -path "." \
+	! -path "./sources" ! -path "./build" ! -path "./tools" \
+	-exec $(RM) {} \;
+	$(RM) $(TOOLS_DIR)/lib/gcc/x86_64-pc-linux-gnu/$(gcc_ver)/specs
+	$(RM) $(chroot_build)/*
 	$(RM) $(INITRAMFS_DIR)/*
-	$(RM) $(CHROOT_DIR)/*
 	$(RM) $(BUILD_DIR)/VERSION
 	$(RM) $(BUILD_DIR)/dist_*.txt
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
@@ -575,11 +579,11 @@ clean: $(clean_bootstrap_tgts) $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.iso
 	$(RM) $(BUILD_DIR)/$(pkg_name).img
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
-	$(RM) $(BUILD_DIR)/chroot_build.sh
-
-$(clean_bootstrap_tgts):: target = $(subst clean-,,$(@))
-$(clean_bootstrap_tgts)::
-	$(RM) $(BUILD_DIR)/$(target)
+	$(QUIET) $(ECHO) && $(ECHO)
+	$(QUIET) $(ECHO) "### Successfully cleaned the chroot structure!"
+	$(QUIET) $(ECHO) && $(ECHO)
+	$(QUIET) $(ECHO) "### Run './configure' and 'make bootstrap' before" \
+	"building again..."
 
 $(clean_chroot_tgts):: target = $(subst clean-,,$(@))
 $(clean_chroot_tgts)::
@@ -595,9 +599,24 @@ clean-esos_tui.chroot::
 	fi
 
 
+# clean_bootstrap - Remove bootstrap target files and extracted sources.
+.PHONY: clean_bootstrap
+clean_bootstrap: $(clean_bootstrap_tgts)
+	$(RM) $(BUILD_DIR)/chroot_build.sh
+	$(RM) $(WORK_DIR)/kernel_headers
+	$(RM) $(WORK_DIR)/binutils-build
+	$(RM) $(WORK_DIR)/gcc-build
+	$(RM) $(WORK_DIR)/glibc-build
+	$(RM) $(WORK_DIR)/libstdc++-build
+
+$(clean_bootstrap_tgts):: target = $(subst clean-,,$(@))
+$(clean_bootstrap_tgts)::
+	$(RM) $(BUILD_DIR)/$(target)
+
+
 # distclean - Remove everything including build configuration settings.
 .PHONY: distclean
-distclean: clean
+distclean: clean clean_bootstrap
 	$(RM) $(WORK_DIR)
 	$(RM) $(SRC_DIR)/autom4te.cache
 	$(RM) $(BUILD_DIR)/config.status
@@ -841,7 +860,7 @@ binutils.pass2: gcc.libstdc++
 	$(MAKE) --directory=$(WORK_DIR)/binutils-build/ld clean
 	$(MAKE) --directory=$(WORK_DIR)/binutils-build/ld \
 	LIB_PATH=/usr/lib:/lib
-	$(CP) -v $(WORK_DIR)/binutils-build/ld/ld-new /tools/bin/
+	$(CP) -f $(WORK_DIR)/binutils-build/ld/ld-new /tools/bin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1333,10 +1352,10 @@ glibc.chroot: kernel_headers.chroot
 	$(MAKE) --directory=$(chroot_build)/glibc-build install
 	$(MAKE) --directory=$(chroot_build)/glibc-build \
 	localedata/install-locales
-	$(MV) -v /tools/bin/{ld,ld-old}
-	$(MV) -v /tools/x86_64-pc-linux-gnu/bin/{ld,ld-old}
-	$(MV) -v /tools/bin/{ld-new,ld}
-	$(LN) -v /tools/bin/ld /tools/x86_64-pc-linux-gnu/bin/ld
+	$(CP) -f /tools/bin/{ld,ld-old}
+	$(CP) -f /tools/x86_64-pc-linux-gnu/bin/{ld,ld-old}
+	$(CP) -f /tools/bin/{ld-new,ld}
+	$(LN) /tools/bin/ld /tools/x86_64-pc-linux-gnu/bin/ld
 	$(CC) -dumpspecs | $(SED) -e 's@/tools@@g' \
 	-e '/\*startfile_prefix_spec:/{n;s@.*@/usr/lib/ @}' \
 	-e '/\*cpp:/{n;s@$$@ -isystem /usr/include@}' > \
