@@ -154,7 +154,7 @@ start:
     /* Check if license has been accepted */
     if (!acceptLicense(cdk_screen)) {
         errorDialog(cdk_screen,
-                "You must accept the Enterprise Storage OS (ESOS) license",
+                "You must accept the " PRODUCT_NAME " license",
                 "agreement to use this software. Hit ENTER to exit.");
         goto quit;
     }
@@ -1451,8 +1451,8 @@ boolean acceptLicense(CDKSCREEN *main_cdk_screen) {
 
             /* Ask the user to accept the license */
             eula_accepted = questionDialog(main_cdk_screen,
-                    "Do you accept the Enterprise Storage OS",
-                    "(ESOS) license agreement?");
+                    "Do you accept the " PRODUCT_NAME " license agreement?",
+                    NULL);
             if (iniparser_set(ini_dict, "general:accept_eula",
                     (eula_accepted ? "yes" : "no")) == -1) {
                 errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);

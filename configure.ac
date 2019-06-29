@@ -402,22 +402,6 @@ AS_IF([test "x$with_ssl_key_size" = "xyes"],
 AC_SUBST(ssl_dh_key_size, ${ssl_dh_key_size})
 AC_MSG_NOTICE([ssl_dh_key_size: ${ssl_dh_key_size}])
 
-dnl Optional commerical edition of ESOS (Apache 2.0 is default)
-AC_ARG_ENABLE(commercial,
-	AS_HELP_STRING([--enable-commercial], [build the commercial edition]),
-	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
-	[enable_commercial="${enableval}"], [enable_commercial="no"]),
-	enable_commercial="no")
-if test "x${enable_commercial}" = "xyes"; then
-	if test "x${with_rpc_agent}" != "xyes"; then
-		AC_MSG_ERROR([the commercial edition requires the rpc_agent build option])
-	fi
-fi
-AS_IF([test "x$enable_commercial" = "xyes"],
-	[build_opts="${build_opts} commercial"; opt_suffix="${opt_suffix}C"])
-AC_SUBST(enable_commercial, ${enable_commercial})
-AC_MSG_NOTICE([commercial: ${enable_commercial}])
-
 dnl Optional package celerity_16_32 (user provides package file)
 AC_ARG_WITH(celerity_16_32,
 	AS_HELP_STRING([--with-celerity_16_32=PATH],

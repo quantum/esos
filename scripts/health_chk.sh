@@ -214,7 +214,7 @@ if [ x$(perl -e "print ${prct_disk_used} > ${DISK_PRCT_THRESH}") = "x1" ]; then
 fi
 echo
 
-# Check if the USB drive is available/working via one of the FS
+# Check if the boot drive is available/working via one of the FS
 # labels (no indentation for if statement)
 if ! findfs LABEL=${CHK_FS_LABEL} > /dev/null 2>&1; then
 # Create a archive of the configuration files
@@ -226,10 +226,10 @@ tar cpfz ${arch_pkg_path} --exclude='rc.d' --exclude='ssh' --exclude='shadow*' \
 sendmail -t << _EOF_
 To: ${EMAIL_TO}
 From: ${EMAIL_FROM}
-Subject: ESOS USB Flash Drive Failure - $(hostname) ($(date))
-A possible USB flash drive failure has been detected on Enterprise Storage OS host "$(hostname)".
+Subject: Boot Drive Failure - $(hostname) ($(date))
+A possible boot drive failure has been detected on $(cat /etc/esos-release) host "$(hostname)".
 
-The findfs utility exited non-zero when attempting to resolve file system label "${CHK_FS_LABEL}". This may be due to a failed ESOS USB flash drive, or because the device was removed, or some other reason.
+The findfs utility exited non-zero when attempting to resolve file system label "${CHK_FS_LABEL}". This may be due to a failed boot drive, or because the device was removed, or some other reason.
 
 We're attaching a tar ball archive of the ESOS configuration files for this host just incase.
 
