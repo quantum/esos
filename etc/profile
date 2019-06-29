@@ -1,6 +1,6 @@
 # Set the title bar
 if [[ ${TERM} == xterm* ]] || [[ ${TERM} == vte* ]]; then
-    echo -ne "\033]0;`hostname` - Enterprise Storage OS\007"
+    echo -ne "\033]0;$(hostname) - $(cat /etc/esos-release)\007"
 fi
 
 # A few settings (include the "real" profile)
