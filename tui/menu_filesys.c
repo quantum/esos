@@ -286,6 +286,7 @@ void createFSDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Check FS label value (field entry) */
             strncpy(fs_label_buff, getCDKEntryValue(fs_label), MAX_FS_LABEL);
+            fs_label_buff[sizeof fs_label_buff - 1] = '\0';
             if (!checkInputStr(main_cdk_screen, NAME_CHARS, fs_label_buff))
                 break;
 
@@ -829,6 +830,7 @@ void addVDiskFileDialog(CDKSCREEN *main_cdk_screen) {
             /* Check virtual disk name value (field entry) */
             strncpy(vdisk_name_buff, getCDKEntryValue(vdisk_name),
                     MAX_VDISK_NAME_LEN);
+            vdisk_name_buff[sizeof vdisk_name_buff - 1] = '\0';
             if (!checkInputStr(main_cdk_screen, NAME_CHARS, vdisk_name_buff))
                 break;
 

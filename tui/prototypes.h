@@ -197,7 +197,6 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
         char blk_dev_info[MAX_BLOCK_DEVS][MISC_STRING_LEN],
         char blk_dev_size[MAX_BLOCK_DEVS][MISC_STRING_LEN]);
 char *rcSvcStatus(char rc_svc_name[]);
-char *checkAgentLic();
 
 /* strings.c */
 size_t g_scst_dev_types_size();

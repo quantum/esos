@@ -49,13 +49,14 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             *short_label_msg[NET_SHORT_INFO_LINES] = {NULL},
             *poten_slaves[MAX_NET_IFACE] = {NULL},
             *poten_br_members[MAX_NET_IFACE] = {NULL};
-    char *conf_hostname = NULL, *conf_domainname = NULL, *conf_defaultgw = NULL,
-            *conf_nameserver1 = NULL, *conf_nameserver2 = NULL,
-            *conf_nameserver3 = NULL, *conf_bootproto = NULL,
-            *conf_ipaddr = NULL, *conf_netmask = NULL, *conf_broadcast = NULL,
-            *error_msg = NULL, *conf_if_mtu = NULL, *temp_pstr = NULL,
-            *conf_slaves = NULL, *conf_brmembers = NULL, *strtok_result = NULL,
-            *conf_bondopts = NULL, *conf_ethtoolopts = NULL;
+    char *error_msg = NULL, *temp_pstr = NULL, *strtok_result = NULL;
+    const char *conf_hostname = NULL, *conf_domainname = NULL,
+            *conf_defaultgw = NULL, *conf_nameserver1 = NULL,
+            *conf_nameserver2 = NULL, *conf_nameserver3 = NULL,
+            *conf_bootproto = NULL, *conf_ipaddr = NULL, *conf_netmask = NULL,
+            *conf_broadcast = NULL, *conf_if_mtu = NULL, *conf_slaves = NULL,
+            *conf_brmembers = NULL, *conf_bondopts = NULL,
+            *conf_ethtoolopts = NULL;
     char net_if_name[MISC_STRING_LEN] = {0}, net_if_mac[MISC_STRING_LEN] = {0},
             net_if_speed[MISC_STRING_LEN] = {0},
             net_if_duplex[MISC_STRING_LEN] = {0},
@@ -1084,11 +1085,10 @@ void mailDialog(CDKSCREEN *main_cdk_screen) {
     char new_mailhub[MAX_INI_VAL] = {0}, new_authmethod[MAX_INI_VAL] = {0},
             new_usetls[MAX_INI_VAL] = {0}, new_usestarttls[MAX_INI_VAL] = {0},
             hostname[MISC_STRING_LEN] = {0};
-    char *conf_root = NULL, *conf_mailhub = NULL, *conf_authuser = NULL,
+    char *mailhub_host = NULL, *mailhub_port = NULL, *error_msg = NULL;
+    const char *conf_root = NULL, *conf_mailhub = NULL, *conf_authuser = NULL,
             *conf_authpass = NULL, *conf_authmethod = NULL,
-            *conf_usetls = NULL, *conf_usestarttls = NULL,
-            *mailhub_host = NULL, *mailhub_port = NULL,
-            *error_msg = NULL;
+            *conf_usetls = NULL, *conf_usestarttls = NULL;
     char *mail_title_msg[1] = {NULL};
     dictionary *ini_dict = NULL;
     FILE *ini_file = NULL;
@@ -1453,7 +1453,8 @@ void testEmailDialog(CDKSCREEN *main_cdk_screen) {
     CDKLABEL *test_email_label = 0;
     char ssmtp_cmd[MAX_SHELL_CMD_LEN] = {0}, email_addy[MAX_EMAIL_LEN] = {0};
     char *message[5] = {NULL};
-    char *error_msg = NULL, *conf_root = NULL;
+    char *error_msg = NULL;
+    const char *conf_root = NULL;
     int i = 0, status = 0;
     dictionary *ini_dict = NULL;
     FILE *ssmtp = NULL;
@@ -1672,7 +1673,9 @@ void addUserDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Make sure the password fields match */
             strncpy(password_1, getCDKEntryValue(pass_1_field), MAX_PASSWD_LEN);
+            password_1[sizeof password_1 - 1] = '\0';
             strncpy(password_2, getCDKEntryValue(pass_2_field), MAX_PASSWD_LEN);
+            password_2[sizeof password_2 - 1] = '\0';
             if (strcmp(password_1, password_2) != 0) {
                 errorDialog(main_cdk_screen,
                         "The given passwords do not match!", NULL);
@@ -1916,7 +1919,9 @@ void chgPasswdDialog(CDKSCREEN *main_cdk_screen) {
 
             /* Make sure the password fields match */
             strncpy(password_1, getCDKEntryValue(new_pass_1), MAX_PASSWD_LEN);
+            password_1[sizeof password_1 - 1] = '\0';
             strncpy(password_2, getCDKEntryValue(new_pass_2), MAX_PASSWD_LEN);
+            password_2[sizeof password_2 - 1] = '\0';
             if (strcmp(password_1, password_2) != 0) {
                 errorDialog(main_cdk_screen,
                         "The given passwords do not match!", NULL);
@@ -2462,6 +2467,7 @@ void dateTimeDialog(CDKSCREEN *main_cdk_screen) {
             /* Check NTP server setting (field entry) */
             strncpy(new_ntp_serv_val, getCDKEntryValue(ntp_server),
                     MAX_NTP_LEN);
+            new_ntp_serv_val[sizeof new_ntp_serv_val - 1] = '\0';
             if (strlen(new_ntp_serv_val) != 0) {
                 if (!checkInputStr(main_cdk_screen,
                         NAME_CHARS, new_ntp_serv_val))
