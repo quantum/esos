@@ -2,7 +2,7 @@
 
 source /etc/rc.d/common
 
-RPCBIND="/usr/bin/rpcbind"
+RPCBIND="/sbin/rpcbind"
 RPCBIND_LOCK="/var/lock/rpcbind"
 RPC_STATD="/usr/sbin/rpc.statd"
 RPC_STATD_LOCK="/var/lock/rpc.statd"

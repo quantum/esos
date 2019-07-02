@@ -232,6 +232,11 @@ if [ -n "${install_dev}" ]; then
 elif [ -n "${install_tran}" ]; then
     tran_dev=$(lsblk -o NAME,TYPE,TRAN | grep "${install_tran}\$" | \
         head -1 | awk '{print $1}')
+    if [ "x${tran_dev}" = "x" ]; then
+        echo "ERROR: Unable to resolve any devices for transport" \
+            "'${install_tran}'."
+        exit 1
+    fi
     dev_node="/dev/${tran_dev}"
     echo "### Using block device '${dev_node}' resolved via" \
         "transport '${install_tran}' argument..."
