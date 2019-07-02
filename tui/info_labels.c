@@ -288,7 +288,9 @@ int readTargetData(char *label_msg[]) {
                             strncat(fc_port_name[fc_adp_cnt], temp_pstr, 2);
                             port_name_size = port_name_size + 2;
                             if ((temp_int - 2) != 0) {
-                                strncat(fc_port_name[fc_adp_cnt], ":", 1);
+                                strncat(fc_port_name[fc_adp_cnt], ":",
+                                        (sizeof fc_port_name[fc_adp_cnt] -
+                                        strlen(fc_port_name[fc_adp_cnt]) - 1));
                                 port_name_size++;
                             }
                             temp_pstr = temp_pstr + 2;
@@ -566,6 +568,7 @@ int readSessionData(char *label_msg[]) {
         }
         /* Set temporary variable */
         strncpy(tmp_init_name, init_names[i], MAX_SYSFS_ATTR_SIZE);
+        tmp_init_name[sizeof tmp_init_name - 1] = '\0';
         tmp_lun_cnt = lun_count[i];
         tmp_act_cmds = active_cmds[i];
         tmp_read_io = read_io_kb[i];

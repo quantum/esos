@@ -126,7 +126,7 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define MAX_SMTP_LEN            32
 #define MAX_SMTP_USER_LEN       32
 #define MAX_SMTP_PASS_LEN       32
-#define MAX_INI_VAL             64
+#define MAX_INI_VAL             2048
 #define MAX_NET_IFACE           32
 #define MAX_HOSTNAME            32
 #define MAX_DOMAINNAME          32

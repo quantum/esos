@@ -1817,7 +1817,7 @@ rpc_agent.chroot: glibc.chroot stunnel.chroot xmlrpc-c.chroot \
 	$(MAKE) --directory=$(rpc_agent_dir) --file=Makefile.esos
 	$(CP) -f $(rpc_agent_dir)/stunnel.conf /etc/stunnel/stunnel.conf
 	$(INSTALL) -D -m 0755 $(rpc_agent_dir)/rpc_agent /opt/sbin/rpc_agent
-	$(MAKE) --directory=$(tgt_src_dir) clean
+	$(MAKE) --directory=$(rpc_agent_dir) --file=Makefile.esos clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4429,10 +4429,10 @@ image:
 	$(MKNOD) $(INITRAMFS_DIR)/dev/console c 5 1
 	$(MKNOD) $(INITRAMFS_DIR)/dev/tty c 5 0
 	$(QUIET) if [ "x$(enable_debug)" != "xyes" ]; then \
-	  $(SED) 's/@@root_size@@/1536m/' $(SRC_DIR)/misc/initramfs_init > \
+	  $(SED) 's/@@root_size@@/1792m/' $(SRC_DIR)/misc/initramfs_init > \
 	  $(INITRAMFS_DIR)/init; \
 	else \
-	  $(SED) 's/@@root_size@@/2560m/' $(SRC_DIR)/misc/initramfs_init > \
+	  $(SED) 's/@@root_size@@/2816m/' $(SRC_DIR)/misc/initramfs_init > \
 	  $(INITRAMFS_DIR)/init; \
 	fi
 	$(CHMOD) +x $(INITRAMFS_DIR)/init
@@ -4472,12 +4472,13 @@ image:
 	$(CPIO) -pmdvu $(MOUNT_DIR)
 	cd $(CHROOT_DIR) && \
 	$(FIND) . -depth ! -path "./usr/include*" ! -path "*.a" \
-	! -path "*.la" ! -path "./usr/share/doc*" ! -path "./boot*" \
-	! -path "./build*" ! -path "./sources*" ! -path "./tools*" \
-	! -path "./usr/lib/pkgconfig*" ! -path "./usr/lib/gcc" \
-	! -path "./usr/lib/cmake*" ! -path "./bin/cat" ! -path "./bin/echo" \
-	! -path "./bin/ln" ! -path "./bin/pwd" ! -path "./bin/rm" \
-	! -path "./bin/stty" ! -path "./bin/sh" ! -path "./usr/bin/install" \
+	! -path "*.la" ! -path "./usr/share/doc*" ! -path "./usr/share/xml*" \
+	! -path "./boot*" ! -path "./build*" ! -path "./sources*" \
+	! -path "./tools*" ! -path "./usr/lib/pkgconfig*" \
+	! -path "./usr/lib/gcc" ! -path "./usr/lib/cmake*" \
+	! -path "./bin/cat" ! -path "./bin/echo" ! -path "./bin/ln" \
+	! -path "./bin/pwd" ! -path "./bin/rm" ! -path "./bin/stty" \
+	! -path "./bin/sh" ! -path "./usr/bin/install" \
 	! -path "./usr/bin/env" ! -path "./etc/resolv.conf" | \
 	$(CPIO) -pmdvu $(STAGING_DIR)
 	$(INSTALL) -D $(wildcard $(CHROOT_DIR)/usr/include/python*/pyconfig.h) \
