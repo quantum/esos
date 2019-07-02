@@ -1817,7 +1817,7 @@ rpc_agent.chroot: glibc.chroot stunnel.chroot xmlrpc-c.chroot \
 	$(MAKE) --directory=$(rpc_agent_dir) --file=Makefile.esos
 	$(CP) -f $(rpc_agent_dir)/stunnel.conf /etc/stunnel/stunnel.conf
 	$(INSTALL) -D -m 0755 $(rpc_agent_dir)/rpc_agent /opt/sbin/rpc_agent
-	$(MAKE) --directory=$(tgt_src_dir) clean
+	$(MAKE) --directory=$(rpc_agent_dir) --file=Makefile.esos clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
