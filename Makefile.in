@@ -428,7 +428,7 @@ ifeq ($(enable_qla),yes)
 	scst_qla2xxx_unified-master_20181008.tar.xz)
 endif
 ifeq ($(enable_zfs),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.8.0.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.8.1.tar.gz)
 	chroot_tgts += zfs.chroot
 endif
 ifeq ($(enable_lessfs),yes)
