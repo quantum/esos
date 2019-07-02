@@ -613,6 +613,7 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                     } else if (file_select->exitType == vNORMAL) {
                         strncpy(fileio_file, selected_file,
                                 MAX_SYSFS_PATH_SIZE);
+                        fileio_file[sizeof fileio_file - 1] = '\0';
                         destroyCDKFselect(file_select);
                         refreshCDKScreen(main_cdk_screen);
                     }
@@ -620,10 +621,12 @@ void addDeviceDialog(CDKSCREEN *main_cdk_screen) {
                 } else {
                     /* Get block device choice from user */
                     if ((block_dev =
-                            getBlockDevChoice(main_cdk_screen)) == NULL)
+                            getBlockDevChoice(main_cdk_screen)) == NULL) {
                         break;
-                    else
+                    } else {
                         strncpy(fileio_file, block_dev, MAX_SYSFS_PATH_SIZE);
+                        fileio_file[sizeof fileio_file - 1] = '\0';
+                    }
                 }
             }
 

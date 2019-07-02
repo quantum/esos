@@ -611,8 +611,10 @@ char *getSCSIDiskChoice(CDKSCREEN *cdk_screen) {
         disk_choice = activateCDKScroll(scsi_dsk_list, 0);
 
         /* Check exit from widget and copy data if normal */
-        if (scsi_dsk_list->exitType == vNORMAL)
+        if (scsi_dsk_list->exitType == vNORMAL) {
             strncpy(ret_buff, scsi_dsk_dev[disk_choice], MAX_SYSFS_ATTR_SIZE);
+            ret_buff[sizeof ret_buff - 1] = '\0';
+        }
         break;
     }
 
@@ -1367,8 +1369,10 @@ char *getSCSIDevChoice(CDKSCREEN *cdk_screen, int scsi_dev_type) {
         dev_choice = activateCDKScroll(scsi_dev_list, 0);
 
         /* Check exit from widget and copy data if normal */
-        if (scsi_dev_list->exitType == vNORMAL)
+        if (scsi_dev_list->exitType == vNORMAL) {
             strncpy(ret_buff, scsi_device[dev_choice], MAX_SYSFS_ATTR_SIZE);
+            ret_buff[sizeof ret_buff - 1] = '\0';
+        }
         break;
     }
 

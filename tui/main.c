@@ -1306,6 +1306,7 @@ void statusBar(WINDOW *window) {
     getresuid(&ruid, &euid, &suid);
     pwd = getpwuid(suid);
     strncpy(username_str, pwd->pw_name, STAT_BAR_UNAME_MAX);
+    username_str[sizeof username_str - 1] = '\0';
     username_size = strlen(username_str);
 
     /* Figure out spacing for status bar */
@@ -1338,7 +1339,8 @@ boolean acceptLicense(CDKSCREEN *main_cdk_screen) {
     boolean eula_accepted = FALSE;
     dictionary *ini_dict = NULL;
     CDKLABEL *transmit_msg = 0;
-    char *error_msg = NULL, *conf_accept_eula = NULL, *swindow_title = NULL;
+    char *error_msg = NULL, *swindow_title = NULL;
+    const char *conf_accept_eula = NULL;
     char *swindow_info[MAX_ESOS_LICENSE_LINES] = {NULL};
     char line[ESOS_LICENSE_COLS] = {0};
     FILE *ini_file = NULL, *license_file = NULL;
@@ -1500,7 +1502,8 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
     dictionary *ini_dict = NULL;
     uuid_t install_id = {0};
     CDKLABEL *transmit_msg = 0;
-    char *error_msg = NULL, *conf_install_id = NULL, *conf_last_ver = NULL,
+    char *error_msg = NULL;
+    const char *conf_install_id = NULL, *conf_last_ver = NULL,
             *conf_participate = NULL;
     char install_id_str[UUID_STR_SIZE] = {0};
     FILE *ini_file = NULL;
@@ -1591,7 +1594,8 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
                 conf_install_id = iniparser_getstring(ini_dict,
                         "usage:install_id", "");
                 if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
+                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR,
+                            strerror(errno));
                     errorDialog(main_cdk_screen, error_msg, NULL);
                     FREE_NULL(error_msg);
                     break;
@@ -1689,7 +1693,7 @@ void reportUsage(CDKSCREEN *main_cdk_screen) {
  */
 void setTheme() {
     dictionary *ini_dict = NULL;
-    char *conf_theme = NULL;
+    const char *conf_theme = NULL;
     FILE *ini_file = NULL;
 
     while (1) {
