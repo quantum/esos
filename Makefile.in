@@ -1766,7 +1766,7 @@ gdb.chroot: glibc.chroot ncurses.chroot zlib.chroot readline.chroot
 	--with-curses --with-system-zlib --with-system-readline
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
+	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
