@@ -460,7 +460,6 @@ AC_ARG_WITH(ocs_sdk,
 	[ocs_sdk_file="${withval}"; with_ocs_sdk="yes"],
 	[with_ocs_sdk="no"]), with_ocs_sdk="no")
 if test "x${with_ocs_sdk}" = "xyes"; then
-	AC_MSG_ERROR([support for Emulex OCS adapters is broken])
 	if test -f "${ocs_sdk_file}"; then
 		AC_MSG_NOTICE([extracting the ocs_sdk package file...])
 		ocs_sdk_dir="${chroot_dir}/build/ocs_sdk"
