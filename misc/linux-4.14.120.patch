@@ -133,3 +133,226 @@
  
  	/* Memory Barrier */
  	wmb();
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -684,6 +684,9 @@ void qla24xx_do_nack_work(struct scsi_qla_host *vha, struct qla_work_evt *e)
+ 
+ 	switch (e->u.nack.type) {
+ 	case SRB_NACK_PRLI:
++		t = e->u.nack.fcport;
++		flush_work(&t->del_work);
++		flush_work(&t->free_work);
+ 		mutex_lock(&vha->vha_tgt.tgt_mutex);
+ 		t = qlt_create_sess(vha, e->u.nack.fcport, 0);
+ 		mutex_unlock(&vha->vha_tgt.tgt_mutex);
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -682,7 +682,6 @@ done:
+ void qla24xx_do_nack_work(struct scsi_qla_host *vha, struct qla_work_evt *e)
+ {
+ 	fc_port_t *t;
+-	unsigned long flags;
+ 
+ 	switch (e->u.nack.type) {
+ 	case SRB_NACK_PRLI:
+@@ -695,10 +694,8 @@ void qla24xx_do_nack_work(struct scsi_qla_host *vha, struct qla_work_evt *e)
+ 		if (t) {
+ 			ql_log(ql_log_info, vha, 0xd034,
+ 			    "%s create sess success %p", __func__, t);
+-			spin_lock_irqsave(&vha->hw->tgt.sess_lock, flags);
+ 			/* create sess has an extra kref */
+ 			vha->hw->tgt.tgt_ops->put_sess(e->u.nack.fcport);
+-			spin_unlock_irqrestore(&vha->hw->tgt.sess_lock, flags);
+ 		}
+ 		break;
+ 	}
+@@ -710,9 +707,6 @@ void qla24xx_delete_sess_fn(struct work_struct *work)
+ {
+ 	fc_port_t *fcport = container_of(work, struct fc_port, del_work);
+ 	struct qla_hw_data *ha = fcport->vha->hw;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&ha->tgt.sess_lock, flags);
+ 
+ 	if (fcport->se_sess) {
+ 		ha->tgt.tgt_ops->shutdown_sess(fcport);
+@@ -720,7 +714,6 @@ void qla24xx_delete_sess_fn(struct work_struct *work)
+ 	} else {
+ 		qlt_unreg_sess(fcport);
+ 	}
+-	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
+ }
+ 
+ /*
+@@ -789,8 +782,9 @@ void qlt_fc_port_added(struct scsi_qla_host *vha, fc_port_t *fcport)
+ 		    fcport->port_name, sess->loop_id);
+ 		sess->local = 0;
+ 	}
+-	ha->tgt.tgt_ops->put_sess(sess);
+ 	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
++
++	ha->tgt.tgt_ops->put_sess(sess);
+ }
+ 
+ /*
+@@ -4175,9 +4169,7 @@ static void __qlt_do_work(struct qla_tgt_cmd *cmd)
+ 	/*
+ 	 * Drop extra session reference from qlt_handle_cmd_for_atio().
+ 	 */
+-	spin_lock_irqsave(&ha->tgt.sess_lock, flags);
+ 	ha->tgt.tgt_ops->put_sess(sess);
+-	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
+ 	return;
+ 
+ out_term:
+@@ -4194,9 +4186,7 @@ out_term:
+ 	target_free_tag(sess->se_sess, &cmd->se_cmd);
+ 	spin_unlock_irqrestore(qpair->qp_lock_ptr, flags);
+ 
+-	spin_lock_irqsave(&ha->tgt.sess_lock, flags);
+ 	ha->tgt.tgt_ops->put_sess(sess);
+-	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
+ }
+ 
+ static void qlt_do_work(struct work_struct *work)
+@@ -4405,9 +4395,7 @@ static int qlt_handle_cmd_for_atio(struct scsi_qla_host *vha,
+ 	if (!cmd) {
+ 		ql_dbg(ql_dbg_io, vha, 0x3062,
+ 		    "qla_target(%d): Allocation of cmd failed\n", vha->vp_idx);
+-		spin_lock_irqsave(&ha->tgt.sess_lock, flags);
+ 		ha->tgt.tgt_ops->put_sess(sess);
+-		spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
+ 		return -EBUSY;
+ 	}
+ 
+@@ -6258,17 +6246,19 @@ static void qlt_abort_work(struct qla_tgt *tgt,
+ 	}
+ 
+ 	rc = __qlt_24xx_handle_abts(vha, &prm->abts, sess);
+-	ha->tgt.tgt_ops->put_sess(sess);
+ 	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags2);
+ 
++	ha->tgt.tgt_ops->put_sess(sess);
++
+ 	if (rc != 0)
+ 		goto out_term;
+ 	return;
+ 
+ out_term2:
++	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags2);
++
+ 	if (sess)
+ 		ha->tgt.tgt_ops->put_sess(sess);
+-	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags2);
+ 
+ out_term:
+ 	spin_lock_irqsave(&ha->hardware_lock, flags);
+@@ -6326,9 +6316,10 @@ static void qlt_tmr_work(struct qla_tgt *tgt,
+ 	    scsilun_to_int((struct scsi_lun *)&a->u.isp24.fcp_cmnd.lun);
+ 
+ 	rc = qlt_issue_task_mgmt(sess, unpacked_lun, fn, iocb, 0);
+-	ha->tgt.tgt_ops->put_sess(sess);
+ 	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
+ 
++	ha->tgt.tgt_ops->put_sess(sess);
++
+ 	if (rc != 0)
+ 		goto out_term;
+ 	return;
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -340,7 +340,6 @@ static void tcm_qla2xxx_put_sess(struct fc_port *sess)
+ 	if (!sess)
+ 		return;
+ 
+-	assert_spin_locked(&sess->vha->hw->tgt.sess_lock);
+ 	kref_put(&sess->sess_kref, tcm_qla2xxx_release_session);
+ }
+ 
+@@ -798,7 +797,6 @@ static void tcm_qla2xxx_clear_nacl_from_fcport_map(struct fc_port *sess)
+ 
+ static void tcm_qla2xxx_shutdown_sess(struct fc_port *sess)
+ {
+-	assert_spin_locked(&sess->vha->hw->tgt.sess_lock);
+ 	target_sess_cmd_list_set_waiting(sess->se_sess);
+ }
+--- a/drivers/scsi/qla2xxx/qla_iocb.c
++++ b/drivers/scsi/qla2xxx/qla_iocb.c
+@@ -3645,23 +3645,22 @@ qla24xx_prlo_iocb(srb_t *sp, struct logio_entry_24xx *logio)
+ int
+ qla2x00_start_sp(srb_t *sp)
+ {
+-	int rval;
++	int rval = QLA_SUCCESS;
+ 	scsi_qla_host_t *vha = sp->vha;
+ 	struct qla_hw_data *ha = vha->hw;
+ 	struct qla_qpair *qp = sp->qpair;
+ 	void *pkt;
+ 	unsigned long flags;
+ 
+-	rval = QLA_FUNCTION_FAILED;
+ 	spin_lock_irqsave(qp->qp_lock_ptr, flags);
+ 	pkt = __qla2x00_alloc_iocbs(sp->qpair, sp);
+ 	if (!pkt) {
++		rval = EAGAIN;
+ 		ql_log(ql_log_warn, vha, 0x700c,
+ 		    "qla2x00_alloc_iocbs failed.\n");
+ 		goto done;
+ 	}
+ 
+-	rval = QLA_SUCCESS;
+ 	switch (sp->type) {
+ 	case SRB_LOGIN_CMD:
+ 		IS_FWI2_CAPABLE(ha) ?
+--- a/drivers/scsi/qla2xxx/qla_os.c
++++ b/drivers/scsi/qla2xxx/qla_os.c
+@@ -5204,14 +5204,14 @@ qla2x00_do_work(struct scsi_qla_host *vha)
+ 	struct qla_work_evt *e, *tmp;
+ 	unsigned long flags;
+ 	LIST_HEAD(work);
++	int rc;
+ 
+ 	spin_lock_irqsave(&vha->work_lock, flags);
+ 	list_splice_init(&vha->work_list, &work);
+ 	spin_unlock_irqrestore(&vha->work_lock, flags);
+ 
+ 	list_for_each_entry_safe(e, tmp, &work, list) {
+-		list_del_init(&e->list);
+-
++		rc = QLA_SUCCESS;
+ 		switch (e->type) {
+ 		case QLA_EVT_AEN:
+ 			fc_host_post_event(vha->host, fc_get_event_number(),
+@@ -5225,7 +5225,7 @@ qla2x00_do_work(struct scsi_qla_host *vha)
+ 			    e->u.logio.data);
+ 			break;
+ 		case QLA_EVT_ASYNC_LOGOUT:
+-			qla2x00_async_logout(vha, e->u.logio.fcport);
++			rc = qla2x00_async_logout(vha, e->u.logio.fcport);
+ 			break;
+ 		case QLA_EVT_ASYNC_LOGOUT_DONE:
+ 			qla2x00_async_logout_done(vha, e->u.logio.fcport,
+@@ -5270,7 +5270,7 @@ qla2x00_do_work(struct scsi_qla_host *vha)
+ 			qla24xx_do_nack_work(vha, e);
+ 			break;
+ 		case QLA_EVT_ASYNC_PRLO:
+-			qla2x00_async_prlo(vha, e->u.logio.fcport);
++			rc = qla2x00_async_prlo(vha, e->u.logio.fcport);
+ 			break;
+ 		case QLA_EVT_ASYNC_PRLO_DONE:
+ 			qla2x00_async_prlo_done(vha, e->u.logio.fcport,
+@@ -5303,6 +5303,15 @@ qla2x00_do_work(struct scsi_qla_host *vha)
+ 			    e->u.fcport.fcport, false);
+ 			break;
+ 		}
++
++		if (rc == EAGAIN) {
++			/* put 'work' at head of 'vha->work_list' */
++			spin_lock_irqsave(&vha->work_lock, flags);
++			list_splice(&work, &vha->work_list);
++			spin_unlock_irqrestore(&vha->work_lock, flags);
++			break;
++		}
++		list_del_init(&e->list);
+ 		if (e->flags & QLA_EVT_FLAG_FREE)
+ 			kfree(e);

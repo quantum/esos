@@ -425,7 +425,7 @@ ifeq ($(enable_python_sql),yes)
 endif
 ifeq ($(enable_qla),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
-	scst_qla2xxx_unified-master_20181008.tar.xz)
+	scst_qla2xxx_unified-master_20190620.tar.xz)
 endif
 ifeq ($(enable_zfs),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.8.1.tar.gz)
