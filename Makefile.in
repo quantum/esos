@@ -4212,7 +4212,7 @@ nginx.chroot: glibc.chroot pcre.chroot zlib.chroot openssl.chroot
 	--with-http_ssl_module
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
+	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
