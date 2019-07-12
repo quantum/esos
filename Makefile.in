@@ -571,6 +571,7 @@ clean: $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(TOOLS_DIR)/lib/gcc/x86_64-pc-linux-gnu/$(gcc_ver)/specs
 	$(RM) $(chroot_build)/*
 	$(RM) $(INITRAMFS_DIR)/*
+	$(RM) $(SOURCES_DIR)/*
 	$(RM) $(BUILD_DIR)/VERSION
 	$(RM) $(BUILD_DIR)/dist_*.txt
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
@@ -582,7 +583,7 @@ clean: $(clean_chroot_tgts) $(clean_system_tgts)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Successfully cleaned the chroot structure!"
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Run './configure' and 'make bootstrap' before" \
+	$(QUIET) $(ECHO) "### Run './configure' and 'make all' before" \
 	"building again..."
 
 $(clean_chroot_tgts):: target = $(subst clean-,,$(@))
@@ -1725,7 +1726,6 @@ esos_tui.chroot: glibc.chroot ncurses.chroot cdk.chroot iniparser.chroot \
 	-DPRODUCT_NAME=\"\\\"$(product)\\\"\" \
 	-DGIT_BRANCH=\"\\\"$(git_branch)\\\"\" $(tui_cpp_flags)"
 	$(INSTALL) -m 755 $(chroot_build)/tui/esos_tui /usr/local/bin
-	$(MAKE) --directory=$(chroot_build)/tui clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1747,11 +1747,9 @@ scst.chroot: glibc.chroot esos_kernels.chroot
 	$(INSTALL) -vD -m 644 \
 	$(tgt_src_dir)/iscsi-scst/doc/manpages/iscsi-scst-adm.8 \
 	/usr/share/man/man8/iscsi-scst-adm.8
-	$(MAKE) --directory=$(tgt_src_dir)/iscsi-scst/usr clean
 	$(MAKE) --directory=$(tgt_src_dir)/usr \
 	SCST_INC_DIR=$(tgt_src_dir)/scst/include all
 	$(MAKE) --directory=$(tgt_src_dir)/usr PREFIX=/usr install
-	$(MAKE) --directory=$(tgt_src_dir)/usr clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1766,7 +1764,6 @@ gdb.chroot: glibc.chroot ncurses.chroot zlib.chroot readline.chroot
 	--with-curses --with-system-zlib --with-system-readline
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1776,7 +1773,6 @@ valgrind.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1786,7 +1782,6 @@ strace.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-mpers
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1797,7 +1792,6 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/cmd install
 	$(MAKE) --directory=$(tgt_src_dir)/man install
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1868,7 +1862,6 @@ Linux-PAM.chroot: glibc.chroot
 	--enable-db=no --enable-securedir=/lib/security
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(CHMOD) -v 4755 /sbin/unix_chkpwd
 	for file in pam pam_misc pamc; do \
 	  $(MV) -v /usr/lib/lib$${file}.so.* /lib && \
@@ -1912,7 +1905,6 @@ makedumpfile.chroot: glibc.chroot elfutils.chroot bzip2.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -D -m 0755 $(tgt_src_dir)/makedumpfile \
 	$(chroot_build)/initramfs/usr/sbin/makedumpfile
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1922,7 +1914,6 @@ elfutils.chroot: glibc.chroot zlib.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1933,7 +1924,6 @@ sysvinit.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/src SULOGINLIBS=-lcrypt \
 	CFLAGS="-O2 -fomit-frame-pointer"
 	$(MAKE) --directory=$(tgt_src_dir)/src ROOT=/ install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -1992,7 +1982,6 @@ perl.chroot: glibc.chroot db.chroot
 	cd $(tgt_src_dir) && ./configure.gnu --prefix=/usr --verbose
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install.perl INSTALLFLAGS="-f -o"
-	- $(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2049,7 +2038,6 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	  pip3 install SQLAlchemy==1.1.1; \
 	fi
 	$(RM) /.cache
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2072,7 +2060,6 @@ scstadmin.chroot: perl.chroot
 	$(MAKE) --directory=$(perl_mod) PERL5LIB="$(perl_lib)"
 	$(MAKE) --directory=$(perl_mod) PERL5LIB="$(perl_lib)" install
 	$(INSTALL) -m 755 $(scst_src)/scstadmin/scstadmin/scstadmin /usr/sbin/
-	- $(MAKE) --directory=$(perl_mod) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2084,7 +2071,6 @@ openssh.chroot: glibc.chroot zlib.chroot openssl.chroot
 	--without-openssl-header-check
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=/ install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(SED) -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' \
 	/etc/ssh/sshd_config
 	$(TOUCH) $(@)
@@ -2096,7 +2082,6 @@ vixie-cron.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) all
 	$(INSTALL) -m 111 $(tgt_src_dir)/cron /usr/sbin/
 	$(INSTALL) -m 4111 $(tgt_src_dir)/crontab /usr/bin/
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2108,7 +2093,6 @@ openssl.chroot: glibc.chroot gcc.chroot
 	--prefix=/usr --openssldir=/etc/ssl
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install_sw install_ssldirs
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2118,7 +2102,6 @@ zlib.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2130,7 +2113,6 @@ ncurses.chroot: glibc.chroot gcc.chroot
 	--without-gpm --mandir=/usr/share/man --enable-widec
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(MKDIR) /usr/include/ncursesw
 	$(LN) ../ncurses.h /usr/include/ncursesw/ncurses.h
 	$(LN) ../term.h /usr/include/ncursesw/term.h
@@ -2162,7 +2144,6 @@ ssmtp.chroot: glibc.chroot openssl.chroot
 	./configure --enable-ssl --prefix="" --exec-prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -m 755 $(tgt_src_dir)/ssmtp /usr/sbin/
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(LN) ssmtp /usr/sbin/sendmail
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -2174,7 +2155,6 @@ libibumad.chroot: glibc.chroot
 	--localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2185,7 +2165,6 @@ libibverbs.chroot: glibc.chroot libnl.chroot
 	--localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2195,7 +2174,6 @@ libcxgb3.chroot: glibc.chroot libibverbs.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2205,7 +2183,6 @@ libcxgb4.chroot: glibc.chroot libibverbs.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2215,7 +2192,6 @@ libi40iw.chroot: glibc.chroot libibverbs.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2225,7 +2201,6 @@ libmlx4.chroot: glibc.chroot libibverbs.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2236,7 +2211,6 @@ libmlx5.chroot: glibc.chroot libibverbs.chroot
 	./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2246,7 +2220,6 @@ libmthca.chroot: glibc.chroot libibverbs.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2256,7 +2229,6 @@ libnes.chroot: glibc.chroot libibverbs.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2266,7 +2238,6 @@ libocrdma.chroot: glibc.chroot libibverbs.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2279,7 +2250,6 @@ srptools.chroot: glibc.chroot libibumad.chroot libibverbs.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinPROGRAMS
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinSCRIPTS
 	$(MAKE) --directory=$(tgt_src_dir) install-man
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2289,7 +2259,6 @@ lsscsi.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2301,7 +2270,6 @@ sg3_utils.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(INSTALL) -m 0755 $(tgt_src_dir)/scripts/rescan-scsi-bus.sh \
 	/usr/sbin/rescan-scsi-bus.sh
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2313,7 +2281,6 @@ groff.chroot: glibc.chroot gcc.chroot
 	-I$(wildcard /tools/include/c++/*) \
 	-I$(wildcard /tools/include/c++/*/x86_64-pc-linux-gnu)"
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(LN) tbl /usr/bin/gtbl
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -2325,7 +2292,6 @@ kexec-tools.chroot: glibc.chroot
 	CFLAGS="-DEM_486=6 -DEM_386=3" ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2336,7 +2302,6 @@ iniparser.chroot: glibc.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/libiniparser.so.* /usr/lib/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/src/iniparser.h /usr/include/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/src/dictionary.h /usr/include/
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(LN) -v libiniparser.so.1 /usr/lib/libiniparser.so
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -2349,7 +2314,6 @@ cdk.chroot: glibc.chroot ncurses.chroot
 	--with-libtool --mandir=/usr/share/man --with-shared
 	$(MAKE) --directory=$(tgt_src_dir) LIBS="-lncursesw"
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2374,7 +2338,6 @@ lvm2.chroot: glibc.chroot corosync.chroot dlm.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/scripts install
 	$(MAKE) --directory=$(tgt_src_dir)/daemons install
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2385,7 +2348,6 @@ xfsprogs.chroot: glibc.chroot util-linux.chroot
 	./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir) BUILD_VERBOSE=1
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2404,7 +2366,6 @@ drbd-utils.chroot: glibc.chroot eudev.chroot
 	--with-prebuiltman
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2412,7 +2373,6 @@ mdadm.chroot: glibc.chroot corosync.chroot dlm.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(call apply_pkg_patch)
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(MAKE) --directory=$(tgt_src_dir) mdadm.static \
 	CXFLAGS="-Wno-address-of-packed-member -Wno-absolute-value"
 	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdadm.static \
@@ -2440,7 +2400,6 @@ parted.chroot: glibc.chroot util-linux.chroot lvm2.chroot readline.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2456,7 +2415,6 @@ opensm.chroot: glibc.chroot gcc.chroot libibumad.chroot libibverbs.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/complib install
 	$(MAKE) --directory=$(tgt_src_dir)/libvendor install
 	$(MAKE) --directory=$(tgt_src_dir)/include install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2466,7 +2424,6 @@ libqb.chroot: glibc.chroot glib.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(LN) -v libqb.so.0.19.2 /usr/lib/libqb.so
 	$(RM) /usr/lib/libqb.la
 	$(TOUCH) $(@)
@@ -2506,7 +2463,6 @@ pacemaker.chroot: glibc.chroot libqb.chroot util-linux.chroot glib.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/cts install
 	$(MAKE) --directory=$(tgt_src_dir)/doc install
 	$(MAKE) --directory=$(tgt_src_dir)/extra install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2531,7 +2487,6 @@ corosync.chroot: glibc.chroot libqb.chroot nss.chroot librdmacm.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/man install
 	$(MAKE) --directory=$(tgt_src_dir)/qdevices install
 	$(MAKE) --directory=$(tgt_src_dir)/conf install-corosysxmlxsltDATA
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2558,7 +2513,6 @@ nss.chroot: glibc.chroot gcc.chroot sqlite-autoconf.chroot zlib.chroot
 	$(tgt_src_dir)/dist/Linux*/bin/{certutil,nss-config,pk12util} /usr/bin
 	$(INSTALL) -v -m644 $(tgt_src_dir)/dist/Linux*/lib/pkgconfig/nss.pc \
 	/usr/lib/pkgconfig/
-	$(MAKE) --directory=$(tgt_src_dir)/nspr clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2582,7 +2536,6 @@ libxml2.chroot: glibc.chroot zlib.chroot
 	--with-threads --without-lzma
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2593,7 +2546,6 @@ libxslt.chroot: glibc.chroot libxml2.chroot
 	--without-python --without-crypto
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) mostlyclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2625,7 +2577,6 @@ crmsh.chroot: glibc.chroot Python.chroot glue.chroot pacemaker.chroot
 	--localstatedir=/var --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=/ install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2634,7 +2585,6 @@ libaio.chroot: glibc.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) prefix=/usr install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2656,7 +2606,6 @@ glue.chroot: glibc.chroot libaio.chroot libxml2.chroot bzip2.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/logd install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/hb_report install
 	$(MAKE) --directory=$(tgt_src_dir)/config install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2666,7 +2615,6 @@ readline.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2689,7 +2637,6 @@ resource-agents.chroot: glib.chroot glue.chroot docbook-xsl-nons.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/include install
 	$(MAKE) --directory=$(tgt_src_dir)/heartbeat install
 	$(MAKE) --directory=$(tgt_src_dir)/tools install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(LN) /usr/lib/ocf/lib/heartbeat/ocf-shellfuncs \
 	/usr/lib/ocf/resource.d/heartbeat/.ocf-shellfuncs
 	$(TOUCH) $(@)
@@ -2710,7 +2657,6 @@ mhvtl.chroot: glibc.chroot lzo.chroot zlib.chroot
 	$(INSTALL) -m 755 $(tgt_src_dir)/usr/tapeexerciser /usr/bin/
 	$(INSTALL) -m 700 $(tgt_src_dir)/usr/build_library_config /usr/bin/
 	$(INSTALL) -m 700 $(tgt_src_dir)/usr/make_vtl_media /usr/bin/
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2721,7 +2667,6 @@ lzo.chroot: glibc.chroot
 	--disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2731,7 +2676,6 @@ mhash.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2746,7 +2690,6 @@ lessfs.chroot: glibc.chroot mhash.chroot openssl.chroot lzo.chroot fuse.chroot \
 	--without-hamsterdb --with-berkeleydb
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2756,7 +2699,6 @@ tokyocabinet.chroot: glibc.chroot bzip2.chroot zlib.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2772,7 +2714,6 @@ fuse.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/util install-binPROGRAMS
 	$(MAKE) --directory=$(tgt_src_dir) install-pkgconfigDATA
 	$(INSTALL) $(tgt_src_dir)/util/mount.fuse /sbin/mount.fuse
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2785,7 +2726,6 @@ db.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/build_unix install_include
 	$(MAKE) --directory=$(tgt_src_dir)/build_unix install_lib
 	$(MAKE) --directory=$(tgt_src_dir)/build_unix install_utilities
-	$(MAKE) --directory=$(tgt_src_dir)/build_unix distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2815,7 +2755,6 @@ fence-agents.chroot: glibc.chroot nss.chroot Python.chroot Net-Telnet.chroot \
 	--sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2826,7 +2765,6 @@ curl.chroot: glibc.chroot openssl.chroot
 	--without-libssh2 --without-libidn
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2839,7 +2777,6 @@ Net-Telnet.chroot: perl.chroot
 	PERL_ARCHLIB="$(perl_lib)/x86_64-linux"
 	$(MAKE) --directory=$(tgt_src_dir) PERL5LIB="$(perl_lib)"
 	$(MAKE) --directory=$(tgt_src_dir) PERL5LIB="$(perl_lib)" install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2849,7 +2786,6 @@ fio.chroot: glibc.chroot libaio.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) prefix=/usr \
 	mandir=/usr/share/man install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2860,7 +2796,6 @@ bash.chroot: glibc.chroot ncurses.chroot
 	--exec-prefix=/ --with-curses
 	$(MAKE) --directory=$(tgt_src_dir) TERMCAP_LIB="-lncursesw"
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2896,9 +2831,6 @@ open-fcoe.chroot: glibc.chroot open-lldp.chroot libpciaccess.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/fcoe-utils install-man
 	$(INSTALL) $(tgt_src_dir)/fcoe-utils/contrib/*.sh /usr/sbin/
 	$(INSTALL) $(tgt_src_dir)/fcoe-utils/debug/*.sh /usr/sbin/
-	$(MAKE) --directory=$(tgt_src_dir)/libHBAAPI distclean
-	$(MAKE) --directory=$(tgt_src_dir)/libhbalinux distclean
-	$(MAKE) --directory=$(tgt_src_dir)/fcoe-utils distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2922,7 +2854,6 @@ open-lldp.chroot: glibc.chroot libconfig.chroot libnl.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install-lldpad_includeHEADERS
 	$(MAKE) --directory=$(tgt_src_dir) install-man 
 	$(MAKE) --directory=$(tgt_src_dir) install-pkgconfigDATA
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2932,7 +2863,6 @@ libconfig.chroot: glibc.chroot gcc.chroot
 	cd $(tgt_src_dir) && CXX="g++ -std=c++98" ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2942,7 +2872,6 @@ libnl.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2952,7 +2881,6 @@ libpciaccess.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2981,7 +2909,6 @@ dlm.chroot: glibc.chroot corosync.chroot libxml2.chroot pacemaker.chroot
 	$(MAKE) --directory=$(tgt_src_dir) \
 	UDEVDIR="/usr/lib/udev/rules.d" install
 	$(MAKE) --directory=$(tgt_src_dir)/fence install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2996,7 +2923,6 @@ ipmitool.chroot: glibc.chroot openssl.chroot ncurses.chroot readline.chroot \
 	$(MAKE) --directory=$(tgt_src_dir) \
 	LIBS="-lreadline -lncursesw -lcrypto -ledit"
 	$(MAKE) --directory=$(tgt_src_dir) install
-	- $(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3014,7 +2940,6 @@ sysklogd.chroot: glibc.chroot
 	/usr/share/man/man5/syslog.conf.5
 	$(INSTALL) -D $(tgt_src_dir)/klogd.8 \
 	/usr/share/man/man8/klogd.8
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3024,7 +2949,6 @@ less.chroot: glibc.chroot ncurses.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3039,7 +2963,6 @@ irqbalance.chroot: glibc.chroot glib.chroot ncurses.chroot
 	--without-systemd --without-libcap-ng
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3049,7 +2972,6 @@ ethtool.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3061,7 +2983,6 @@ postgresql.chroot: glibc.chroot zlib.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/src/bin install
 	$(MAKE) --directory=$(tgt_src_dir)/src/include install
 	$(MAKE) --directory=$(tgt_src_dir)/src/interfaces/libpq install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3078,7 +2999,6 @@ mysql.chroot: glibc.chroot ncurses.chroot busybox.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/scripts install-binSCRIPTS
 	$(MAKE) --directory=$(tgt_src_dir)/include install
 	$(MAKE) --directory=$(tgt_src_dir)/extra install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(RM) /usr/bin/ps
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -3096,7 +3016,6 @@ infiniband-diags.chroot: glibc.chroot libibumad.chroot libibverbs.chroot \
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinPROGRAMS
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinSCRIPTS
 	$(MAKE) --directory=$(tgt_src_dir)/libibnetdisc install-libLTLIBRARIES
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3107,7 +3026,6 @@ libibmad.chroot: glibc.chroot libibumad.chroot libibverbs.chroot
 	--localstatedir=/var
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3120,7 +3038,6 @@ perftest.chroot: glibc.chroot infiniband-diags.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3132,7 +3049,6 @@ nrpe.chroot: glibc.chroot openssl.chroot e2fsprogs.chroot
 	$(MAKE) --directory=$(tgt_src_dir) all
 	$(MAKE) --directory=$(tgt_src_dir) NAGIOS_INSTALL_OPTS="" \
 	NRPE_INSTALL_OPTS="" install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3159,7 +3075,6 @@ bcache-tools.chroot: glibc.chroot util-linux.chroot openssl.chroot eudev.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/bcache-register \
 	/usr/lib/udev/bcache-register
 	$(INSTALL) -m 0644 $(tgt_src_dir)/*.8 /usr/share/man/man8/
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3189,7 +3104,6 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/flock /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/blkdiscard /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/agetty /sbin/
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3204,7 +3118,6 @@ thin-provisioning-tools.chroot: glibc.chroot gcc.chroot expat.chroot \
 	./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir) V=""
 	$(MAKE) --directory=$(tgt_src_dir) install MANDIR=/usr/share/man
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3215,7 +3128,6 @@ expat.chroot: glibc.chroot
 	--without-xmlwf
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3234,7 +3146,6 @@ boost.chroot: glibc.chroot gcc.chroot
 	--without-random --without-regex --without-serialization \
 	--without-stacktrace --without-system --without-test --without-timer \
 	--witout-type_erasure --without-wave
-	cd $(tgt_src_dir) && ./b2 --clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3260,7 +3171,6 @@ btier.chroot: glibc.chroot
 	$(INSTALL) -D -m 755 \
 	$(tgt_src_dir)/tools/contributed/migrate_blocks_freq.py \
 	/usr/sbin/migrate_blocks_freq.py
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3271,7 +3181,6 @@ librdmacm.chroot: glibc.chroot libibverbs.chroot
 	--localstatedir=/var --mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3294,7 +3203,6 @@ sysstat.chroot: glibc.chroot
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/sar.1 /usr/share/man/man1/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/sadc.8 /usr/share/man/man8/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/man/sadf.1 /usr/share/man/man1/
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3304,7 +3212,6 @@ pciutils.chroot: glibc.chroot zlib.chroot
 	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr
 	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr install
 	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr install-lib
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3316,7 +3223,6 @@ tar.chroot: glibc.chroot acl.chroot
 	FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr --without-selinux
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3335,7 +3241,6 @@ net-snmp.chroot: glibc.chroot gcc.chroot
 	--disable-scripts --enable-ipv6 --with-features="mib_strings_all"
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	- $(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3357,7 +3262,6 @@ nut.chroot: glibc.chroot net-snmp.chroot libusb_compat.chroot freeipmi.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/drivers install
 	$(MAKE) --directory=$(tgt_src_dir)/lib install
 	$(MAKE) --directory=$(tgt_src_dir)/server install
-	$(MAKE) --directory=$(tgt_src_dir) mostlyclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3367,7 +3271,6 @@ libusb.chroot: glibc.chroot eudev.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3377,7 +3280,6 @@ libusb_compat.chroot: glibc.chroot libusb.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3415,7 +3317,6 @@ freeipmi.chroot: glibc.chroot libgcrypt.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/ipmiseld install
 	$(MAKE) --directory=$(tgt_src_dir)/rmcpping install
 	$(MAKE) --directory=$(tgt_src_dir)/contrib install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3425,7 +3326,6 @@ libgcrypt.chroot: glibc.chroot libgpg-error.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3437,7 +3337,6 @@ libgpg-error.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3450,7 +3349,6 @@ smartmontools.chroot: glibc.chroot gcc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinPROGRAMS
 	$(MAKE) --directory=$(tgt_src_dir) install-sbinSCRIPTS
 	$(MAKE) --directory=$(tgt_src_dir) install-data
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3462,7 +3360,6 @@ cryptsetup.chroot: glibc.chroot libgcrypt.chroot lvm2.chroot \
 	--with-crypto_backend=gcrypt
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3472,7 +3369,6 @@ popt.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3482,7 +3378,6 @@ mtx.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) prefix=/usr install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3492,7 +3387,6 @@ mt-st.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) SBINDIR=/usr/sbin \
 	BINDIR=/usr/bin MANDIR=/usr/share/man install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3506,7 +3400,6 @@ nagios-plugins.chroot: glibc.chroot openssl.chroot
 	--with-openssl=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3517,7 +3410,6 @@ libedit.chroot: glibc.chroot ncurses.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3527,7 +3419,6 @@ libmcrypt.chroot: glibc.chroot gcc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	- $(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3537,7 +3428,6 @@ nsca.chroot: glibc.chroot libmcrypt.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/send_nsca /usr/sbin/
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3552,7 +3442,6 @@ btrfs-progs.chroot: glibc.chroot util-linux.chroot attr.chroot zlib.chroot \
 	--disable-zstd
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3562,7 +3451,6 @@ attr.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3572,7 +3460,6 @@ acl.chroot: glibc.chroot attr.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3585,7 +3472,6 @@ htop.chroot: glibc.chroot ncurses.chroot Python.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-binPROGRAMS install-man1
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3594,7 +3480,6 @@ dmidecode.chroot: glibc.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir) prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir) install prefix=/usr
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3609,7 +3494,6 @@ xmlrpc-c.chroot: glibc.chroot gcc.chroot curl.chroot libxml2.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/tools/xmlrpc
 	$(INSTALL) -vD -m 755 $(tgt_src_dir)/tools/xmlrpc/xmlrpc \
 	/usr/bin/xmlrpc
-	- $(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3622,7 +3506,6 @@ stunnel.chroot: glibc.chroot openssl.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/src install-exec
 	$(MAKE) --directory=$(tgt_src_dir)/doc install-data
 	$(MAKE) --directory=$(tgt_src_dir)/tools install-confDATA
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3635,7 +3518,6 @@ sudo.chroot: glibc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) INSTALL_OWNER="" \
 	install SUBDIRS="lib/util plugins/group_file \
 	plugins/sudoers plugins/system_group src include doc"
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3645,7 +3527,6 @@ rsync.chroot: glibc.chroot attr.chroot acl.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3659,7 +3540,6 @@ eudev.chroot: glibc.chroot util-linux.chroot gperf.chroot
 	--disable-selinux --disable-gudev --disable-kmod --disable-silent-rules
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3669,7 +3549,6 @@ gperf.chroot: glibc.chroot gcc.chroot
 	cd $(tgt_src_dir) && CXX="g++ -std=c++98" ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3683,7 +3562,6 @@ multipath-tools.chroot: glibc.chroot lvm2.chroot readline.chroot \
 	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib"
 	$(MAKE) --directory=$(tgt_src_dir) LIB="usr/lib" bindir=/usr/sbin \
 	libudevdir=/usr/lib/udev install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(SED) -i 's/"\/sbin\//"\/usr\/sbin\//' \
 	/usr/lib/udev/rules.d/66-kpartx.rules
 	$(TOUCH) $(@)
@@ -3696,7 +3574,6 @@ json-c.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3706,7 +3583,6 @@ archivemount.chroot: glibc.chroot libarchive.chroot fuse.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3718,7 +3594,6 @@ libarchive.chroot: glibc.chroot bzip2.chroot lzo.chroot zlib.chroot
 	--without-expat
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3729,7 +3604,6 @@ rasdaemon.chroot: glibc.chroot
 	--sysconfdir=/etc --enable-aer --enable-mce
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3739,7 +3613,6 @@ edac-utils.chroot: glibc.chroot sysfsutils.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir)/src install SUBDIRS="lib util"
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3749,7 +3622,6 @@ sysfsutils.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --mandir=/usr/share/man
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3759,7 +3631,6 @@ sqlite-autoconf.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3769,7 +3640,6 @@ libpcap.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3780,7 +3650,6 @@ iftop.chroot: glibc.chroot libpcap.chroot ncurses.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3790,7 +3659,6 @@ iperf2.chroot: glibc.chroot gcc.chroot
 	cd $(tgt_src_dir) && CXX="g++ -std=c++98" ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3800,7 +3668,6 @@ iperf3.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3824,7 +3691,6 @@ munin-c.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(MKDIR) /etc/munin/plugins
 	for i in $$(/usr/libexec/munin-c/munin-plugins-c listplugins); do \
 	  $(LN) /usr/libexec/munin-c/munin-plugins-c \
@@ -3845,7 +3711,6 @@ open-iscsi.chroot: glibc.chroot open-isns.chroot util-linux.chroot kmod.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install_etc
 	$(MAKE) --directory=$(tgt_src_dir) install_iface
 	$(MAKE) --directory=$(tgt_src_dir) install_libopeniscsiusr
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3860,7 +3725,6 @@ open-isns.chroot: glibc.chroot openssl.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install SYSTEMDDIR=""
 	$(MAKE) --directory=$(tgt_src_dir) install_hdrs
 	$(MAKE) --directory=$(tgt_src_dir) install_lib
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3873,7 +3737,6 @@ coreutils.chroot: glibc.chroot perl.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/dd /bin/dd
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/pr /bin/pr
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/readlink /usr/bin/readlink
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3891,7 +3754,6 @@ open-vm-tools.chroot: glibc.chroot gcc.chroot glib.chroot libdnet.chroot
 	$(SED) -i 's/-$$(LN_S) $$(DESTDIR)$$(sbindir)/-$$(LN_S) $$(sbindir)/g' \
 	$(tgt_src_dir)/hgfsmounter/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) install pamdir=""
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3902,7 +3764,6 @@ libdnet.chroot: glibc.chroot
 	--mandir=/usr/share/man --with-pic
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3912,7 +3773,6 @@ libffi.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3934,7 +3794,6 @@ openwsman.chroot: glibc.chroot gcc.chroot Python.chroot libxml2.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/src install
 	$(MAKE) --directory=$(tgt_src_dir)/doc install
 	$(MAKE) --directory=$(tgt_src_dir)/bindings install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3945,7 +3804,6 @@ swig.chroot: glibc.chroot
 	--without-pcre --without-maximum-compile-warnings --without-alllang
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	- $(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3955,7 +3813,6 @@ userspace-rcu.chroot: glibc.chroot gcc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3991,7 +3848,6 @@ nvme-cli.chroot: glibc.chroot eudev.chroot
 	$(MAKE) --directory=$(tgt_src_dir) PREFIX=/usr LIBUDEV=0
 	$(MAKE) --directory=$(tgt_src_dir) install-man PREFIX=/usr
 	$(MAKE) --directory=$(tgt_src_dir) install-bin PREFIX=/usr
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4002,7 +3858,6 @@ freetype.chroot: glibc.chroot bzip2.chroot
 	--with-png=no --enable-freetype-config --disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(RM) /usr/share/man/man1/freetype-config.1
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -4012,7 +3867,6 @@ ledmon.chroot: glibc.chroot gcc.chroot sg3_utils.chroot eudev.chroot
 	$(call chroot_only)
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4029,7 +3883,6 @@ sed.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4044,7 +3897,6 @@ bc.chroot: glibc.chroot readline.chroot
 	--mandir=/usr/share/man --infodir=/usr/share/info
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4054,7 +3906,6 @@ libtool.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4067,7 +3918,6 @@ etckeeper.chroot: git.chroot
 	$(INSTALL) -m 0644 $(tgt_src_dir)/etckeeper.conf /etc/etckeeper/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/etckeeper /usr/bin/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/etckeeper.8 /usr/share/man/man8/
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4080,7 +3930,6 @@ git.chroot: glibc.chroot curl.chroot expat.chroot zlib.chroot openssh.chroot \
 	--without-tcltk
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4099,7 +3948,6 @@ findutils.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4111,7 +3959,6 @@ nfs-utils.chroot: glibc.chroot rpcbind.chroot libevent.chroot keyutils.chroot \
 	--disable-gss
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4123,7 +3970,6 @@ rpcbind.chroot: glibc.chroot libtirpc.chroot
 	--enable-warmstarts --without-systemdsystemunitdir
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4134,7 +3980,6 @@ libtirpc.chroot: glibc.chroot
 	--disable-static --disable-gssapi
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4144,7 +3989,6 @@ libevent.chroot: glibc.chroot openssl.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4153,7 +3997,6 @@ keyutils.chroot: glibc.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir) NO_ARLIB=1
 	$(MAKE) --directory=$(tgt_src_dir) NO_ARLIB=1 LIBDIR=/usr/lib install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4164,7 +4007,6 @@ libnfsidmap.chroot: glibc.chroot
 	--disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4173,7 +4015,6 @@ hdparm.chroot: glibc.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4187,7 +4028,6 @@ kbd.chroot: glibc.chroot
 	./configure --prefix=/usr --disable-vlock
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4197,7 +4037,6 @@ pcre.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4212,7 +4051,6 @@ nginx.chroot: glibc.chroot pcre.chroot zlib.chroot openssl.chroot
 	--with-http_ssl_module
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4222,7 +4060,6 @@ dosfstools.chroot: glibc.chroot eudev.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4233,7 +4070,6 @@ lsof.chroot: glibc.chroot libtirpc.chroot
 	$(MAKE) --directory=$(tgt_src_dir) CFGL="-L./lib -llsof -ltirpc"
 	$(INSTALL) -v -m 0755 $(tgt_src_dir)/lsof /usr/bin/
 	$(INSTALL) -v -m 0644 $(tgt_src_dir)/lsof.8 /usr/share/man/man8/
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4243,7 +4079,6 @@ blktrace.chroot: glibc.chroot Python.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) \
 	prefix=/usr mandir=/usr/share/man install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4253,7 +4088,6 @@ hwloc.chroot: glibc.chroot libxml2.chroot ncurses.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4263,7 +4097,6 @@ mstflint.chroot: glibc.chroot openssl.chroot libibmad.chroot Python.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	- $(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4272,7 +4105,6 @@ lshw.chroot: glibc.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4283,7 +4115,6 @@ iozone3.chroot: glibc.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/iozone /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/fileop /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/current/pit_server /usr/bin/
-	$(MAKE) --directory=$(tgt_src_dir)/src/current clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4305,7 +4136,6 @@ sbd.chroot: glibc.chroot glib.chroot libqb.chroot corosync.chroot \
 	--localstatedir=/var --enable-shared-disk
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4318,7 +4148,6 @@ screen.chroot: glibc.chroot ncurses.chroot Linux-PAM.chroot
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(INSTALL) -m 0644 $(tgt_src_dir)/etc/etcscreenrc /etc/screenrc
-	$(MAKE) --directory=$(tgt_src_dir) clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4330,7 +4159,6 @@ lftp.chroot: glibc.chroot openssl.chroot readline.chroot ncurses.chroot \
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --without-gnutls
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4345,7 +4173,6 @@ ndctl.chroot: glibc.chroot eudev.chroot util-linux.chroot json-c.chroot \
 	--without-bash --without-systemd --with-keyutils --disable-docs
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-exec
-	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4358,7 +4185,6 @@ kmod.chroot: glibc.chroot zlib.chroot openssl.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install-exec
 	$(MAKE) --directory=$(tgt_src_dir) install-includeHEADERS
 	$(MAKE) --directory=$(tgt_src_dir) install-pkgconfigDATA
-	$(MAKE) --directory=$(tgt_src_dir) mostlyclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
