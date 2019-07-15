@@ -40,8 +40,9 @@ if [ -x /etc/rc.d/rc.network ]; then
     /etc/rc.d/rc.network start
 fi
 
-echo "Starting system log daemon (syslogd)...."
-/usr/sbin/syslogd
+if [ -x /etc/rc.d/rc.syslogd ]; then
+    /etc/rc.d/rc.syslogd start
+fi
 
 /bin/echo "Starting vixie-cron..."
 /usr/sbin/cron
