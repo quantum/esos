@@ -22,6 +22,10 @@ for i in $(/bin/echo ${EARLY_SERVICES} | /usr/bin/tr ' ' '\n' | \
     fi
 done
 
+if [ -x /etc/rc.d/rc.syslogd ]; then
+    /etc/rc.d/rc.syslogd stop
+fi
+
 /bin/echo "Sending all processes the TERM signal..."
 /sbin/killall5 -15
 /bin/sleep 1
