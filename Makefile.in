@@ -214,7 +214,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libpciaccess-0.14.tar.bz2 \
 		linux_firmware-20190416.tar.xz \
 		dlm-4.0.8.tar.xz \
-		sysklogd-1.5.1.tar.gz \
+		sysklogd-new_remote_opt_20190715.tar.xz \
 		ipmitool-1.8.18.tar.bz2 \
 		less-530.tar.gz \
 		irqbalance-1.5.0.tar.gz \
@@ -2929,17 +2929,12 @@ ipmitool.chroot: glibc.chroot openssl.chroot ncurses.chroot readline.chroot \
 sysklogd.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(SED) -i 's/union wait status;/int status;/' $(tgt_src_dir)/syslogd.c
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install_exec
-	$(INSTALL) -D $(tgt_src_dir)/sysklogd.8 \
-	/usr/share/man/man8/sysklogd.8
-	$(INSTALL) -D $(tgt_src_dir)/syslogd.8 \
-	/usr/share/man/man8/syslogd.8
-	$(INSTALL) -D $(tgt_src_dir)/syslog.conf.5 \
-	/usr/share/man/man5/syslog.conf.5
-	$(INSTALL) -D $(tgt_src_dir)/klogd.8 \
-	/usr/share/man/man8/klogd.8
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
