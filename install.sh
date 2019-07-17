@@ -230,6 +230,29 @@ if [ -n "${install_dev}" ]; then
     echo "### Using block device '${dev_node}' given via argument..."
     echo
 elif [ -n "${install_tran}" ]; then
+    while : ; do
+	echo "### Okay to wipe all block devices matching transport" \
+            "type '${install_tran}' (yes/no)?" && read confirm
+        echo
+        if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
+            while read -r line; do
+                blk_dev="$(echo ${line} | awk '{print $1}')"
+                if [ -n "${blk_dev}" ]; then
+                    device="/dev/${blk_dev}"
+                    echo "### Attempting to wipe '${device}' via blkdiscard..."
+                    blkdiscard ${device} || \
+                        echo "WARNING: Failed to wipe the device!"
+                fi
+            done <<< "$(lsblk -o NAME,TYPE,TRAN | grep ${install_tran}\$)"
+            echo
+            break
+        elif [[ ${confirm} =~ [Nn]|[Nn][Oo] ]]; then
+            echo "WARNING: Not wiping block devices may result in first" \
+                "boot issues!"
+            echo
+            break
+        fi
+    done
     tran_dev=$(lsblk -o NAME,TYPE,TRAN | grep "${install_tran}\$" | \
         head -1 | awk '{print $1}')
     if [ "x${tran_dev}" = "x" ]; then
@@ -289,7 +312,7 @@ while : ; do
         "Are you sure (yes/no)?" && read confirm
     echo
     if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
-        echo "### Writing ${image_file} to ${real_dev_node}; this may" \
+        echo "### Writing '${image_file}' to '${real_dev_node}'; this may" \
             "take a while..."
         bunzip2 -d -c ${image_file} | dd of=${real_dev_node} bs=1${suffix} || \
             exit 1
