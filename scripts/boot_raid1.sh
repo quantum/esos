@@ -6,10 +6,10 @@
 
 SYNC_LOCK="/tmp/conf_sync_lock"
 MD_META_VER="1.0"
-MD_BOOT="boot"
-MD_ROOT="root"
-MD_CONF="conf"
-MD_LOGS="logs"
+MD_BOOT="esos_boot"
+MD_ROOT="esos_root"
+MD_CONF="esos_conf"
+MD_LOGS="esos_logs"
 TEMP_MNT="/tmp/raid1_mnt"
 RSYNC_OPTS="-axHX --numeric-ids --info=progress2"
 
