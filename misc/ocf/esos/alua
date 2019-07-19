@@ -58,7 +58,7 @@ alua_start() {
             "initiator sessions..."
         iscsiadm --mode session --rescan
         ocf_log debug "alua_start() -> Issuing a SCSI bus rescan..."
-        rescan-scsi-bus.sh
+        rescan-scsi-bus.sh --remove
         # Try to set the devices to the redirected backing device to start
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do

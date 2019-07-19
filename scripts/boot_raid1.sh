@@ -101,16 +101,16 @@ fi
 
 # Create the new MD RAID1 arrays
 mdadm --create --verbose --run /dev/md/${MD_BOOT} --name=${MD_BOOT} \
-    --level=1 --raid-devices=2 --metadata=${MD_META_VER} \
+    --level=1 --raid-devices=2 --bitmap=internal --metadata=${MD_META_VER} \
     missing ${addtl_blk_boot} || exit 1
 mdadm --create --verbose --run /dev/md/${MD_ROOT} --name=${MD_ROOT} \
-    --level=1 --raid-devices=2 --metadata=${MD_META_VER} \
+    --level=1 --raid-devices=2 --bitmap=internal --metadata=${MD_META_VER} \
     missing ${addtl_blk_root} || exit 1
 mdadm --create --verbose --run /dev/md/${MD_CONF} --name=${MD_CONF} \
-    --level=1 --raid-devices=2 --metadata=${MD_META_VER} \
+    --level=1 --raid-devices=2 --bitmap=internal --metadata=${MD_META_VER} \
     missing ${addtl_blk_conf} || exit 1
 mdadm --create --verbose --run /dev/md/${MD_LOGS} --name=${MD_LOGS} \
-    --level=1 --raid-devices=2 --metadata=${MD_META_VER} \
+    --level=1 --raid-devices=2 --bitmap=internal --metadata=${MD_META_VER} \
     missing ${addtl_blk_logs} || exit 1
 
 # Create file systems on the new MD arrays (no FS labels for now)
