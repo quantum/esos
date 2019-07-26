@@ -2,7 +2,7 @@
 
 source /etc/rc.d/common
 
-ACPID="/sbin/acpid"
+ACPID="/usr/sbin/acpid"
 ACPID_LOCK="/var/lock/acpid"
 DFLT_OPTS=""
 
