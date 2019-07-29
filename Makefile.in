@@ -4209,6 +4209,9 @@ acpid.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(INSTALL) -v -m 0755 -d /etc/acpi/events
+	$(INSTALL) -v -m 0644 $(tgt_src_dir)/samples/power /etc/acpi/events/
+	$(INSTALL) -v -m 0755 $(tgt_src_dir)/samples/power.sh /etc/acpi/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
