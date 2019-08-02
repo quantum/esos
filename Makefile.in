@@ -85,7 +85,7 @@ with_ocs_sdk		:= @with_ocs_sdk@
 ocs_sdk_dir		:= $(subst $(CHROOT_DIR),,@ocs_sdk_dir@)
 with_uwire		:= @with_uwire@
 uwire_dir		:= $(subst $(CHROOT_DIR),,@uwire_dir@)
-with_mlnx_ofed		:= yes
+with_mlnx_ofed		:= @with_mlnx_ofed@
 mlnx_ofed_dir		:= $(subst $(CHROOT_DIR),,@mlnx_ofed_dir@)
 with_customize_dir	:= @with_customize_dir@
 customize_dir		:= @customize_dir@
@@ -1546,15 +1546,19 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(mlnx_ofa_src)/compat/config/parallel-build.m4; \
 	    $(SED) -i '2,$$s/\/bin\///g' \
 	    $(mlnx_ofa_src)/compat/config/rdma.m4; \
+	    $(SED) -i 's/ \/bin\// /g; s/@\/bin\//@/g' \
+	    $(mlnx_ofa_src)/makefile; \
 	    cd $(mlnx_ofa_src)/compat && ./autogen.sh; \
-	    cd $(mlnx_ofa_src) && ./configure --prefix=/usr \
+	    cd $(mlnx_ofa_src) && ./configure --prefix=/usr --with-njobs=10 \
 	    --kernel-version=$(kernel_ver)$$i --kernel-sources=$(linux_src); \
 	    $(MAKE) --directory=$(mlnx_ofa_src) MLNX_PYTHON_EXECUTABLE=python3 \
 	    V=1 clean; \
 	    $(MAKE) --directory=$(mlnx_ofa_src) MLNX_PYTHON_EXECUTABLE=python3 \
 	    V=1 all; \
 	    $(MAKE) --directory=$(mlnx_ofa_src) MLNX_PYTHON_EXECUTABLE=python3 \
-	    V=1 install; \
+	    V=1 DEPMOD=true install_kernel; \
+	    $(MAKE) --directory=$(mlnx_ofa_src) MLNX_PYTHON_EXECUTABLE=python3 \
+	    V=1 install_py_scripts; \
 	  fi; \
 	  $(ECHO) "### Compiling the SCST core and target drivers..."; \
 	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \

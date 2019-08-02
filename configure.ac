@@ -499,6 +499,29 @@ AC_SUBST(uwire_dir, ${uwire_dir})
 AC_SUBST(with_uwire, ${with_uwire})
 AC_MSG_NOTICE([uwire: ${with_uwire}])
 
+dnl Optional package mlnx_ofed (user provides package file)
+AC_ARG_WITH(mlnx_ofed,
+	AS_HELP_STRING([--with-mlnx_ofed=PATH],
+	[build and include mlnx_ofed; PATH is the mlnx_ofed package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[mlnx_ofed_file="${withval}"; with_mlnx_ofed="yes"],
+	[with_mlnx_ofed="no"]), with_mlnx_ofed="no")
+if test "x${with_mlnx_ofed}" = "xyes"; then
+	if test -f "${mlnx_ofed_file}"; then
+		AC_MSG_NOTICE([extracting the mlnx_ofed package file...])
+		mlnx_ofed_dir="${chroot_dir}/build/mlnx-ofa_kernel"
+		${mkdir} -p ${mlnx_ofed_dir} || exit 1
+		${tar} xfz ${mlnx_ofed_file} --strip-components=1 -C ${mlnx_ofed_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the mlnx_ofed file: ${mlnx_ofed_file}])
+	fi
+fi
+AS_IF([test "x$with_mlnx_ofed" = "xyes"],
+	[build_opts="${build_opts} mlnx_ofed"; opt_suffix="${opt_suffix}M"])
+AC_SUBST(mlnx_ofed_dir, ${mlnx_ofed_dir})
+AC_SUBST(with_mlnx_ofed, ${with_mlnx_ofed})
+AC_MSG_NOTICE([mlnx_ofed: ${with_mlnx_ofed}])
+
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],
 	[real_src_dir="${srcdir}"])
