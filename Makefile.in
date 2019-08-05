@@ -1511,6 +1511,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2debug; \
 	    fi; \
 	  fi; \
+	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	    $(SED) -i -e 's/CONFIG_INFINIBAND=y/CONFIG_INFINIBAND=n/' \
+	    -e 's/CONFIG_NET_VENDOR_MELLANOX=y/CONFIG_NET_VENDOR_MELLANOX=n/' \
+	    -e 's/^CONFIG_MLX4/#&/g' -e 's/^CONFIG_MLX5/#&/g' \
+	    -e 's/^CONFIG_SUNRPC_XPRT_RDMA/#&/g' $(linux_src)/.config; \
+	  fi; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
 	    $(MKDIR) $(scst_src)/qla2x00t_git; \
 	    $(LN) $(linux_src)/drivers/scsi/qla2xxx \
@@ -1584,18 +1590,38 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  fi; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
 	  include/iscsi_scst_itf_ver.h; \
-	  $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \
-	  $(MAKE) --directory $(linux_src) KDIR=$(linux_src) \
+	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true OFED_FLAVOR=MOFED \
+	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
+	    -I$(mlnx_ofed_dir)/include/uapi \
+	    -DMOFED_MAJOR=4 -DMOFED_MINOR=6" \
+	    ISER_SYMVERS="$(mlnx_ofed_dir)/Module.symvers \
+	    $(scst_src)/iscsi-scst/kernel/isert-scst/Module.symvers" V=1 mods; \
+	  else \
+	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \
+	  fi; \
+	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
 	  SUBDIRS=$(scst_src)/iscsi-scst/kernel modules_install; \
-	  $(MAKE) --directory $(linux_src) KDIR=$(linux_src) \
+	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
 	  SUBDIRS=$(scst_src)/iscsi-scst/kernel/isert-scst modules_install; \
-	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i srpt; \
-	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i srpt_install; \
+	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i OFED_FLAVOR=MOFED \
+	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
+	    -I$(mlnx_ofed_dir)/include/uapi \
+	    -DMOFED_MAJOR=4 -DMOFED_MINOR=6" \
+	    OFED_MODULE_SYMVERS="$(mlnx_ofed_dir)/Module.symvers" V=1 all; \
+	  else \
+	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i all; \
+	  fi; \
+	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
+	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
+	  SUBDIRS=$(scst_src)/srpt/src modules_install; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i fcst; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
