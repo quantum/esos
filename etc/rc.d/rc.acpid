@@ -4,7 +4,7 @@ source /etc/rc.d/common
 
 ACPID="/usr/sbin/acpid"
 ACPID_LOCK="/var/lock/acpid"
-DFLT_OPTS=""
+DFLT_OPTS="-l -L /run/acpid.lock"
 
 check_args ${@}
 
