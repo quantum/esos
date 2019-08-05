@@ -85,6 +85,8 @@ with_ocs_sdk		:= @with_ocs_sdk@
 ocs_sdk_dir		:= $(subst $(CHROOT_DIR),,@ocs_sdk_dir@)
 with_uwire		:= @with_uwire@
 uwire_dir		:= $(subst $(CHROOT_DIR),,@uwire_dir@)
+with_mlnx_ofed		:= @with_mlnx_ofed@
+mlnx_ofed_dir		:= $(subst $(CHROOT_DIR),,@mlnx_ofed_dir@)
 with_customize_dir	:= @with_customize_dir@
 customize_dir		:= @customize_dir@
 build_opts		:= @build_opts@
@@ -480,6 +482,9 @@ ifeq ($(with_ocs_sdk),yes)
 endif
 ifeq ($(with_uwire),yes)
 	chroot_tgts += uwire.chroot
+endif
+ifeq ($(with_mlnx_ofed),yes)
+	chroot_tgts += mlnx_ofed.chroot
 endif
 
 # Common variables used throughout
@@ -1420,6 +1425,11 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(MAKE) --directory=$(linux_src) clean; \
 	  $(MAKE) --directory=$(linux_src) mrproper; \
 	  $(MAKE) --directory=$(linux_src) distclean; \
+	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	    if [ -e "$(mlnx_ofed_dir)/configure.mk.kernel" ]; then \
+	      $(MAKE) --directory=$(mlnx_ofed_dir) clean; \
+	    fi; \
+	  fi; \
 	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	  KDIR=$(linux_src) clean; \
 	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
@@ -1501,6 +1511,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2debug; \
 	    fi; \
 	  fi; \
+	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	    $(SED) -i -e 's/CONFIG_INFINIBAND=y/CONFIG_INFINIBAND=n/' \
+	    -e 's/CONFIG_NET_VENDOR_MELLANOX=y/CONFIG_NET_VENDOR_MELLANOX=n/' \
+	    -e 's/^CONFIG_MLX4/#&/g' -e 's/^CONFIG_MLX5/#&/g' \
+	    -e 's/^CONFIG_SUNRPC_XPRT_RDMA/#&/g' $(linux_src)/.config; \
+	  fi; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
 	    $(MKDIR) $(scst_src)/qla2x00t_git; \
 	    $(LN) $(linux_src)/drivers/scsi/qla2xxx \
@@ -1536,6 +1552,25 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(chroot_build)/System.map$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) modules_install; \
 	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
+	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	    $(ECHO) "### Compiling the Mellanox OFED modules..."; \
+	    $(SED) -i '2,$$s/\/bin\///g' $(mlnx_ofed_dir)/configure; \
+	    $(SED) -i '2,$$s/\/bin\///g' \
+	    $(mlnx_ofed_dir)/compat/config/parallel-build.m4; \
+	    $(SED) -i '2,$$s/\/bin\///g' \
+	    $(mlnx_ofed_dir)/compat/config/rdma.m4; \
+	    $(SED) -i 's/ \/bin\// /g; s/@\/bin\//@/g' \
+	    $(mlnx_ofed_dir)/makefile; \
+	    cd $(mlnx_ofed_dir)/compat && ./autogen.sh; \
+	    cd $(mlnx_ofed_dir) && ./configure --prefix=/usr --with-njobs=10 \
+	    --kernel-version=$(kernel_ver)$$i --kernel-sources=$(linux_src) \
+	    --with-core-mod --with-ipoib-mod --with-ipoib-cm --with-srp-mod \
+	    --with-user_mad-mod --with-user_access-mod --with-addr_trans-mod \
+	    --with-mlx5-mod --with-mlx4-mod --with-mlx4_inf-mod \
+	    --with-mlx5_inf-mod --with-mlxfw-mod --with-iser-mod; \
+	    $(MAKE) --directory=$(mlnx_ofed_dir) V=1 MLNX_CFLAGS="" kernel; \
+	    $(MAKE) --directory=$(mlnx_ofed_dir) DEPMOD=true install_kernel; \
+	  fi; \
 	  $(ECHO) "### Compiling the SCST core and target drivers..."; \
 	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \
 	  -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/ \*\/$$//' \
@@ -1555,18 +1590,38 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  fi; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
 	  include/iscsi_scst_itf_ver.h; \
-	  $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \
-	  $(MAKE) --directory $(linux_src) KDIR=$(linux_src) \
+	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true OFED_FLAVOR=MOFED \
+	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
+	    -I$(mlnx_ofed_dir)/include/uapi \
+	    -DMOFED_MAJOR=4 -DMOFED_MINOR=6" \
+	    ISER_SYMVERS="$(mlnx_ofed_dir)/Module.symvers \
+	    $(scst_src)/iscsi-scst/kernel/isert-scst/Module.symvers" V=1 mods; \
+	  else \
+	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \
+	  fi; \
+	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
 	  SUBDIRS=$(scst_src)/iscsi-scst/kernel modules_install; \
-	  $(MAKE) --directory $(linux_src) KDIR=$(linux_src) \
+	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
 	  SUBDIRS=$(scst_src)/iscsi-scst/kernel/isert-scst modules_install; \
-	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i srpt; \
-	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i srpt_install; \
+	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i OFED_FLAVOR=MOFED \
+	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
+	    -I$(mlnx_ofed_dir)/include/uapi \
+	    -DMOFED_MAJOR=4 -DMOFED_MINOR=6" \
+	    OFED_MODULE_SYMVERS="$(mlnx_ofed_dir)/Module.symvers" V=1 all; \
+	  else \
+	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i all; \
+	  fi; \
+	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
+	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
+	  SUBDIRS=$(scst_src)/srpt/src modules_install; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i fcst; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
@@ -1852,6 +1907,16 @@ uwire.chroot: glibc.chroot
 	/usr/sbin/
 	$(INSTALL) -m 0444 $(uwire_dir)/tools/cxgbtool/cxgbtool.8 \
 	/usr/share/man/man8/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
+	V=1 build_py_scripts
+	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
+	V=1 install_py_scripts
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
