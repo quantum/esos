@@ -1511,12 +1511,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2debug; \
 	    fi; \
 	  fi; \
-	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
-	    $(SED) -i -e 's/CONFIG_INFINIBAND=y/CONFIG_INFINIBAND=n/' \
-	    -e 's/CONFIG_NET_VENDOR_MELLANOX=y/CONFIG_NET_VENDOR_MELLANOX=n/' \
-	    -e 's/^CONFIG_MLX4/#&/g' -e 's/^CONFIG_MLX5/#&/g' \
-	    -e 's/^CONFIG_SUNRPC_XPRT_RDMA/#&/g' $(linux_src)/.config; \
-	  fi; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
 	    $(MKDIR) $(scst_src)/qla2x00t_git; \
 	    $(LN) $(linux_src)/drivers/scsi/qla2xxx \
@@ -1570,6 +1564,14 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    --with-mlx5_inf-mod --with-mlxfw-mod --with-iser-mod; \
 	    $(MAKE) --directory=$(mlnx_ofed_dir) V=1 MLNX_CFLAGS="" kernel; \
 	    $(MAKE) --directory=$(mlnx_ofed_dir) DEPMOD=true install_kernel; \
+	    while read -r line; do \
+	      module="$$(basename $${line})"; \
+	      $(FIND) /lib/modules/$(kernel_ver)$$i/kernel/drivers \
+	      -name $${module} -type f -delete; \
+	    done <<< "$$($(FIND) \
+	    /lib/modules/$(kernel_ver)$$i/extra/mlnx-ofa_kernel -name *.ko)"; \
+	    $(FIND) /lib/modules/$(kernel_ver)$$i/kernel/drivers \
+	    -empty -type d -delete; \
 	  fi; \
 	  $(ECHO) "### Compiling the SCST core and target drivers..."; \
 	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \
