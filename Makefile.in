@@ -316,6 +316,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		kmod-26.tar.xz \
 		docbook-xsl-nons-1.79.2.tar.bz2 \
 		acpid-2.0.31.tar.xz \
+		ibutils-1.5.7.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -396,7 +397,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		dosfstools.chroot lsof.chroot blktrace.chroot hwloc.chroot \
 		mstflint.chroot lshw.chroot iozone3.chroot telegraf.chroot \
 		sbd.chroot screen.chroot lftp.chroot ndctl.chroot \
-		kmod.chroot docbook-xsl-nons.chroot acpid.chroot
+		kmod.chroot docbook-xsl-nons.chroot acpid.chroot ibutils.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -1915,10 +1916,11 @@ uwire.chroot: glibc.chroot
 mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(SED) -i '304,318 s/^#*/#/' $(mlnx_ofed_dir)/ofed_scripts/makefile
 	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
 	V=1 build_py_scripts
 	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
-	V=1 install_py_scripts
+	V=1 install_scripts
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4280,6 +4282,16 @@ acpid.chroot: glibc.chroot
 	$(SED) 's,/acpid/,/acpi/,' $(tgt_src_dir)/samples/power > \
 	/etc/acpi/events/power
 	$(INSTALL) -v -m 0755 $(tgt_src_dir)/samples/power.sh /etc/acpi/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+ibutils.chroot: glibc.chroot opensm.chroot libibumad.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr \
+	--without-tk-lib --without-graphviz-lib
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
