@@ -8,7 +8,7 @@
 ARCHIVE_NAME="esos_backup_conf-$(date +%s)"
 ARCHIVE_DIR="/tmp/${ARCHIVE_NAME}"
 ARCHIVE_FILE="${ARCHIVE_DIR}.tgz"
-SYNC_LOCK="/tmp/conf_sync_lock"
+SYNC_LOCK="/var/lock/conf_sync"
 CONF_MNT="/mnt/conf"
 
 # We use a temporary directory while collecting the data
@@ -18,8 +18,13 @@ mkdir -p ${ARCHIVE_DIR} || exit 1
 conf_sync.sh || exit 1
 
 # Prevent conf_sync.sh from running
-touch ${SYNC_LOCK} || exit 1
-trap 'rm -f ${SYNC_LOCK}' 0
+exec 200> "${SYNC_LOCK}"
+flock --timeout 300 -E 200 -x 200
+RC=$?
+if [ ${RC} -ne 0 ]; then
+    echo "ERROR: Could not acquire conf_sync lock (RC=${RC}), so we're not backing up!" 1>&2
+    exit ${RC}
+fi
 
 # Mount the ESOS config FS
 mount ${CONF_MNT} || exit 1
@@ -35,4 +40,3 @@ tar cpfz ${ARCHIVE_FILE} --transform 's,^tmp/,,' \
 umount ${CONF_MNT} || exit 1
 rm -rf ${ARCHIVE_DIR} || exit 1
 echo "${ARCHIVE_FILE}"
-
