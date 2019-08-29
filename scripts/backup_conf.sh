@@ -20,9 +20,10 @@ conf_sync.sh || exit 1
 # Prevent conf_sync.sh from running
 exec 200> "${SYNC_LOCK}"
 flock --timeout 300 -E 200 -x 200
-RC=$?
+RC=${?}
 if [ ${RC} -ne 0 ]; then
-    echo "ERROR: Could not acquire conf_sync lock (RC=${RC}), so we're not backing up!" 1>&2
+    echo "ERROR: Could not acquire conf_sync lock (RC=${RC})," \
+        "so we're not backing up!" 1>&2
     exit ${RC}
 fi
 

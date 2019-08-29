@@ -77,9 +77,9 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
     # Prevent conf_sync.sh from running
     exec 200> "${SYNC_LOCK}"
     flock --timeout 300 -E 200 -x 200
-    RC=$?
+    RC=${?}
     if [ ${RC} -ne 0 ]; then
-        echo "ERROR: Could not acquire conf_sync lock(RC=${RC})!" 1>&2
+        echo "ERROR: Could not acquire conf_sync lock (RC=${RC})!" 1>&2
         exit ${RC}
     fi
     while true; do

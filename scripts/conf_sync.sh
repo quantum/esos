@@ -4,9 +4,10 @@
 SYNC_LOCK="/var/lock/conf_sync"
 exec 200> "${SYNC_LOCK}"
 flock --timeout 300 -E 200 -x 200
-RC=$?
+RC=${?}
 if [ ${RC} -eq 200 ]; then
-    echo "ERROR: Could not acquire lock file with-in 5 minutes, so we're not sync'ing!" 1>&2
+    echo "ERROR: Could not acquire lock file with-in 5 minutes," \
+        "so we're not sync'ing!" 1>&2
     exit ${RC}
 elif [ ${RC} -ne 0 ]; then
     echo "ERROR: Could not acquire lock, so we're not sync'ing!" 1>&2
