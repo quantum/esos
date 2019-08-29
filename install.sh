@@ -9,7 +9,7 @@ MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
 LINUX="LINUX"
 MACOSX="MACOSX"
-SYNC_LOCK="/tmp/conf_sync_lock"
+SYNC_LOCK="/var/lock/conf_sync"
 
 # Always bail on any error
 set -e
@@ -75,8 +75,13 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
     test -z "${install_tran}" && ! grep esos_iso /proc/cmdline > \
     /dev/null 2>&1; then
     # Prevent conf_sync.sh from running
-    touch ${SYNC_LOCK} || exit 1
-    trap 'rm -f ${SYNC_LOCK}' 0
+    exec 200> "${SYNC_LOCK}"
+    flock --timeout 300 -E 200 -x 200
+    RC=${?}
+    if [ ${RC} -ne 0 ]; then
+        echo "ERROR: Could not acquire conf_sync lock (RC=${RC})!" 1>&2
+        exit ${RC}
+    fi
     while true; do
         # Look up the ESOS block device node
         esos_root="$(findfs LABEL=esos_root)"
