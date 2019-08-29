@@ -4,7 +4,7 @@
 # RAID1 (mirror) boot drive. The single argument given to this tool is the
 # full path to a new block device that will be the RAID1 second member device.
 
-SYNC_LOCK="/tmp/conf_sync_lock"
+SYNC_LOCK="/var/lock/conf_sync"
 MD_META_VER="1.0"
 MD_BOOT="esos_boot"
 MD_ROOT="esos_root"
@@ -77,8 +77,13 @@ else
 fi
 
 # Prevent conf_sync.sh from running
-touch ${SYNC_LOCK} || exit 1
-trap 'rm -f ${SYNC_LOCK}' 0
+exec 200> "${SYNC_LOCK}"
+flock --timeout 300 -E 200 -x 200
+RC=$?
+if [ ${RC} -ne 0 ]; then
+    echo "ERROR: Could not acquire conf_sync lock (RC=${RC})!" 1>&2
+    exit ${RC}
+fi
 
 # Copy the MBR from the current boot drive to the additional device
 dd if=${esos_blk_dev} of=${addtl_blk_dev} bs=512 count=1 || exit 1
