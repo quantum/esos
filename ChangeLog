@@ -1,14 +1,144 @@
+2019-06-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'addtl_tweaks'
+
+	Python SQL support (psycopg2, mysqlclient, SQLAlchemy, and all required libraries) is now a build-time option (disabled by default)
+
+	removed perf-agent (deprecated) and associated scripts / config files
+
+2019-06-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated to make nginx a build-time option to enable (along with the pcre dependency) which is disabled by default
+
+	updated to make lessfs (now deprecated) a build-time option to enable (along with required dependencies) which is disabled by default
+
+	removed ESOS Web UI bits
+
+	Makefile.in: don't install Django and related plugins
+
+2019-06-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated open-iscsi package; set CFLAGS and CXXFLAGS in the build_all.sh script (chroot); fixed man page installation path for a couple packages
+
+2019-06-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'minor_tweaks'
+
+	Merge branch 'minor_tweaks' into 2.x.x
+
+	Makefile.in: adjusted the esos_ver variable to use rel_name if a Git tag was found, otherwise use dev_name; grub.cfg: use search to set 'root' using the ESOS_BOOT file system label
+
+	Merge branch 'switchtec_update'
+
+	Merge branch 'switchtec_update' into 2.x.x
+
+	updated the switchtec-kernel package to the new Celestica Switchtec driver (4.0.0)
+
+2019-06-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'debug_pkg_updates'
+
+	Merge branch 'debug_pkg_updates' into 2.x.x
+
+	updated the gdb, valgrind, and strace packages to the latest versions (thanks Lars)
+
+	Merge branch 'install_updates'
+
+	Merge branch 'install_updates' into 2.x.x
+
+	updated the ISO installer script to use the ESOS ISO name with findfs to resolve the CD-ROM device, and pass the installation transport type ISO option to the ESOS installation script
+
+	install.sh: updated installer script to handle accepting an optional second argument for specifying a device transport type... if given (and first argument is an empty string), we attempt to find the block device from the TRAN column of lsblk and use first device found; initramfs_init: for the ESOS ISO, use findfs to resolve the CD-ROM device (using ISO name)
+
+	Merge branch 'build_fixes'
+
+	Merge branch 'build_fixes' into 2.x.x
+
+	added the setuptools package for bootstrap stage (needed for meson package); build fixes for Python (pre-chroot); build fixes for cmake
+
+2019-06-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'raid1_fix'
+
+	Merge branch 'raid1_fix' into 2.x.x
+
+	updated patch for the ocf:heartbeat:Raid1 RA
+
+	copied Linux kernel patch for new version
+
+	copied Linux kernel patch for new version
+
+	Merge branch 'qla_patch'
+
+	Merge branch 'qla_patch' into 2.x.x
+
+	Merge branch 'lholowko-pkg-update-2019-05-17'
+
+	Merge branch 'lholowko-pkg-update-2019-05-17' into 2.x.x
+
+	build fixes: patches for new versions of groff and rpcbind no longer needed, add patch for ncurses 6.1, fix patch format for openssl
+
+2019-06-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the 'apply_pkg_patch' command sequence to better handle applying package patches, and updated all package targets that use patches; specify --sysconfdir for attr.chroot and acl.chroot; updated image target to filter un-needed files
+
+	several updates to refine build process, more tweaks to come...
+
+2019-05-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	several updates to refine build process, more tweaks to come...
+
+2019-05-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	esos_kernels.chroot: apply Linux kernel patch using correct location
+
+	several updates to refine build process, more tweaks to come...
+
+2019-05-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	introduced a patch for Linux 4.14.91 which resolves two issues with the QLogic FC target driver (qla2xxx)
+
+	several updates to refine build process, more tweaks to come...
+
+	Merge branch 'pkg-update-2019-05-17' of https://github.com/lholowko/esos into lholowko-pkg-update-2019-05-17
+
+	Merge branch 'for_2.1' into 2.x.x
+
+2019-05-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	enabled kernel options for NVDIMM support; added the ndctl package (and kmod dep)
+
 2019-05-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qla_nvme_fc_off'
 
 	Merge branch 'qla_nvme_fc_off' into 2.x.x
 
 	modprobe.conf: use 'ql2xnvmeenable=0' for the qla2xxx module to disable FC-NVMe as leaving this enabled causes FCP connectivity issues for some initiator-side adapters
 
+2019-05-17  Lars Holowko  <lars.holowko@quantum.com>
+
+	update most package to current versions as of 2019-05-17
+
+2019-05-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_2.1'
+
+	updated getNetConfChoice() in the TUI so the Ethernet interface name has some space between the field to it's right
+
+	an issue with stunnel was discovered where it continually consumes memory until the daemon exits -- issue is related to the resource cleanup with pthreads; we will work around this bug by using fork as the threading model in stunnel (instead of the default pthreads)
+
 2019-05-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'fix_tui_sync'
 
 	Merge branch 'fix_tui_sync' into 2.x.x
 
 	the syncConfig() TUI dialog should use conf_sync.sh and not usb_sync.sh
+
+	Merge branch 'alua_ra_fix'
 
 	Merge branch 'alua_ra_fix' into 2.x.x
 
