@@ -1,5 +1,5 @@
 RC_D_PREFIX="/etc/rc.d"
-STOP_TIMEOUT=120
+STOP_TIMEOUT=300
 
 # User settable services; started in this order and reversed on shutdown
 EARLY_SERVICES="rc.openibd rc.opensm"
