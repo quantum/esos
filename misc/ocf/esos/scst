@@ -69,12 +69,18 @@ scst_start() {
             cp -f ${SCST_CFG} ${SCST_CFG}.redirect_mode_backup
             sed -i '/^\t\tactive /d' ${SCST_CFG}
             sed -i '/^\t\tcluster_mode /d' ${SCST_CFG}
+            sed -i '/^\t\tstate /d' ${SCST_CFG}
             cat ${SCST_CFG} | perl -n \
                 -e '$in_handler = 1 if (/^HANDLER vdisk_blockio/);' \
                 -e '$in_dev = 1 if (/^\tDEVICE /);' \
                 -e 'if ($in_handler && $in_dev && /^\t}/) {' \
-                -e 'print "\t\tactive 0\n"; $in_dev=0; } print;' \
-                -e '$in_handler = 0 if (/^}/);' > /tmp/scst.conf
+                -e 'print "\t\tactive 0\n"; $in_dev=0; };' \
+                -e '$in_handler = 0 if (/^}/);' \
+                -e '$in_dev_grp = 1 if (/^DEVICE_GROUP /);' \
+                -e '$in_tgt_grp = 1 if (/^\tTARGET_GROUP /);' \
+                -e 'if ($in_dev_grp && $in_tgt_grp && /^\t}/) {' \
+                -e 'print "\t\tstate offline\n"; $in_tgt_grp=0; } print;' \
+                -e '$in_dev_grp = 0 if (/^}/);' > /tmp/scst.conf
             mv -f /tmp/scst.conf ${SCST_CFG}
         fi
         ocf_log info "Applying SCST configuration..."
