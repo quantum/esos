@@ -1916,7 +1916,11 @@ uwire.chroot: glibc.chroot
 mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(SED) -i '304,318 s/^#*/#/' $(mlnx_ofed_dir)/ofed_scripts/makefile
+	$(SED) -i 's,etc/udev/rules.d,usr/lib/udev/rules.d,g' \
+	$(mlnx_ofed_dir)/makefile
+	$(SED) -i '304,318 s/^#*/#/' $(mlnx_ofed_dir)/makefile
+	$(SED) -i '/param, val/s/line.strip()/line.decode("utf-8").strip()/' \
+	$(mlnx_ofed_dir)/ofed_scripts/utils/tc_wrap.py
 	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
 	V=1 build_py_scripts
 	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
