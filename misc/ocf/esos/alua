@@ -15,6 +15,7 @@ SCST_DEV_MAPS="/etc/esos_dev_maps/scst"
 LUN_MAP_FLOCK="/tmp/lun_map_flock"
 FLOCK_TIMEOUT=10
 SG_CMD_TIMEOUT=1
+ISCSIADM_TIMEOUT=5
 
 
 alua_start() {
@@ -56,9 +57,9 @@ alua_start() {
         # We are likley using iSCSI with redirect mode, rescan here
         ocf_log debug "alua_start() -> Rescanning all running iSCSI" \
             "initiator sessions..."
-        iscsiadm --mode session --rescan
+        ocf_run timeout ${ISCSIADM_TIMEOUT} iscsiadm --mode session --rescan
         ocf_log debug "alua_start() -> Issuing a SCSI bus rescan..."
-        rescan-scsi-bus.sh --remove
+        ocf_run rescan-scsi-bus.sh --remove
         # Try to set the devices to the redirected backing device to start
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
@@ -655,7 +656,8 @@ bio_dev_to_redirect() {
                 if [ "x${active_val}" = "x0" ]; then
                     ocf_log debug "Rescanning all running iSCSI" \
                         "initiator sessions..."
-                    iscsiadm --mode session --rescan
+                    ocf_run timeout ${ISCSIADM_TIMEOUT} iscsiadm \
+                        --mode session --rescan
                     if ! test_if_dev_ready ${new_filename}; then
                         continue
                     fi
