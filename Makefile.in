@@ -1401,7 +1401,8 @@ esos_kernels.chroot: cls_base = $(switchtec_src)/Driver/Switchtec
 esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.13_to_4.14
 esos_kernels.chroot: cls_switchtec = $(cls_base)/$(switchtec_kern)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
-	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot
+	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot \
+	openssl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(QUIET) if [ ! -d $(linux_src)/$(notdir $(linux_src)).patch ]; then \
