@@ -4444,6 +4444,10 @@ image:
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/backup_conf.sh \
 	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/sbd_*.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/cluster_*.sh \
+	$(STAGING_DIR)/usr/local/sbin/
 	$(MKDIR) $(STAGING_DIR)/usr/lib/ocf/resource.d
 	$(CP) -R $(SRC_DIR)/misc/ocf/esos \
 	$(STAGING_DIR)/usr/lib/ocf/resource.d/
