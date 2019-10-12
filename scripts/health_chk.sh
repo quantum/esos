@@ -16,7 +16,6 @@ EMAIL_TO="root"
 EMAIL_FROM="root"
 TMP_PATH="/tmp"
 
-
 # Check logical drives (if any) for all controllers
 echo "Checking hardware RAID logical drives..."
 SAVED_IFS=${IFS}
