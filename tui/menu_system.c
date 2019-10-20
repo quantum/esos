@@ -2577,6 +2577,7 @@ void drbdStatDialog(CDKSCREEN *main_cdk_screen) {
                 swindow_title, MAX_DRBD_INFO_LINES, TRUE, FALSE);
         if (!drbd_info) {
             errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
+            fclose(drbd_file);
             return;
         }
         setCDKSwindowBackgroundAttrib(drbd_info,
