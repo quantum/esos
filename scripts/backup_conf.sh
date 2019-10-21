@@ -5,7 +5,9 @@
 # (LABEL=esos_conf). The archive is created in the /tmp directory and
 # the absolute path of the file name is returned.
 
-ARCHIVE_NAME="esos_backup_conf-$(date +%s)"
+RELEASE="$(sed -r "s/ +/-/g" /etc/esos-release)"
+HOSTNAME="$(hostname)"
+ARCHIVE_NAME="esos_backup_conf-$(date +%s)@${HOSTNAME}@${RELEASE}"
 ARCHIVE_DIR="/tmp/${ARCHIVE_NAME}"
 ARCHIVE_FILE="${ARCHIVE_DIR}.tgz"
 SYNC_LOCK="/var/lock/conf_sync"
@@ -30,8 +32,8 @@ fi
 # Mount the ESOS config FS
 mount ${CONF_MNT} || exit 1
 
-# Grab all items from the config
-rsync -aq ${CONF_MNT}/* ${ARCHIVE_DIR} || exit 1
+# Grab all items from the config - exclude stuff under /opt
+rsync -aq ${CONF_MNT}/* --exclude=rsync_dirs/opt ${ARCHIVE_DIR} || exit 1
 
 # Make the tarball
 tar cpfz ${ARCHIVE_FILE} --transform 's,^tmp/,,' \
