@@ -16,6 +16,7 @@ LUN_MAP_FLOCK="/tmp/lun_map_flock"
 FLOCK_TIMEOUT=10
 SG_CMD_TIMEOUT=1
 ISCSIADM_TIMEOUT=5
+RESCAN_SCSI_TIMEOUT=10
 
 
 alua_start() {
@@ -59,7 +60,7 @@ alua_start() {
             "initiator sessions..."
         ocf_run timeout ${ISCSIADM_TIMEOUT} iscsiadm --mode session --rescan
         ocf_log debug "alua_start() -> Issuing a SCSI bus rescan..."
-        ocf_run rescan-scsi-bus.sh --remove
+        ocf_run timeout ${RESCAN_SCSI_TIMEOUT} rescan-scsi-bus.sh --remove
         # Try to set the devices to the redirected backing device to start
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
