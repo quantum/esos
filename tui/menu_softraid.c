@@ -318,6 +318,7 @@ void softRAIDStatDialog(CDKSCREEN *main_cdk_screen) {
                 swindow_title, MAX_MDSTAT_INFO_LINES, TRUE, FALSE);
         if (!mdstat_info) {
             errorDialog(main_cdk_screen, SWINDOW_ERR_MSG, NULL);
+            fclose(mdstat_file);
             return;
         }
         setCDKSwindowBackgroundAttrib(mdstat_info,
