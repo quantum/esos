@@ -118,7 +118,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.2.tar.xz \
 		mpfr-4.0.2.tar.xz \
 		mpc-1.1.0.tar.gz \
-		linux-4.14.120.tar.xz \
+		linux-5.4-rc8.tar.gz \
 		glibc-2.29.tar.xz \
 		tcl-8.6.9.tar.xz \
 		expect-5.45.4.tar.xz \
@@ -346,7 +346,8 @@ bootstrap_tgts	:= binutils.pass1 gcc.pass1 gmp mpfr mpc kernel_headers \
 		dejagnu check ncurses bash bison bzip2 coreutils diffutils \
 		file findutils gawk gettext grep gzip m4 make patch perl \
 		sed tar texinfo util-linux xz pkg-config which autoconf \
-		automake libtool flex zlib Python cmake ninja meson setuptools
+		automake libtool flex zlib Python cmake ninja meson \
+		setuptools rsync
 
 # All targets which are built/installed in the chroot environment
 chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
@@ -1308,6 +1309,16 @@ setuptools: Python
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
+rsync: make
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call no_chroot)
+	cd $(tgt_src_dir) && ./configure --prefix=/tools
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(MAKE) --directory=$(tgt_src_dir) distclean
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
 
 # pre_chroot - Setup everything before entering the chroot environment.
 .PHONY: pre_chroot
@@ -1405,11 +1416,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	openssl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(QUIET) if [ ! -d $(linux_src)/$(notdir $(linux_src)).patch ]; then \
-	  $(PATCH) -d $(linux_src) -b \
-	  -B $(linux_src)/$(notdir $(linux_src)).patch/ -p1 < \
-	  $(chroot_build)/misc/$(notdir $(linux_src)).patch; \
-	fi
 	$(MAKE) --directory=$(linux_src)/tools/perf \
 	EXTRA_CFLAGS="-Wno-stringop-truncation"
 	$(INSTALL) -m 0755 $(linux_src)/tools/perf/perf /usr/bin/perf
@@ -1606,12 +1612,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \
 	  fi; \
-	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
-	  SUBDIRS=$(scst_src)/iscsi-scst/kernel modules_install; \
-	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
-	  SUBDIRS=$(scst_src)/iscsi-scst/kernel/isert-scst modules_install; \
+	  $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	  SCST_INC_DIR=$(scst_src)/scst/include \
+	  M=$(scst_src)/iscsi-scst/kernel modules_install; \
+	  $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	  SCST_INC_DIR=$(scst_src)/scst/include \
+	  M=$(scst_src)/iscsi-scst/kernel/isert-scst modules_install; \
 	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
 	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i OFED_FLAVOR=MOFED \
@@ -1623,9 +1629,9 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i all; \
 	  fi; \
-	  $(MAKE) --directory=$(linux_src) KDIR=$(linux_src) \
-	  KVER=$(kernel_ver)$$i SCST_INC_DIR=$(scst_src)/scst/include \
-	  SUBDIRS=$(scst_src)/srpt/src modules_install; \
+	  $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	  SCST_INC_DIR=$(scst_src)/scst/include \
+	  M=$(scst_src)/srpt/src modules_install; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i fcst; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
@@ -1741,8 +1747,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    KDIR="$(linux_src)" SCST_INC="/usr/include/scst" \
 	    target=1; \
 	    $(MAKE) --directory=$(linux_src) M="$(uwire_dir)/src/chfcoe/src" \
-	    KVER=$(kernel_ver)$$i \
-	    modules_install; \
+	    KVER=$(kernel_ver)$$i modules_install; \
 	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
 	    $(ECHO) "### Compiling the ZFS on Linux modules..."; \
@@ -1761,12 +1766,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(CP) -f $(switchtec_src)/Driver/Switchtec/switchtec_sg.h \
 	  $(cls_switchtec)/; \
 	  $(CHMOD) +x $(cls_switchtec)/VERSION-GEN; \
-	  $(MAKE) --directory=$(cls_switchtec) MODULE_NAME=cls_switchtec \
-	  KDIR=$(linux_src) KVER=$(kernel_ver)$$i; \
-	  $(INSTALL) -m 0644 $(cls_switchtec)/cls_switchtec.ko \
-	  /lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
-	  $(INSTALL) -m 0644 $(cls_switchtec)/ntb_hw_switchtec.ko \
-	  /lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
+	  #$(MAKE) --directory=$(cls_switchtec) MODULE_NAME=cls_switchtec \
+	  #KDIR=$(linux_src) KVER=$(kernel_ver)$$i; \
+	  #$(INSTALL) -m 0644 $(cls_switchtec)/cls_switchtec.ko \
+	  #/lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
+	  #$(INSTALL) -m 0644 $(cls_switchtec)/ntb_hw_switchtec.ko \
+	  #/lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
 	done
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
