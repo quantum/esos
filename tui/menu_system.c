@@ -696,8 +696,24 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 /* Turn the cursor off (pretty) */
                 curs_set(0);
 
-                /* Only check the fields if its a static IP configuration */
+                /* Check for an MTU value if its a DHCP IP configuration */
+                if (getCDKRadioCurrentItem(ip_config) == 2) {
+                    /* Check the interface MTU value (field entry) */
+                    if (!checkInputStr(main_cdk_screen, ASCII_CHARS,
+                            getCDKEntryValue(iface_mtu))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
+                }
+
+                /* Check all fields if its a static IP configuration */
                 if (getCDKRadioCurrentItem(ip_config) == 1) {
+                    /* Check the interface MTU value (field entry) */
+                    if (!checkInputStr(main_cdk_screen, ASCII_CHARS,
+                            getCDKEntryValue(iface_mtu))) {
+                        traverse_ret = 0; /* Skip the prompt */
+                        break;
+                    }
                     /* Check the IP address value (field entry) */
                     if (!checkInputStr(main_cdk_screen, IPADDR_CHARS,
                             getCDKEntryValue(ip_addy))) {
