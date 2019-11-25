@@ -1325,6 +1325,7 @@ rsync: make
 pre_chroot:
 	$(call check_if_root)
 	$(QUIET) $(MOUNT) -v --bind /dev $(CHROOT_DIR)/dev
+	$(QUIET) $(MOUNT) -v --bind /dev/shm $(CHROOT_DIR)/dev/shm
 	$(QUIET) $(MOUNT) -vt devpts devpts $(CHROOT_DIR)/dev/pts \
 	-o gid=5,mode=620
 	$(QUIET) $(MOUNT) -vt proc proc $(CHROOT_DIR)/proc
@@ -4315,6 +4316,7 @@ post_chroot:
 	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/sys
 	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/proc
 	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/dev/pts
+	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/dev/shm
 	$(QUIET) $(UMOUNT) -vl $(CHROOT_DIR)/dev
 
 
