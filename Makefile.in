@@ -29,7 +29,8 @@ SFDISK		:= @sfdisk@
 CAT		:= @cat@
 GREP		:= @grep@
 DD		:= @dd@
-MKFS		:= @mkfs@
+MKFS_VFAT	:= @mkfs_vfat@
+MKFS_EXT2	:= @mkfs_ext2@
 LN		:= @ln@ -sf
 MOUNT		:= @mount@
 UMOUNT		:= @umount@
@@ -55,6 +56,7 @@ GIT		:= @git@
 FLOCK		:= @flock@
 ZIC		:= @zic@
 MV		:= @mv@
+RSYNC		:= @rsync@
 
 enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
@@ -1477,6 +1479,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(atto_scst_dir)/Makefile; \
 	    $(SED) -i 's/depmod/#depmod/' \
 	    $(atto_scst_dir)/Makefile; \
+	    $(SED) -i 's/SUBDIRS=/M=/' \
+	    $(atto_scst_dir)/Makefile; \
 	    $(MAKE) --directory=$(atto_scst_dir) clean; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
@@ -1691,11 +1695,9 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(atto_scst_dir)/Module.symvers; \
 	    $(MAKE) --directory=$(atto_scst_dir) KDIR=$(linux_src) \
 	    FULL_KERNEL_VERSION=$(kernel_ver)$$i PWD=$(atto_scst_dir) \
-	    MODULE_ROOT=/lib/modules/$(kernel_ver)$$i/extra \
-	    atto_scst_16fc; \
-	    $(INSTALL) -D -m 0644 \
-	    $(atto_scst_dir)/atto_scst_16fc.ko \
-	    /lib/modules/$(kernel_ver)$$i/extra/atto_scst_16fc.ko; \
+	    MODULE_ROOT=/lib/modules/$(kernel_ver)$$i/extra module; \
+	    $(MAKE) --directory=$(linux_src) M="$(atto_scst_dir)" \
+	    KVER=$(kernel_ver)$$i modules_install; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Emulex OCS SCST module..."; \
@@ -4372,13 +4374,13 @@ image:
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
 	$(KPARTX) -a -s $(loop_dev)
 	$(SLEEP) 1
-	$(MKFS) -t vfat -F 32 -n ESOS_BOOT $$($(ECHO) $(loop_dev) | \
+	$(MKFS_VFAT) -F 32 -n ESOS_BOOT $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p1
-	$(MKFS) -t ext2 -L esos_root $$($(ECHO) $(loop_dev) | \
+	$(MKFS_EXT2) -L esos_root $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p2
-	$(MKFS) -t ext2 -L esos_conf $$($(ECHO) $(loop_dev) | \
+	$(MKFS_EXT2) -L esos_conf $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p3
-	$(MKFS) -t ext2 -L esos_logs $$($(ECHO) $(loop_dev) | \
+	$(MKFS_EXT2) -L esos_logs $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p4
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Installing image (staging)..."

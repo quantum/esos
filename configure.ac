@@ -1,7 +1,7 @@
 dnl Wrapper for AC_CHECK_PROG that kills configure script if program is missing
 AC_DEFUN([MY_PATH_PROG],
-	[AC_CHECK_PROG([$1],[$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
-	test $[$1] == NOT_FOUND && AC_MSG_ERROR([program $1 is required])])
+	[AC_CHECK_PROG(m4_default([$2],[$1]),[$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
+	test $m4_default([$2],[$1]) == NOT_FOUND && AC_MSG_ERROR([program $1 is required])])
 
 AC_INIT()
 
@@ -36,7 +36,8 @@ MY_PATH_PROG([sfdisk])
 MY_PATH_PROG([cat])
 MY_PATH_PROG([grep])
 MY_PATH_PROG([dd])
-MY_PATH_PROG([mkfs])
+MY_PATH_PROG([mkfs.vfat],[mkfs_vfat])
+MY_PATH_PROG([mkfs.ext2],[mkfs_ext2])
 MY_PATH_PROG([ln])
 MY_PATH_PROG([mount])
 MY_PATH_PROG([umount])
@@ -67,6 +68,7 @@ MY_PATH_PROG([git])
 MY_PATH_PROG([flock])
 MY_PATH_PROG([zic])
 MY_PATH_PROG([mv])
+MY_PATH_PROG([rsync])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
