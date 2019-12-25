@@ -559,10 +559,6 @@ endif
 
 # all - The default goal; complete everything up to bootstrap'ing.
 all:
-	$(QUIET) if [ `whoami` = "root" ]; then \
-	  $(ECHO) "### This target cannot be made with the root user!"; \
-	  exit 1; \
-	fi
 	$(MAKE) -C $(BUILD_DIR) fetch
 	$(MAKE) -C $(BUILD_DIR) extract
 	$(MAKE) -C $(BUILD_DIR) bootstrap
@@ -705,7 +701,7 @@ bootstrap: symlink $(bootstrap_tgts)
 	$(chroot_build)/build_opts
 	$(ECHO) -n "$(esos_ver)" > $(chroot_build)/esos_ver
 	$(ECHO) -n "$(git_branch)" > $(chroot_build)/git_branch
-	$(CP) /etc/passwd /etc/resolv.conf $(CHROOT_DIR)/etc/
+	$(CP) /etc/passwd /etc/group /etc/resolv.conf $(CHROOT_DIR)/etc/
 	$(QUIET) for i in bash cat dd echo ln pwd rm stty; do \
 	  if [ ! -e "$(CHROOT_DIR)/bin/$$i" ]; then \
 	    $(LN) -v /tools/bin/$$i $(CHROOT_DIR)/bin; \
@@ -999,8 +995,8 @@ bzip2: make
 coreutils: make perl
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
-	cd $(tgt_src_dir) && ./configure --prefix=/tools \
-	--enable-install-program=hostname
+	cd $(tgt_src_dir) && FORCE_UNSAFE_CONFIGURE=1 ./configure \
+	--prefix=/tools --enable-install-program=hostname
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(MAKE) --directory=$(tgt_src_dir) distclean
@@ -1150,7 +1146,8 @@ sed: make
 tar: make
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
-	cd $(tgt_src_dir) && ./configure --prefix=/tools
+	cd $(tgt_src_dir) && FORCE_UNSAFE_CONFIGURE=1 ./configure \
+	--prefix=/tools
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(MAKE) --directory=$(tgt_src_dir) distclean
