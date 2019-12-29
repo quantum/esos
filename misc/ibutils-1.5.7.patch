@@ -1,0 +1,30 @@
+Description: Fix the Makefile dependencies
+Author: Adrian Bunk <bunk@debian.org>
+Bug-Debian: https://bugs.debian.org/906553
+
+--- ibutils-1.5.7+0.2.gbd7e502.orig/ibis/src/Makefile.am
++++ ibutils-1.5.7+0.2.gbd7e502/ibis/src/Makefile.am
+@@ -53,12 +53,10 @@ LIB_VER_TRIPLET="1:0:0"
+ LIB_FILE_TRIPLET=1.0.0
+ 
+ lib_LTLIBRARIES = libibis.la
+-noinst_LIBRARIES = libibiscom.a
++noinst_LTLIBRARIES = libibiscom.la
+ 
+-libibiscom_a_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
++libibiscom_la_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
+ 	ibpm.c ibsac.c ibsm.c ibvs.c ibcc.c
+-# Below op causes renaming of the obj files - used when same source creates 2 targets (TODO: is this duplication needed ?)
+-libibiscom_a_CFLAGS = $(AM_CFLAGS)
+ 
+ # client library to be used by IBIS TCL package:
+ libibis_la_SOURCES = ibis_wrap.c ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
+@@ -75,7 +73,7 @@ LDADD = $(OSM_LDFLAGS)
+ ibis_SOURCES = ibissh_wrap.cpp
+ 
+ # note the order of the libraries does matter as we static link
+-ibis_LDADD = -L. -libiscom $(OSM_LDFLAGS) $(TCL_LIBS)
++ibis_LDADD = -L. libibiscom.la $(OSM_LDFLAGS) $(TCL_LIBS)
+ 
+ 
+ # SWIG FILES:
