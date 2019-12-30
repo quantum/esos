@@ -1,7 +1,7 @@
 dnl Wrapper for AC_CHECK_PROG that kills configure script if program is missing
 AC_DEFUN([MY_PATH_PROG],
-	[AC_CHECK_PROG(m4_default([$2],[$1]),[$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
-	test $m4_default([$2],[$1]) == NOT_FOUND && AC_MSG_ERROR([program $1 is required])])
+	[AC_CHECK_PROG([$1],[$1],[$1],NOT_FOUND,$PATH:/sbin:/usr/sbin:/usr/local/sbin)
+	test $[$1] == NOT_FOUND && AC_MSG_ERROR([program $1 is required])])
 
 AC_INIT()
 
@@ -36,8 +36,7 @@ MY_PATH_PROG([sfdisk])
 MY_PATH_PROG([cat])
 MY_PATH_PROG([grep])
 MY_PATH_PROG([dd])
-MY_PATH_PROG([mkfs.vfat],[mkfs_vfat])
-MY_PATH_PROG([mkfs.ext2],[mkfs_ext2])
+MY_PATH_PROG([mkfs])
 MY_PATH_PROG([ln])
 MY_PATH_PROG([mount])
 MY_PATH_PROG([umount])
@@ -68,7 +67,6 @@ MY_PATH_PROG([git])
 MY_PATH_PROG([flock])
 MY_PATH_PROG([zic])
 MY_PATH_PROG([mv])
-MY_PATH_PROG([rsync])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
@@ -476,6 +474,52 @@ AS_IF([test "x$with_ocs_sdk" = "xyes"],
 AC_SUBST(ocs_sdk_dir, ${ocs_sdk_dir})
 AC_SUBST(with_ocs_sdk, ${with_ocs_sdk})
 AC_MSG_NOTICE([ocs_sdk: ${with_ocs_sdk}])
+
+dnl Optional package jansson (user provides package file)
+AC_ARG_WITH(jansson,
+	AS_HELP_STRING([--with-jansson=PATH],
+	[build and include jansson; PATH is the jansson package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[jansson_file="${withval}"; with_jansson="yes"],
+	[with_jansson="no"]), with_jansson="no")
+if test "x${with_jansson}" = "xyes"; then
+	if test -f "${jansson_file}"; then
+		AC_MSG_NOTICE([extracting the jansson package file...])
+		jansson_dir="${chroot_dir}/build/jansson"
+		${mkdir} -p ${jansson_dir} || exit 1
+		${tar} xfz ${jansson_file} -C ${jansson_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the jansson file: ${jansson_file}])
+	fi
+fi
+AS_IF([test "x$with_jansson" = "xyes"],
+	[build_opts="${build_opts} jansson"; opt_suffix="${opt_suffix}o"])
+AC_SUBST(jansson_dir, ${jansson_dir})
+AC_SUBST(with_jansson, ${with_jansson})
+AC_MSG_NOTICE([jansson: ${with_jansson}])
+
+dnl Optional package rapiddisk (user provides package file)
+AC_ARG_WITH(rapiddisk,
+	AS_HELP_STRING([--with-rapiddisk=PATH],
+	[build and include rapiddisk; PATH is the rapiddisk package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[rapiddisk_file="${withval}"; with_rapiddisk="yes"],
+	[with_rapiddisk="no"]), with_rapiddisk="no")
+if test "x${with_rapiddisk}" = "xyes"; then
+	if test -f "${rapiddisk_file}"; then
+		AC_MSG_NOTICE([extracting the rapiddisk package file...])
+		rapiddisk_dir="${chroot_dir}/build/rapiddisk"
+		${mkdir} -p ${rapiddisk_dir} || exit 1
+		${tar} xfz ${rapiddisk_file} -C ${rapiddisk_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the rapiddisk file: ${rapiddisk_file}])
+	fi
+fi
+AS_IF([test "x$with_rapiddisk" = "xyes"],
+	[build_opts="${build_opts} rapiddisk"; opt_suffix="${opt_suffix}o"])
+AC_SUBST(rapiddisk_dir, ${rapiddisk_dir})
+AC_SUBST(with_rapiddisk, ${with_rapiddisk})
+AC_MSG_NOTICE([rapiddisk: ${with_rapiddisk}])
 
 dnl Optional package uwire (user provides package file)
 AC_ARG_WITH(uwire,

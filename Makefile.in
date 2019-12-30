@@ -29,8 +29,7 @@ SFDISK		:= @sfdisk@
 CAT		:= @cat@
 GREP		:= @grep@
 DD		:= @dd@
-MKFS_VFAT	:= @mkfs_vfat@
-MKFS_EXT2	:= @mkfs_ext2@
+MKFS		:= @mkfs@
 LN		:= @ln@ -sf
 MOUNT		:= @mount@
 UMOUNT		:= @umount@
@@ -56,7 +55,6 @@ GIT		:= @git@
 FLOCK		:= @flock@
 ZIC		:= @zic@
 MV		:= @mv@
-RSYNC		:= @rsync@
 
 enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
@@ -85,6 +83,10 @@ with_atto_scst		:= @with_atto_scst@
 atto_scst_dir		:= $(subst $(CHROOT_DIR),,@atto_scst_dir@)
 with_ocs_sdk		:= @with_ocs_sdk@
 ocs_sdk_dir		:= $(subst $(CHROOT_DIR),,@ocs_sdk_dir@)
+with_jansson		:= @with_jansson@
+jansson_dir		:= $(subst $(CHROOT_DIR),,@jansson_dir@)
+with_rapiddisk		:= @with_rapiddisk@
+rapiddisk_dir		:= $(subst $(CHROOT_DIR),,@rapiddisk_dir@)
 with_uwire		:= @with_uwire@
 uwire_dir		:= $(subst $(CHROOT_DIR),,@uwire_dir@)
 with_mlnx_ofed		:= @with_mlnx_ofed@
@@ -319,7 +321,6 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		docbook-xsl-nons-1.79.2.tar.bz2 \
 		acpid-2.0.31.tar.xz \
 		ibutils-1.5.7.tar.gz \
-		numactl-2.0.13.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -401,8 +402,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		dosfstools.chroot lsof.chroot blktrace.chroot hwloc.chroot \
 		mstflint.chroot lshw.chroot iozone3.chroot telegraf.chroot \
 		sbd.chroot screen.chroot lftp.chroot ndctl.chroot \
-		kmod.chroot docbook-xsl-nons.chroot acpid.chroot \
-		ibutils.chroot tcl.chroot numactl.chroot
+		kmod.chroot docbook-xsl-nons.chroot acpid.chroot ibutils.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -486,6 +486,12 @@ endif
 ifeq ($(with_ocs_sdk),yes)
 	chroot_tgts += ocs_sdk.chroot
 endif
+ifeq ($(with_jansson),yes)
+	chroot_tgts += jansson.chroot
+endif
+ifeq ($(with_rapiddisk),yes)
+	chroot_tgts += rapiddisk.chroot
+endif
 ifeq ($(with_uwire),yes)
 	chroot_tgts += uwire.chroot
 endif
@@ -561,6 +567,10 @@ endif
 
 # all - The default goal; complete everything up to bootstrap'ing.
 all:
+	$(QUIET) if [ `whoami` = "root" ]; then \
+	  $(ECHO) "### This target cannot be made with the root user!"; \
+	  exit 1; \
+	fi
 	$(MAKE) -C $(BUILD_DIR) fetch
 	$(MAKE) -C $(BUILD_DIR) extract
 	$(MAKE) -C $(BUILD_DIR) bootstrap
@@ -703,7 +713,7 @@ bootstrap: symlink $(bootstrap_tgts)
 	$(chroot_build)/build_opts
 	$(ECHO) -n "$(esos_ver)" > $(chroot_build)/esos_ver
 	$(ECHO) -n "$(git_branch)" > $(chroot_build)/git_branch
-	$(CP) /etc/passwd /etc/group /etc/resolv.conf $(CHROOT_DIR)/etc/
+	$(CP) /etc/passwd /etc/resolv.conf $(CHROOT_DIR)/etc/
 	$(QUIET) for i in bash cat dd echo ln pwd rm stty; do \
 	  if [ ! -e "$(CHROOT_DIR)/bin/$$i" ]; then \
 	    $(LN) -v /tools/bin/$$i $(CHROOT_DIR)/bin; \
@@ -915,8 +925,6 @@ tcl: make
 	$(CHMOD) -v u+w /tools/lib/libtcl8.6.so
 	$(MAKE) --directory=$(tgt_src_dir)/unix install-private-headers
 	$(LN) -v tclsh8.6 /tools/bin/tclsh
-	$(RM) $(tgt_src_dir)
-	$(MAKE) --directory=$(BUILD_DIR) extract
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -999,8 +1007,8 @@ bzip2: make
 coreutils: make perl
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
-	cd $(tgt_src_dir) && FORCE_UNSAFE_CONFIGURE=1 ./configure \
-	--prefix=/tools --enable-install-program=hostname
+	cd $(tgt_src_dir) && ./configure --prefix=/tools \
+	--enable-install-program=hostname
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(MAKE) --directory=$(tgt_src_dir) distclean
@@ -1150,8 +1158,7 @@ sed: make
 tar: make
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
-	cd $(tgt_src_dir) && FORCE_UNSAFE_CONFIGURE=1 ./configure \
-	--prefix=/tools
+	cd $(tgt_src_dir) && ./configure --prefix=/tools
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(MAKE) --directory=$(tgt_src_dir) distclean
@@ -1480,13 +1487,15 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(atto_scst_dir)/Makefile; \
 	    $(SED) -i 's/depmod/#depmod/' \
 	    $(atto_scst_dir)/Makefile; \
-	    $(SED) -i 's/SUBDIRS=/M=/' \
-	    $(atto_scst_dir)/Makefile; \
 	    $(MAKE) --directory=$(atto_scst_dir) clean; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(MAKE) --directory=$(linux_src) \
 	    M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst clean; \
+	  fi; \
+	  if [ "$(with_rapiddisk)" = "yes" ]; then \
+	    $(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/module \
+	    clean; \
 	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(MAKE) --directory=$(uwire_dir)/src/network clean; \
@@ -1696,9 +1705,11 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(atto_scst_dir)/Module.symvers; \
 	    $(MAKE) --directory=$(atto_scst_dir) KDIR=$(linux_src) \
 	    FULL_KERNEL_VERSION=$(kernel_ver)$$i PWD=$(atto_scst_dir) \
-	    MODULE_ROOT=/lib/modules/$(kernel_ver)$$i/extra module; \
-	    $(MAKE) --directory=$(linux_src) M="$(atto_scst_dir)" \
-	    KVER=$(kernel_ver)$$i modules_install; \
+	    MODULE_ROOT=/lib/modules/$(kernel_ver)$$i/extra \
+	    atto_scst_16fc; \
+	    $(INSTALL) -D -m 0644 \
+	    $(atto_scst_dir)/atto_scst_16fc.ko \
+	    /lib/modules/$(kernel_ver)$$i/extra/atto_scst_16fc.ko; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Emulex OCS SCST module..."; \
@@ -1710,6 +1721,13 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(INSTALL) -D -m 0644 \
 	    $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/ocs_fc_scst.ko \
 	    /lib/modules/$(kernel_ver)$$i/extra/ocs_fc_scst.ko; \
+	  fi; \
+	  if [ "$(with_rapiddisk)" = "yes" ]; then \
+	    $(ECHO) "### Compiling the RapidDisk modules..."; \
+	    $(MAKE) -d --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	    M=$(rapiddisk_dir)/rapiddisk-master/module; \
+	    $(MAKE) -d --directory=$(linux_src) \
+	    M=$(rapiddisk_dir)/rapiddisk-master/module modules_install; \
 	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Chelsio Uwire SCST module..."; \
@@ -1904,6 +1922,37 @@ ocs_sdk.chroot: glibc.chroot libxml2.chroot
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/bin/ocs_config.py \
 	/usr/sbin/
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/bin/ocs_cpu_info.py \
+	/usr/sbin/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+jansson.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(jansson_dir)/jansson-master && autoreconf -i && ./configure
+	$(INSTALL) -v -m644 $(jansson_dir)/jansson-master/src/jansson.h \
+	/usr/include
+	$(INSTALL) -v -m644 $(jansson_dir)/jansson-master/src/jansson_private.h \
+	/usr/include
+	$(INSTALL) -v -m644 $(jansson_dir)/jansson-master/android/jansson_config.h \
+	/usr/include
+	$(MAKE) --directory=$(jansson_dir)/jansson-master
+	$(INSTALL) -v -m755 $(jansson_dir)/jansson-master/src/.libs/libjansson.so.4.11.1 \
+	/usr/lib/libjansson.so.4.11.1
+	$(LN) libjansson.so.4.11.1 /usr/lib/libjansson.so.4
+	$(LN) libjansson.so.4.11.1 /usr/lib/libjansson.so
+	$(INSTALL) -v -m755 $(jansson_dir)/jansson-master/src/.libs/libjansson.la \
+	/usr/lib/libjansson.la
+	$(INSTALL) -v -m755 $(jansson_dir)/jansson-master/src/.libs/libjansson.a \
+	/usr/lib/libjansson.a
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+rapiddisk.chroot: glibc.chroot jansson.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/src
+	$(INSTALL) -m 0755 $(rapiddisk_dir)/rapiddisk-master/src/rapiddisk \
 	/usr/sbin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
@@ -2865,7 +2914,7 @@ Net-Telnet.chroot: perl.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-fio.chroot: glibc.chroot libaio.chroot numactl.chroot
+fio.chroot: glibc.chroot libaio.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir)
@@ -4300,34 +4349,11 @@ acpid.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-ibutils.chroot: glibc.chroot opensm.chroot libibumad.chroot tcl.chroot
+ibutils.chroot: glibc.chroot opensm.chroot libibumad.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(call apply_pkg_patch)
-	cd $(tgt_src_dir) && ./autogen.sh
 	cd $(tgt_src_dir) && ./configure --prefix=/usr \
 	--without-tk-lib --without-graphviz-lib
-	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-tcl.chroot: glibc.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(tgt_src_dir)/unix && ./configure --prefix=/usr
-	$(MAKE) --directory=$(tgt_src_dir)/unix
-	$(MAKE) --directory=$(tgt_src_dir)/unix install
-	$(CHMOD) -v u+w /usr/lib/libtcl8.6.so
-	$(MAKE) --directory=$(tgt_src_dir)/unix install-private-headers
-	$(LN) -v tclsh8.6 /usr/bin/tclsh
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-numactl.chroot: glibc.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -4398,13 +4424,13 @@ image:
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
 	$(KPARTX) -a -s $(loop_dev)
 	$(SLEEP) 1
-	$(MKFS_VFAT) -F 32 -n ESOS_BOOT $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t vfat -F 32 -n ESOS_BOOT $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p1
-	$(MKFS_EXT2) -L esos_root $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t ext2 -L esos_root $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p2
-	$(MKFS_EXT2) -L esos_conf $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t ext2 -L esos_conf $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p3
-	$(MKFS_EXT2) -L esos_logs $$($(ECHO) $(loop_dev) | \
+	$(MKFS) -t ext2 -L esos_logs $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p4
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Installing image (staging)..."
