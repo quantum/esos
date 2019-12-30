@@ -1,0 +1,3 @@
+#!/bin/bash
+autoconf
+./configure --with-rpc_agent=/home/vibhav/esos-build/components/RAS/rpc_agent --disable-tui_eula --disable-login_tui --disable-tui_usage --enable-auto_dhcp --with-ssl_key_size=512 --with-customize-dir=/home/vibhav/esos-build/esos-customizations 
