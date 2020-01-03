@@ -1,0 +1,21 @@
+#!/bin/bash
+
+finish()
+{
+       rm -f "/home/vibhav/esos-build/components/esos/work/chroot/root/.bashrc"
+       make post_chroot
+}
+trap finish EXIT
+
+cat  << EOF > "/home/vibhav/esos-build/components/esos/work/chroot/root/.bashrc"
+/tools/bin/env -i
+export HOME=/
+export TERM=xterm-256color
+export PS1='\u:\w$ '
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin
+export LC_ALL=C
+export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig
+EOF
+
+make pre_chroot
+sudo chroot --userspec=2100:2000 /home/vibhav/esos-build/components/esos/work/chroot
