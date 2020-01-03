@@ -85,6 +85,8 @@ with_atto_scst		:= @with_atto_scst@
 atto_scst_dir		:= $(subst $(CHROOT_DIR),,@atto_scst_dir@)
 with_ocs_sdk		:= @with_ocs_sdk@
 ocs_sdk_dir		:= $(subst $(CHROOT_DIR),,@ocs_sdk_dir@)
+with_rapiddisk		:= @with_rapiddisk@
+rapiddisk_dir		:= $(subst $(CHROOT_DIR),,@rapiddisk_dir@)
 with_uwire		:= @with_uwire@
 uwire_dir		:= $(subst $(CHROOT_DIR),,@uwire_dir@)
 with_mlnx_ofed		:= @with_mlnx_ofed@
@@ -491,6 +493,11 @@ ifeq ($(with_uwire),yes)
 endif
 ifeq ($(with_mlnx_ofed),yes)
 	chroot_tgts += mlnx_ofed.chroot
+endif
+ifeq ($(with_rapiddisk),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,jansson-2.12.tar.bz2)
+	chroot_tgts += rapiddisk.chroot
+	chroot_tgts += jansson.chroot
 endif
 
 # Common variables used throughout
@@ -1496,6 +1503,10 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    FIRMWARE_PATH="$(uwire_dir)/src/network/firmware" \
 	    KDIR=$(linux_src) clean; \
 	  fi; \
+	  if [ "$(with_rapiddisk)" = "yes" ]; then \
+	    $(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/module \
+	    clean; \
+	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
 	    if [ -f "$(zfs_src)/Makefile" ]; then \
 	      $(MAKE) --directory=$(zfs_src) distclean; \
@@ -1753,6 +1764,13 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(linux_src) M="$(uwire_dir)/src/chfcoe/src" \
 	    KVER=$(kernel_ver)$$i modules_install; \
 	  fi; \
+	  if [ "$(with_rapiddisk)" = "yes" ]; then \
+	    $(ECHO) "### Compiling the RapidDisk modules..."; \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	    M=$(rapiddisk_dir)/rapiddisk-master/module; \
+	    $(MAKE) --directory=$(linux_src) \
+	    M=$(rapiddisk_dir)/rapiddisk-master/module modules_install; \
+	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
 	    $(ECHO) "### Compiling the ZFS on Linux modules..."; \
 	    if [ ! -f "$(zfs_src)/configure" ]; then \
@@ -1936,6 +1954,24 @@ mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	V=1 build_py_scripts
 	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
 	V=1 install_scripts
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+rapiddisk.chroot: glibc.chroot jansson.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/src
+	$(INSTALL) -m 0755 $(rapiddisk_dir)/rapiddisk-master/src/rapiddisk \
+	/usr/sbin/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+jansson.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

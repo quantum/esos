@@ -524,6 +524,29 @@ AC_SUBST(mlnx_ofed_dir, ${mlnx_ofed_dir})
 AC_SUBST(with_mlnx_ofed, ${with_mlnx_ofed})
 AC_MSG_NOTICE([mlnx_ofed: ${with_mlnx_ofed}])
 
+dnl Optional package rapiddisk (user provides package file)
+AC_ARG_WITH(rapiddisk,
+	AS_HELP_STRING([--with-rapiddisk=PATH],
+	[build and include rapiddisk; PATH is the rapiddisk package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[rapiddisk_file="${withval}"; with_rapiddisk="yes"],
+	[with_rapiddisk="no"]), with_rapiddisk="no")
+if test "x${with_rapiddisk}" = "xyes"; then
+	if test -f "${rapiddisk_file}"; then
+		AC_MSG_NOTICE([extracting the rapiddisk package file...])
+		rapiddisk_dir="${chroot_dir}/build/rapiddisk"
+		${mkdir} -p ${rapiddisk_dir} || exit 1
+		${tar} xfz ${rapiddisk_file} -C ${rapiddisk_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the rapiddisk file: ${rapiddisk_file}])
+	fi
+fi
+AS_IF([test "x$with_rapiddisk" = "xyes"],
+	[build_opts="${build_opts} rapiddisk"; opt_suffix="${opt_suffix}R"])
+AC_SUBST(rapiddisk_dir, ${rapiddisk_dir})
+AC_SUBST(with_rapiddisk, ${with_rapiddisk})
+AC_MSG_NOTICE([rapiddisk: ${with_rapiddisk}])
+
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],
 	[real_src_dir="${srcdir}"])
