@@ -8,8 +8,6 @@ SCST_CFG="/etc/scst.conf"
 SCSTADMIN="/usr/sbin/scstadmin"
 ISCSI_SCSTD="/usr/sbin/iscsi-scstd"
 ISCSI_SCSTD_LOCK="/var/lock/iscsi-scstd"
-LLDPAD="/usr/sbin/lldpad"
-LLDPAD_LOCK="/var/lock/lldpad"
 FCOEMON="/usr/sbin/fcoemon"
 FCOEMON_LOCK="/var/lock/fcoemon"
 
@@ -68,8 +66,6 @@ start_user_progs() {
     /bin/echo "Starting SCST userland daemons..."
     ${ISCSI_SCSTD} || return 1
     /bin/touch ${ISCSI_SCSTD_LOCK}
-    ${LLDPAD} -d || return 1
-    /bin/touch ${LLDPAD_LOCK}
     ${FCOEMON} -s || return 1
     /bin/touch ${FCOEMON_LOCK}
     return 0
@@ -79,8 +75,6 @@ stop_user_progs() {
     /bin/echo "Stopping SCST userland daemons..."
     /bin/kill -TERM $(/bin/pidof ${FCOEMON}) || return 1
     wait_for_stop ${FCOEMON} && /bin/rm -f ${FCOEMON_LOCK}
-    /bin/kill -TERM $(/bin/pidof ${LLDPAD}) || return 1
-    wait_for_stop ${LLDPAD} && /bin/rm -f ${LLDPAD_LOCK}
     /bin/kill -TERM $(/bin/pidof ${ISCSI_SCSTD}) || return 1
     wait_for_stop ${ISCSI_SCSTD} && /bin/rm -f ${ISCSI_SCSTD_LOCK}
     return 0

@@ -1,10 +1,10 @@
 #! /bin/sh
 
-source /etc/rc.d/lldpad
+source /etc/rc.d/common
 
 LLDPAD="/usr/sbin/lldpad"
 LLDPAD_LOCK="/var/lock/lldpad"
-DFLT_OPTS=""
+DFLT_OPTS="-d"
 
 check_args ${@}
 
@@ -20,13 +20,13 @@ else
 fi
 
 start() {
-    /bin/echo "Starting LLDPAD..."
+    /bin/echo "Starting lldpad..."
     eval ${LLDPAD} ${USER_OPTS} || exit 1
     /bin/touch ${LLDPAD_LOCK}
 }
 
 stop() {
-    /bin/echo "Stopping LLDPAD..."
+    /bin/echo "Stopping lldpad..."
     /bin/kill -TERM $(/bin/pidof ${LLDPAD}) || exit 1
     wait_for_stop ${LLDPAD} && /bin/rm -f ${LLDPAD_LOCK}
 }
