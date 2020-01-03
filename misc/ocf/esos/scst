@@ -537,11 +537,6 @@ start_scst_daemons() {
     else
         ocf_run iscsi-scstd || exit ${OCF_ERR_GENERIC}
     fi
-    if pidof lldpad > /dev/null 2>&1; then
-        ocf_log warn "The lldpad daemon is already running!"
-    else
-        ocf_run lldpad -d || exit ${OCF_ERR_GENERIC}
-    fi
     if pidof fcoemon > /dev/null 2>&1; then
         ocf_log warn "The fcoemon daemon is already running!"
     else
@@ -553,7 +548,7 @@ start_scst_daemons() {
 stop_scst_daemons() {
     # Stop all of the daemons and wait for each
     ocf_log info "Stopping daemons..."
-    for i in "fcoemon lldpad iscsi-scstd"; do
+    for i in "fcoemon iscsi-scstd"; do
         pidof ${i} > /dev/null 2>&1
         if [ ${?} -ne 0 ]; then
             ocf_log warn "The ${i} daemon is not running!"
