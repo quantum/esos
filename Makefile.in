@@ -85,8 +85,6 @@ with_atto_scst		:= @with_atto_scst@
 atto_scst_dir		:= $(subst $(CHROOT_DIR),,@atto_scst_dir@)
 with_ocs_sdk		:= @with_ocs_sdk@
 ocs_sdk_dir		:= $(subst $(CHROOT_DIR),,@ocs_sdk_dir@)
-with_jansson		:= @with_jansson@
-jansson_dir		:= $(subst $(CHROOT_DIR),,@jansson_dir@)
 with_rapiddisk		:= @with_rapiddisk@
 rapiddisk_dir		:= $(subst $(CHROOT_DIR),,@rapiddisk_dir@)
 with_uwire		:= @with_uwire@
@@ -490,17 +488,16 @@ endif
 ifeq ($(with_ocs_sdk),yes)
 	chroot_tgts += ocs_sdk.chroot
 endif
-ifeq ($(with_jansson),yes)
-	chroot_tgts += jansson.chroot
-endif
-ifeq ($(with_rapiddisk),yes)
-	chroot_tgts += rapiddisk.chroot
-endif
 ifeq ($(with_uwire),yes)
 	chroot_tgts += uwire.chroot
 endif
 ifeq ($(with_mlnx_ofed),yes)
 	chroot_tgts += mlnx_ofed.chroot
+endif
+ifeq ($(with_rapiddisk),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,jansson-2.12.tar.bz2)
+	chroot_tgts += rapiddisk.chroot
+	chroot_tgts += jansson.chroot
 endif
 
 # Common variables used throughout
@@ -1498,10 +1495,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(linux_src) \
 	    M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst clean; \
 	  fi; \
-	  if [ "$(with_rapiddisk)" = "yes" ]; then \
-	    $(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/module \
-	    clean; \
-	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(MAKE) --directory=$(uwire_dir)/src/network clean; \
 	    $(MAKE) --directory=$(uwire_dir)/src/chfcoe/src \
@@ -1509,6 +1502,10 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    CSIOSTOR_SRC_PATH="$(uwire_dir)/src/network/csiostor/include" \
 	    FIRMWARE_PATH="$(uwire_dir)/src/network/firmware" \
 	    KDIR=$(linux_src) clean; \
+	  fi; \
+	  if [ "$(with_rapiddisk)" = "yes" ]; then \
+	    $(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/module \
+	    clean; \
 	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
 	    if [ -f "$(zfs_src)/Makefile" ]; then \
@@ -1725,13 +1722,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/ocs_fc_scst.ko \
 	    /lib/modules/$(kernel_ver)$$i/extra/ocs_fc_scst.ko; \
 	  fi; \
-	  if [ "$(with_rapiddisk)" = "yes" ]; then \
-	    $(ECHO) "### Compiling the RapidDisk modules..."; \
-	    $(MAKE) -d --directory=$(linux_src) KVER=$(kernel_ver)$$i \
-	    M=$(rapiddisk_dir)/rapiddisk-master/module; \
-	    $(MAKE) -d --directory=$(linux_src) \
-	    M=$(rapiddisk_dir)/rapiddisk-master/module modules_install; \
-	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Chelsio Uwire SCST module..."; \
 	    if [ ! -d $(uwire_dir)/cxgb4_pofcoe.patch ]; then \
@@ -1773,6 +1763,13 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    target=1; \
 	    $(MAKE) --directory=$(linux_src) M="$(uwire_dir)/src/chfcoe/src" \
 	    KVER=$(kernel_ver)$$i modules_install; \
+	  fi; \
+	  if [ "$(with_rapiddisk)" = "yes" ]; then \
+	    $(ECHO) "### Compiling the RapidDisk modules..."; \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	    M=$(rapiddisk_dir)/rapiddisk-master/module; \
+	    $(MAKE) --directory=$(linux_src) \
+	    M=$(rapiddisk_dir)/rapiddisk-master/module modules_install; \
 	  fi; \
 	  if [ "$(enable_zfs)" = "yes" ] && [ "$$i" = "$(prod_suffix)" ]; then \
 	    $(ECHO) "### Compiling the ZFS on Linux modules..."; \
@@ -1929,37 +1926,6 @@ ocs_sdk.chroot: glibc.chroot libxml2.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-jansson.chroot: glibc.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(jansson_dir)/jansson-master && autoreconf -i && ./configure
-	$(INSTALL) -v -m644 $(jansson_dir)/jansson-master/src/jansson.h \
-	/usr/include
-	$(INSTALL) -v -m644 $(jansson_dir)/jansson-master/src/jansson_private.h \
-	/usr/include
-	$(INSTALL) -v -m644 $(jansson_dir)/jansson-master/android/jansson_config.h \
-	/usr/include
-	$(MAKE) --directory=$(jansson_dir)/jansson-master
-	$(INSTALL) -v -m755 $(jansson_dir)/jansson-master/src/.libs/libjansson.so.4.11.1 \
-	/usr/lib/libjansson.so.4.11.1
-	$(LN) libjansson.so.4.11.1 /usr/lib/libjansson.so.4
-	$(LN) libjansson.so.4.11.1 /usr/lib/libjansson.so
-	$(INSTALL) -v -m755 $(jansson_dir)/jansson-master/src/.libs/libjansson.la \
-	/usr/lib/libjansson.la
-	$(INSTALL) -v -m755 $(jansson_dir)/jansson-master/src/.libs/libjansson.a \
-	/usr/lib/libjansson.a
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-rapiddisk.chroot: glibc.chroot jansson.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	$(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/src
-	$(INSTALL) -m 0755 $(rapiddisk_dir)/rapiddisk-master/src/rapiddisk \
-	/usr/sbin/
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
 uwire.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -1988,6 +1954,24 @@ mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	V=1 build_py_scripts
 	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
 	V=1 install_scripts
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+rapiddisk.chroot: glibc.chroot jansson.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/src
+	$(INSTALL) -m 0755 $(rapiddisk_dir)/rapiddisk-master/src/rapiddisk \
+	/usr/sbin/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+jansson.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

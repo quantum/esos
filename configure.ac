@@ -477,52 +477,6 @@ AC_SUBST(ocs_sdk_dir, ${ocs_sdk_dir})
 AC_SUBST(with_ocs_sdk, ${with_ocs_sdk})
 AC_MSG_NOTICE([ocs_sdk: ${with_ocs_sdk}])
 
-dnl Optional package jansson (user provides package file)
-AC_ARG_WITH(jansson,
-	AS_HELP_STRING([--with-jansson=PATH],
-	[build and include jansson; PATH is the jansson package file to use]),
-	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
-	[jansson_file="${withval}"; with_jansson="yes"],
-	[with_jansson="no"]), with_jansson="no")
-if test "x${with_jansson}" = "xyes"; then
-	if test -f "${jansson_file}"; then
-		AC_MSG_NOTICE([extracting the jansson package file...])
-		jansson_dir="${chroot_dir}/build/jansson"
-		${mkdir} -p ${jansson_dir} || exit 1
-		${tar} xfz ${jansson_file} -C ${jansson_dir} || exit 1
-	else
-		AC_MSG_ERROR([unable to access the jansson file: ${jansson_file}])
-	fi
-fi
-AS_IF([test "x$with_jansson" = "xyes"],
-	[build_opts="${build_opts} jansson"; opt_suffix="${opt_suffix}o"])
-AC_SUBST(jansson_dir, ${jansson_dir})
-AC_SUBST(with_jansson, ${with_jansson})
-AC_MSG_NOTICE([jansson: ${with_jansson}])
-
-dnl Optional package rapiddisk (user provides package file)
-AC_ARG_WITH(rapiddisk,
-	AS_HELP_STRING([--with-rapiddisk=PATH],
-	[build and include rapiddisk; PATH is the rapiddisk package file to use]),
-	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
-	[rapiddisk_file="${withval}"; with_rapiddisk="yes"],
-	[with_rapiddisk="no"]), with_rapiddisk="no")
-if test "x${with_rapiddisk}" = "xyes"; then
-	if test -f "${rapiddisk_file}"; then
-		AC_MSG_NOTICE([extracting the rapiddisk package file...])
-		rapiddisk_dir="${chroot_dir}/build/rapiddisk"
-		${mkdir} -p ${rapiddisk_dir} || exit 1
-		${tar} xfz ${rapiddisk_file} -C ${rapiddisk_dir} || exit 1
-	else
-		AC_MSG_ERROR([unable to access the rapiddisk file: ${rapiddisk_file}])
-	fi
-fi
-AS_IF([test "x$with_rapiddisk" = "xyes"],
-	[build_opts="${build_opts} rapiddisk"; opt_suffix="${opt_suffix}o"])
-AC_SUBST(rapiddisk_dir, ${rapiddisk_dir})
-AC_SUBST(with_rapiddisk, ${with_rapiddisk})
-AC_MSG_NOTICE([rapiddisk: ${with_rapiddisk}])
-
 dnl Optional package uwire (user provides package file)
 AC_ARG_WITH(uwire,
 	AS_HELP_STRING([--with-uwire=PATH],
@@ -569,6 +523,29 @@ AS_IF([test "x$with_mlnx_ofed" = "xyes"],
 AC_SUBST(mlnx_ofed_dir, ${mlnx_ofed_dir})
 AC_SUBST(with_mlnx_ofed, ${with_mlnx_ofed})
 AC_MSG_NOTICE([mlnx_ofed: ${with_mlnx_ofed}])
+
+dnl Optional package rapiddisk (user provides package file)
+AC_ARG_WITH(rapiddisk,
+	AS_HELP_STRING([--with-rapiddisk=PATH],
+	[build and include rapiddisk; PATH is the rapiddisk package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[rapiddisk_file="${withval}"; with_rapiddisk="yes"],
+	[with_rapiddisk="no"]), with_rapiddisk="no")
+if test "x${with_rapiddisk}" = "xyes"; then
+	if test -f "${rapiddisk_file}"; then
+		AC_MSG_NOTICE([extracting the rapiddisk package file...])
+		rapiddisk_dir="${chroot_dir}/build/rapiddisk"
+		${mkdir} -p ${rapiddisk_dir} || exit 1
+		${tar} xfz ${rapiddisk_file} -C ${rapiddisk_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the rapiddisk file: ${rapiddisk_file}])
+	fi
+fi
+AS_IF([test "x$with_rapiddisk" = "xyes"],
+	[build_opts="${build_opts} rapiddisk"; opt_suffix="${opt_suffix}R"])
+AC_SUBST(rapiddisk_dir, ${rapiddisk_dir})
+AC_SUBST(with_rapiddisk, ${with_rapiddisk})
+AC_MSG_NOTICE([rapiddisk: ${with_rapiddisk}])
 
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],
