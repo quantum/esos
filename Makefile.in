@@ -1788,12 +1788,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(CP) -f $(switchtec_src)/Driver/Switchtec/switchtec_sg.h \
 	  $(cls_switchtec)/; \
 	  $(CHMOD) +x $(cls_switchtec)/VERSION-GEN; \
-	  #$(MAKE) --directory=$(cls_switchtec) MODULE_NAME=cls_switchtec \
-	  #KDIR=$(linux_src) KVER=$(kernel_ver)$$i; \
-	  #$(INSTALL) -m 0644 $(cls_switchtec)/cls_switchtec.ko \
-	  #/lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
-	  #$(INSTALL) -m 0644 $(cls_switchtec)/ntb_hw_switchtec.ko \
-	  #/lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
+	  $(MAKE) --directory=$(cls_switchtec) MODULE_NAME=cls_switchtec \
+	  KDIR=$(linux_src) KVER=$(kernel_ver)$$i; \
+	  $(INSTALL) -m 0644 $(cls_switchtec)/cls_switchtec.ko \
+	  /lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
+	  $(INSTALL) -m 0644 $(cls_switchtec)/ntb_hw_switchtec.ko \
+	  /lib/modules/$(kernel_ver)$$i/kernel/drivers/ntb/; \
 	done
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
