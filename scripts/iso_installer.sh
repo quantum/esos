@@ -28,6 +28,17 @@ cmdline() {
     cd /mnt
     ./install.sh "${install_dev}" "${install_tran}" || bash
 
+    # Make sure the CD-ROM is still mounted
+    cdrom_dev="$(findfs LABEL=ESOS-ISO)"
+    if [ ${?} -ne 0 ]; then
+        echo "ERROR: Can't resolve 'LABEL=ESOS-ISO'!"
+        bash
+    fi
+    if ! grep -q "${cdrom_dev} /mnt" /proc/mounts; then
+        echo "WARNING: It appears the CD-ROM is not mounted," \
+            "attempting to remount..."
+        mount ${cdrom_dev} /mnt || bash
+    fi
     # Handle after-install customizations
     if [ -f "./extra_install.sh" ]; then
         echo " "
