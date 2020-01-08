@@ -321,6 +321,9 @@ while : ; do
             "take a while..."
         bunzip2 -d -c ${image_file} | dd of=${real_dev_node} bs=1${suffix} || \
             exit 1
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            exit 1
+        fi
         if [ "${this_os}" = "${LINUX}" ]; then
             # Re-read the partition table (not fatal)
             blockdev --rereadpt ${dev_node}
