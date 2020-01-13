@@ -556,6 +556,7 @@ stop_scst_daemons() {
         fi
         ocf_log debug "scst_stop() -> Sending the TERM signal to ${i}..."
         ocf_run killall -TERM ${i} || exit ${OCF_ERR_GENERIC}
+        sleep 1
         while pidof ${i} > /dev/null 2>&1; do
             ocf_log debug "scst_stop() -> The ${i} daemon is" \
                 "still running, waiting..."

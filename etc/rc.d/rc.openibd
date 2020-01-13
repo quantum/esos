@@ -34,9 +34,6 @@ fi
 if [ "x${CXGB4_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} iw_cxgb4"
 fi
-if [ "x${NES_LOAD}" == "xyes" ]; then
-    KERN_MODS="${KERN_MODS} iw_nes"
-fi
 if [ "x${I40IW_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} i40iw"
 fi
@@ -48,9 +45,6 @@ if [ "x${IPOIB_LOAD}" == "xyes" ]; then
 fi
 if [ "x${SRP_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_srp"
-fi
-if [ "x${UCM_LOAD}" == "xyes" ]; then
-    KERN_MODS="${KERN_MODS} ib_ucm"
 fi
 if [ "x${ISER_LOAD}" == "xyes" ]; then
     KERN_MODS="${KERN_MODS} ib_iser"
@@ -67,6 +61,7 @@ start() {
     done
     /sbin/modprobe ib_umad || exit 1
     /sbin/modprobe ib_uverbs || exit 1
+    /sbin/modprobe rdmavt || exit 1
     # Add node description to sysfs
     if [ -d ${IB_SYSFS} ]; then
         hca_id=1
@@ -103,6 +98,7 @@ stop() {
         /usr/bin/tac | /usr/bin/tr '\n' ' '); do
         /sbin/rmmod -w ${i}
     done
+    /sbin/rmmod -w rdmavt
     /sbin/rmmod -w ib_uverbs
     /sbin/rmmod -w ib_umad
 }
