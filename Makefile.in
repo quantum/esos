@@ -212,7 +212,6 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		fence-agents-4.3.3.tar.gz \
 		opensm-3.3.20.tar.gz \
 		curl-7.64.1.tar.xz \
-		Net-Telnet-3.04.tar.gz \
 		open-fcoe-3.19.tar.gz \
 		open-lldp-0.9.46.tar.gz \
 		libconfig-1.7.2.tar.gz \
@@ -270,7 +269,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		json-c-0.13.1-20180305.tar.xz \
 		archivemount-0.8.12.tar.gz \
 		libarchive-3.3.3.tar.gz \
-		rasdaemon-0.6.2.tar.bz2 \
+		rasdaemon-0.6.5.tar.bz2 \
 		edac-utils-0.18.tar.gz \
 		sysfsutils-2.1.0.tar.gz \
 		sqlite-autoconf-3280000.tar.gz \
@@ -372,7 +371,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		glib.chroot libxml2.chroot libxslt.chroot bzip2.chroot \
 		crmsh.chroot libaio.chroot glue.chroot readline.chroot \
 		resource-agents.chroot lzo.chroot fuse.chroot db.chroot \
-		fence-agents.chroot curl.chroot Net-Telnet.chroot fio.chroot \
+		fence-agents.chroot curl.chroot fio.chroot \
 		open-fcoe.chroot open-lldp.chroot libconfig.chroot \
 		libnl.chroot libpciaccess.chroot linux_firmware.chroot \
 		dlm.chroot ipmitool.chroot sysklogd.chroot less.chroot \
@@ -2094,12 +2093,16 @@ grub.chroot: glibc.chroot lvm2.chroot freetype.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-perl.chroot: glibc.chroot db.chroot
+perl.chroot: glibc.chroot db.chroot sqlite-autoconf.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure.gnu --prefix=/usr --verbose
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install.perl INSTALLFLAGS="-f -o"
+	$(ECHO) yes | cpan install JROGERS/Net-Telnet-3.04.tar.gz
+	$(ECHO) yes | cpan install TIMB/DBI-1.642.tar.gz
+	$(ECHO) yes | cpan install ISHIGAKI/DBD-SQLite-1.64.tar.gz
+	rm -rf /root/.cpan
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2861,7 +2864,7 @@ snappy.chroot: glibc.chroot gcc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-fence-agents.chroot: glibc.chroot nss.chroot Python.chroot Net-Telnet.chroot \
+fence-agents.chroot: glibc.chroot nss.chroot Python.chroot perl.chroot \
 	openwsman.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -2883,18 +2886,6 @@ curl.chroot: glibc.chroot openssl.chroot
 	--without-libssh2 --without-libidn
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-Net-Telnet.chroot: perl_lib = $(wildcard /usr/lib/perl5/5.*)
-Net-Telnet.chroot: perl.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(tgt_src_dir) && PERL5LIB="$(perl_lib)" /usr/bin/perl \
-	Makefile.PL PREFIX=/usr PERL_LIB="$(perl_lib)" \
-	PERL_ARCHLIB="$(perl_lib)/x86_64-linux"
-	$(MAKE) --directory=$(tgt_src_dir) PERL5LIB="$(perl_lib)"
-	$(MAKE) --directory=$(tgt_src_dir) PERL5LIB="$(perl_lib)" install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3710,11 +3701,13 @@ libarchive.chroot: glibc.chroot bzip2.chroot lzo.chroot zlib.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-rasdaemon.chroot: glibc.chroot
+rasdaemon.chroot: glibc.chroot perl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --localstatedir=/var \
-	--sysconfdir=/etc --enable-aer --enable-mce
+	--sysconfdir=/etc --enable-aer --enable-mce --enable-sqlite3 \
+	--enable-extlog --enable-hisi-ns-decode --enable-non-standard \
+	--enable-devlink --enable-diskerror
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
