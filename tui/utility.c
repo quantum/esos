@@ -433,7 +433,7 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
         char blk_dev_name[MAX_BLOCK_DEVS][MISC_STRING_LEN],
         char blk_dev_info[MAX_BLOCK_DEVS][MISC_STRING_LEN],
         char blk_dev_size[MAX_BLOCK_DEVS][MISC_STRING_LEN]) {
-    int dev_cnt = 0, blk_dev_fd = 0;
+    int dev_cnt = 0, blk_dev_fd = 0, i = 0;
     char *error_msg = NULL, *boot_dev_node = NULL;
     char dir_name[MAX_SYSFS_PATH_SIZE] = {0},
             tmp_buff[MAX_SYSFS_ATTR_SIZE] = {0},
@@ -466,6 +466,11 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
             if (dir_entry->d_type == DT_LNK) {
                 snprintf(dev_node_test, MISC_STRING_LEN,
                         "/dev/%s", dir_entry->d_name);
+                /* Update string to handle the "cciss!cXdY" case */
+                for (i = 0; i <= strlen(dev_node_test); i++) {
+                    if (dev_node_test[i] == '!')
+                        dev_node_test[i] = '/';
+                }
                 /* Test to see if the block device is already open */
                 if ((blk_dev_fd = open(dev_node_test, O_EXCL)) == -1) {
                     continue;
@@ -580,6 +585,10 @@ int getUsableBlockDevs(CDKSCREEN *cdk_screen,
                     if (dev_cnt < MAX_BLOCK_DEVS) {
                         snprintf(blk_dev_name[dev_cnt], MISC_STRING_LEN, "%s",
                                 dir_entry->d_name);
+                        for (i = 0; i <= strlen(blk_dev_name[dev_cnt]); i++) {
+                            if (blk_dev_name[dev_cnt][i] == '!')
+                                blk_dev_name[dev_cnt][i] = '/';
+                        }
                         snprintf(dir_name, MAX_SYSFS_PATH_SIZE, "%s/%s/size",
                                 SYSFS_BLOCK, blk_dev_name[dev_cnt]);
                         readAttribute(dir_name, tmp_buff);
