@@ -4,7 +4,7 @@ source /etc/rc.d/common
 
 RASDAEMON="/usr/sbin/rasdaemon"
 RASDAEMON_LOCK="/var/lock/rasdaemon"
-DFLT_OPTS=""
+DFLT_OPTS="-r"
 
 check_args ${@}
 
