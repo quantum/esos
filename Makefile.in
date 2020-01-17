@@ -2102,7 +2102,7 @@ perl.chroot: glibc.chroot db.chroot sqlite-autoconf.chroot
 	$(ECHO) yes | cpan install JROGERS/Net-Telnet-3.04.tar.gz
 	$(ECHO) yes | cpan install TIMB/DBI-1.642.tar.gz
 	$(ECHO) yes | cpan install ISHIGAKI/DBD-SQLite-1.64.tar.gz
-	rm -rf /root/.cpan
+	$(RM) /root/.cpan
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
