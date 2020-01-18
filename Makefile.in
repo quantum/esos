@@ -1426,6 +1426,11 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	openssl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(QUIET) if [ ! -d $(linux_src)/$(notdir $(linux_src)).patch ]; then \
+	  $(PATCH) -d $(linux_src) -b \
+	  -B $(linux_src)/$(notdir $(linux_src)).patch/ -p1 < \
+	  $(chroot_build)/misc/$(notdir $(linux_src)).patch; \
+	fi
 	$(MAKE) --directory=$(linux_src)/tools/perf \
 	EXTRA_CFLAGS="-Wno-stringop-truncation"
 	$(INSTALL) -m 0755 $(linux_src)/tools/perf/perf /usr/bin/perf
