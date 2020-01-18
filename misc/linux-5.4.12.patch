@@ -1,0 +1,451 @@
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <SRS0=MDyy=3G=vger.kernel.org=netdev-owner@kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC8A8C33CB1
+	for <netdev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:11 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.kernel.org (Postfix) with ESMTP id 725272082F
+	for <netdev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="FRC912jA"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1726861AbgAQFdK (ORCPT <rfc822;netdev@archiver.kernel.org>);
+        Fri, 17 Jan 2020 00:33:10 -0500
+Received: from mail-pj1-f65.google.com ([209.85.216.65]:36943 "EHLO
+        mail-pj1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726364AbgAQFdK (ORCPT
+        <rfc822;netdev@vger.kernel.org>); Fri, 17 Jan 2020 00:33:10 -0500
+Received: by mail-pj1-f65.google.com with SMTP id m13so2759816pjb.2
+        for <netdev@vger.kernel.org>; Thu, 16 Jan 2020 21:33:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=broadcom.com; s=google;
+        h=from:to:cc:subject:date:message-id;
+        bh=btOu7Tr7FFV0vZ9EXQeVo4aIdvMnVyCJ/+AFdZy1O5c=;
+        b=FRC912jAOzBZOBp59Wo1/GT+I0Fc7A71n9GO24mXIR5W/wyFa0SBTVzsVueWenHKSc
+         YFcMQhnjAEKUcG0/K0cFYf8ODbChU1+IHs62usjOdQ2z61hixvNsr5T/oYBEAVtXktlH
+         2W76Q4SOBB7OAzzu/FF39wNd/L/22bXKzfMmg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=btOu7Tr7FFV0vZ9EXQeVo4aIdvMnVyCJ/+AFdZy1O5c=;
+        b=p45CP+zVorcIJ3Bp86sqFApK9jiSpr8wwTFn6Oqo4YN+hHOJfpUdXsf3WlK/CdN58A
+         Bel/2o8NcPijpVE9lYieKvfW6WDi8KYZ2CW/rRYchTQuBrDciQjYfQ76sG7wFopXs/9t
+         FxsvkPsnxGNaBNTi6L7r+ooCGsaIbfeQHPfP/Pgw3tuSEcgPba5UOfxDJVZMR8ZyNWI9
+         GLLJM6/5PSKzmMrk95nACu8aEgXdYRS+ZqD6zdt1sVM4bzvCgfFeFxtV/NDYwRfhgW1P
+         TEDWcumdqXMHVvmSODk6R06F0m9gxiWDx5COg6OTYPSdqe9JU04SRTx3nqS1NYmtXSYl
+         RiDg==
+X-Gm-Message-State: APjAAAWv5+4pEhryyn1/sv0PgNChXLWxMZRg0cB32qK/rXPvWbBHvpD4
+        iMNswoR3G7aiH5BzI3lPh0bSQEKVvCw=
+X-Google-Smtp-Source: APXvYqwf98qm0rrTVjdVrR9/GDwAjJBwMLDfQJZ/EoksKYevzTR3B6LhlrStYt/tX4xJRA+SeEaqHg==
+X-Received: by 2002:a17:90a:d78f:: with SMTP id z15mr3686717pju.36.1579239189598;
+        Thu, 16 Jan 2020 21:33:09 -0800 (PST)
+Received: from localhost.swdvt.lab.broadcom.com ([192.19.223.252])
+        by smtp.gmail.com with ESMTPSA id c188sm1357142pga.83.2020.01.16.21.33.08
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 16 Jan 2020 21:33:09 -0800 (PST)
+From:   Michael Chan <michael.chan@broadcom.com>
+To:     davem@davemloft.net
+Cc:     netdev@vger.kernel.org
+Subject: [PATCH net 0/3] bnxt_en: Bug fixes.
+Date:   Fri, 17 Jan 2020 00:32:44 -0500
+Message-Id: <1579239167-16362-1-git-send-email-michael.chan@broadcom.com>
+X-Mailer: git-send-email 1.8.3.1
+Sender: netdev-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <netdev.vger.kernel.org>
+X-Mailing-List: netdev@vger.kernel.org
+Archived-At: <https://lore.kernel.org/netdev/1579239167-16362-1-git-send-email-michael.chan@broadcom.com/>
+List-Archive: <https://lore.kernel.org/netdev/>
+List-Post: <mailto:netdev@vger.kernel.org>
+
+3 small bug fix patches.  The 1st two are aRFS fixes and the last one
+fixes a fatal driver load failure on some kernels without PCIe
+extended config space support enabled.
+
+Please also queue these for -stable.  Thanks.
+
+Michael Chan (3):
+  bnxt_en: Fix NTUPLE firmware command failures.
+  bnxt_en: Fix ipv6 RFS filter matching logic.
+  bnxt_en: Do not treat DSN (Digital Serial Number) read failure as
+    fatal.
+
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c     | 29 ++++++++++++++++++---------
+ drivers/net/ethernet/broadcom/bnxt/bnxt.h     |  4 +---
+ drivers/net/ethernet/broadcom/bnxt/bnxt_vfr.c |  3 +++
+ 3 files changed, 24 insertions(+), 12 deletions(-)
+
+-- 
+2.5.1
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <SRS0=MDyy=3G=vger.kernel.org=netdev-owner@kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A6D8C33CB1
+	for <netdev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:15 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.kernel.org (Postfix) with ESMTP id 40E242072E
+	for <netdev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="fdjZ/UAU"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1726896AbgAQFdN (ORCPT <rfc822;netdev@archiver.kernel.org>);
+        Fri, 17 Jan 2020 00:33:13 -0500
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:41998 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726364AbgAQFdM (ORCPT
+        <rfc822;netdev@vger.kernel.org>); Fri, 17 Jan 2020 00:33:12 -0500
+Received: by mail-pf1-f194.google.com with SMTP id 4so11393098pfz.9
+        for <netdev@vger.kernel.org>; Thu, 16 Jan 2020 21:33:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=broadcom.com; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=YJeICOD8dlLE2gkck/ToRmWKUMwRJMDAFfxQTccIbCw=;
+        b=fdjZ/UAUeTUl4XKZkgTJGvrAhfYZMjSLnDk2vLUlDHkSa+t7UBAA1z2sSeKQSjGwYU
+         P8k6V0Ke+CTbdCaaOr9gRm7xFpXJ+Fje8dwqBrmd4R6am4S5jWPHxAW/dhaaIlrQLV+1
+         g5hJ7QpajUnNqLsH89xqrqJ7N43d1/9T+kkaw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=YJeICOD8dlLE2gkck/ToRmWKUMwRJMDAFfxQTccIbCw=;
+        b=gWO/7adoM84ruhFKY1zg8tmoQ1kpBFiyBMN9UJC7RCg1BcU21sGZUfOFNvTcJd7eio
+         hqW86eX19MGobcU1Rm5j+Hc/CIAGrvgBwOFpgMbAfPvryrqX4QhmEQhciNf6Z0B5BX3i
+         M/AOCAEBlxmqmoRYQ756MPBG1LrhTOvqAroKmx6IoLnu7oKvM78g6MPiMx8Y7ernEM//
+         l9gPoMHVjUx7n4rt92MCj/WMiiWiPRKdj+nWE2YDOB34fjw3NrQk+TybBxkitjrDZwHq
+         trD27bByR6TIRtAawttjtOAcmeKkL52HwGsmeLfkIdgif8qXVB+BHvOj1N2a8N3yYSSI
+         pE5Q==
+X-Gm-Message-State: APjAAAWSmZi62AeqaXieBgGJs6rbx8RLmlAB75NK2ibmhzUFu3dCtevJ
+        RA6Il3qRZjHqel5y44AwdNAC2DL9ASY=
+X-Google-Smtp-Source: APXvYqwzuYkdcQpObMIzWwEClm+u3h+P+8CMqD/A+vNcTCk0b0wdxS1ihdaAmadnSBWRcYSCtud7Bw==
+X-Received: by 2002:a62:7683:: with SMTP id r125mr1300024pfc.132.1579239191389;
+        Thu, 16 Jan 2020 21:33:11 -0800 (PST)
+Received: from localhost.swdvt.lab.broadcom.com ([192.19.223.252])
+        by smtp.gmail.com with ESMTPSA id c188sm1357142pga.83.2020.01.16.21.33.09
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 16 Jan 2020 21:33:11 -0800 (PST)
+From:   Michael Chan <michael.chan@broadcom.com>
+To:     davem@davemloft.net
+Cc:     netdev@vger.kernel.org
+Subject: [PATCH net 1/3] bnxt_en: Fix NTUPLE firmware command failures.
+Date:   Fri, 17 Jan 2020 00:32:45 -0500
+Message-Id: <1579239167-16362-2-git-send-email-michael.chan@broadcom.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1579239167-16362-1-git-send-email-michael.chan@broadcom.com>
+References: <1579239167-16362-1-git-send-email-michael.chan@broadcom.com>
+Sender: netdev-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <netdev.vger.kernel.org>
+X-Mailing-List: netdev@vger.kernel.org
+Archived-At: <https://lore.kernel.org/netdev/1579239167-16362-2-git-send-email-michael.chan@broadcom.com/>
+List-Archive: <https://lore.kernel.org/netdev/>
+List-Post: <mailto:netdev@vger.kernel.org>
+
+The NTUPLE related firmware commands are sent to the wrong firmware
+channel, causing all these commands to fail on new firmware that
+supports the new firmware channel.  Fix it by excluding the 3
+NTUPLE firmware commands from the list for the new firmware channel.
+
+Fixes: 760b6d33410c ("bnxt_en: Add support for 2nd firmware message channel.")
+Signed-off-by: Michael Chan <michael.chan@broadcom.com>
+---
+ drivers/net/ethernet/broadcom/bnxt/bnxt.h | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.h b/drivers/net/ethernet/broadcom/bnxt/bnxt.h
+index 505af5c..85af7cf 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt.h
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.h
+@@ -1936,9 +1936,6 @@ static inline bool bnxt_cfa_hwrm_message(u16 req_type)
+ 	case HWRM_CFA_ENCAP_RECORD_FREE:
+ 	case HWRM_CFA_DECAP_FILTER_ALLOC:
+ 	case HWRM_CFA_DECAP_FILTER_FREE:
+-	case HWRM_CFA_NTUPLE_FILTER_ALLOC:
+-	case HWRM_CFA_NTUPLE_FILTER_FREE:
+-	case HWRM_CFA_NTUPLE_FILTER_CFG:
+ 	case HWRM_CFA_EM_FLOW_ALLOC:
+ 	case HWRM_CFA_EM_FLOW_FREE:
+ 	case HWRM_CFA_EM_FLOW_CFG:
+-- 
+2.5.1
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <SRS0=MDyy=3G=vger.kernel.org=netdev-owner@kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83947C33CB1
+	for <netdev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:18 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.kernel.org (Postfix) with ESMTP id 5687B2072E
+	for <netdev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="gSKPTGRj"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1726951AbgAQFdQ (ORCPT <rfc822;netdev@archiver.kernel.org>);
+        Fri, 17 Jan 2020 00:33:16 -0500
+Received: from mail-pj1-f67.google.com ([209.85.216.67]:33403 "EHLO
+        mail-pj1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726897AbgAQFdN (ORCPT
+        <rfc822;netdev@vger.kernel.org>); Fri, 17 Jan 2020 00:33:13 -0500
+Received: by mail-pj1-f67.google.com with SMTP id u63so3844394pjb.0
+        for <netdev@vger.kernel.org>; Thu, 16 Jan 2020 21:33:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=broadcom.com; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=7t56xoYLiC/yRACKWo5J7lvJyAgC4NL+KZOfaxWaKp0=;
+        b=gSKPTGRjZsIajOitr93F3NhUwWtEykxQcavTwJTMS7vH18V5Lt0eh50tMlBez1K3C6
+         zzFgdiBRhYeATh3N5S1bDaggbdDeNcpBIcjS26D6g4Pdu59NeN62D6VXjMOdILAbKOtV
+         4x2+wdUds8zLq9tBNcp8VyUirVT1BbkhXgYTA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=7t56xoYLiC/yRACKWo5J7lvJyAgC4NL+KZOfaxWaKp0=;
+        b=HYyegD5zvphi89M4sVGSN+u/63SOJYrSJLFWSGZBpN5nbd0qyISnXLqCU5DnOlVcHP
+         Y0fwo5bBCKpE9R1AeJju5juuysFPjST34Pd0PvAtcWww96jJsHoIMO0807bNigUIlZ9A
+         1XGLBj1xmAAchIsxu70ozcC0O22BM+8IXOtNV4vx2gFf9jTRxthJMvWnp4WP9Brqghoe
+         g40ChoAcNSOsvyDgc9gKKdoZbftsM6fZaIXHm11B+0FG3mROIWVFiKkerforuExfcyw2
+         ii4pPL4vyVCbrOgu+36uNfW/QS2s/0Odi/3DA29Ax2TwOswiZDBvn2ankfGsOMa5H1Xu
+         n2xA==
+X-Gm-Message-State: APjAAAWYVqbBwA6jHhu7DdXV+OJcHiib+ZcNyO2DVnnKFvVDuPCvMNPe
+        IISHoSQpghkaRgYGCtw/LuDjYTLmass=
+X-Google-Smtp-Source: APXvYqz6EyFd+FB10EJFOtXfwkdTuKn11vieNKw0HSLbfWUAcZxQKAP5zeaRtYkGNDlenxZ3jMdJ8A==
+X-Received: by 2002:a17:902:426:: with SMTP id 35mr35936699ple.302.1579239193214;
+        Thu, 16 Jan 2020 21:33:13 -0800 (PST)
+Received: from localhost.swdvt.lab.broadcom.com ([192.19.223.252])
+        by smtp.gmail.com with ESMTPSA id c188sm1357142pga.83.2020.01.16.21.33.11
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 16 Jan 2020 21:33:12 -0800 (PST)
+From:   Michael Chan <michael.chan@broadcom.com>
+To:     davem@davemloft.net
+Cc:     netdev@vger.kernel.org
+Subject: [PATCH net 2/3] bnxt_en: Fix ipv6 RFS filter matching logic.
+Date:   Fri, 17 Jan 2020 00:32:46 -0500
+Message-Id: <1579239167-16362-3-git-send-email-michael.chan@broadcom.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1579239167-16362-1-git-send-email-michael.chan@broadcom.com>
+References: <1579239167-16362-1-git-send-email-michael.chan@broadcom.com>
+Sender: netdev-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <netdev.vger.kernel.org>
+X-Mailing-List: netdev@vger.kernel.org
+Archived-At: <https://lore.kernel.org/netdev/1579239167-16362-3-git-send-email-michael.chan@broadcom.com/>
+List-Archive: <https://lore.kernel.org/netdev/>
+List-Post: <mailto:netdev@vger.kernel.org>
+
+Fix bnxt_fltr_match() to match ipv6 source and destination addresses.
+The function currently only checks ipv4 addresses and will not work
+corrently on ipv6 filters.
+
+Fixes: c0c050c58d84 ("bnxt_en: New Broadcom ethernet driver.")
+Signed-off-by: Michael Chan <michael.chan@broadcom.com>
+---
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c | 22 +++++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.c b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+index c779f9c..b441da5 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+@@ -11065,11 +11065,23 @@ static bool bnxt_fltr_match(struct bnxt_ntuple_filter *f1,
+ 	struct flow_keys *keys1 = &f1->fkeys;
+ 	struct flow_keys *keys2 = &f2->fkeys;
+ 
+-	if (keys1->addrs.v4addrs.src == keys2->addrs.v4addrs.src &&
+-	    keys1->addrs.v4addrs.dst == keys2->addrs.v4addrs.dst &&
+-	    keys1->ports.ports == keys2->ports.ports &&
+-	    keys1->basic.ip_proto == keys2->basic.ip_proto &&
+-	    keys1->basic.n_proto == keys2->basic.n_proto &&
++	if (keys1->basic.n_proto != keys2->basic.n_proto ||
++	    keys1->basic.ip_proto != keys2->basic.ip_proto)
++		return false;
++
++	if (keys1->basic.n_proto == htons(ETH_P_IP)) {
++		if (keys1->addrs.v4addrs.src != keys2->addrs.v4addrs.src ||
++		    keys1->addrs.v4addrs.dst != keys2->addrs.v4addrs.dst)
++			return false;
++	} else {
++		if (memcmp(&keys1->addrs.v6addrs.src, &keys2->addrs.v6addrs.src,
++			   sizeof(keys1->addrs.v6addrs.src)) ||
++		    memcmp(&keys1->addrs.v6addrs.dst, &keys2->addrs.v6addrs.dst,
++			   sizeof(keys1->addrs.v6addrs.dst)))
++			return false;
++	}
++
++	if (keys1->ports.ports == keys2->ports.ports &&
+ 	    keys1->control.flags == keys2->control.flags &&
+ 	    ether_addr_equal(f1->src_mac_addr, f2->src_mac_addr) &&
+ 	    ether_addr_equal(f1->dst_mac_addr, f2->dst_mac_addr))
+-- 
+2.5.1
+
+
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <SRS0=MDyy=3G=vger.kernel.org=netdev-owner@kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D25EC33CB6
+	for <netdev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:19 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.kernel.org (Postfix) with ESMTP id 6F2242082F
+	for <netdev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="SHfIECIB"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1727008AbgAQFdR (ORCPT <rfc822;netdev@archiver.kernel.org>);
+        Fri, 17 Jan 2020 00:33:17 -0500
+Received: from mail-pg1-f193.google.com ([209.85.215.193]:34361 "EHLO
+        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726899AbgAQFdP (ORCPT
+        <rfc822;netdev@vger.kernel.org>); Fri, 17 Jan 2020 00:33:15 -0500
+Received: by mail-pg1-f193.google.com with SMTP id r11so11104984pgf.1
+        for <netdev@vger.kernel.org>; Thu, 16 Jan 2020 21:33:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=broadcom.com; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=dztjCgKaLVd3ZFqCqTWGTZPSOVPXHERT3e1FfMGjhXo=;
+        b=SHfIECIBiWO/c3VCSRecasRryTxT3uRQ6sweF0TnOP5AWW0XjD0Ggk9910v37h4ZQf
+         8UH9/YY98L/SXWggmBg3p1XnzPGVd83eHnrIxBJPrS6JuD3RtY8+1EeHKedjjNAyYekE
+         KSU86yH5zbnybTfpsREthtwPOhULTKyMV54oA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=dztjCgKaLVd3ZFqCqTWGTZPSOVPXHERT3e1FfMGjhXo=;
+        b=kzn2TCVBiwng9rxtnamhXfJVbt5KYBMkKI7Mjo4wtKpjV/nZOdNFd2fWsroaXS/qRO
+         x4Vzh7dXLmwTbwk99X+uFuLHu2fT0YtcdU55bn65ghgGGK7I/X3Y5ukPLDICoZ9jzEZI
+         xVyFQV2u5Z+w6JS+UBCSarctEhQCV3BIUoCm0YvjSeaQToRWustx92Qytlfw+R/CJewd
+         MWxm+62K2uT3BuMenom4IxfXPubcTNCTYTQ7pkYjrDtpwpDeM1mVIS+6m8RnYIlXm9LW
+         m0JdTi0Qs04+juqBypJfN9nP9Yket2jrE749PgphVAFW8AsJCH5NaIaiqmsvfdfzxNoV
+         oHfg==
+X-Gm-Message-State: APjAAAVmch7BMEcr8/U4pDryE9DI7U40rGOLluYmcfSrUBVxAVaNYIz3
+        RO/38NZDTGtsym1OU3bFxV88ViiLNY0=
+X-Google-Smtp-Source: APXvYqzh0xEM54z7tRvlzr3RYErhqFeysMpMjUVR4kwfIX/JUr0X5HossE5vXfm9sb5kRxZgcwv4Qg==
+X-Received: by 2002:a63:1b49:: with SMTP id b9mr43035897pgm.258.1579239195110;
+        Thu, 16 Jan 2020 21:33:15 -0800 (PST)
+Received: from localhost.swdvt.lab.broadcom.com ([192.19.223.252])
+        by smtp.gmail.com with ESMTPSA id c188sm1357142pga.83.2020.01.16.21.33.13
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 16 Jan 2020 21:33:14 -0800 (PST)
+From:   Michael Chan <michael.chan@broadcom.com>
+To:     davem@davemloft.net
+Cc:     netdev@vger.kernel.org
+Subject: [PATCH net 3/3] bnxt_en: Do not treat DSN (Digital Serial Number) read failure as fatal.
+Date:   Fri, 17 Jan 2020 00:32:47 -0500
+Message-Id: <1579239167-16362-4-git-send-email-michael.chan@broadcom.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1579239167-16362-1-git-send-email-michael.chan@broadcom.com>
+References: <1579239167-16362-1-git-send-email-michael.chan@broadcom.com>
+Sender: netdev-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <netdev.vger.kernel.org>
+X-Mailing-List: netdev@vger.kernel.org
+Archived-At: <https://lore.kernel.org/netdev/1579239167-16362-4-git-send-email-michael.chan@broadcom.com/>
+List-Archive: <https://lore.kernel.org/netdev/>
+List-Post: <mailto:netdev@vger.kernel.org>
+
+DSN read can fail, for example on a kdump kernel without PCIe extended
+config space support.  If DSN read fails, don't set the
+BNXT_FLAG_DSN_VALID flag and continue loading.  Check the flag
+to see if the stored DSN is valid before using it.  Only VF reps
+creation should fail without valid DSN.
+
+Fixes: 03213a996531 ("bnxt: move bp->switch_id initialization to PF probe")
+Reported-by: Marc Smith <msmith626@gmail.com>
+Signed-off-by: Michael Chan <michael.chan@broadcom.com>
+---
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c     | 7 +++----
+ drivers/net/ethernet/broadcom/bnxt/bnxt.h     | 1 +
+ drivers/net/ethernet/broadcom/bnxt/bnxt_vfr.c | 3 +++
+ 3 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.c b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+index b441da5..e6f18f6 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+@@ -11373,7 +11373,7 @@ int bnxt_get_port_parent_id(struct net_device *dev,
+ 		return -EOPNOTSUPP;
+ 
+ 	/* The PF and it's VF-reps only support the switchdev framework */
+-	if (!BNXT_PF(bp))
++	if (!BNXT_PF(bp) || !(bp->flags & BNXT_FLAG_DSN_VALID))
+ 		return -EOPNOTSUPP;
+ 
+ 	ppid->id_len = sizeof(bp->switch_id);
+@@ -11746,6 +11746,7 @@ static int bnxt_pcie_dsn_get(struct bnxt *bp, u8 dsn[])
+ 	put_unaligned_le32(dw, &dsn[0]);
+ 	pci_read_config_dword(pdev, pos + 4, &dw);
+ 	put_unaligned_le32(dw, &dsn[4]);
++	bp->flags |= BNXT_FLAG_DSN_VALID;
+ 	return 0;
+ }
+ 
+@@ -11857,9 +11858,7 @@ static int bnxt_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	if (BNXT_PF(bp)) {
+ 		/* Read the adapter's DSN to use as the eswitch switch_id */
+-		rc = bnxt_pcie_dsn_get(bp, bp->switch_id);
+-		if (rc)
+-			goto init_err_pci_clean;
++		bnxt_pcie_dsn_get(bp, bp->switch_id);
+ 	}
+ 
+ 	/* MTU range: 60 - FW defined max */
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.h b/drivers/net/ethernet/broadcom/bnxt/bnxt.h
+index 85af7cf..f143354 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt.h
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.h
+@@ -1532,6 +1532,7 @@ struct bnxt {
+ 	#define BNXT_FLAG_NO_AGG_RINGS	0x20000
+ 	#define BNXT_FLAG_RX_PAGE_MODE	0x40000
+ 	#define BNXT_FLAG_MULTI_HOST	0x100000
++	#define BNXT_FLAG_DSN_VALID	0x200000
+ 	#define BNXT_FLAG_DOUBLE_DB	0x400000
+ 	#define BNXT_FLAG_CHIP_NITRO_A0	0x1000000
+ 	#define BNXT_FLAG_DIM		0x2000000
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt_vfr.c b/drivers/net/ethernet/broadcom/bnxt/bnxt_vfr.c
+index f9bf7d7..b010b34 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt_vfr.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt_vfr.c
+@@ -398,6 +398,9 @@ static int bnxt_vf_reps_create(struct bnxt *bp)
+ 	struct net_device *dev;
+ 	int rc, i;
+ 
++	if (!(bp->flags & BNXT_FLAG_DSN_VALID))
++		return -ENODEV;
++
+ 	bp->vf_reps = kcalloc(num_vfs, sizeof(vf_rep), GFP_KERNEL);
+ 	if (!bp->vf_reps)
+ 		return -ENOMEM;
+-- 
+2.5.1
+
+
