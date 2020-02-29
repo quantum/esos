@@ -1626,9 +1626,9 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true OFED_FLAVOR=MOFED \
 	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
 	    -I$(mlnx_ofed_dir)/include/uapi \
-	    -DMOFED_MAJOR=4 -DMOFED_MINOR=6" \
-	    ISER_SYMVERS="$(mlnx_ofed_dir)/Module.symvers \
-	    $(scst_src)/iscsi-scst/kernel/isert-scst/Module.symvers" V=1 mods; \
+	    -DMOFED_MAJOR=5 -DMOFED_MINOR=0" \
+	    ISER_SYMVERS="\"$(mlnx_ofed_dir)/Module.symvers \
+	    $(scst_src)/iscsi-scst/kernel/Module.symvers\"" V=1 mods; \
 	  else \
 	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \
@@ -1644,7 +1644,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    KVER=$(kernel_ver)$$i OFED_FLAVOR=MOFED \
 	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
 	    -I$(mlnx_ofed_dir)/include/uapi \
-	    -DMOFED_MAJOR=4 -DMOFED_MINOR=6" \
+	    -DMOFED_MAJOR=5 -DMOFED_MINOR=0" \
 	    OFED_MODULE_SYMVERS="$(mlnx_ofed_dir)/Module.symvers" V=1 all; \
 	  else \
 	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
@@ -1947,8 +1947,8 @@ mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	$(call chroot_only)
 	$(SED) -i 's,etc/udev/rules.d,usr/lib/udev/rules.d,g' \
 	$(mlnx_ofed_dir)/makefile
-	$(SED) -i '304,310 s/^#*/#/' $(mlnx_ofed_dir)/makefile
-	$(SED) -i '315,318 s/^#*/#/' $(mlnx_ofed_dir)/makefile
+	$(SED) -i '312,318 s/^#*/#/' $(mlnx_ofed_dir)/makefile
+	$(SED) -i '323,326 s/^#*/#/' $(mlnx_ofed_dir)/makefile
 	$(SED) -i '/param, val/s/line.strip()/line.decode("utf-8").strip()/' \
 	$(mlnx_ofed_dir)/ofed_scripts/utils/tc_wrap.py
 	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
