@@ -64,7 +64,6 @@ enable_valgrind		:= @enable_valgrind@
 enable_strace		:= @enable_strace@
 enable_nginx		:= @enable_nginx@
 enable_python_sql	:= @enable_python_sql@
-enable_qla		:= @enable_qla@
 enable_zfs		:= @enable_zfs@
 enable_lessfs		:= @enable_lessfs@
 enable_mhvtl		:= @enable_mhvtl@
@@ -76,6 +75,7 @@ enable_tui_eula		:= @enable_tui_eula@
 enable_tui_usage	:= @enable_tui_usage@
 enable_login_tui	:= @enable_login_tui@
 enable_debug_kernel	:= @enable_debug_kernel@
+enable_qla32		:= @enable_qla32@
 with_rpc_agent		:= @with_rpc_agent@
 rpc_agent_dir		:= $(subst $(CHROOT_DIR),,@rpc_agent_dir@)
 ssl_dh_key_size		:= @ssl_dh_key_size@
@@ -187,7 +187,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20190427.tar.gz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.3.x_r8493.tar.xz \
+		scst-3.4.x_r8782.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.8.0.tar.gz \
 		lvm2-2_02_184.tar.xz \
@@ -433,10 +433,6 @@ ifeq ($(enable_python_sql),yes)
 	chroot_tgts += postgresql.chroot
 	chroot_tgts += mysql.chroot
 endif
-ifeq ($(enable_qla),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
-	scst_qla2xxx_unified-master_20190620.tar.xz)
-endif
 ifeq ($(enable_zfs),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.8.1.tar.gz)
 	chroot_tgts += zfs.chroot
@@ -474,6 +470,13 @@ ifeq ($(enable_tui_eula),yes)
 endif
 ifeq ($(enable_tui_usage),yes)
 	tui_cpp_flags += -DUSAGE_PROMPT
+endif
+ifeq ($(enable_qla32),yes)
+	qla_ini_dir=qla2x00t-32gbit
+	qla_dir=qla2x00t-32gbit/qla2x00-target
+else
+	qla_ini_dir=qla2x00t
+	qla_dir=qla2x00t/qla2x00-target
 endif
 ifeq ($(with_rpc_agent),yes)
 	chroot_tgts += rpc_agent.chroot
@@ -1412,7 +1415,6 @@ gcc.chroot: glibc.chroot gmp mpfr mpc
 	$(QUIET) $(ECHO) "### Done $(@)"
 
 esos_kernels.chroot: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
-esos_kernels.chroot: qla2xxx_src = $(wildcard /sources/scst_qla2xxx_unified-*)
 esos_kernels.chroot: mhvtl_src = $(wildcard /sources/mhvtl-*)
 esos_kernels.chroot: eio_src = $(wildcard /sources/EnhanceIO-*)
 esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
@@ -1454,17 +1456,11 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    fi; \
 	  fi; \
 	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
-	  KDIR=$(linux_src) clean; \
+	  KDIR=$(linux_src) QLA_INI_DIR=$(qla_ini_dir) QLA_DIR=$(qla_dir) \
+	  clean; \
 	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
-	  KDIR=$(linux_src) extraclean; \
-	  if [ "$(enable_qla)" = "yes" ]; then \
-	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
-	    KDIR=$(linux_src) QLA_DIR=qla2x00t_git/qla2xxx-unified-target \
-	    clean; \
-	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
-	    KDIR=$(linux_src) QLA_DIR=qla2x00t_git/qla2xxx-unified-target \
-	    extraclean; \
-	  fi; \
+	  KDIR=$(linux_src) QLA_INI_DIR=$(qla_ini_dir) QLA_DIR=$(qla_dir) \
+	  extraclean; \
 	  if [ "$(enable_mhvtl)" = "yes" ]; then \
 	    $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) clean; \
 	    $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) \
@@ -1523,10 +1519,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(chroot_build)/misc/$(notdir $(linux_src)).config > \
 	    $(linux_src)/.config; \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
-	    KDIR=$(linux_src) 2perf; \
-	    if [ "$(enable_qla)" = "yes" ]; then \
-	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2perf; \
-	    fi; \
+	    KDIR=$(linux_src) QLA_INI_DIR=$(qla_ini_dir) QLA_DIR=$(qla_dir) \
+	    2perf; \
 	  fi; \
 	  if [ "$$i" = "$(debug_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
@@ -1535,25 +1529,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(PATCH) -r - -N -d $(linux_src) -p1 < \
 	    $(chroot_build)/misc/$(notdir $(linux_src))-debug.patch; \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
-	    KDIR=$(linux_src) 2debug; \
-	    if [ "$(enable_qla)" = "yes" ]; then \
-	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2debug; \
-	    fi; \
-	  fi; \
-	  if [ "$(enable_qla)" = "yes" ]; then \
-	    $(MKDIR) $(scst_src)/qla2x00t_git; \
-	    $(LN) $(linux_src)/drivers/scsi/qla2xxx \
-	    $(scst_src)/qla2x00t_git/qla2xxx; \
-	    $(LN) $(qla2xxx_src) \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target; \
-	    $(CP) -r $(scst_src)/qla2x00t_git/qla2xxx/Makefile \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
-	    $(CP) -r $(scst_src)/qla2x00t_git/qla2xxx/*.[ch] \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
-	    $(CP) -f $(qla2xxx_src)/drivers/scsi/qla2xxx/Makefile \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
-	    $(CP) -r $(qla2xxx_src)/drivers/scsi/qla2xxx/*.[ch] \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	    KDIR=$(linux_src) QLA_INI_DIR=$(qla_ini_dir) QLA_DIR=$(qla_dir) \
+	    2debug; \
 	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(SED) -i 's/CONFIG_CHELSIO_T4\=m/# CONFIG_CHELSIO_T4 is not set/' \
@@ -1574,7 +1551,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(XZ) -z -c $(linux_src)/System.map > \
 	  $(chroot_build)/System.map$$i.xz; \
 	  $(MAKE) --directory=$(linux_src) modules_install; \
-	  $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
 	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Mellanox OFED modules..."; \
 	    $(SED) -i '2,$$s/\/bin\///g' $(mlnx_ofed_dir)/configure; \
@@ -1611,14 +1587,14 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i \
 	  INSTALL_DIR_H=/usr/include/scst scst_install; \
-	  if [ "$(enable_qla)" != "yes" ]; then \
-	    BUILD_2X_MODULE=y CONFIG_SCSI_QLA_FC=y \
-	    CONFIG_SCSI_QLA2XXX_TARGET=y $(MAKE) --directory=$(scst_src) \
-	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i qla_old; \
-	    BUILD_2X_MODULE=y CONFIG_SCSI_QLA_FC=y \
-	    CONFIG_SCSI_QLA2XXX_TARGET=y $(MAKE) --directory=$(scst_src) \
-	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i qla_old_install; \
-	  fi; \
+	  BUILD_2X_MODULE=y CONFIG_SCSI_QLA_FC=y CONFIG_SCSI_QLA2XXX_TARGET=y \
+	  $(MAKE) --directory=$(scst_src) QLA_INI_DIR=$(qla_ini_dir) \
+	  QLA_DIR=$(qla_dir) KDIR=$(linux_src) KVER=$(kernel_ver)$$i \
+	  qla; \
+	  BUILD_2X_MODULE=y CONFIG_SCSI_QLA_FC=y CONFIG_SCSI_QLA2XXX_TARGET=y \
+	  $(MAKE) --directory=$(scst_src) QLA_INI_DIR=$(qla_ini_dir) \
+	  QLA_DIR=$(qla_dir) KDIR=$(linux_src) KVER=$(kernel_ver)$$i \
+	  qla_install; \
 	  $(MAKE) --directory=$(scst_src)/iscsi-scst \
 	  include/iscsi_scst_itf_ver.h; \
 	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
@@ -1657,19 +1633,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  KVER=$(kernel_ver)$$i fcst; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i fcst_install; \
-	  if [ "$(enable_qla)" = "yes" ]; then \
-	    $(ECHO) "### Compiling the Cavium Fibre Channel target driver..."; \
-	    $(PATCH) -r - -N -d $(qla2xxx_src) -p4 < \
-	    $(qla2xxx_src)/drivers/scsi/qla2xxx/extras/export_target_list.dif; \
-	    $(PATCH) -r - -N -d $(qla2xxx_src) -p4 < \
-	    $(qla2xxx_src)/drivers/scsi/qla2xxx/extras/move_command_alloc_to_callback.patch; \
-	    $(MAKE) --directory=$(scst_src) obj-m="qla2xxx.o scst_qla2xxx.o" \
-	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i SCST_INC_DIR=/usr/include \
-	    QLA_DIR=qla2x00t_git/qla2xxx-unified-target qla; \
-	    $(MAKE) --directory=$(scst_src) obj-m="qla2xxx.o scst_qla2xxx.o" \
-	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i SCST_INC_DIR=/usr/include \
-	    QLA_DIR=qla2x00t_git/qla2xxx-unified-target qla_install; \
-	  fi; \
 	  if [ "$(enable_mhvtl)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the mhVTL module..."; \
 	    $(MAKE) --directory=$(mhvtl_src)/kernel KDIR=$(linux_src) \
