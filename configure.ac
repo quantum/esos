@@ -208,17 +208,6 @@ AS_IF([test "x$enable_python_sql" = "xyes"],
 AC_SUBST(enable_python_sql, ${enable_python_sql})
 AC_MSG_NOTICE([python_sql: ${enable_python_sql}])
 
-dnl Optional feature qla
-AC_ARG_ENABLE(qla,
-	AS_HELP_STRING([--enable-qla],
-	[use the Cavium FC qla2xxx driver instead of the SCST in-tree driver]),
-	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
-	[enable_qla="${enableval}"], [enable_qla="no"]), enable_qla="no")
-AS_IF([test "x$enable_qla" = "xyes"],
-	[build_opts="${build_opts} qla"; opt_suffix="${opt_suffix}q"])
-AC_SUBST(enable_qla, ${enable_qla})
-AC_MSG_NOTICE([qla: ${enable_qla}])
-
 dnl Optional feature zfs
 AC_ARG_ENABLE(zfs,
 	AS_HELP_STRING([--enable-zfs], [build and include ZFS on Linux]),
@@ -332,6 +321,17 @@ AC_ARG_ENABLE(debug_kernel,
 dnl No build option / suffix (enabled by default)
 AC_SUBST(enable_debug_kernel, ${enable_debug_kernel})
 AC_MSG_NOTICE([debug_kernel: ${enable_debug_kernel}])
+
+dnl Optional 32 Gb QLogic driver
+AC_ARG_ENABLE(qla32,
+	AS_HELP_STRING([--enable-qla32],
+	[use the QLogic 32 Gb FC driver instead of the original driver]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_qla32="${enableval}"], [enable_qla32="no"]), enable_qla32="no")
+AS_IF([test "x$enable_qla32" = "xyes"],
+	[build_opts="${build_opts} qla32"; opt_suffix="${opt_suffix}q"])
+AC_SUBST(enable_qla32, ${enable_qla32})
+AC_MSG_NOTICE([qla32: ${enable_qla32}])
 
 dnl Optional install authorized_keys file for root (SSH)
 AC_ARG_WITH(ssh_auth_key,
