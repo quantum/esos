@@ -914,6 +914,8 @@ tcl: make
 	$(CHMOD) -v u+w /tools/lib/libtcl8.6.so
 	$(MAKE) --directory=$(tgt_src_dir)/unix install-private-headers
 	$(LN) -v tclsh8.6 /tools/bin/tclsh
+	$(RM) $(tgt_src_dir)
+	$(MAKE) --directory=$(BUILD_DIR) extract
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

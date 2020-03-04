@@ -1,5 +1,9 @@
 2020-03-04  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'tcl_build_fix' into 2.x.x
+
+	build fix for tcl.chroot (need to re-extract since source is used in bootstrap step)
+
 	Merge branch 'ibutils_fix' into 2.x.x
 
 	added a patch for ibutils that resolves build issues and added the tcl.chroot target (dep for ibutils)
