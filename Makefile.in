@@ -434,7 +434,7 @@ ifeq ($(enable_python_sql),yes)
 	chroot_tgts += mysql.chroot
 endif
 ifeq ($(enable_zfs),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.8.1.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.8.3.tar.gz)
 	chroot_tgts += zfs.chroot
 endif
 ifeq ($(enable_lessfs),yes)
