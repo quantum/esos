@@ -1,3 +1,9 @@
+2020-03-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'alua_ra_tweaks'
+
+	move the iSCSI session rescanning and SCSI bus rescanning into helper functions; enhance scsi_bus_rescan() by only rescanning iSCSI host entries; enhance iscsi_sess_rescan() by logging into iSCSI targets if none are logged in
+
 2020-03-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'zfs_update'
