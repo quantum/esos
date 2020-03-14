@@ -279,7 +279,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iftop-1.0pre4.tar.gz \
 		nmon-16j.tar.xz \
 		munin-c-0.0.13.tar.xz \
-		open-iscsi-2.0.876.tar.gz \
+		open-iscsi-2.1.1.tar.gz \
 		open-isns-0.99.tar.gz \
 		open-vm-tools-10.3.10-12406962.tar.gz \
 		libdnet-1.11.tar.gz \
@@ -3778,8 +3778,9 @@ munin-c.chroot: glibc.chroot
 open-iscsi.chroot: glibc.chroot open-isns.chroot util-linux.chroot kmod.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(MAKE) --directory=$(tgt_src_dir) LIBADD="-lkmod" \
-	OPTFLAGS="-Os -Wno-format-truncation" user
+	$(MAKE) --directory=$(tgt_src_dir) LIBADD="-lkmod" NO_SYSTEMD=1 \
+	OPTFLAGS="-Os -Wno-format-truncation -DNO_SYSTEMD" \
+	PKG_CONFIG="pkg-config" user
 	$(MAKE) --directory=$(tgt_src_dir) install_programs
 	$(MAKE) --directory=$(tgt_src_dir) install_doc
 	$(MAKE) --directory=$(tgt_src_dir) install_etc
