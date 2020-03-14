@@ -1,3 +1,9 @@
+2020-03-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'iscsi_update'
+
+	updated open-iscsi to version 2.1.1
+
 2020-03-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'alua_ra_tweaks'
