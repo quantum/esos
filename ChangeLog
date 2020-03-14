@@ -1,3 +1,7 @@
+2020-03-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	create missing '/run/lock/iscsi' directory (open-iscsi)
+
 2020-03-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'iscsi_update'
