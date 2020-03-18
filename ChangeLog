@@ -1,3 +1,9 @@
+2020-03-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'io_tools'
+
+	added the iowatcher and iotop packages (useful for debugging Linux block I/O)
+
 2020-03-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	create missing '/run/lock/iscsi' directory (open-iscsi)
