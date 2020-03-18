@@ -321,6 +321,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		acpid-2.0.31.tar.xz \
 		ibutils-1.5.7.tar.gz \
 		numactl-2.0.13.tar.gz \
+		iowatcher-master_20200318.tar.xz \
+		iotop-master_20200318.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -403,7 +405,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		mstflint.chroot lshw.chroot iozone3.chroot telegraf.chroot \
 		sbd.chroot screen.chroot lftp.chroot ndctl.chroot \
 		kmod.chroot docbook-xsl-nons.chroot acpid.chroot \
-		ibutils.chroot tcl.chroot numactl.chroot
+		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
+		iotop.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -4325,6 +4328,21 @@ numactl.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+iowatcher.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) prefix=/usr install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+iotop.chroot: glibc.chroot Python.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
