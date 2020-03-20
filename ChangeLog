@@ -1,3 +1,9 @@
+2020-03-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'dump_md_fix' into 2.x.x
+
+	initramfs: put the MD RAID boot device assembly stuff into a function, and call this function if a crash dump kernel is running / normal non-ISO boot
+
 2020-03-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'tcl_build_fix' into 2.x.x
