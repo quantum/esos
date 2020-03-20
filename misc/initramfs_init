@@ -16,6 +16,21 @@ cmdline() {
 	[ "$value" != "" ] && echo "$value"
 }
 
+# For MD RAID boot devices
+assem_boot_md() {
+	mdadm --examine --brief --scan --config=partitions | \
+	while read -r row; do
+		md_path="$(echo ${row} | awk '{ print $2 }')"
+		md_name="$(echo ${row} | awk '{ print $5 }' | cut -d= -f2)"
+		if echo ${md_name} | \
+		egrep 'esos_boot|esos_root|esos_conf|esos_logs' > \
+		/dev/null; then
+			mdadm --assemble ${md_path} --name ${md_name} || \
+			return 1
+		fi
+	done
+}
+
 # Install BusyBox
 /bin/busybox --install -s
 
@@ -34,6 +49,8 @@ mdev -s || rescue_shell
 # Catch if /proc/vmcore exists -- we capture the crash dump and reboot
 if [ -e /proc/vmcore ]; then
 	echo "It appears a crash dump kernel is running."
+	echo "Assembling MD RAID boot devices (if any)..."
+	assem_boot_md || rescue_shell
 	echo "Attempting to resolve the 'esos_logs' file system device..."
 	logs_fs_dev="$(findfs LABEL=esos_logs)" || \
 	(echo "Error resolving the logs device node!"; rescue_shell)
@@ -69,17 +86,7 @@ if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
 	(echo "Error resolving the ESOS-ISO device!"; rescue_shell)
 else
 	# Assemble ESOS boot drive MD arrays here (if any)
-	mdadm --examine --brief --scan --config=partitions | \
-	while read -r row; do
-		md_path="$(echo ${row} | awk '{ print $2 }')"
-		md_name="$(echo ${row} | awk '{ print $5 }' | cut -d= -f2)"
-		if echo ${md_name} | \
-		egrep 'esos_boot|esos_root|esos_conf|esos_logs' > \
-		/dev/null; then
-			mdadm --assemble ${md_path} --name ${md_name} || \
-			rescue_shell
-		fi
-	done
+	assem_boot_md || rescue_shell
 	# Attempt to resolve the FS label here for regular boot
 	root_fs_dev="$(findfs LABEL=esos_root)" || \
 	(echo "Error resolving the root device node!"; rescue_shell)
