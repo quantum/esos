@@ -99,13 +99,17 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             # Set block device variables for below
             esos_blk_root="$(findfs LABEL=esos_root)"
             esos_blk_boot="$(findfs LABEL=ESOS_BOOT)"
-            # Get confirmation for an upgrade (only option for MD boot)
-            echo "### This installation script is running on a live ESOS" \
-                "host. We've detected ESOS is using a MD RAID boot drive." \
-                "Upgrading in-place is the only supported install option," \
-                "please type 'yes' to continue the upgrade. If you decline," \
-                "this installation script will exit." && read confirm
-                echo
+            if [[ ! -z ${FORCE_UPGRADE} ]]; then
+                confirm="Y"
+            else
+                # Get confirmation for an upgrade (only option for MD boot)
+                echo "### This installation script is running on a live ESOS" \
+                    "host. We've detected ESOS is using a MD RAID boot drive." \
+                    "Upgrading in-place is the only supported install option," \
+                    "please type 'yes' to continue the upgrade. If you decline," \
+                    "this installation script will exit." && read confirm
+                    echo
+            fi
         else
             # Make sure the image disk label and the ESOS boot drive match
             esos_blk_dev="$(echo ${esos_root} | \
@@ -135,13 +139,17 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 esos_blk_root="${esos_blk_dev}2"
                 esos_blk_boot="${esos_blk_dev}1"
             fi
-            # Get confirmation for an upgrade
-            echo "### This installation script is running on a live ESOS" \
-                "host. Okay to perform an in-place upgrade (yes/no)? Log" \
-                "file system data will persist and you will not be" \
-                "prompted to install propietary CLI tools. If you decline," \
-                "a full installation will continue." && read confirm
-                echo
+            if [[ ! -z ${FORCE_UPGRADE} ]]; then
+                confirm="Y"
+            else
+                # Get confirmation for an upgrade
+                echo "### This installation script is running on a live ESOS" \
+                    "host. Okay to perform an in-place upgrade (yes/no)? Log" \
+                    "file system data will persist and you will not be" \
+                    "prompted to install propietary CLI tools. If you decline," \
+                    "a full installation will continue." && read confirm
+                    echo
+            fi
         fi
         if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
             echo "### Increasing the /tmp file system..."
