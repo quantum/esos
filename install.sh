@@ -106,8 +106,9 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 echo "### This installation script is running on a live ESOS" \
                     "host. We've detected ESOS is using a MD RAID boot drive." \
                     "Upgrading in-place is the only supported install option," \
-                    "please type 'yes' to continue the upgrade. If you decline," \
-                    "this installation script will exit." && read confirm
+                    "please type 'yes' to continue the upgrade. If you" \
+                    "decline, this installation script will exit." && \
+                    read confirm
                     echo
             fi
         else
@@ -146,8 +147,9 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 echo "### This installation script is running on a live ESOS" \
                     "host. Okay to perform an in-place upgrade (yes/no)? Log" \
                     "file system data will persist and you will not be" \
-                    "prompted to install propietary CLI tools. If you decline," \
-                    "a full installation will continue." && read confirm
+                    "prompted to install propietary CLI tools. If you" \
+                    "decline, a full installation will continue." && \
+                    read confirm
                     echo
             fi
         fi
@@ -244,7 +246,7 @@ if [ -n "${install_dev}" ]; then
     echo
 elif [ -n "${install_tran}" ]; then
     while : ; do
-	echo "### Okay to wipe all block devices matching transport" \
+        echo "### Okay to wipe all block devices matching transport" \
             "type '${install_tran}' (yes/no)?" && read confirm
         echo
         if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
