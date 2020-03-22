@@ -16,6 +16,14 @@ if [ -z "${slot_name}" ]; then
     exit 1
 fi
 
+# Systems with lots of CPUs need nr_cpus > 1 in the capture kernel
+avail_cpus="$(/usr/bin/nproc --all)"
+if [ ${avail_cpus} -ge 64 ]; then
+    nr_cpus="16"
+else
+    nr_cpus="1"
+fi
+
 # Need the boot file system so we can load a kernel
 /bin/mount /boot || exit 1
 
@@ -25,13 +33,13 @@ case "`/bin/uname -r`" in
         kernel=/boot/${slot_name}-bzImage-esos.prod
         initramfs=/boot/${slot_name}-initramfs.cpio.gz
         /usr/sbin/kexec -p ${kernel} --initrd=${initramfs} \
-            --append="single irqpoll maxcpus=1 reset_devices"
+            --append="single irqpoll nr_cpus=${nr_cpus} reset_devices"
     ;;
     *debug*)
         kernel=/boot/${slot_name}-bzImage-esos.debug
         initramfs=/boot/${slot_name}-initramfs.cpio.gz
         /usr/sbin/kexec -p ${kernel} --initrd=${initramfs} \
-            --append="single irqpoll maxcpus=1 reset_devices"
+            --append="single irqpoll nr_cpus=${nr_cpus} reset_devices"
     ;;
 esac
 

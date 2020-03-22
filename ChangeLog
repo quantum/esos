@@ -1,3 +1,9 @@
+2020-03-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'kdump_fix' into 2.x.x
+
+	rc.kdump: systems with lots of CPUs need nr_cpus > 1 in the capture kernel
+
 2020-03-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'dump_md_fix' into 2.x.x
