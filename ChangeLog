@@ -1,3 +1,9 @@
+2020-04-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_ra_fix' into 2.x.x
+
+	start with the 'transitioning' ALUA state when loading/starting SCST instead of 'offline'
+
 2020-03-22  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'kdump_fix' into 2.x.x
