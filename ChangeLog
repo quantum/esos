@@ -1,8 +1,42 @@
+2020-04-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'lholowko-minimize-locales'
+
+	supported locales: make the 'cp' command verbose and nix the additional echo statement
+
+	Merge branch 'minimize-locales' of https://github.com/lholowko/esos into lholowko-minimize-locales
+
+2020-04-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	start with the 'transitioning' ALUA state when loading/starting SCST instead of 'offline'
+
+2020-04-02  Lars Holowko  <lars.holowko@quantum.com>
+
+	Reduce size of /usr/lib/locale/locale-archive by excluding a lot of locales
+
+2020-03-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.kdump: systems with lots of CPUs need nr_cpus > 1 in the capture kernel
+
+2020-03-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	initramfs: put the MD RAID boot device assembly stuff into a function, and call this function if a crash dump kernel is running / normal non-ISO boot
+
+	Merge branch 'jqwong-BLK-1115'
+
+	updated message strings to fit in 80 columns; replaced stray tab character with spaces (indent)
+
+	Merge branch 'BLK-1115' of https://github.com/jqwong/esos into jqwong-BLK-1115
+
 2020-03-18  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'io_tools'
 
 	added the iowatcher and iotop packages (useful for debugging Linux block I/O)
+
+2020-03-18  root  <jwong@jwong-development>
+
+	BLK-1115: update install.sh to bypass Y/N prompt on environment variable
 
 2020-03-14  Marc A. Smith  <marc.smith@quantum.com>
 

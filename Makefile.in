@@ -1385,6 +1385,8 @@ glibc.chroot: kernel_headers.chroot
 	$(SED) '/test-installation/s@$$(PERL)@echo not running@' -i \
 	$(tgt_src_dir)/Makefile
 	$(MAKE) --directory=$(chroot_build)/glibc-build install
+	$(CP) -v $(chroot_build)/misc/glibc.SUPPORTED.locales \
+	$(tgt_src_dir)/localedata/SUPPORTED
 	$(MAKE) --directory=$(chroot_build)/glibc-build \
 	localedata/install-locales
 	$(CP) -f /tools/bin/{ld,ld-old}
