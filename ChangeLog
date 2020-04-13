@@ -1,3 +1,13 @@
+2020-04-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'min_locales' into 2.x.x
+
+	supported locales: make the 'cp' command verbose and nix the additional echo statement
+
+2020-04-13  Lars Holowko  <lars.holowko@quantum.com>
+
+	Reduce size of /usr/lib/locale/locale-archive by excluding a lot of locales
+
 2020-04-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'scst_ra_fix' into 2.x.x
