@@ -1385,8 +1385,7 @@ glibc.chroot: kernel_headers.chroot
 	$(SED) '/test-installation/s@$$(PERL)@echo not running@' -i \
 	$(tgt_src_dir)/Makefile
 	$(MAKE) --directory=$(chroot_build)/glibc-build install
-	$(ECHO) "Overwriting locales with minimum set"
-	$(CP) $(chroot_build)/misc/glibc.SUPPORTED.locales \
+	$(CP) -v $(chroot_build)/misc/glibc.SUPPORTED.locales \
 	$(tgt_src_dir)/localedata/SUPPORTED
 	$(MAKE) --directory=$(chroot_build)/glibc-build \
 	localedata/install-locales
