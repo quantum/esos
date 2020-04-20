@@ -1,3 +1,9 @@
+2020-04-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'enable_qed'
+
+	enable the QLogic QED driver and associated options
+
 2020-04-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'lholowko-minimize-locales'
