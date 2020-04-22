@@ -27,6 +27,9 @@ fi
 /bin/echo "Loading the Mellanox ConnectX-4 and Connect-IB core driver..."
 /sbin/modprobe mlx5_core
 
+/bin/echo "Loading the QLogic FastLinQ 4xxxx Ethernet driver..."
+/sbin/modprobe qede
+
 #/bin/echo "Loading the Microsemi Switchtec NTB driver..."
 #/sbin/modprobe ntb_hw_switchtec
 /sbin/modprobe cls_switchtec

@@ -1,3 +1,9 @@
+2020-04-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qed_fw'
+
+	install the firmware for QED-adapters, configure QED and QEDE as modules, and load 'qede' on boot in rc.2
+
 2020-04-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'enable_qed'
