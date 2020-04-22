@@ -2978,6 +2978,7 @@ linux_firmware.chroot:
 	$(CP) -r $(tgt_src_dir)/cbfw* /lib/firmware/
 	$(CP) -r $(tgt_src_dir)/ctfw* /lib/firmware/
 	$(CP) -r $(tgt_src_dir)/ct2fw* /lib/firmware/
+	$(CP) -r $(tgt_src_dir)/qed /lib/firmware/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
