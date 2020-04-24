@@ -1,3 +1,9 @@
+2020-04-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'ocs_opts' into 2.x.x
+
+	set the fw_diag_log_size="128K" module option for ocs_fc_scst (enables RAS logging support)
+
 2020-04-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'min_locales' into 2.x.x
