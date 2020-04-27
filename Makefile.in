@@ -2165,6 +2165,8 @@ openssh.chroot: glibc.chroot zlib.chroot openssl.chroot
 	--without-openssl-header-check
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=/ install
+	$(INSTALL) -m 0755 $(tgt_src_dir)/contrib/ssh-copy-id \
+	/usr/bin/ssh-copy-id
 	$(SED) -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' \
 	/etc/ssh/sshd_config
 	$(TOUCH) $(@)

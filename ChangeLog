@@ -1,3 +1,29 @@
+2020-04-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'lholowko-add-ssh-copy-id'
+
+	tweaked the install line for ssh-copy-id
+
+	Merge branch 'add-ssh-copy-id' of https://github.com/lholowko/esos into lholowko-add-ssh-copy-id
+
+	Merge branch 'lholowko-openssl-1.1.1g'
+
+	updated CHECKSUM files for new version of OpenSSL
+
+	Merge branch 'openssl-1.1.1g' of https://github.com/lholowko/esos into lholowko-openssl-1.1.1g
+
+2020-04-27  Lars Holowko  <lars.holowko@quantum.com>
+
+	Add ssh-copy-id to ESOS ssh-copy-id is only 10KB.
+
+2020-04-24  Lars Holowko  <lars.holowko@quantum.com>
+
+	Updated openssl to openssl-1.1.1g
+
+2020-04-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	set the fw_diag_log_size="128K" module option for ocs_fc_scst (enables RAS logging support)
+
 2020-04-22  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'qed_fw'
