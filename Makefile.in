@@ -1788,6 +1788,7 @@ esos_tui.chroot: glibc.chroot ncurses.chroot cdk.chroot iniparser.chroot \
 scst.chroot: glibc.chroot esos_kernels.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	$(MAKE) --directory=$(tgt_src_dir)/iscsi-scst \
 	SCST_INC_DIR=$(tgt_src_dir)/scst/include progs
 	$(INSTALL) -vD -m 755 $(tgt_src_dir)/iscsi-scst/usr/iscsi-scstd \
@@ -2145,7 +2146,7 @@ qlogic_fw.chroot:
 
 scstadmin.chroot: perl_mod = $(wildcard $(scst_src)/scstadmin/scstadmin/scst-*)
 scstadmin.chroot: perl_lib = $(wildcard /usr/lib/perl5/5.*)
-scstadmin.chroot: perl.chroot
+scstadmin.chroot: perl.chroot scst.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(perl_mod) && PERL5LIB="$(perl_lib)" /usr/bin/perl \

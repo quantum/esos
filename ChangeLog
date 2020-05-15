@@ -1,3 +1,17 @@
+2020-05-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'resync_dev_fix'
+
+	added an SCST patch that resolves a bug in 'scstadmin' when using the "-resync_dev" action
+
+2020-05-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'lholowko-disable-blkid-cache'
+
+2020-05-14  Lars Holowko  <lars.holowko@quantum.com>
+
+	Disable libblk's cache used e.g. by blkid, wipefs
+
 2020-04-27  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'lholowko-add-ssh-copy-id'
