@@ -1,0 +1,43 @@
+From 8de9eb487a9bacc8a09bf184eb00245d008bb002 Mon Sep 17 00:00:00 2001
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Thu, 14 May 2020 20:45:26 +0000
+Subject: [PATCH] scstadmin: Fix -resync_dev
+
+Fix the following failure:
+
+    # scstadmin -resync_dev volume01
+    Collecting current configuration: done.
+            -> Making requested changes.
+            -> WARNING: Device 'volume01' lacks the settable attribute 'resync_size', ignoring.
+            -> Done.
+    All done.
+
+This patch fixes a regression that was introduced by r8171 (commit
+aedcfc5997f1 ("scstadmin: Avoid that Perl complains about undefined values
+for write-only attributes") # v3.4.
+
+Reported-by: Marc Smith <msmith626@gmail.com>
+
+
+
+git-svn-id: http://svn.code.sf.net/p/scst/svn/trunk@8915 d57e44dd-8a1f-0410-8b47-8ef2f437770f
+---
+ scstadmin/scstadmin.sysfs/scstadmin | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/scstadmin/scstadmin.sysfs/scstadmin b/scstadmin/scstadmin.sysfs/scstadmin
+index 1d42aaff5..9dd72273c 100755
+--- a/scstadmin/scstadmin.sysfs/scstadmin
++++ b/scstadmin/scstadmin.sysfs/scstadmin
+@@ -5883,9 +5883,8 @@ sub cacheAttributes {
+ 			my $value = $$attributes{$attribute}->{'value'};
+ 			# Write-only attributes (e.g. abort_isp) do not have
+ 			# a value.
+-			if (defined($value)) {
+-				$cache{$attribute}->{$value} = FALSE;
+-			}
++			$value = "" if (!defined($value));
++			$cache{$attribute}->{$value} = FALSE;
+ 		}
+ 	}
+ 
