@@ -92,7 +92,8 @@ scst_start() {
             ocf_run scstadmin -config "${SCST_CFG}"
         fi
         if [ ${?} -ne 0 ]; then
-            ocf_log err "Something is wrong with the SCST configuration!"
+            error_msg="Something is wrong with the SCST configuration!"
+            ocf_exit_reason ${error_msg}
             stop_scst_daemons
             unload_scst_modules
             exit ${OCF_ERR_GENERIC}
@@ -136,7 +137,12 @@ scst_start() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_s_alua_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the local target group state!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
         # For now, we simply assume the other node is the Master
         ocf_log debug "scst_start() -> Setting target group" \
             "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
@@ -144,7 +150,12 @@ scst_start() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_remote_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_m_alua_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the remote target group state!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
     fi
 
     # Make sure the resource started correctly
@@ -198,7 +209,12 @@ scst_stop() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_remote_inact_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_remote_inact_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the local target group to offline!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
     fi
 
     # First we need to disable all target interfaces
@@ -287,9 +303,11 @@ scst_monitor() {
     # If we are using ALUA, then we can test if we are Master or not
     if ocf_is_true ${OCF_RESKEY_alua}; then
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
-        l_tgt_grp_path="${dev_grp_path}/target_groups/${OCF_RESKEY_local_tgt_grp}"
+        l_tgt_grp_path="${dev_grp_path}/target_groups/"
+        l_tgt_grp_path+="${OCF_RESKEY_local_tgt_grp}"
         l_tgt_grp_state="$(head -1 ${l_tgt_grp_path}/state)"
-        r_tgt_grp_path="${dev_grp_path}/target_groups/${OCF_RESKEY_remote_tgt_grp}"
+        r_tgt_grp_path="${dev_grp_path}/target_groups/"
+        r_tgt_grp_path+="${OCF_RESKEY_remote_tgt_grp}"
         r_tgt_grp_state="$(head -1 ${r_tgt_grp_path}/state)"
         ocf_log debug "scst_monitor() -> SCST local target" \
             "group state: ${l_tgt_grp_state}"
@@ -308,31 +326,48 @@ scst_monitor() {
                 ocf_run scstadmin -noprompt -set_tgrp_attr \
                     ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                     ${OCF_RESKEY_device_group} -attributes \
-                    state\=${OCF_RESKEY_remote_inact_state} \
-                    || exit ${OCF_ERR_GENERIC}
+                    state\=${OCF_RESKEY_remote_inact_state}
+                if [ ${?} -ne 0 ]; then
+                    error_msg="Failed to set the remote "
+                    error_msg+="target group to offline!"
+                    ocf_exit_reason ${error_msg}
+                    exit ${OCF_ERR_GENERIC}
+                fi
             fi
         else
             if [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
                 # Remote exists and we're Master, so set the remote to Slave
-                if [ "x${r_tgt_grp_state}" != "x${OCF_RESKEY_s_alua_state}" ]; then
+                if [ "x${r_tgt_grp_state}" != \
+                    "x${OCF_RESKEY_s_alua_state}" ]; then
                     ocf_log debug "scst_monitor() -> Setting target group" \
                         "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
                         "'${OCF_RESKEY_s_alua_state}'..."
                     ocf_run scstadmin -noprompt -set_tgrp_attr \
                         ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                         ${OCF_RESKEY_device_group} -attributes \
-                        state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+                        state\=${OCF_RESKEY_s_alua_state}
+                    if [ ${?} -ne 0 ]; then
+                        error_msg="Failed to set the remote target group state!"
+                        ocf_exit_reason ${error_msg}
+                        exit ${OCF_ERR_GENERIC}
+                    fi
                 fi
             else
                 # Remote exists and we're Slave, so set the remote to Master
-                if [ "x${r_tgt_grp_state}" != "x${OCF_RESKEY_m_alua_state}" ]; then
+                if [ "x${r_tgt_grp_state}" != \
+                    "x${OCF_RESKEY_m_alua_state}" ]; then
                     ocf_log debug "scst_monitor() -> Setting target group" \
                         "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
                         "'${OCF_RESKEY_m_alua_state}'..."
                     ocf_run scstadmin -noprompt -set_tgrp_attr \
                         ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                         ${OCF_RESKEY_device_group} -attributes \
-                        state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+                        state\=${OCF_RESKEY_m_alua_state}
+                    if [ ${?} -ne 0 ]; then
+                        error_msg="Failed to set the remote target group state!"
+                        ocf_exit_reason ${error_msg}
+                        exit ${OCF_ERR_GENERIC}
+                    fi
                 fi
             fi
         fi
@@ -349,7 +384,8 @@ scst_validate_all() {
     # There can only be one instance of SCST running per node
     if [ ! -z "${OCF_RESKEY_CRM_meta_clone_node_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_clone_node_max}" -ne 1 ]; then
-        ocf_log err "The 'clone-node-max' parameter must equal '1'."
+        error_msg="The 'clone-node-max' parameter must equal '1'."
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
 
@@ -357,34 +393,41 @@ scst_validate_all() {
     if ocf_is_true ${OCF_RESKEY_alua}; then
         # Make sure they are set to something
         if [ -z "${OCF_RESKEY_device_group}" ]; then
-            ocf_log err "The 'device_group' parameter is not set!"
+            error_msg="The 'device_group' parameter is not set!"
+            ocf_exit_reason ${error_msg}
             exit ${OCF_ERR_CONFIGURED}
         fi
         if [ -z "${OCF_RESKEY_local_tgt_grp}" ]; then
-            ocf_log err "The 'local_tgt_grp' parameter is not set!"
+            error_msg="The 'local_tgt_grp' parameter is not set!"
+            ocf_exit_reason ${error_msg}
             exit ${OCF_ERR_CONFIGURED}
         fi
         if [ -z "${OCF_RESKEY_remote_tgt_grp}" ]; then
-            ocf_log err "The 'remote_tgt_grp' parameter is not set!"
+            error_msg="The 'remote_tgt_grp' parameter is not set!"
+            ocf_exit_reason ${error_msg}
             exit ${OCF_ERR_CONFIGURED}
         fi
         if [ -z "${OCF_RESKEY_m_alua_state}" ]; then
-            ocf_log err "The 'm_alua_state' parameter is not set!"
+            error_msg="The 'm_alua_state' parameter is not set!"
+            ocf_exit_reason ${error_msg}
             exit ${OCF_ERR_CONFIGURED}
         fi
         if [ -z "${OCF_RESKEY_s_alua_state}" ]; then
-            ocf_log err "The 's_alua_state' parameter is not set!"
+            error_msg="The 's_alua_state' parameter is not set!"
+            ocf_exit_reason ${error_msg}
             exit ${OCF_ERR_CONFIGURED}
         fi
         #  Currently, we only support using one Master with this RA
         if [ ! -z "${OCF_RESKEY_CRM_meta_master_max}" ] &&
             [ "${OCF_RESKEY_CRM_meta_master_max}" -ne 1 ]; then
-            ocf_log err "The 'master-max' parameter must equal '1'."
+            error_msg="The 'master-max' parameter must equal '1'."
+            ocf_exit_reason ${error_msg}
             exit ${OCF_ERR_CONFIGURED}
         fi
         if [ ! -z "${OCF_RESKEY_CRM_meta_master_node_max}" ] &&
             [ "${OCF_RESKEY_CRM_meta_master_node_max}" -ne 1 ]; then
-            ocf_log err "The 'master-node-max' parameter must equal '1'."
+            error_msg="The 'master-node-max' parameter must equal '1'."
+            ocf_exit_reason ${error_msg}
             exit ${OCF_ERR_CONFIGURED}
         fi
     fi
@@ -492,7 +535,13 @@ load_scst_modules() {
         if [ -d /sys/module/${i} ]; then
             ocf_log warn "The ${i} module is already loaded!"
         else
-            ocf_run modprobe ${i} || exit ${OCF_ERR_GENERIC}
+            ocf_run modprobe ${i}
+            rc=${?}
+            if [ ${rc} -ne 0 ]; then
+                error_msg="Failed to load module '${i}'!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
         fi
     done
     # The optional driver modules next (don't check exit status)
@@ -523,7 +572,13 @@ unload_scst_modules() {
     for i in $(echo ${SCST_MODS} | tr ' ' '\n' | tac | tr '\n' ' '); do
         ocf_log debug "scst_stop() -> Module: ${i}"
         if [ -d /sys/module/${i} ]; then
-            ocf_run rmmod -w ${i} || exit ${OCF_ERR_GENERIC}
+            ocf_run rmmod -w ${i}
+            rc=${?}
+            if [ ${rc} -ne 0 ]; then
+                error_msg="Failed to unload module '${i}'!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
         else
             ocf_log warn "The ${i} module is not loaded!"
         fi
@@ -537,12 +592,24 @@ start_scst_daemons() {
     if pidof iscsi-scstd > /dev/null 2>&1; then
         ocf_log warn "The iscsi-scstd daemon is already running!"
     else
-        ocf_run iscsi-scstd || exit ${OCF_ERR_GENERIC}
+        ocf_run iscsi-scstd
+        rc=${?}
+        if [ ${rc} -ne 0 ]; then
+            error_msg="Failed to start iscsi-scstd!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
     fi
     if pidof fcoemon > /dev/null 2>&1; then
         ocf_log warn "The fcoemon daemon is already running!"
     else
-        ocf_run fcoemon -s || exit ${OCF_ERR_GENERIC}
+        ocf_run fcoemon -s
+        rc=${?}
+        if [ ${rc} -ne 0 ]; then
+            error_msg="Failed to start fcoemon!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
     fi
 }
 
@@ -553,14 +620,20 @@ stop_scst_daemons() {
     for i in "fcoemon iscsi-scstd"; do
         pidof ${i} > /dev/null 2>&1
         if [ ${?} -ne 0 ]; then
-            ocf_log warn "The ${i} daemon is not running!"
+            ocf_log warn "The '${i}' daemon is not running!"
             continue
         fi
-        ocf_log debug "scst_stop() -> Sending the TERM signal to ${i}..."
-        ocf_run killall -TERM ${i} || exit ${OCF_ERR_GENERIC}
+        ocf_log debug "scst_stop() -> Sending the TERM signal to '${i}'..."
+        ocf_run killall -TERM ${i}
+        rc=${?}
+        if [ ${rc} -ne 0 ]; then
+            error_msg="Failed to stop the '${i}' daemon!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
         sleep 1
         while pidof ${i} > /dev/null 2>&1; do
-            ocf_log debug "scst_stop() -> The ${i} daemon is" \
+            ocf_log debug "scst_stop() -> The '${i}' daemon is" \
                 "still running, waiting..."
             sleep 1
         done
@@ -570,7 +643,9 @@ stop_scst_daemons() {
 
 remote_inactive() {
     # Determine if there is an inactive (stopped) instance
-    crm_mon --as-xml | grep "resource.*id=\"${OCF_RESOURCE_INSTANCE}\".*active=\"false\"" > /dev/null 2>&1
+    crm_mon --as-xml | \
+        grep "resource.*id=\"${OCF_RESOURCE_INSTANCE}\".*active=\"false\"" \
+        > /dev/null 2>&1
     return ${?}
 }
 
@@ -653,7 +728,13 @@ scst_promote() {
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_local_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+                state\=${TRANSITION_STATE}
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set the local target group "
+                error_msg+="state to transitioning!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
             trigger_suspend_resume
         fi
         ocf_log debug "scst_promote() -> Setting target group" \
@@ -662,10 +743,18 @@ scst_promote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_m_alua_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the local target group state!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
         if ocf_is_true ${OCF_RESKEY_set_dev_active}; then
-            ocf_log debug "scst_promote() -> Changing the group's devices to active..."
-            for i in $(find ${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}/devices/ \
+            ocf_log debug "scst_promote() -> Changing the group's devices" \
+                "to active..."
+            devices_path="${SCST_SYSFS}/device_groups/"
+            devices_path+="${OCF_RESKEY_device_group}/devices/"
+            for i in $(find ${devices_path} \
                 -name active -type f -follow -maxdepth 2); do
                 echo 1 > ${i}
             done
@@ -682,8 +771,13 @@ scst_promote() {
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=${OCF_RESKEY_remote_inact_state} \
-                || exit ${OCF_ERR_GENERIC}
+                state\=${OCF_RESKEY_remote_inact_state}
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set the remote "
+                error_msg+="target group to offline!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
         else
             ocf_log debug "scst_promote() -> Setting target group" \
                 "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
@@ -691,10 +785,16 @@ scst_promote() {
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+                state\=${OCF_RESKEY_s_alua_state}
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set the remote target group state!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
         fi
     else
-        ocf_log err "The ALUA parameters need to be configured before using MS."
+        error_msg="The ALUA parameters need to be configured before using MS."
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
 
@@ -743,12 +843,14 @@ scst_demote() {
         ;;
     "${OCF_NOT_RUNNING}")
         # Not running; getting a demote action in this state is unexpected
-        ocf_log err "Resource is currently not running."
+        error_msg="Resource is currently not running."
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_GENERIC}
         ;;
     *)
         # Failed resource; let the cluster manager recover
-        ocf_log err "Unexpected error, cannot demote."
+        error_msg="Unexpected error, cannot demote."
+        ocf_exit_reason ${error_msg}
         exit ${rc}
         ;;
     esac
@@ -766,7 +868,13 @@ scst_demote() {
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_local_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+                state\=${TRANSITION_STATE}
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set the local target group "
+                error_msg+="state to transitioning!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
             trigger_suspend_resume
         fi
         ocf_log debug "scst_demote() -> Setting target group" \
@@ -775,10 +883,18 @@ scst_demote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_s_alua_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the local target group state!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
         if ocf_is_true ${OCF_RESKEY_set_dev_active}; then
-            ocf_log debug "scst_demote() -> Changing the group's devices to inactive..."
-            for i in $(find ${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}/devices/ \
+            ocf_log debug "scst_demote() -> Changing the group's devices" \
+                "to inactive..."
+            devices_path="${SCST_SYSFS}/device_groups/"
+            devices_path+="${OCF_RESKEY_device_group}/devices/"
+            for i in $(find ${devices_path} \
                 -name active -type f -follow -maxdepth 2); do
                 echo 0 > ${i}
             done
@@ -794,7 +910,12 @@ scst_demote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_remote_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_m_alua_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the remote target group state!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
     else
         ocf_log err "The ALUA parameters need to be configured before using MS."
         exit ${OCF_ERR_CONFIGURED}
@@ -837,16 +958,23 @@ scst_notify() {
 check_alua() {
     # Make sure the directories exist in the SCST sysfs structure
     if [ ! -d "${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}" ]; then
-        ocf_log err "The '${OCF_RESKEY_device_group}' device group does not exist!"
+        error_msg="The '${OCF_RESKEY_device_group}' device group "
+        error_msg+="does not exist!"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_INSTALLED}
     fi
-    target_groups="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}/target_groups"
+    target_groups="${SCST_SYSFS}/device_groups/"
+    target_groups+="${OCF_RESKEY_device_group}/target_groups"
     if [ ! -d "${target_groups}/${OCF_RESKEY_local_tgt_grp}" ]; then
-        ocf_log err "The '${OCF_RESKEY_local_tgt_grp}' target group does not exist!"
+        error_msg="The '${OCF_RESKEY_local_tgt_grp}' target group "
+        error_msg+="does not exist!"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_INSTALLED}
     fi
     if [ ! -d "${target_groups}/${OCF_RESKEY_remote_tgt_grp}" ]; then
-        ocf_log err "The '${OCF_RESKEY_remote_tgt_grp}' target group does not exist!"
+        error_msg="The '${OCF_RESKEY_remote_tgt_grp}' target group "
+        error_msg+="does not exist!"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_INSTALLED}
     fi
 
@@ -862,11 +990,15 @@ check_alua() {
         fi
     done
     if [ ${valid_m_alua_state} -eq 0 ]; then
-        ocf_log err "The 'm_alua_state' value is not valid: ${OCF_RESKEY_m_alua_state}"
+        error_msg="The 'm_alua_state' value is not valid: "
+        error_msg+="${OCF_RESKEY_m_alua_state}"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_INSTALLED}
     fi
     if [ ${valid_s_alua_state} -eq 0 ]; then
-        ocf_log err "The 's_alua_state' value is not valid: ${OCF_RESKEY_s_alua_state}"
+        error_msg="The 's_alua_state' value is not valid: "
+        error_msg+="${OCF_RESKEY_s_alua_state}"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_INSTALLED}
     fi
 }

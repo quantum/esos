@@ -40,7 +40,12 @@ alua_start() {
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_s_alua_state}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the local target group state!"
+        ocf_exit_reason ${error_msg}
+        exit ${OCF_ERR_GENERIC}
+    fi
     # For now, we simply assume the other node is the Master
     ocf_log debug "alua_start() -> Setting target group" \
         "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
@@ -48,7 +53,12 @@ alua_start() {
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_remote_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_m_alua_state}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the remote target group state!"
+        ocf_exit_reason ${error_msg}
+        exit ${OCF_ERR_GENERIC}
+    fi
 
     # The MS resource starts as Slave so this should be safe here
     if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
@@ -64,18 +74,38 @@ alua_start() {
             dev_name="$(basename ${i})"
             ocf_log debug "Setting device '${dev_name}' to the" \
                 "redirected block device..."
-            echo 0 > ${i}/active || exit ${OCF_ERR_GENERIC}
+            echo 0 > ${i}/active
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set 'active=0' for "
+                error_msg+="device '${dev_name}'!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
             new_filename="$(get_redirect_filename ${dev_name})"
             if [ -z "${new_filename}" ]; then
                 ocf_log warn "Redirected backing device not found," \
                     "leaving inactive and skipping..."
                 continue
             fi
-            echo "${new_filename}" > ${i}/filename || exit ${OCF_ERR_GENERIC}
+            echo "${new_filename}" > ${i}/filename
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set 'filename=${new_filename}' for "
+                error_msg+="device '${dev_name}'!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
+            new_filename="$(get_redirect_filename ${dev_name})"
             if ! test_if_dev_ready ${new_filename}; then
                 continue
             fi
-            echo 1 > ${i}/active || exit ${OCF_ERR_GENERIC}
+            echo 1 > ${i}/active
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set 'active=1' for "
+                error_msg+="device '${dev_name}'!"
+                ocf_exit_reason ${error_msg}
+                exit ${OCF_ERR_GENERIC}
+            fi
+            new_filename="$(get_redirect_filename ${dev_name})"
         done
     fi
 
@@ -127,7 +157,12 @@ alua_stop() {
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${OCF_RESKEY_remote_inact_state} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_remote_inact_state}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the local target group to offline!"
+        ocf_exit_reason ${error_msg}
+        exit ${OCF_ERR_GENERIC}
+    fi
 
     if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
         # TODO: Using the dev_disk handler would be better if PR pass-through
@@ -203,8 +238,13 @@ alua_monitor() {
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=${OCF_RESKEY_remote_inact_state} \
-                || exit ${OCF_ERR_GENERIC}
+                state\=${OCF_RESKEY_remote_inact_state}
+                if [ ${?} -ne 0 ]; then
+                    error_msg="Failed to set the remote "
+                    error_msg+="target group to offline!"
+                    ocf_exit_reason ${error_msg}
+                    exit ${OCF_ERR_GENERIC}
+                fi
         fi
     else
         if [ "x${l_tgt_grp_state}" = "x${OCF_RESKEY_m_alua_state}" ]; then
@@ -216,7 +256,12 @@ alua_monitor() {
                 ocf_run scstadmin -noprompt -set_tgrp_attr \
                     ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                     ${OCF_RESKEY_device_group} -attributes \
-                    state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+                    state\=${OCF_RESKEY_s_alua_state}
+                    if [ ${?} -ne 0 ]; then
+                        error_msg="Failed to set the remote target group state!"
+                        ocf_exit_reason ${error_msg}
+                        exit ${OCF_ERR_GENERIC}
+                    fi
             fi
         else
             # Remote exists and we're Slave, so set the remote to Master
@@ -227,7 +272,12 @@ alua_monitor() {
                 ocf_run scstadmin -noprompt -set_tgrp_attr \
                     ${OCF_RESKEY_remote_tgt_grp} -dev_group \
                     ${OCF_RESKEY_device_group} -attributes \
-                    state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+                    state\=${OCF_RESKEY_m_alua_state}
+                    if [ ${?} -ne 0 ]; then
+                        error_msg="Failed to set the remote target group state!"
+                        ocf_exit_reason ${error_msg}
+                        exit ${OCF_ERR_GENERIC}
+                    fi
             fi
         fi
     fi
@@ -251,40 +301,48 @@ alua_validate_all() {
     # There can only be one instance of SCST running per node
     if [ ! -z "${OCF_RESKEY_CRM_meta_clone_node_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_clone_node_max}" -ne 1 ]; then
-        ocf_log err "The 'clone-node-max' parameter must equal '1'."
+        error_msg="The 'clone-node-max' parameter must equal '1'."
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
 
     # Check the ALUA parameters (make sure they are set)
     if [ -z "${OCF_RESKEY_device_group}" ]; then
-        ocf_log err "The 'device_group' parameter is not set!"
+        error_msg="The 'device_group' parameter is not set!"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ -z "${OCF_RESKEY_local_tgt_grp}" ]; then
-        ocf_log err "The 'local_tgt_grp' parameter is not set!"
+        error_msg="The 'local_tgt_grp' parameter is not set!"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ -z "${OCF_RESKEY_remote_tgt_grp}" ]; then
-        ocf_log err "The 'remote_tgt_grp' parameter is not set!"
+        error_msg="The 'remote_tgt_grp' parameter is not set!"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ -z "${OCF_RESKEY_m_alua_state}" ]; then
-        ocf_log err "The 'm_alua_state' parameter is not set!"
+        error_msg="The 'm_alua_state' parameter is not set!"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ -z "${OCF_RESKEY_s_alua_state}" ]; then
-        ocf_log err "The 's_alua_state' parameter is not set!"
+        error_msg="The 's_alua_state' parameter is not set!"
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
     # Currently, we only support using one Master with this RA
     if [ ! -z "${OCF_RESKEY_CRM_meta_master_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_master_max}" -ne 1 ]; then
-        ocf_log err "The 'master-max' parameter must equal '1'."
+        error_msg="The 'master-max' parameter must equal '1'."
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ ! -z "${OCF_RESKEY_CRM_meta_master_node_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_master_node_max}" -ne 1 ]; then
-        ocf_log err "The 'master-node-max' parameter must equal '1'."
+        error_msg="The 'master-node-max' parameter must equal '1'."
+        ocf_exit_reason ${error_msg}
         exit ${OCF_ERR_CONFIGURED}
     fi
 
@@ -388,7 +446,9 @@ alua_usage() {
 
 remote_inactive() {
     # Determine if there is an inactive (stopped) instance
-    crm_mon --as-xml | grep "resource.*id=\"${OCF_RESOURCE_INSTANCE}\".*active=\"false\"" > /dev/null 2>&1
+    crm_mon --as-xml | \
+        grep "resource.*id=\"${OCF_RESOURCE_INSTANCE}\".*active=\"false\"" \
+        > /dev/null 2>&1
     return ${?}
 }
 
@@ -769,7 +829,13 @@ alua_promote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+            state\=${TRANSITION_STATE}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the local target group "
+            error_msg+="state to transitioning!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
         trigger_suspend_resume
     fi
     ocf_log debug "alua_promote() -> Setting target group" \
@@ -778,7 +844,12 @@ alua_promote() {
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_m_alua_state}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the local target group state!"
+        ocf_exit_reason ${error_msg}
+        exit ${OCF_ERR_GENERIC}
+    fi
 
     if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
         # TODO: Using the dev_disk handler would be better if PR pass-through
@@ -845,7 +916,12 @@ alua_promote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_remote_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_remote_inact_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_remote_inact_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the remote target group to offline!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
     else
         ocf_log debug "alua_promote() -> Setting target group" \
             "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
@@ -853,7 +929,12 @@ alua_promote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_remote_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_s_alua_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the remote target group state!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
     fi
 
     # After the resource has been promoted, check whether the promotion worked
@@ -927,7 +1008,13 @@ alua_demote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+            state\=${TRANSITION_STATE}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the local target group "
+            error_msg+="state to transitioning!"
+            ocf_exit_reason ${error_msg}
+            exit ${OCF_ERR_GENERIC}
+        fi
         trigger_suspend_resume
     fi
     ocf_log debug "alua_demote() -> Setting target group" \
@@ -936,7 +1023,12 @@ alua_demote() {
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_s_alua_state}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the local target group state!"
+        ocf_exit_reason ${error_msg}
+        exit ${OCF_ERR_GENERIC}
+    fi
 
     if ocf_is_true ${OCF_RESKEY_redirect_mode}; then
         # TODO: Using the dev_disk handler would be better if PR pass-through
@@ -1001,7 +1093,12 @@ alua_demote() {
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_remote_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_m_alua_state}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the remote target group state!"
+        ocf_exit_reason ${error_msg}
+        exit ${OCF_ERR_GENERIC}
+    fi
 
     # After the resource has been demoted, check whether the demotion worked
     while true; do
