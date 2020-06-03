@@ -1,3 +1,15 @@
+2020-06-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'big_bins'
+
+	updated telegraf to new version and now compressed with UPX; added node_exporter (Prometheus) which is also UPX compressed and added associated rc/init script (disabled by default)
+
+2020-06-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'ra_tweaks'
+
+	updated ocf:esos:scst and ocf:esos:alua to make liberal use of the 'ocf_exit_reason' function so we get a better error message (exit reason) when looking at failures reported by the cluster
+
 2020-05-15  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'resync_dev_fix'

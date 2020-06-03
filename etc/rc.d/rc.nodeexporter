@@ -1,0 +1,40 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+NODE_EXPORTER="/usr/bin/node_exporter"
+NODE_EXPORTER_LOCK="/var/lock/node_exporter"
+DFLT_OPTS="--log.level=error |& logger &"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting node_exporter..."
+    eval ${NODE_EXPORTER} ${USER_OPTS} || exit 1
+    /bin/touch ${NODE_EXPORTER_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping node_exporter..."
+    /bin/kill -TERM $(/bin/pidof ${NODE_EXPORTER}) || exit 1
+    wait_for_stop ${NODE_EXPORTER} && /bin/rm -f ${NODE_EXPORTER_LOCK}
+}
+
+status() {
+    /bin/pidof ${NODE_EXPORTER} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}
