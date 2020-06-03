@@ -311,7 +311,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		cls_switchtec-4.0.0_5.4.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
-		telegraf-1.9.5.tar.xz \
+		telegraf-1.14.3_linux_amd64.tar.xz \
 		sbd-1.4.0.tar.gz \
 		screen-4.6.2.tar.gz \
 		lftp-4.8.4.tar.xz \
@@ -323,6 +323,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		numactl-2.0.13.tar.gz \
 		iowatcher-master_20200318.tar.xz \
 		iotop-master_20200318.tar.xz \
+		node_exporter-1.0.0.linux-amd64.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -406,7 +407,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		sbd.chroot screen.chroot lftp.chroot ndctl.chroot \
 		kmod.chroot docbook-xsl-nons.chroot acpid.chroot \
 		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
-		iotop.chroot
+		iotop.chroot node_exporter.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -4205,7 +4206,8 @@ iozone3.chroot: glibc.chroot
 telegraf.chroot:
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(INSTALL) -m 0755 $(tgt_src_dir)/usr/bin/telegraf /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/usr/bin/telegraf.upx \
+	/usr/bin/telegraf
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4349,6 +4351,14 @@ iotop.chroot: glibc.chroot Python.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+node_exporter.chroot:
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(INSTALL) -m 0755 $(tgt_src_dir)/node_exporter.upx \
+	/usr/bin/node_exporter
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

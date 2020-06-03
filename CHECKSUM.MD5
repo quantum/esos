@@ -210,7 +210,7 @@ f9346b6d9051f7fe07a997d405d71a59  hwloc-2.0.3.tar.bz2
 0c568a60536eaee9ef6432e6a316fb04  cls_switchtec-4.0.0_5.4.tar.xz
 26ae57da0ddea4b3f809ee70cf3db0f3  lshw-B.02.18.tar.gz
 5887498480fa22ce512bec9cfd225627  iozone3-487.tar.xz
-e0887490c2a4ffb888d6ff761e0d5d9d  telegraf-1.9.5.tar.xz
+5bb955d3120365b648ae9f2ab8fd283b  telegraf-1.14.3_linux_amd64.tar.xz
 7dc12492cceaaa0c4796ccb86162919d  sbd-1.4.0.tar.gz
 a0f529d3333b128dfaa324d978ba73a8  screen-4.6.2.tar.gz
 b75c43797e817529d486be640232d708  lftp-4.8.4.tar.xz
@@ -223,3 +223,4 @@ b75c43797e817529d486be640232d708  lftp-4.8.4.tar.xz
 317dbaf90a9f85ea0ec7b12d080d173d  jansson-2.12.tar.bz2
 1cbebb54aecb857c5ac1880fbd131cf4  iowatcher-master_20200318.tar.xz
 51609c197566275139029628a6e4ee0f  iotop-master_20200318.tar.xz
+4ec8084ff2c1a04ac3879a3278b96f04  node_exporter-1.0.0.linux-amd64.tar.xz
