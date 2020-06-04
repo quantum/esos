@@ -1,3 +1,11 @@
+2020-06-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'node_export_fix'
+
+	set better default option string for 'node_exporter'
+
+	don't use '=' for the default options of rc.nodeexporter -- this causes problems when parsing (space works just fine for node_exporter)
+
 2020-06-03  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'big_bins'

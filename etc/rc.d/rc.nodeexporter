@@ -4,7 +4,7 @@ source /etc/rc.d/common
 
 NODE_EXPORTER="/usr/bin/node_exporter"
 NODE_EXPORTER_LOCK="/var/lock/node_exporter"
-DFLT_OPTS="--log.level=error |& logger &"
+DFLT_OPTS="--log.level error > /var/log/node_exporter.log 2>&1 &"
 
 check_args ${@}
 
