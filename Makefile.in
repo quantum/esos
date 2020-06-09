@@ -122,7 +122,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.2.tar.xz \
 		mpfr-4.0.2.tar.xz \
 		mpc-1.1.0.tar.gz \
-		linux-5.4.12.tar.xz \
+		linux-5.4.45.tar.xz \
 		glibc-2.29.tar.xz \
 		tcl-8.6.9.tar.xz \
 		expect-5.45.4.tar.xz \
@@ -1434,11 +1434,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	openssl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(QUIET) if [ ! -d $(linux_src)/$(notdir $(linux_src)).patch ]; then \
-	  $(PATCH) -d $(linux_src) -b \
-	  -B $(linux_src)/$(notdir $(linux_src)).patch/ -p1 < \
-	  $(chroot_build)/misc/$(notdir $(linux_src)).patch; \
-	fi
 	$(MAKE) --directory=$(linux_src)/tools/perf \
 	EXTRA_CFLAGS="-Wno-stringop-truncation"
 	$(INSTALL) -m 0755 $(linux_src)/tools/perf/perf /usr/bin/perf
