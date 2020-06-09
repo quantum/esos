@@ -324,6 +324,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iowatcher-master_20200318.tar.xz \
 		iotop-master_20200318.tar.xz \
 		node_exporter-1.0.0.linux-amd64.tar.xz \
+		libcap-2.36.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -407,7 +408,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		sbd.chroot screen.chroot lftp.chroot ndctl.chroot \
 		kmod.chroot docbook-xsl-nons.chroot acpid.chroot \
 		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
-		iotop.chroot node_exporter.chroot
+		iotop.chroot node_exporter.chroot libcap.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -1431,7 +1432,7 @@ esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.13_to_4.14
 esos_kernels.chroot: cls_switchtec = $(cls_base)/$(switchtec_kern)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot \
-	openssl.chroot
+	openssl.chroot libcap.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(MAKE) --directory=$(linux_src)/tools/perf \
@@ -4353,6 +4354,15 @@ node_exporter.chroot:
 	$(call chroot_only)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/node_exporter.upx \
 	/usr/bin/node_exporter
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+libcap.chroot: glibc.chroot Linux-PAM.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir) lib=lib
+	$(MAKE) --directory=$(tgt_src_dir) lib=lib \
+	PKGCONFIGDIR=/usr/lib/pkgconfig install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
