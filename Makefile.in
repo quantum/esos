@@ -187,7 +187,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20190427.tar.gz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.4.x_r8782.tar.xz \
+		scst-3.4.x_r9005.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.8.0.tar.gz \
 		lvm2-2_02_184.tar.xz \
@@ -1784,7 +1784,6 @@ esos_tui.chroot: glibc.chroot ncurses.chroot cdk.chroot iniparser.chroot \
 scst.chroot: glibc.chroot esos_kernels.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(call apply_pkg_patch)
 	$(MAKE) --directory=$(tgt_src_dir)/iscsi-scst \
 	SCST_INC_DIR=$(tgt_src_dir)/scst/include progs
 	$(INSTALL) -vD -m 755 $(tgt_src_dir)/iscsi-scst/usr/iscsi-scstd \
