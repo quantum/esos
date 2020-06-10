@@ -122,7 +122,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.2.tar.xz \
 		mpfr-4.0.2.tar.xz \
 		mpc-1.1.0.tar.gz \
-		linux-5.4.12.tar.xz \
+		linux-5.4.45.tar.xz \
 		glibc-2.29.tar.xz \
 		tcl-8.6.9.tar.xz \
 		expect-5.45.4.tar.xz \
@@ -187,7 +187,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20190427.tar.gz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.4.x_r8782.tar.xz \
+		scst-3.4.x_r9005.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.8.0.tar.gz \
 		lvm2-2_02_184.tar.xz \
@@ -324,6 +324,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iowatcher-master_20200318.tar.xz \
 		iotop-master_20200318.tar.xz \
 		node_exporter-1.0.0.linux-amd64.tar.xz \
+		libcap-2.36.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -407,7 +408,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		sbd.chroot screen.chroot lftp.chroot ndctl.chroot \
 		kmod.chroot docbook-xsl-nons.chroot acpid.chroot \
 		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
-		iotop.chroot node_exporter.chroot
+		iotop.chroot node_exporter.chroot libcap.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -1431,14 +1432,9 @@ esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.13_to_4.14
 esos_kernels.chroot: cls_switchtec = $(cls_base)/$(switchtec_kern)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot \
-	openssl.chroot
+	openssl.chroot libcap.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(QUIET) if [ ! -d $(linux_src)/$(notdir $(linux_src)).patch ]; then \
-	  $(PATCH) -d $(linux_src) -b \
-	  -B $(linux_src)/$(notdir $(linux_src)).patch/ -p1 < \
-	  $(chroot_build)/misc/$(notdir $(linux_src)).patch; \
-	fi
 	$(MAKE) --directory=$(linux_src)/tools/perf \
 	EXTRA_CFLAGS="-Wno-stringop-truncation"
 	$(INSTALL) -m 0755 $(linux_src)/tools/perf/perf /usr/bin/perf
@@ -1789,7 +1785,6 @@ esos_tui.chroot: glibc.chroot ncurses.chroot cdk.chroot iniparser.chroot \
 scst.chroot: glibc.chroot esos_kernels.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(call apply_pkg_patch)
 	$(MAKE) --directory=$(tgt_src_dir)/iscsi-scst \
 	SCST_INC_DIR=$(tgt_src_dir)/scst/include progs
 	$(INSTALL) -vD -m 755 $(tgt_src_dir)/iscsi-scst/usr/iscsi-scstd \
@@ -4359,6 +4354,15 @@ node_exporter.chroot:
 	$(call chroot_only)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/node_exporter.upx \
 	/usr/bin/node_exporter
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+libcap.chroot: glibc.chroot Linux-PAM.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir) lib=lib
+	$(MAKE) --directory=$(tgt_src_dir) lib=lib \
+	PKGCONFIGDIR=/usr/lib/pkgconfig install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

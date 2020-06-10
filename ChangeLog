@@ -1,3 +1,13 @@
+2020-06-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'up_5.4_kernel'
+
+	removed unused patch/config files; added libcap package for 'turbostat' (in Linux)
+
+	updated SCST to version 3.4.x/r8782 (and removed unneeded patch)
+
+	updated to Linux 5.4.45
+
 2020-06-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'node_export_fix'
