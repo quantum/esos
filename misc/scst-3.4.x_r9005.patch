@@ -1,0 +1,11 @@
+--- a/iscsi-scst/Makefile	2020-06-09 14:50:08.028580125 -0400
++++ b/iscsi-scst/Makefile	2020-06-10 12:43:01.995564217 -0400
+@@ -131,7 +131,7 @@
+ 	if $(INFINIBAND_ENABLED); then					       \
+ 	  echo "  Building against $(OFED_FLAVOR) InfiniBand kernel headers."; \
+ 	  $(MAKE) -C $(KDIR) M=$(ISERTMOD) PRE_CFLAGS="$(ISER_CFLAGS)"         \
+-	  KBUILD_EXTRA_SYMBOLS="$(ISER_SYMVERS)" $(OFED_CONFIG) modules;	       \
++	  KBUILD_EXTRA_SYMBOLS=$(ISER_SYMVERS) $(OFED_CONFIG) modules;	       \
+ 	fi
+ 
+ progs: include/iscsi_scst_itf_ver.h

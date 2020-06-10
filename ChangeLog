@@ -1,3 +1,7 @@
+2020-06-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	added a build fix for SCST 3.4.x/r9005
+
 2020-06-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'up_5.4_kernel'
