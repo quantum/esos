@@ -1581,11 +1581,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    -empty -type d -delete; \
 	  fi; \
 	  $(ECHO) "### Compiling the SCST core and target drivers..."; \
-	  if [ ! -d $(scst_src)/$(notdir $(scst_src)).patch ]; then \
-	    $(PATCH) -d $(scst_src) -b \
-	    -B $(scst_src)/$(notdir $(scst_src)).patch/ -p1 < \
-	    $(chroot_build)/misc/$(notdir $(scst_src)).patch; \
-	  fi; \
 	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \
 	  -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/ \*\/$$//' \
 	  $(scst_src)/scst/include/scst.h; \
@@ -1610,8 +1605,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
 	    -I$(mlnx_ofed_dir)/include/uapi \
 	    -DMOFED_MAJOR=5 -DMOFED_MINOR=0" \
-	    ISER_SYMVERS="\"$(mlnx_ofed_dir)/Module.symvers \
-	    $(scst_src)/iscsi-scst/kernel/Module.symvers\"" V=1 mods; \
+	    ISER_SYMVERS="$(mlnx_ofed_dir)/Module.symvers \
+	    $(scst_src)/iscsi-scst/kernel/Module.symvers" V=1 mods; \
 	  else \
 	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \

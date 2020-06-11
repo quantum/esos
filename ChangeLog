@@ -1,3 +1,7 @@
+2020-06-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	fixed the real build issue (was not SCST's fault) with double-quoting
+
 2020-06-10  Marc A. Smith  <marc.smith@quantum.com>
 
 	added a build fix for SCST 3.4.x/r9005
