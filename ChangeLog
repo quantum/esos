@@ -1,3 +1,7 @@
+2020-06-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.sysinit: mount the cgroup FS (just one simple hierarchy for now for all v1 controllers)
+
 2020-06-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'bcache_mod'
