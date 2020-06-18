@@ -37,3 +37,4 @@ nagios:x:498:nagios
 nut:x:103:nutmon
 input:x:999:
 webui:x:104:webui
+kvm:x:36:
