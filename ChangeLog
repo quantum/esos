@@ -1,3 +1,7 @@
+2020-06-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	bcache: changing 'bch_cutoff_writeback' and 'bch_cutoff_writeback_sync' from the defaults is strongly discouraged (https://marc.info/?l=linux-bcache&m=159283608511021&w=2), so don't set these in modprobe.conf (use defaults)
+
 2020-06-18  Marc A. Smith  <marc.smith@quantum.com>
 
 	added the 'kvm' group (GID 36) which prevents log messages like these: udevd[904]: specified group 'kvm' unknown
