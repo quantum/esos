@@ -1,3 +1,9 @@
+2020-07-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'new_qla' into 2.x.x
+
+	added the --with-qla2xxx_src=PATH and --with-scst_qla2xxx_src=PATH build options to support specifying the qla2xxx and scst_qla2xxx source tarballs separately (if desired) -- using --enable-qla still uses source package from AWS
+
 2020-05-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'no_blkid_cache' into 2.x.x
