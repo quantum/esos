@@ -67,6 +67,7 @@ MY_PATH_PROG([git])
 MY_PATH_PROG([flock])
 MY_PATH_PROG([zic])
 MY_PATH_PROG([mv])
+MY_PATH_PROG([awk])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
@@ -521,6 +522,61 @@ AS_IF([test "x$with_mlnx_ofed" = "xyes"],
 AC_SUBST(mlnx_ofed_dir, ${mlnx_ofed_dir})
 AC_SUBST(with_mlnx_ofed, ${with_mlnx_ofed})
 AC_MSG_NOTICE([mlnx_ofed: ${with_mlnx_ofed}])
+
+dnl Optional package qla2xxx_src (user provides package file)
+AC_ARG_WITH(qla2xxx_src,
+	AS_HELP_STRING([--with-qla2xxx_src=PATH],
+	[qla2xxx source to use; PATH is the qla2xxx_src package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[qla2xxx_src_file="${withval}"; with_qla2xxx_src="yes"],
+	[with_qla2xxx_src="no"]), with_qla2xxx_src="no")
+if test "x${with_qla2xxx_src}" = "xyes"; then
+	if test "x${enable_qla}" != "xyes"; then
+		AC_MSG_ERROR([the qla2xxx source requires the Cavium FC qla2xxx build option])
+	fi
+	if test -f "${qla2xxx_src_file}"; then
+		AC_MSG_NOTICE([extracting the qla2xxx_src package file...])
+		qla2xxx_src_dir="${chroot_dir}/build/qla2xxx_src"
+		${mkdir} -p ${qla2xxx_src_dir} || exit 1
+		${tar} xfz ${qla2xxx_src_file} --strip-components=1 -C ${qla2xxx_src_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the qla2xxx_src file: ${qla2xxx_src_file}])
+	fi
+fi
+AS_IF([test "x$with_qla2xxx_src" = "xyes"],
+	[build_opts="${build_opts} qla2xxx_src"; opt_suffix="${opt_suffix}Q"])
+AC_SUBST(qla2xxx_src_dir, ${qla2xxx_src_dir})
+AC_SUBST(with_qla2xxx_src, ${with_qla2xxx_src})
+AC_MSG_NOTICE([qla2xxx_src: ${with_qla2xxx_src}])
+
+dnl Optional package scst_qla2xxx_src (user provides package file)
+AC_ARG_WITH(scst_qla2xxx_src,
+	AS_HELP_STRING([--with-scst_qla2xxx_src=PATH],
+	[scst_qla2xxx source to use; PATH is the scst_qla2xxx_src package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[scst_qla2xxx_src_file="${withval}"; with_scst_qla2xxx_src="yes"],
+	[with_scst_qla2xxx_src="no"]), with_scst_qla2xxx_src="no")
+if test "x${with_scst_qla2xxx_src}" = "xyes"; then
+	if test "x${enable_qla}" != "xyes"; then
+		AC_MSG_ERROR([the scst_qla2xxx source requires the Cavium FC qla2xxx build option])
+	fi
+	if test "x${with_qla2xxx_src}" != "xyes"; then
+		AC_MSG_ERROR([the scst_qla2xxx source requires the qla2xxx source build option])
+	fi
+	if test -f "${scst_qla2xxx_src_file}"; then
+		AC_MSG_NOTICE([extracting the scst_qla2xxx_src package file...])
+		scst_qla2xxx_src_dir="${chroot_dir}/build/scst_qla2xxx_src"
+		${mkdir} -p ${scst_qla2xxx_src_dir} || exit 1
+		${tar} xfz ${scst_qla2xxx_src_file} --strip-components=1 -C ${scst_qla2xxx_src_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the scst_qla2xxx_src file: ${scst_qla2xxx_src_file}])
+	fi
+fi
+AS_IF([test "x$with_scst_qla2xxx_src" = "xyes"],
+	[build_opts="${build_opts} scst_qla2xxx_src"; opt_suffix="${opt_suffix}L"])
+AC_SUBST(scst_qla2xxx_src_dir, ${scst_qla2xxx_src_dir})
+AC_SUBST(with_scst_qla2xxx_src, ${with_scst_qla2xxx_src})
+AC_MSG_NOTICE([scst_qla2xxx_src: ${with_scst_qla2xxx_src}])
 
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],

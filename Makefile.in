@@ -55,6 +55,7 @@ GIT		:= @git@
 FLOCK		:= @flock@
 ZIC		:= @zic@
 MV		:= @mv@
+AWK		:= @awk@
 
 enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
@@ -87,6 +88,10 @@ with_uwire		:= @with_uwire@
 uwire_dir		:= $(subst $(CHROOT_DIR),,@uwire_dir@)
 with_mlnx_ofed		:= @with_mlnx_ofed@
 mlnx_ofed_dir		:= $(subst $(CHROOT_DIR),,@mlnx_ofed_dir@)
+with_qla2xxx_src	:= @with_qla2xxx_src@
+qla2xxx_src_dir		:= $(subst $(CHROOT_DIR),,@qla2xxx_src_dir@)
+with_scst_qla2xxx_src	:= @with_scst_qla2xxx_src@
+scst_qla2xxx_src_dir	:= $(subst $(CHROOT_DIR),,@scst_qla2xxx_src_dir@)
 with_customize_dir	:= @with_customize_dir@
 customize_dir		:= @customize_dir@
 build_opts		:= @build_opts@
@@ -430,6 +435,8 @@ endif
 ifeq ($(enable_qla),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
 	scst_qla2xxx_unified-master_20190620.tar.xz)
+	qla2xxx_src = $(linux_src)/drivers/scsi/qla2xxx
+	scst_qla2xxx_src = $(wildcard /sources/scst_qla2xxx_unified-*)
 endif
 ifeq ($(enable_zfs),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,zfs-0.8.1.tar.gz)
@@ -486,6 +493,12 @@ ifeq ($(with_uwire),yes)
 endif
 ifeq ($(with_mlnx_ofed),yes)
 	chroot_tgts += mlnx_ofed.chroot
+endif
+ifeq ($(with_qla2xxx_src),yes)
+	qla2xxx_src = $(qla2xxx_src_dir)
+endif
+ifeq ($(with_scst_qla2xxx_src),yes)
+	scst_qla2xxx_src = $(scst_qla2xxx_src_dir)
 endif
 
 # Common variables used throughout
@@ -1396,7 +1409,6 @@ gcc.chroot: glibc.chroot gmp mpfr mpc
 	$(QUIET) $(ECHO) "### Done $(@)"
 
 esos_kernels.chroot: kernel_ver = $(subst linux-,,$(notdir $(linux_src)))
-esos_kernels.chroot: qla2xxx_src = $(wildcard /sources/scst_qla2xxx_unified-*)
 esos_kernels.chroot: mhvtl_src = $(wildcard /sources/mhvtl-*)
 esos_kernels.chroot: eio_src = $(wildcard /sources/EnhanceIO-*)
 esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
@@ -1442,6 +1454,37 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	  KDIR=$(linux_src) extraclean; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
+	    $(MKDIR) $(scst_src)/qla2x00t_git; \
+	    $(LN) $(qla2xxx_src) \
+	    $(scst_src)/qla2x00t_git/qla2xxx; \
+	    $(LN) $(scst_qla2xxx_src) \
+	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target; \
+	    if [ "$(with_scst_qla2xxx_src)" = "yes" ]; then \
+	      $(CP) -r $(qla2xxx_src)/*.[ch] \
+	      $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	      if ! $(GREP) -q "CONFIG_SCST_TRACING" \
+	        $(scst_qla2xxx_src)/Makefile; then \
+	        $(SED) -i '/CONFIG_SCST_EXTRACHECKS/a EXTRA_CFLAGS += -DCONFIG_SCST_TRACING' $(scst_qla2xxx_src)/Makefile; \
+	      fi; \
+	      if ! $(GREP) -q "2perf:" $(scst_qla2xxx_src)/Makefile; then \
+	        $(ECHO) >> $(scst_qla2xxx_src)/Makefile; \
+	        $(AWK) '/2perf:/{c=8};c&&c--' $(wildcard /sources/scst_qla2xxx_unified-*)/drivers/scsi/qla2xxx/Makefile >> $(scst_qla2xxx_src)/Makefile; \
+	      fi; \
+	      if ! $(GREP) -q "2debug:" $(scst_qla2xxx_src)/Makefile; then \
+	        $(ECHO) >> $(scst_qla2xxx_src)/Makefile; \
+	        $(AWK) '/2debug:/{c=8};c&&c--' $(wildcard /sources/scst_qla2xxx_unified-*)/drivers/scsi/qla2xxx/Makefile >> $(scst_qla2xxx_src)/Makefile; \
+	      fi; \
+	      $(SED) -i 's/^.PHONY:.*$$/.PHONY: install clean extraclean 2perf 2debug/' $(scst_qla2xxx_src)/Makefile; \
+	    else \
+	      $(CP) -r $(scst_src)/qla2x00t_git/qla2xxx/Makefile \
+	      $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	      $(CP) -r $(scst_src)/qla2x00t_git/qla2xxx/*.[ch] \
+	      $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	      $(CP) -f $(scst_qla2xxx_src)/drivers/scsi/qla2xxx/Makefile \
+	      $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	      $(CP) -r $(scst_qla2xxx_src)/drivers/scsi/qla2xxx/*.[ch] \
+	      $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
+	    fi; \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) QLA_DIR=qla2x00t_git/qla2xxx-unified-target \
 	    clean; \
@@ -1503,7 +1546,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) 2perf; \
 	    if [ "$(enable_qla)" = "yes" ]; then \
-	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2perf; \
+	      $(MAKE) --directory=$(scst_qla2xxx_src) 2perf; \
 	    fi; \
 	  fi; \
 	  if [ "$$i" = "$(debug_suffix)" ]; then \
@@ -1515,23 +1558,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) 2debug; \
 	    if [ "$(enable_qla)" = "yes" ]; then \
-	      $(MAKE) --directory=$(qla2xxx_src)/drivers/scsi/qla2xxx 2debug; \
+	      $(MAKE) --directory=$(scst_qla2xxx_src) 2debug; \
 	    fi; \
-	  fi; \
-	  if [ "$(enable_qla)" = "yes" ]; then \
-	    $(MKDIR) $(scst_src)/qla2x00t_git; \
-	    $(LN) $(linux_src)/drivers/scsi/qla2xxx \
-	    $(scst_src)/qla2x00t_git/qla2xxx; \
-	    $(LN) $(qla2xxx_src) \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target; \
-	    $(CP) -r $(scst_src)/qla2x00t_git/qla2xxx/Makefile \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
-	    $(CP) -r $(scst_src)/qla2x00t_git/qla2xxx/*.[ch] \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
-	    $(CP) -f $(qla2xxx_src)/drivers/scsi/qla2xxx/Makefile \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
-	    $(CP) -r $(qla2xxx_src)/drivers/scsi/qla2xxx/*.[ch] \
-	    $(scst_src)/qla2x00t_git/qla2xxx-unified-target/; \
 	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
 	    $(SED) -i 's/CONFIG_CHELSIO_T4\=m/# CONFIG_CHELSIO_T4 is not set/' \
@@ -1637,10 +1665,18 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  KVER=$(kernel_ver)$$i fcst_install; \
 	  if [ "$(enable_qla)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Cavium Fibre Channel target driver..."; \
-	    $(PATCH) -r - -N -d $(qla2xxx_src) -p4 < \
-	    $(qla2xxx_src)/drivers/scsi/qla2xxx/extras/export_target_list.dif; \
-	    $(PATCH) -r - -N -d $(qla2xxx_src) -p4 < \
-	    $(qla2xxx_src)/drivers/scsi/qla2xxx/extras/move_command_alloc_to_callback.patch; \
+	    if [ "$(with_scst_qla2xxx_src)" = "yes" ]; then \
+	      if [ ! -d $(qla2xxx_src)/export_target_list.dif ]; then \
+	        $(PATCH) -d $(qla2xxx_src) -b \
+	        -B $(qla2xxx_src)/export_target_list.dif/ -p4 < \
+	        $(scst_qla2xxx_src)/patches/export_target_list.dif; \
+	      fi; \
+	    else \
+	      $(PATCH) -r - -N -d $(scst_qla2xxx_src) -p4 < \
+	      $(scst_qla2xxx_src)/drivers/scsi/qla2xxx/extras/export_target_list.dif; \
+	      $(PATCH) -r - -N -d $(scst_qla2xxx_src) -p4 < \
+	      $(scst_qla2xxx_src)/drivers/scsi/qla2xxx/extras/move_command_alloc_to_callback.patch; \
+	    fi; \
 	    $(MAKE) --directory=$(scst_src) obj-m="qla2xxx.o scst_qla2xxx.o" \
 	    KDIR=$(linux_src) KVER=$(kernel_ver)$$i SCST_INC_DIR=/usr/include \
 	    QLA_DIR=qla2x00t_git/qla2xxx-unified-target qla; \
