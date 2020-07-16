@@ -1666,11 +1666,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  if [ "$(enable_qla)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Cavium Fibre Channel target driver..."; \
 	    if [ "$(with_scst_qla2xxx_src)" = "yes" ]; then \
-	      if [ ! -d $(qla2xxx_src)/export_target_list.dif ]; then \
-	        $(PATCH) -d $(qla2xxx_src) -b \
-	        -B $(qla2xxx_src)/export_target_list.dif/ -p4 < \
-	        $(scst_qla2xxx_src)/patches/export_target_list.dif; \
-	      fi; \
+	      $(PATCH) -r - -N -d $(scst_qla2xxx_src) -p4 < \
+	      $(scst_qla2xxx_src)/patches/export_target_list.dif; \
 	    else \
 	      $(PATCH) -r - -N -d $(scst_qla2xxx_src) -p4 < \
 	      $(scst_qla2xxx_src)/drivers/scsi/qla2xxx/extras/export_target_list.dif; \
