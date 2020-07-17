@@ -1,3 +1,9 @@
+2020-07-17  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qla_updates' into 2.x.x
+
+	updated qlogic_fw package with newer versions; updated default qla2xxx module parameters
+
 2020-07-16  Marc A. Smith  <marc.smith@quantum.com>
 
 	build fix for the '--with_scst_qla2xxx_src=PATH' option
