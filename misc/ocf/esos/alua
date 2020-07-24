@@ -43,7 +43,7 @@ alua_start() {
         state\=${OCF_RESKEY_s_alua_state}
     if [ ${?} -ne 0 ]; then
         error_msg="Failed to set the local target group state!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_GENERIC}
     fi
     # For now, we simply assume the other node is the Master
@@ -56,7 +56,7 @@ alua_start() {
         state\=${OCF_RESKEY_m_alua_state}
     if [ ${?} -ne 0 ]; then
         error_msg="Failed to set the remote target group state!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_GENERIC}
     fi
 
@@ -78,7 +78,7 @@ alua_start() {
             if [ ${?} -ne 0 ]; then
                 error_msg="Failed to set 'active=0' for "
                 error_msg+="device '${dev_name}'!"
-                ocf_exit_reason ${error_msg}
+                ocf_exit_reason "${error_msg}"
                 exit ${OCF_ERR_GENERIC}
             fi
             new_filename="$(get_redirect_filename ${dev_name})"
@@ -91,7 +91,7 @@ alua_start() {
             if [ ${?} -ne 0 ]; then
                 error_msg="Failed to set 'filename=${new_filename}' for "
                 error_msg+="device '${dev_name}'!"
-                ocf_exit_reason ${error_msg}
+                ocf_exit_reason "${error_msg}"
                 exit ${OCF_ERR_GENERIC}
             fi
             new_filename="$(get_redirect_filename ${dev_name})"
@@ -102,7 +102,7 @@ alua_start() {
             if [ ${?} -ne 0 ]; then
                 error_msg="Failed to set 'active=1' for "
                 error_msg+="device '${dev_name}'!"
-                ocf_exit_reason ${error_msg}
+                ocf_exit_reason "${error_msg}"
                 exit ${OCF_ERR_GENERIC}
             fi
             new_filename="$(get_redirect_filename ${dev_name})"
@@ -160,7 +160,7 @@ alua_stop() {
         state\=${OCF_RESKEY_remote_inact_state}
     if [ ${?} -ne 0 ]; then
         error_msg="Failed to set the local target group to offline!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_GENERIC}
     fi
 
@@ -242,7 +242,7 @@ alua_monitor() {
                 if [ ${?} -ne 0 ]; then
                     error_msg="Failed to set the remote "
                     error_msg+="target group to offline!"
-                    ocf_exit_reason ${error_msg}
+                    ocf_exit_reason "${error_msg}"
                     exit ${OCF_ERR_GENERIC}
                 fi
         fi
@@ -259,7 +259,7 @@ alua_monitor() {
                     state\=${OCF_RESKEY_s_alua_state}
                     if [ ${?} -ne 0 ]; then
                         error_msg="Failed to set the remote target group state!"
-                        ocf_exit_reason ${error_msg}
+                        ocf_exit_reason "${error_msg}"
                         exit ${OCF_ERR_GENERIC}
                     fi
             fi
@@ -275,7 +275,7 @@ alua_monitor() {
                     state\=${OCF_RESKEY_m_alua_state}
                     if [ ${?} -ne 0 ]; then
                         error_msg="Failed to set the remote target group state!"
-                        ocf_exit_reason ${error_msg}
+                        ocf_exit_reason "${error_msg}"
                         exit ${OCF_ERR_GENERIC}
                     fi
             fi
@@ -302,47 +302,47 @@ alua_validate_all() {
     if [ ! -z "${OCF_RESKEY_CRM_meta_clone_node_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_clone_node_max}" -ne 1 ]; then
         error_msg="The 'clone-node-max' parameter must equal '1'."
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_CONFIGURED}
     fi
 
     # Check the ALUA parameters (make sure they are set)
     if [ -z "${OCF_RESKEY_device_group}" ]; then
         error_msg="The 'device_group' parameter is not set!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ -z "${OCF_RESKEY_local_tgt_grp}" ]; then
         error_msg="The 'local_tgt_grp' parameter is not set!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ -z "${OCF_RESKEY_remote_tgt_grp}" ]; then
         error_msg="The 'remote_tgt_grp' parameter is not set!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ -z "${OCF_RESKEY_m_alua_state}" ]; then
         error_msg="The 'm_alua_state' parameter is not set!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ -z "${OCF_RESKEY_s_alua_state}" ]; then
         error_msg="The 's_alua_state' parameter is not set!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_CONFIGURED}
     fi
     # Currently, we only support using one Master with this RA
     if [ ! -z "${OCF_RESKEY_CRM_meta_master_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_master_max}" -ne 1 ]; then
         error_msg="The 'master-max' parameter must equal '1'."
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_CONFIGURED}
     fi
     if [ ! -z "${OCF_RESKEY_CRM_meta_master_node_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_master_node_max}" -ne 1 ]; then
         error_msg="The 'master-node-max' parameter must equal '1'."
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_CONFIGURED}
     fi
 
@@ -833,7 +833,7 @@ alua_promote() {
         if [ ${?} -ne 0 ]; then
             error_msg="Failed to set the local target group "
             error_msg+="state to transitioning!"
-            ocf_exit_reason ${error_msg}
+            ocf_exit_reason "${error_msg}"
             exit ${OCF_ERR_GENERIC}
         fi
         trigger_suspend_resume
@@ -847,7 +847,7 @@ alua_promote() {
         state\=${OCF_RESKEY_m_alua_state}
     if [ ${?} -ne 0 ]; then
         error_msg="Failed to set the local target group state!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_GENERIC}
     fi
 
@@ -919,7 +919,7 @@ alua_promote() {
             state\=${OCF_RESKEY_remote_inact_state}
         if [ ${?} -ne 0 ]; then
             error_msg="Failed to set the remote target group to offline!"
-            ocf_exit_reason ${error_msg}
+            ocf_exit_reason "${error_msg}"
             exit ${OCF_ERR_GENERIC}
         fi
     else
@@ -932,7 +932,7 @@ alua_promote() {
             state\=${OCF_RESKEY_s_alua_state}
         if [ ${?} -ne 0 ]; then
             error_msg="Failed to set the remote target group state!"
-            ocf_exit_reason ${error_msg}
+            ocf_exit_reason "${error_msg}"
             exit ${OCF_ERR_GENERIC}
         fi
     fi
@@ -1012,7 +1012,7 @@ alua_demote() {
         if [ ${?} -ne 0 ]; then
             error_msg="Failed to set the local target group "
             error_msg+="state to transitioning!"
-            ocf_exit_reason ${error_msg}
+            ocf_exit_reason "${error_msg}"
             exit ${OCF_ERR_GENERIC}
         fi
         trigger_suspend_resume
@@ -1026,7 +1026,7 @@ alua_demote() {
         state\=${OCF_RESKEY_s_alua_state}
     if [ ${?} -ne 0 ]; then
         error_msg="Failed to set the local target group state!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_GENERIC}
     fi
 
@@ -1096,7 +1096,7 @@ alua_demote() {
         state\=${OCF_RESKEY_m_alua_state}
     if [ ${?} -ne 0 ]; then
         error_msg="Failed to set the remote target group state!"
-        ocf_exit_reason ${error_msg}
+        ocf_exit_reason "${error_msg}"
         exit ${OCF_ERR_GENERIC}
     fi
 
