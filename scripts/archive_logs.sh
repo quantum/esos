@@ -9,6 +9,12 @@ LOGS_MNT="/mnt/logs"
 LOG_DIR="/var/log"
 TMP_DIR="/tmp"
 
+# Make sure we always unmount (or try to)
+function unmount_fs {
+    umount ${LOGS_MNT} || exit 1
+}
+trap unmount_fs EXIT
+
 # Check free space; this is in KiB (1 KiB blocks), not kilobytes
 check_free() {
     avail_space=$(df -k ${LOGS_MNT} | grep -v '^Filesystem' | \
@@ -17,7 +23,12 @@ check_free() {
 }
 
 # Mount the file system and set a file prefix
-mount ${LOGS_MNT} || exit 1
+if cat /proc/mounts | awk '{print $2}' | grep -q ${LOGS_MNT}; then
+    logger -s -t $(basename ${0}) -p "local4.warn" \
+        "It appears '${LOGS_MNT}' is already mounted! Continuing anyway..."
+else
+    mount ${LOGS_MNT} || exit 1
+fi
 archive_prefix="`hostname`_`date +%F`_`date +%s`"
 
 # Archive the logs -- we should only fail if there is no room in /tmp (tmpfs)
@@ -60,5 +71,4 @@ touch /var/log/lastlog
 
 # Done
 rm -rf ${TMP_DIR}/${archive_prefix}
-umount ${LOGS_MNT} || exit 1
 
