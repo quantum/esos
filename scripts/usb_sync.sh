@@ -12,6 +12,12 @@ RSYNC_DIRS="/var/lib /opt /root/.ssh" # Absolute paths (leading '/' required)
 INITIAL_SYNC=0
 ROOT_PATH="/"
 
+# Make sure we always unmount (or try to)
+function unmount_fs {
+    umount ${CONF_MNT} || exit 1
+}
+trap unmount_fs EXIT
+
 # Read the options and extract
 TEMP=$(getopt -o i --long initial -n 'usb_sync.sh' -- "$@")
 eval set -- "$TEMP"
@@ -24,7 +30,12 @@ while true ; do
 done
 
 # Mount, sync, and unmount
-mount ${CONF_MNT} || exit 1
+if cat /proc/mounts | awk '{print $2}' | grep -q ${CONF_MNT}; then
+    logger -s -t $(basename ${0}) -p "local4.warn" \
+        "It appears '${CONF_MNT}' is already mounted! Continuing anyway..."
+else
+    mount ${CONF_MNT} || exit 1
+fi
 if [ ${INITIAL_SYNC} -eq 1 ]; then
     if git ls-remote ${ETCKEEPER_REPO} > /dev/null 2>&1; then
         # The Git repo exists, pull it down locally
@@ -79,5 +90,4 @@ else
     cd /etc && git push -q origin master || exit 1
     rsync --archive --relative --delete ${RSYNC_DIRS} ${USB_RSYNC} || exit 1
 fi
-umount ${CONF_MNT} || exit 1
 
