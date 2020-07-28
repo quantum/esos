@@ -1,3 +1,11 @@
+2020-07-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '2.1.0_fixes' into 2.x.x
+
+	don't use the "-r" option with rasdaemon as it makes the ras-mc_event.db file grow too big and doesn't fit on LABEL=esos_conf -- RAS data will still be available on a running instance and can be collected periodically rather than maintaining a long running DB of historical data
+
+	archive_logs.sh and usb_sync.sh: handle an already mounted FS and print a warning line if we find it's already mounted
+
 2020-07-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'qla_updates' into 2.x.x
