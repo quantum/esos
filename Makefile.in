@@ -3681,7 +3681,7 @@ rasdaemon.chroot: glibc.chroot perl.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --localstatedir=/var \
 	--sysconfdir=/etc --enable-aer --enable-mce --enable-sqlite3 \
 	--enable-extlog --enable-hisi-ns-decode --enable-non-standard \
-	--enable-devlink --enable-diskerror
+	--enable-devlink
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)

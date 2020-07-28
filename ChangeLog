@@ -1,3 +1,11 @@
+2020-07-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	don't use '--enable-diskerror' with rasdaemon (too much information that can be gathered elsewhere)
+
+	Merge branch 'script_tweaks'
+
+	archive_logs.sh and usb_sync.sh: handle an already mounted FS and print a warning line if we find it's already mounted
+
 2020-07-24  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'fix_ra_exit'
