@@ -1,3 +1,9 @@
+2020-07-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '0729_updates'
+
+	updated SCST to version 3.4.x/r9087; updated fio.chroot recipe to use the configure script and set the '--disable-native' build option (resolves GH issue #259)
+
 2020-07-28  Marc A. Smith  <marc.smith@quantum.com>
 
 	don't use '--enable-diskerror' with rasdaemon (too much information that can be gathered elsewhere)
