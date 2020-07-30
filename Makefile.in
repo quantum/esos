@@ -2867,7 +2867,7 @@ fio.chroot: glibc.chroot libaio.chroot numactl.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-native
 	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install
+	$(MAKE) --directory=$(tgt_src_dir) mandir=/usr/share/man install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4319,7 +4319,7 @@ tcl.chroot: glibc.chroot
 	$(call chroot_only)
 	cd $(tgt_src_dir)/unix && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)/unix
-	$(MAKE) --directory=$(tgt_src_dir)/unix install
+	$(MAKE) --directory=$(tgt_src_dir)/unix mandir=/usr/share/man install
 	$(CHMOD) -v u+w /usr/lib/libtcl8.6.so
 	$(MAKE) --directory=$(tgt_src_dir)/unix install-private-headers
 	$(LN) -v tclsh8.6 /usr/bin/tclsh

@@ -1,10 +1,19 @@
 2020-07-29  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'man_dir_fix'
+
+	fixed man page install location for fio.chroot and tcl.chroot
+
+	Merge branch 'master' of github.com:quantum/esos
+
 	Merge branch '0729_updates'
 
 	updated SCST to version 3.4.x/r9087; updated fio.chroot recipe to use the configure script and set the '--disable-native' build option (resolves GH issue #259)
 
 2020-07-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge pull request #260 from Brain2000/master
+	Fix snmpd not starting
 
 	don't use '--enable-diskerror' with rasdaemon (too much information that can be gathered elsewhere)
 
@@ -17,6 +26,10 @@
 	Merge branch 'fix_ra_exit'
 
 	need double quotes around the argument to ocf_exit_reason
+
+2020-07-09  Brian Coverstone  <brian@mainsequence.net>
+
+	Fix snmpd not starting
 
 2020-06-25  Marc A. Smith  <marc.smith@quantum.com>
 
