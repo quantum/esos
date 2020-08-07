@@ -1,3 +1,11 @@
+2020-09-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated SBD to version 1.4.1
+
+	Merge branch 'alua_ra_login' into 2.x.x
+
+	ocf:esos:alua: pulled in the scsi_bus_rescan() and iscsi_sess_rescan() functions from master to handle stale iscsi sessions
+
 2020-08-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'alua_ra_2' into 2.x.x
