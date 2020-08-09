@@ -312,7 +312,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
 		telegraf-1.14.3_linux_amd64.tar.xz \
-		sbd-1.4.0.tar.gz \
+		sbd-1.4.1.tar.gz \
 		screen-4.6.2.tar.gz \
 		lftp-4.8.4.tar.xz \
 		ndctl-65.tar.gz \
@@ -4212,7 +4212,7 @@ sbd.chroot: glibc.chroot glib.chroot libqb.chroot corosync.chroot \
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
-	  cd $(tgt_src_dir) && autoreconf -fiv; \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc \
 	--localstatedir=/var --enable-shared-disk
