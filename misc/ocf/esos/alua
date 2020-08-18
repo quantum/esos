@@ -81,7 +81,12 @@ alua_start() {
             ocf_run scstadmin -noprompt -set_tgrp_attr \
                 ${OCF_RESKEY_local_tgt_grp} -dev_group \
                 ${OCF_RESKEY_device_group} -attributes \
-                state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+                state\=${OCF_RESKEY_s_alua_state}
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set the local target group state!"
+                ocf_exit_reason "${error_msg}"
+                exit ${OCF_ERR_GENERIC}
+            fi
         fi
     fi
 
@@ -517,14 +522,24 @@ set_tpg_trans() {
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+        state\=${TRANSITION_STATE}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the local target group state!"
+        ocf_exit_reason "${error_msg}"
+        exit ${OCF_ERR_GENERIC}
+    fi
     ocf_log debug "${FUNCNAME[1]}() -> Setting target group" \
         "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
         "'${TRANSITION_STATE}'..."
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_remote_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${TRANSITION_STATE} || exit ${OCF_ERR_GENERIC}
+        state\=${TRANSITION_STATE}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the remote target group state!"
+        ocf_exit_reason "${error_msg}"
+        exit ${OCF_ERR_GENERIC}
+    fi
     trigger_suspend_resume
 }
 
@@ -979,7 +994,12 @@ alua_promote() {
     ocf_run scstadmin -noprompt -set_tgrp_attr \
         ${OCF_RESKEY_local_tgt_grp} -dev_group \
         ${OCF_RESKEY_device_group} -attributes \
-        state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+        state\=${OCF_RESKEY_m_alua_state}
+    if [ ${?} -ne 0 ]; then
+        error_msg="Failed to set the local target group state!"
+        ocf_exit_reason "${error_msg}"
+        exit ${OCF_ERR_GENERIC}
+    fi
 
     # TODO: Don't unblock devices for now... needs to be re-visited.
     #unblock_scst_devs
@@ -1142,7 +1162,12 @@ alua_demote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_local_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_s_alua_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_s_alua_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the local target group state!"
+            ocf_exit_reason "${error_msg}"
+            exit ${OCF_ERR_GENERIC}
+        fi
     fi
 
     # TODO: Don't unblock devices for now... needs to be re-visited.
@@ -1156,7 +1181,12 @@ alua_demote() {
         ocf_run scstadmin -noprompt -set_tgrp_attr \
             ${OCF_RESKEY_remote_tgt_grp} -dev_group \
             ${OCF_RESKEY_device_group} -attributes \
-            state\=${OCF_RESKEY_m_alua_state} || exit ${OCF_ERR_GENERIC}
+            state\=${OCF_RESKEY_m_alua_state}
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to set the remote target group state!"
+            ocf_exit_reason "${error_msg}"
+            exit ${OCF_ERR_GENERIC}
+        fi
     fi
 
     # Set the new resource state
