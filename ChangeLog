@@ -1,3 +1,11 @@
+2020-08-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'ra_master_fix'
+
+	ocf:esos:alua: add liberal use of ocf_exit_reason statements back into previously merged changes
+
+	ocf:esos:alua: fixed ordering of opening/closing SCST backing block devices and ALUA states (when using redirect_mode + use_trans_state settings) to prevent I/O errors during cluster state transitions
+
 2020-08-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'sbd_update'
