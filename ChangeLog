@@ -1,3 +1,9 @@
+2020-08-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'alua_ra_2' into 2.x.x
+
+	ocf:esos:alua: in alua_stop() set $dev_grp_path, in alua_monitor() always call bio_dev_to_redirect if Slave, but only set local TPG to Slave if not already that value
+
 2020-08-18  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'alua_ra_change' into 2.x.x
