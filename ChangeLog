@@ -1,3 +1,9 @@
+2020-08-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	re-add use of ocf_exit_reason in a couple spots (ocf:esos:alua)
+
+	ocf:esos:alua: in alua_stop() set $dev_grp_path, in alua_monitor() always call bio_dev_to_redirect if Slave, but only set local TPG to Slave if not already that value
+
 2020-08-18  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'ra_master_fix'

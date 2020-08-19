@@ -292,8 +292,12 @@ alua_monitor() {
                 ocf_run scstadmin -noprompt -set_tgrp_attr \
                     ${OCF_RESKEY_local_tgt_grp} -dev_group \
                     ${OCF_RESKEY_device_group} -attributes \
-                    state\=${OCF_RESKEY_s_alua_state} || \
+                    state\=${OCF_RESKEY_s_alua_state}
+                if [ ${?} -ne 0 ]; then
+                    error_msg="Failed to set the local target group state!"
+                    ocf_exit_reason "${error_msg}"
                     exit ${OCF_ERR_GENERIC}
+                fi
             fi
         fi
         # If we're Master and we use the ALUA transition state, make sure we
@@ -309,8 +313,12 @@ alua_monitor() {
                     ocf_run scstadmin -noprompt -set_tgrp_attr \
                         ${OCF_RESKEY_local_tgt_grp} -dev_group \
                         ${OCF_RESKEY_device_group} -attributes \
-                        state\=${OCF_RESKEY_m_alua_state} || \
+                        state\=${OCF_RESKEY_m_alua_state}
+                    if [ ${?} -ne 0 ]; then
+                        error_msg="Failed to set the local target group state!"
+                        ocf_exit_reason "${error_msg}"
                         exit ${OCF_ERR_GENERIC}
+                    fi
                 fi
             fi
         fi
