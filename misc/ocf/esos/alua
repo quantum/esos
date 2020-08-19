@@ -132,6 +132,7 @@ alua_stop() {
         # was supported, however, it is not currently. Revisit in the future.
         #redirect_to_real_dev
         # If we're stopping, set all of the devices to inactive for now
+        dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
             dev_name="$(basename ${i})"
             ocf_log debug "Setting device '${dev_name}' to inactive..."
@@ -249,19 +250,18 @@ alua_monitor() {
         # Resource starts as Slave, but the redirected device might not be
         # available then, so we check it's set correctly here
         if [ ${rc} -eq ${OCF_SUCCESS} ]; then
-            if [ "x${l_tgt_grp_state}" != "x${OCF_RESKEY_s_alua_state}" ]; then
-                bio_dev_to_redirect
-                if [ ${?} -eq 0 ]; then
-                    # Make sure all are redirected before setting this
-                    ocf_log debug "alua_monitor() -> Setting target group" \
-                        "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
-                        "'${OCF_RESKEY_s_alua_state}'..."
-                    ocf_run scstadmin -noprompt -set_tgrp_attr \
-                        ${OCF_RESKEY_local_tgt_grp} -dev_group \
-                        ${OCF_RESKEY_device_group} -attributes \
-                        state\=${OCF_RESKEY_s_alua_state} || \
-                        exit ${OCF_ERR_GENERIC}
-                fi
+            bio_dev_to_redirect
+            if [ ${?} -eq 0 ] && \
+                [ "x${l_tgt_grp_state}" != "x${OCF_RESKEY_s_alua_state}" ]; then
+                # Make sure all are redirected before setting this
+                ocf_log debug "alua_monitor() -> Setting target group" \
+                    "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
+                    "'${OCF_RESKEY_s_alua_state}'..."
+                ocf_run scstadmin -noprompt -set_tgrp_attr \
+                    ${OCF_RESKEY_local_tgt_grp} -dev_group \
+                    ${OCF_RESKEY_device_group} -attributes \
+                    state\=${OCF_RESKEY_s_alua_state} || \
+                    exit ${OCF_ERR_GENERIC}
             fi
         fi
         # If we're Master and we use the ALUA transition state, make sure we
