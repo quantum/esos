@@ -1,3 +1,9 @@
+2020-08-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'bnxt_vf_fix'
+
+	apply Linux patch "bnxt_en: fix HWRM error when querying VF temperature" to silence messages with bnxt_en when used with VF's
+
 2020-08-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	re-add use of ocf_exit_reason in a couple spots (ocf:esos:alua)
