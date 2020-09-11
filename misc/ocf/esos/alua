@@ -59,11 +59,8 @@ alua_start() {
         # was supported, however, it is not currently. Revisit in the future.
         #real_to_redirect_dev
         # We are likley using iSCSI with redirect mode, rescan here
-        ocf_log debug "alua_start() -> Rescanning all running iSCSI" \
-            "initiator sessions..."
-        ocf_run timeout ${ISCSIADM_TIMEOUT} iscsiadm --mode session --rescan
-        ocf_log debug "alua_start() -> Issuing a SCSI bus rescan..."
-        ocf_run timeout ${RESCAN_SCSI_TIMEOUT} rescan-scsi-bus.sh --remove
+        iscsi_sess_rescan
+        scsi_bus_rescan
         # Try to set the devices to the redirected backing device to start
         bio_dev_to_redirect
         if [ ${?} -eq 0 ]; then
@@ -750,7 +747,9 @@ bio_dev_to_redirect() {
             new_filename="$(get_redirect_filename ${dev_name})"
             if [ -z "${new_filename}" ]; then
                 ocf_log warn "A valid backing block device was not" \
-                    "found, not doing anything..."
+                    "found, rescanning iSCSI sessions/hosts..."
+                iscsi_sess_rescan
+                scsi_bus_rescan
                 rc=1
                 continue
             fi
@@ -760,10 +759,7 @@ bio_dev_to_redirect() {
                 ocf_log debug "The 'filename' attribute value is already" \
                     "what it should be..."
                 if [ "x${active_val}" = "x0" ]; then
-                    ocf_log debug "Rescanning all running iSCSI" \
-                        "initiator sessions..."
-                    ocf_run timeout ${ISCSIADM_TIMEOUT} iscsiadm \
-                        --mode session --rescan
+                    iscsi_sess_rescan
                     if ! test_if_dev_ready ${new_filename}; then
                         rc=1
                         continue
@@ -802,6 +798,40 @@ bio_dev_to_redirect() {
         fi
     done
     return ${rc}
+}
+
+
+scsi_bus_rescan() {
+    # Find all iSCSI host entries and rescan the SCSI bus on any found
+    local host_list=""
+    for i in $(find /sys/class/iscsi_host -maxdepth 1 -type l); do
+        iscsi_host="$(basename ${i})"
+        host_num="$(echo ${iscsi_host} | tr -d "host")"
+        if [ -z "${host_list}" ]; then
+            host_list="${host_num}"
+        else
+            host_list="${host_list},${host_num}"
+        fi
+    done
+    if [ -n "${host_list}" ]; then
+        ocf_log debug "Issuing a SCSI bus rescan on host(s) '${host_list}'..."
+        ocf_run timeout ${RESCAN_SCSI_TIMEOUT} rescan-scsi-bus.sh \
+            --hosts=${host_list} --remove
+    else
+        ocf_log warn "No iSCSI host entries were found! Nothing to rescan!"
+    fi
+}
+
+
+iscsi_sess_rescan() {
+    # Issue an iSCSI session rescan, and login to targets if needed
+    ocf_log debug "Rescanning all running iSCSI initiator sessions..."
+    ocf_run timeout ${ISCSIADM_TIMEOUT} iscsiadm --mode session --rescan
+    if [ ${?} -eq 21 ]; then
+        ocf_log warn "No iSCSI sessions were found, attempting to login..."
+        ocf_run timeout ${ISCSIADM_TIMEOUT} iscsiadm --mode node \
+            --loginall=automatic
+    fi
 }
 
 
