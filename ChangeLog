@@ -1,5 +1,7 @@
 2020-09-17  Marc A. Smith  <marc.smith@quantum.com>
 
+	enabled CONFIG_ACPI_APEI_* support and related/dep options
+
 	enabled CONFIG_USB_RTL8152
 
 2020-08-28  Marc A. Smith  <marc.smith@quantum.com>
