@@ -1,3 +1,7 @@
+2020-09-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	rework of the 'rc.network' script (lots of formatting fixes, properly remove defautl GW's, added the "apply" action) -- needs testing
+
 2020-09-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated SBD to version 1.4.1
