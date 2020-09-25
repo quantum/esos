@@ -1,3 +1,9 @@
+2020-09-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_network'
+
+	rework of the 'rc.network' script (lots of formatting fixes, properly remove defautl GW's, added the "apply" action) -- needs testing
+
 2020-09-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	enabled CONFIG_ACPI_APEI_* support and related/dep options
