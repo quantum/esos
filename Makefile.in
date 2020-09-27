@@ -1573,7 +1573,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    --with-core-mod --with-ipoib-mod --with-ipoib-cm --with-srp-mod \
 	    --with-user_mad-mod --with-user_access-mod --with-addr_trans-mod \
 	    --with-mlx5-mod --with-mlx4-mod --with-mlx4_inf-mod \
-	    --with-mlx5_inf-mod --with-mlxfw-mod --with-iser-mod; \
+	    --with-mlx5_inf-mod --with-mlxfw-mod --with-iser-mod \
+	    --with-nvmf_host-mod --with-nvmf_target-mod; \
 	    $(MAKE) --directory=$(mlnx_ofed_dir) V=1 MLNX_CFLAGS="" kernel; \
 	    $(MAKE) --directory=$(mlnx_ofed_dir) DEPMOD=true install_kernel; \
 	    while read -r line; do \

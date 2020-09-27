@@ -1,3 +1,7 @@
+2020-09-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	enabled NVMeoF for MOFED; recomposed -debug.patch for kernel config
+
 2020-09-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_network'
