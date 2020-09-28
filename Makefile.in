@@ -1587,6 +1587,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    -empty -type d -delete; \
 	    $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
 	    cd /lib/modules/$(kernel_ver)$$i/extra/mlnx-ofa_kernel && \
+	    $(INSTALL) -m 0644 compat/mlx_compat.ko \
+	    $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && \
 	    $(INSTALL) -m 0644 drivers/nvme/host/nvme.ko \
 	    $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && \
 	    $(INSTALL) -m 0644 drivers/nvme/host/nvme-core.ko \

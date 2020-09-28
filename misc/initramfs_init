@@ -42,6 +42,9 @@ echo "Waiting for devices to settle..."
 sleep 5
 
 # Load early local storage drivers
+if [ -e /lib/modules/$(uname -r)/mlx_compat.ko ]; then
+	insmod /lib/modules/$(uname -r)/mlx_compat.ko
+fi
 insmod /lib/modules/$(uname -r)/nvme-core.ko
 insmod /lib/modules/$(uname -r)/nvme.ko
 
