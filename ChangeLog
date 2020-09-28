@@ -1,5 +1,7 @@
 2020-09-27  Marc A. Smith  <marc.smith@quantum.com>
 
+	build NVMe kernel drivers as modules (using MOFED replaces these drivers); updated rc.network to use 'ensX' interface names; updated the initramfs script to load the 'nvme' and 'nvme-core' drivers early
+
 	enabled NVMeoF for MOFED; recomposed -debug.patch for kernel config
 
 2020-09-25  Marc A. Smith  <marc.smith@quantum.com>

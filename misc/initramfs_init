@@ -41,6 +41,10 @@ dmesg -n 1
 echo "Waiting for devices to settle..."
 sleep 5
 
+# Load early local storage drivers
+insmod /lib/modules/$(uname -r)/nvme-core.ko
+insmod /lib/modules/$(uname -r)/nvme.ko
+
 # A few requirements
 mount -t proc none /proc || rescue_shell
 mount -t sysfs none /sys || rescue_shell

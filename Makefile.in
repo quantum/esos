@@ -1585,6 +1585,19 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    /lib/modules/$(kernel_ver)$$i/extra/mlnx-ofa_kernel -name *.ko)"; \
 	    $(FIND) /lib/modules/$(kernel_ver)$$i/kernel/drivers \
 	    -empty -type d -delete; \
+	    $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
+	    cd /lib/modules/$(kernel_ver)$$i/extra/mlnx-ofa_kernel && \
+	    $(INSTALL) -m 0644 drivers/nvme/host/nvme.ko \
+	    $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && \
+	    $(INSTALL) -m 0644 drivers/nvme/host/nvme-core.ko \
+	    $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && cd -; \
+	  else \
+	    $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
+	    cd /lib/modules/$(kernel_ver)$$i/kernel && \
+	    $(INSTALL) -m 0644 drivers/nvme/host/nvme.ko \
+	    $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && \
+	    $(INSTALL) -m 0644 drivers/nvme/host/nvme-core.ko \
+	    $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && cd -; \
 	  fi; \
 	  $(ECHO) "### Compiling the SCST core and target drivers..."; \
 	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \
