@@ -37,16 +37,16 @@ assem_boot_md() {
 # Hide kernel console messages
 dmesg -n 1
 
+# Load early local storage drivers
+if [ -e /lib/modules/$(uname -r)/mlx_compat.ko ]; then
+	insmod /lib/modules/$(uname -r)/mlx_compat.ko || rescue_shell
+fi
+insmod /lib/modules/$(uname -r)/nvme-core.ko || rescue_shell
+insmod /lib/modules/$(uname -r)/nvme.ko || rescue_shell
+
 # Some devices are delayed
 echo "Waiting for devices to settle..."
 sleep 5
-
-# Load early local storage drivers
-if [ -e /lib/modules/$(uname -r)/mlx_compat.ko ]; then
-	insmod /lib/modules/$(uname -r)/mlx_compat.ko
-fi
-insmod /lib/modules/$(uname -r)/nvme-core.ko
-insmod /lib/modules/$(uname -r)/nvme.ko
 
 # A few requirements
 mount -t proc none /proc || rescue_shell

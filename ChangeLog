@@ -1,3 +1,7 @@
+2020-09-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	initramfs: load storage drivers BEFORE the delay
+
 2020-09-27  Marc A. Smith  <marc.smith@quantum.com>
 
 	if using MOFED, install mlx_compat.ko into initramfs image and load this module first
