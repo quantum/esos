@@ -96,6 +96,10 @@ if [ -f "/lib/modules/$(/bin/uname -r)/extra/zfs/zfs.ko" ]; then
     /usr/sbin/zed -p /var/run/zed.pid
 fi
 
+/bin/echo "Loading the NVMeoF target modules..."
+/sbin/modprobe nvmet-rdma
+/sbin/modprobe nvmet-fc
+
 # Start the LATE user settable services
 for i in ${LATE_SERVICES}; do
     if check_enabled "${i}"; then

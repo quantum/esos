@@ -1,5 +1,7 @@
 2020-09-28  Marc A. Smith  <marc.smith@quantum.com>
 
+	rc.2: load the NVMe target modules unconditionally
+
 	initramfs: load storage drivers BEFORE the delay
 
 2020-09-27  Marc A. Smith  <marc.smith@quantum.com>
