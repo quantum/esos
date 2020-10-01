@@ -1,3 +1,9 @@
+2020-10-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '5.4_update'
+
+	updated Linux to version 5.4.69; added two extra patches for bcache (from 5.6.x)
+
 2020-09-28  Marc A. Smith  <marc.smith@quantum.com>
 
 	rc.2: load the NVMe target modules unconditionally
