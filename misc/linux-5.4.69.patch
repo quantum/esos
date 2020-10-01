@@ -1,0 +1,144 @@
+From f039274aed11c9e3e1cf86668a18e0b6e0a9a8b9 Mon Sep 17 00:00:00 2001
+From: Coly Li <colyli@suse.de>
+Date: Sun, 22 Dec 2019 14:06:05 +0800
+Subject: [PATCH 17/25] bcache: remove member accessed from struct btree
+
+The member 'accessed' of struct btree is used in bch_mca_scan() when
+shrinking btree node caches. The original idea is, if b->accessed is
+set, clean it and look at next btree node cache from c->btree_cache
+list, and only shrink the caches whose b->accessed is cleaned. Then
+only cold btree node cache will be shrunk.
+
+But when I/O pressure is high, it is very probably that b->accessed
+of a btree node cache will be set again in bch_btree_node_get()
+before bch_mca_scan() selects it again. Then there is no chance for
+bch_mca_scan() to shrink enough memory back to slub or slab system.
+
+This patch removes member accessed from struct btree, then once a
+btree node ache is selected, it will be immediately shunk. By this
+change, bch_mca_scan() may release btree node cahce more efficiently.
+
+Signed-off-by: Coly Li <colyli@suse.de>
+---
+ drivers/md/bcache/btree.c | 8 ++------
+ drivers/md/bcache/btree.h | 2 --
+ 2 files changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/md/bcache/btree.c b/drivers/md/bcache/btree.c
+index 14d6c33b0957..357535a5c89c 100644
+--- a/drivers/md/bcache/btree.c
++++ b/drivers/md/bcache/btree.c
+@@ -754,14 +754,12 @@ static unsigned long bch_mca_scan(struct shrinker *shrink,
+ 		b = list_first_entry(&c->btree_cache, struct btree, list);
+ 		list_rotate_left(&c->btree_cache);
+ 
+-		if (!b->accessed &&
+-		    !mca_reap(b, 0, false)) {
++		if (!mca_reap(b, 0, false)) {
+ 			mca_bucket_free(b);
+ 			mca_data_free(b);
+ 			rw_unlock(true, b);
+ 			freed++;
+-		} else
+-			b->accessed = 0;
++		}
+ 	}
+ out:
+ 	mutex_unlock(&c->bucket_lock);
+@@ -1069,7 +1067,6 @@ struct btree *bch_btree_node_get(struct cache_set *c, struct btree_op *op,
+ 	BUG_ON(!b->written);
+ 
+ 	b->parent = parent;
+-	b->accessed = 1;
+ 
+ 	for (; i <= b->keys.nsets && b->keys.set[i].size; i++) {
+ 		prefetch(b->keys.set[i].tree);
+@@ -1160,7 +1157,6 @@ struct btree *__bch_btree_node_alloc(struct cache_set *c, struct btree_op *op,
+ 		goto retry;
+ 	}
+ 
+-	b->accessed = 1;
+ 	b->parent = parent;
+ 	bch_bset_init_next(&b->keys, b->keys.set->data, bset_magic(&b->c->sb));
+ 
+diff --git a/drivers/md/bcache/btree.h b/drivers/md/bcache/btree.h
+index 76cfd121a486..f4dcca449391 100644
+--- a/drivers/md/bcache/btree.h
++++ b/drivers/md/bcache/btree.h
+@@ -121,8 +121,6 @@ struct btree {
+ 	/* Key/pointer for this btree node */
+ 	BKEY_PADDED(key);
+ 
+-	/* Single bit - set when accessed, cleared by shrinker */
+-	unsigned long		accessed;
+ 	unsigned long		seq;
+ 	struct rw_semaphore	lock;
+ 	struct cache_set	*c;
+-- 
+2.16.4
+
+From bcfa9939d7e65463902f39681c43d201ed3f2892 Mon Sep 17 00:00:00 2001
+From: Coly Li <colyli@suse.de>
+Date: Sun, 22 Dec 2019 19:16:36 +0800
+Subject: [PATCH 18/25] bcache: reap c->btree_cache_freeable from the tail in
+ bch_mca_scan()
+
+In order to skip the most recently freed btree node cahce, currently
+in bch_mca_scan() the first 3 caches in c->btree_cache_freeable list
+are skipped when shrinking bcache node caches in bch_mca_scan(). The
+related code in bch_mca_scan() is,
+
+ 737 list_for_each_entry_safe(b, t, &c->btree_cache_freeable, list) {
+ 738         if (nr <= 0)
+ 739                 goto out;
+ 740
+ 741         if (++i > 3 &&
+ 742             !mca_reap(b, 0, false)) {
+             		lines free cache memory
+ 746         }
+ 747         nr--;
+ 748 }
+
+The problem is, if virtual memory code calls bch_mca_scan() and
+the calculated 'nr' is 1 or 2, then in the above loop, nothing will
+be shunk. In such case, if slub/slab manager calls bch_mca_scan()
+for many times with small scan number, it does not help to shrink
+cache memory and just wasts CPU cycles.
+
+This patch just selects btree node caches from tail of the
+c->btree_cache_freeable list, then the newly freed host cache can
+still be allocated by mca_alloc(), and at least 1 node can be shunk.
+
+Signed-off-by: Coly Li <colyli@suse.de>
+---
+ drivers/md/bcache/btree.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/md/bcache/btree.c b/drivers/md/bcache/btree.c
+index 357535a5c89c..c3a314deb09d 100644
+--- a/drivers/md/bcache/btree.c
++++ b/drivers/md/bcache/btree.c
+@@ -734,17 +734,17 @@ static unsigned long bch_mca_scan(struct shrinker *shrink,
+ 
+ 	i = 0;
+ 	btree_cache_used = c->btree_cache_used;
+-	list_for_each_entry_safe(b, t, &c->btree_cache_freeable, list) {
++	list_for_each_entry_safe_reverse(b, t, &c->btree_cache_freeable, list) {
+ 		if (nr <= 0)
+ 			goto out;
+ 
+-		if (++i > 3 &&
+-		    !mca_reap(b, 0, false)) {
++		if (!mca_reap(b, 0, false)) {
+ 			mca_data_free(b);
+ 			rw_unlock(true, b);
+ 			freed++;
+ 		}
+ 		nr--;
++		i++;
+ 	}
+ 
+ 	for (;  (nr--) && i < btree_cache_used; i++) {
+-- 
+2.16.4
+
