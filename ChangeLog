@@ -1,3 +1,13 @@
+2020-10-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_update'
+
+	updated SCST to version 3.4.x/r9170
+
+	Merge branch 'add_sedutil'
+
+	added the sedutil package (needed 'sedutil-cli')
+
 2020-10-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	enabled CONFIG_HOTPLUG_PCI_ACPI in the kernel config
