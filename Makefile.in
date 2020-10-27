@@ -325,7 +325,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		iotop-master_20200318.tar.xz \
 		node_exporter-1.0.0.linux-amd64.tar.xz \
 		libcap-2.36.tar.gz \
-		sedutil-master_20201009.tar.xz \
+		sedutil-master_20201026.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
