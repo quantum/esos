@@ -2132,7 +2132,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	LDFLAGS=-fno-lto pip3 install uWSGI==2.0.17.1
 	pip3 install pySMART.smartx==0.3.9
 	pip3 install mdstat==1.0.4
-	pip3 install py-dmidecode==0.0.2
+	pip3 install py-dmidecode==0.1.0
 	pip3 install netifaces==0.10.9
 	pip3 install ordered-set==3.1
 	pip3 install deepdiff==4.0.6
