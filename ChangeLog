@@ -1,3 +1,9 @@
+2020-11-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'install_fix' into 3.x.x
+
+	install.sh: use 'losetup -d' after upgrade to close the image file
+
 2020-11-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '301_updates' into 3.x.x
