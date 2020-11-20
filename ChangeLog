@@ -1,3 +1,19 @@
+2020-11-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	install.sh: use 'losetup -d' after upgrade to close the image file
+
+2020-11-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	ocf:esos:alua: several updates to improve failover/failback duration (less) -- don't use trigger_suspend_resume() in set_tpg_trans() (appears to no longer be needed), updated bio_dev_to_real() and bio_dev_to_redirect() to background deactivate/activate operations in a loop, then wait at the end of each step
+
+2020-10-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Python.chroot: install version '0.1.0' of py-dmidecode
+
+2020-10-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated sedutil package
+
 2020-10-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated sedutil-cli package
