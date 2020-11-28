@@ -142,3 +142,27 @@ index 357535a5c89c..c3a314deb09d 100644
 -- 
 2.16.4
 
+--- a/drivers/md/bcache/closure.c	2020-11-25 01:03:03.899962395 -0500
++++ b/drivers/md/bcache/closure.c	2020-11-24 23:59:29.555465288 -0500
+@@ -110,7 +110,7 @@
+ 
+ 	rcu_read_lock();
+ 	p = READ_ONCE(s->task);
+-	s->done = 1;
++	WRITE_ONCE(s->done, 1);
+ 	wake_up_process(p);
+ 	rcu_read_unlock();
+ }
+@@ -123,8 +123,10 @@
+ 	continue_at(cl, closure_sync_fn, NULL);
+ 
+ 	while (1) {
++		int done;
+ 		set_current_state(TASK_UNINTERRUPTIBLE);
+-		if (s.done)
++		done = READ_ONCE(s.done);
++		if (done)
+ 			break;
+ 		schedule();
+ 	}
+
