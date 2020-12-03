@@ -52,7 +52,8 @@ for i in $(${HW_RAID_CLI} --list-physical-drives); do
     pd_size="$(echo ${i} | cut -d, -f6)"
     pd_model="$(echo ${i} | cut -d, -f7)"
     if [[ ("${ctrlr_type}" = "MegaRAID" && "${pd_state}" != "UGood" && \
-        "${pd_state}" != "Onln" && "${pd_state}" != "GHS") || \
+        "${pd_state}" != "Onln" && "${pd_state}" != "GHS" && \
+        "${pd_state}" != "JBOD") || \
         ("${ctrlr_type}" = "PERC" && "${pd_state}" != "UGood" && \
         "${pd_state}" != "Onln" && "${pd_state}" != "GHS" && \
         "${pd_state}" != "DHS" && "${pd_state}" != "JBOD") || \
