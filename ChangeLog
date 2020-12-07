@@ -1,3 +1,9 @@
+2020-12-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '304_update' into 3.x.x
+
+	health_chk.sh: for MegaRAID adapters, "JBOD" is a valid PD state
+
 2020-11-28  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'bcache_fix' into 3.x.x
