@@ -1,3 +1,11 @@
+2020-12-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '216_updates' into 2.x.x
+
+	updated OpenSSL to version 1.1.1i
+
+	updated the cls_switchtec driver to be less verbose during normal operation
+
 2020-09-27  Marc A. Smith  <marc.smith@quantum.com>
 
 	rework of the 'rc.network' script (lots of formatting fixes, properly remove defautl GW's, added the "apply" action) -- needs testing
