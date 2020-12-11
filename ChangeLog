@@ -1,3 +1,13 @@
+2020-12-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '305_updates' into 3.x.x
+
+	updated build deps
+
+	updated OpenSSL to version 1.1.1i
+
+	updated the cls_switchtec driver to produce less verbose output
+
 2020-12-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '304_update' into 3.x.x

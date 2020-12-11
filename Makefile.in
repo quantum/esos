@@ -178,7 +178,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		srptools-1.0.3.tar.gz \
 		openssh-8.0p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
-		openssl-1.1.1g.tar.gz \
+		openssl-1.1.1i.tar.gz \
 		e2fsprogs-1.45.1.tar.xz \
 		zlib-1.2.11.tar.xz \
 		lsscsi-030r154.tar.gz \
@@ -308,7 +308,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		blktrace-master_20181015.tar.xz \
 		hwloc-2.0.3.tar.bz2 \
 		mstflint-4.11.0-3.tar.xz \
-		cls_switchtec-4.0.0_5.4.tar.xz \
+		cls_switchtec-4.0.0_5.4_20201211.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
 		telegraf-1.14.3_linux_amd64.tar.xz \
@@ -1872,7 +1872,7 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(QUIET) $(ECHO) "### Done $(@)"
 
 rpc_agent.chroot: glibc.chroot stunnel.chroot xmlrpc-c.chroot \
-	libxml2.chroot iniparser.chroot
+	libxml2.chroot iniparser.chroot dlm.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(MKDIR) $(rpc_agent_dir)/obj
