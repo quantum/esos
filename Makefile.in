@@ -1872,7 +1872,7 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(QUIET) $(ECHO) "### Done $(@)"
 
 rpc_agent.chroot: glibc.chroot stunnel.chroot xmlrpc-c.chroot \
-	libxml2.chroot iniparser.chroot
+	libxml2.chroot iniparser.chroot dlm.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(MKDIR) $(rpc_agent_dir)/obj
