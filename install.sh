@@ -210,8 +210,15 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             umount ${img_esos_mnt} || exit 1
             umount ${usb_esos_mnt}/boot || exit 1
             umount ${usb_esos_mnt} || exit 1
-            kpartx -d ${loop_dev} || exit 1
-            losetup -d ${loop_dev} || exit 1
+            sync
+            if ! kpartx -d ${loop_dev}; then
+                sleep 5
+                kpartx -v -d ${loop_dev} || exit 1
+            fi
+            if ! losetup -d ${loop_dev}; then
+                sleep 5
+                losetup -v -d ${loop_dev} || exit 1
+            fi
             rm -rf ${TEMP_DIR}
             echo
             echo "### The ESOS upgrade succeeded! Here are the details:"
