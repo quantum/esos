@@ -1,3 +1,9 @@
+2020-12-17  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '306_updates' into 3.x.x
+
+	install.sh: when performing an in-place upgrade, sometimes kpartx/losetup fail to cleanup the loop device properly when the image package is used from some other file system / medium (eg, NFS) -- handle this by performing a sync first, and then if either program fails, wait a few seconds then try it again before failing permanently
+
 2020-12-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '305_updates' into 3.x.x
