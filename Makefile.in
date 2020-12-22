@@ -66,6 +66,7 @@ enable_nginx		:= @enable_nginx@
 enable_python_sql	:= @enable_python_sql@
 enable_zfs		:= @enable_zfs@
 enable_lessfs		:= @enable_lessfs@
+enable_qemu		:= @enable_qemu@
 enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
@@ -453,6 +454,10 @@ ifeq ($(enable_lessfs),yes)
 	chroot_tgts += tokyocabinet.chroot
 	chroot_tgts += snappy.chroot
 	chroot_tgts += mhash.chroot
+endif
+ifeq ($(enable_qemu),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,qemu-5.2.0.tar.xz)
+	chroot_tgts += qemu.chroot
 endif
 ifeq ($(enable_mhvtl),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
@@ -2807,6 +2812,44 @@ lessfs.chroot: glibc.chroot mhash.chroot openssl.chroot lzo.chroot fuse.chroot \
 	--without-hamsterdb --with-berkeleydb
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+qemu.chroot: glibc.chroot numactl.chroot libgcrypt.chroot ncurses.chroot \
+	eudev.chroot curl.chroot libaio.chroot bzip2.chroot lzo.chroot \
+	libusb.chroot libxml2.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MKDIR) $(tgt_src_dir)/build
+	cd $(tgt_src_dir)/build && ./configure --prefix=/usr --sysconfdir=/etc \
+	--enable-gcrypt --enable-curses --enable-libudev --enable-curl \
+	--enable-membarrier --enable-kvm --enable-linux-aio --enable-attr \
+	--enable-vhost-net --enable-vhost-scsi --enable-vhost-kernel \
+	--enable-libusb --enable-lzo --enable-bzip2 --enable-numa \
+	--enable-libxml2 --enable-tools \
+	--disable-user --disable-linux-user --disable-bsd-user --disable-docs \
+	--disable-guest-agent --disable-guest-agent-msi --disable-modules \
+	--disable-module-upgrades --disable-gnutls --disable-nettle \
+	--disable-auth-pam --disable-sdl --disable-sdl-image --disable-gtk \
+	--disable-vte --disable-iconv --disable-vnc --disable-cocoa \
+	--disable-virtfs --disable-virtiofsd --disable-mpath --disable-xen \
+	--disable-xen-pci-passthrough --disable-brlapi --disable-fdt \
+	--disable-hax --disable-hvf --disable-whpx --disable-rdma \
+	--disable-pvrdma --disable-vde --disable-netmap \
+	--disable-linux-io-uring --disable-cap-ng --disable-vhost-vsock \
+	--disable-vhost-user --disable-vhost-user-blk-server \
+	--disable-vhost-vdpa --disable-spice --disable-rbd --disable-libiscsi \
+	--disable-libnfs --disable-smartcard --disable-u2f \
+	--disable-live-block-migration --disable-usb-redir --disable-snappy \
+	--disable-lzfse --disable-zstd --disable-tpm --disable-libssh \
+	--disable-replication --disable-opengl --disable-virglrenderer \
+	--disable-xfsctl --disable-qom-cast-debug --disable-bochs \
+	--disable-cloop --disable-dmg --disable-qcow1 --disable-vdi \
+	--disable-vvfat --disable-qed --disable-parallels \
+	--disable-crypto-afalg --disable-capstone --disable-libpmem \
+	--disable-xkbdcommon --disable-libdaxctl
+	$(MAKE) --directory=$(tgt_src_dir)/build
+	$(MAKE) --directory=$(tgt_src_dir)/build install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
