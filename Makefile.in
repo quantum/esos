@@ -457,7 +457,9 @@ ifeq ($(enable_lessfs),yes)
 endif
 ifeq ($(enable_qemu),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,qemu-5.2.0.tar.xz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,pixman-0.40.0.tar.gz)
 	chroot_tgts += qemu.chroot
+	chroot_tgts += pixman.chroot
 endif
 ifeq ($(enable_mhvtl),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
@@ -2815,41 +2817,56 @@ lessfs.chroot: glibc.chroot mhash.chroot openssl.chroot lzo.chroot fuse.chroot \
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-qemu.chroot: glibc.chroot numactl.chroot libgcrypt.chroot ncurses.chroot \
+qemu.chroot: glibc.chroot numactl.chroot libgcrypt.chroot Linux-PAM.chroot \
 	eudev.chroot curl.chroot libaio.chroot bzip2.chroot lzo.chroot \
-	libusb.chroot libxml2.chroot
+	libusb.chroot libxml2.chroot Python.chroot zlib.chroot pixman.chroot \
+	multipath-tools.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
+	$(RM) $(tgt_src_dir)/build
 	$(MKDIR) $(tgt_src_dir)/build
-	cd $(tgt_src_dir)/build && ./configure --prefix=/usr --sysconfdir=/etc \
-	--enable-gcrypt --enable-curses --enable-libudev --enable-curl \
-	--enable-membarrier --enable-kvm --enable-linux-aio --enable-attr \
-	--enable-vhost-net --enable-vhost-scsi --enable-vhost-kernel \
-	--enable-libusb --enable-lzo --enable-bzip2 --enable-numa \
-	--enable-libxml2 --enable-tools \
+	cd $(tgt_src_dir)/build && ../configure --prefix=/usr \
+	--sysconfdir=/etc --target-list=x86_64-softmmu --cpu=x86_64 \
+	--disable-blobs --enable-gcrypt --enable-auth-pam --enable-libudev \
+	--enable-mpath --enable-vnc --enable-curl --enable-kvm \
+	--enable-linux-aio --enable-attr --enable-vhost-net \
+	--enable-vhost-scsi --enable-vhost-kernel --enable-libusb --enable-lzo \
+	--enable-bzip2 --enable-numa --enable-libxml2 --enable-tools \
 	--disable-user --disable-linux-user --disable-bsd-user --disable-docs \
 	--disable-guest-agent --disable-guest-agent-msi --disable-modules \
 	--disable-module-upgrades --disable-gnutls --disable-nettle \
 	--disable-auth-pam --disable-sdl --disable-sdl-image --disable-gtk \
-	--disable-vte --disable-iconv --disable-vnc --disable-cocoa \
-	--disable-virtfs --disable-virtiofsd --disable-mpath --disable-xen \
-	--disable-xen-pci-passthrough --disable-brlapi --disable-fdt \
-	--disable-hax --disable-hvf --disable-whpx --disable-rdma \
-	--disable-pvrdma --disable-vde --disable-netmap \
-	--disable-linux-io-uring --disable-cap-ng --disable-vhost-vsock \
-	--disable-vhost-user --disable-vhost-user-blk-server \
-	--disable-vhost-vdpa --disable-spice --disable-rbd --disable-libiscsi \
-	--disable-libnfs --disable-smartcard --disable-u2f \
-	--disable-live-block-migration --disable-usb-redir --disable-snappy \
-	--disable-lzfse --disable-zstd --disable-tpm --disable-libssh \
-	--disable-replication --disable-opengl --disable-virglrenderer \
-	--disable-xfsctl --disable-qom-cast-debug --disable-bochs \
-	--disable-cloop --disable-dmg --disable-qcow1 --disable-vdi \
-	--disable-vvfat --disable-qed --disable-parallels \
+	--disable-vte --disable-curses --disable-iconv --disable-vnc-sasl \
+	--disable-vnc-jpeg --disable-vnc-png --disable-cocoa --disable-virtfs \
+	--disable-virtiofsd --disable-xen --disable-xen-pci-passthrough \
+	--disable-brlapi --disable-membarrier --disable-fdt --disable-hax \
+	--disable-hvf --disable-whpx --disable-rdma --disable-pvrdma \
+	--disable-vde --disable-netmap --disable-linux-io-uring \
+	--disable-cap-ng --disable-vhost-vsock --disable-vhost-user \
+	--disable-vhost-user-blk-server --disable-vhost-vdpa --disable-spice \
+	--disable-rbd --disable-libiscsi --disable-libnfs --disable-smartcard \
+	--disable-u2f --disable-live-block-migration --disable-usb-redir \
+	--disable-snappy --disable-lzfse --disable-zstd --disable-tpm \
+	--disable-libssh --disable-replication --disable-opengl \
+	--disable-virglrenderer --disable-xfsctl --disable-qom-cast-debug \
+	--disable-bochs --disable-cloop --disable-dmg --disable-qcow1 \
+	--disable-vdi --disable-vvfat --disable-qed --disable-parallels \
 	--disable-crypto-afalg --disable-capstone --disable-libpmem \
-	--disable-xkbdcommon --disable-libdaxctl
+	--disable-xkbcommon --disable-libdaxctl
+	$(CP) /usr/include/gnu/stubs-64.h /usr/include/gnu/stubs-32.h
 	$(MAKE) --directory=$(tgt_src_dir)/build
 	$(MAKE) --directory=$(tgt_src_dir)/build install
+	$(RM) /usr/include/gnu/stubs-32.h
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+pixman.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
