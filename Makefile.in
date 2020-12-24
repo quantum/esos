@@ -2746,10 +2746,11 @@ glue.chroot: glibc.chroot libaio.chroot libxml2.chroot bzip2.chroot \
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-readline.chroot: glibc.chroot
+readline.chroot: glibc.chroot ncurses.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static \
+	--with-curses
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -2887,9 +2888,10 @@ libvirt.chroot: glibc.chroot perl.chroot Python.chroot libxml2.chroot \
 	libxslt.chroot nfs-utils.chroot gnutls.chroot yajl.chroot \
 	qemu.chroot attr.chroot util-linux.chroot eudev.chroot \
 	curl.chroot numactl.chroot openwsman.chroot libpciaccess.chroot \
-	readline.chroot multipath-tools.chroot lvm2.chroot
+	readline.chroot multipath-tools.chroot lvm2.chroot ncurses.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	$(RM) $(tgt_src_dir)/build
 	$(MKDIR) $(tgt_src_dir)/build
 	cd $(tgt_src_dir) && meson build --prefix=/usr \

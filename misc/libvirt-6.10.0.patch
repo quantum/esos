@@ -1,0 +1,14 @@
+--- a/meson.build	2020-12-01 03:51:29.000000000 -0500
++++ b/meson.build	2020-12-24 11:06:54.818754782 -0500
+@@ -1295,9 +1295,10 @@
+ 
+   # We need this to avoid compilation issues with modern compilers.
+   # See 9ea3424a178 for a more detailed explanation
++  ncursesw_dep = declare_dependency(link_args: '-lncursesw')
+   readline_dep = declare_dependency(
+     compile_args: [ '-D_FUNCTION_DEF' ],
+-    dependencies: [ readline_dep ],
++    dependencies: [ readline_dep, ncursesw_dep ],
+   )
+ 
+   conf.set('WITH_READLINE', 1)
