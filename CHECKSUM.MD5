@@ -39,7 +39,7 @@ f6e931e319531b736fadc017f470e68a  pkg-config-0.29.2.tar.gz
 51aac91bdf8be95ec0a62d174890821a  Python-3.6.8.tar.xz
 1495548397cbfef325a8d153a8720d72  cmake-3.14.4.tar.gz
 f340be768a76724b83e6daab69009902  ninja-1.9.0.tar.gz
-24a6527796115828d2ebc75880e18d62  meson-0.50.1.tar.gz
+67ce2c0c3eab1b8ee9ddaa1c5143e7c0  meson-0.56.0.tar.gz
 7a07fe2796aa98631d50dc107e266368  setuptools-28.6.0.tar.gz
 d10dabb9f74830008244a5e356f837df  e2fsprogs-1.45.1.tar.xz
 bf050f002fe510e1daecd39044e1122d  openssh-8.0p1.tar.gz
@@ -181,7 +181,7 @@ c5bb483ebbf009bcdd02c860ba5689bb  munin-c-0.0.13.tar.xz
 431bfef8cffc7b0f5b9e48c211cc5061  open-vm-tools-10.3.10-12406962.tar.gz
 04c394ed8e1e7fc455456e79e908916d  libdnet-1.11.tar.gz
 83b89587607e3eb65c70d361f13bab43  libffi-3.2.1.tar.gz
-82f0cdab1ccbad847e994ed6f4c19b01  openwsman-2.6.9.tar.gz
+5b50610e810939922f41a3d5122954f1  openwsman-2.7.0.tar.gz
 572074323f49d9cb14460d986f87230a  swig-4.0.0.tar.gz
 102184afa99e64e3ecefb320092ac1e4  userspace-rcu-0.11.0.tar.bz2
 60aa69b72bf40d6721ae5dcbdc2bceec  tzdata-2019a.tar.xz
@@ -228,3 +228,7 @@ a5060b974950f83dc825a6fb3de18b61  libcap-2.36.tar.gz
 de92b6cec8c1da36d3da9bd1dd02d450  sedutil-master_20201026.tar.xz
 179f86928835da857c237b42f4b2df73  qemu-5.2.0.tar.xz
 73858c0862dd9896fb5f62ae267084a4  pixman-0.40.0.tar.gz
+43037045ef94c8600d4289b49ec73a77  libvirt-6.10.0.tar.xz
+e80e0d20a8bb337a15fa63caa7f67006  gnutls-3.6.15.tar.xz
+c45ee24ed7361dcda152a035d396fe8a  nettle-3.6.tar.gz
+6887e0ed7479d2549761a4d284d3ecb0  yajl-2.1.0.tar.gz
