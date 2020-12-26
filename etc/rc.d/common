@@ -8,7 +8,7 @@ rc.zfs rc.eio rc.dmcache rc.btier rc.drbd rc.rbdmap rc.sbd rc.corosync rc.dlm \
 rc.clvmd rc.lvmlockd rc.pacemaker rc.fsmount rc.mhvtl rc.scst rc.nvmet rc.nfsd \
 rc.nrpe rc.munin rc.snmpd rc.snmptrapd rc.nut rc.smartd rc.rpcagent rc.stunnel \
 rc.nginx rc.telegraf rc.nodeexporter rc.vmtoolsd rc.acpid rc.serial \
-rc.watchdog rc.rasdaemon"
+rc.watchdog rc.rasdaemon rc.libvirtd"
 
 # Script status values
 RUNNING=0
