@@ -230,6 +230,16 @@ AS_IF([test "x$enable_lessfs" = "xyes"],
 AC_SUBST(enable_lessfs, ${enable_lessfs})
 AC_MSG_NOTICE([lessfs: ${enable_lessfs}])
 
+dnl Optional feature qemu
+AC_ARG_ENABLE(qemu,
+	AS_HELP_STRING([--enable-qemu], [build and include QEMU]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_qemu="${enableval}"], [enable_qemu="no"]), enable_qemu="no")
+AS_IF([test "x$enable_qemu" = "xyes"],
+	[build_opts="${build_opts} qemu"; opt_suffix="${opt_suffix}Q"])
+AC_SUBST(enable_qemu, ${enable_qemu})
+AC_MSG_NOTICE([qemu: ${enable_qemu}])
+
 dnl Optional feature mhvtl
 AC_ARG_ENABLE(mhvtl,
 	AS_HELP_STRING([--enable-mhvtl], [build and include mhVTL (broken)]),

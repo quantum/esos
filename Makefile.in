@@ -66,6 +66,7 @@ enable_nginx		:= @enable_nginx@
 enable_python_sql	:= @enable_python_sql@
 enable_zfs		:= @enable_zfs@
 enable_lessfs		:= @enable_lessfs@
+enable_qemu		:= @enable_qemu@
 enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
@@ -158,7 +159,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		Python-3.6.8.tar.xz \
 		cmake-3.14.4.tar.gz \
 		ninja-1.9.0.tar.gz \
-		meson-0.50.1.tar.gz \
+		meson-0.56.0.tar.gz \
 		setuptools-28.6.0.tar.gz \
 		Linux-PAM-1.3.1.tar.xz \
 		busybox-1.30.1.tar.bz2 \
@@ -284,7 +285,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		open-vm-tools-10.3.10-12406962.tar.gz \
 		libdnet-1.11.tar.gz \
 		libffi-3.2.1.tar.gz \
-		openwsman-2.6.9.tar.gz \
+		openwsman-2.7.0.tar.gz \
 		swig-4.0.0.tar.gz \
 		userspace-rcu-0.11.0.tar.bz2 \
 		tzdata-2019a.tar.xz \
@@ -453,6 +454,20 @@ ifeq ($(enable_lessfs),yes)
 	chroot_tgts += tokyocabinet.chroot
 	chroot_tgts += snappy.chroot
 	chroot_tgts += mhash.chroot
+endif
+ifeq ($(enable_qemu),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,qemu-5.2.0.tar.xz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,pixman-0.40.0.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,libvirt-6.10.0.tar.xz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,gnutls-3.6.15.tar.xz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,nettle-3.6.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,yajl-2.1.0.tar.gz)
+	chroot_tgts += qemu.chroot
+	chroot_tgts += pixman.chroot
+	chroot_tgts += libvirt.chroot
+	chroot_tgts += gnutls.chroot
+	chroot_tgts += nettle.chroot
+	chroot_tgts += yajl.chroot
 endif
 ifeq ($(enable_mhvtl),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
@@ -2112,7 +2127,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	$(MAKE) --directory=$(tgt_src_dir) install
 	pip3 install --upgrade pip
 	pip3 install configshell-fb==1.1.23
-	pip3 install docutils==0.12
+	pip3 install docutils==0.16
 	pip3 install pbr==1.10.0
 	pip3 install lockfile==0.12.2
 	pip3 install python-daemon==2.1.1
@@ -2147,6 +2162,10 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install tzlocal==1.5.1
 	pip3 install tzdata==1.2016.8
 	pip3 install pyudev==0.22.0
+	pip3 install rst2html==2020.7.4
+	pip3 install genshi==0.7.5
+	pip3 install pygments==2.7.3
+	pip3 install rst2html5==1.10.6
 	$(QUIET) if [ "$(enable_python_sql)" = "yes" ]; then \
 	  pip3 install psycopg2==2.6.2; \
 	  pip3 install mysqlclient==1.3.12; \
@@ -2444,7 +2463,8 @@ lvm2.chroot: glibc.chroot corosync.chroot dlm.chroot \
 	--enable-cmirrord --disable-readline --with-thin=internal \
 	--with-thin-check=/usr/sbin/thin_check --with-cache=internal \
 	--enable-udev_sync --enable-udev_rules --enable-lvmetad \
-	--disable-udev-systemd-background-jobs --enable-lockd-dlm
+	--disable-udev-systemd-background-jobs --enable-lockd-dlm \
+	--enable-pkgconfig
 	$(SED) -i "/VGOUT=/s/OCF_ERR_GENERIC/OCF_NOT_RUNNING/" \
 	$(tgt_src_dir)/scripts/VolumeGroup.ocf
 	$(MAKE) --directory=$(tgt_src_dir)
@@ -2726,10 +2746,11 @@ glue.chroot: glibc.chroot libaio.chroot libxml2.chroot bzip2.chroot \
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-readline.chroot: glibc.chroot
+readline.chroot: glibc.chroot ncurses.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static \
+	--with-curses
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -2807,6 +2828,132 @@ lessfs.chroot: glibc.chroot mhash.chroot openssl.chroot lzo.chroot fuse.chroot \
 	--without-hamsterdb --with-berkeleydb
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+qemu.chroot: glibc.chroot numactl.chroot libgcrypt.chroot Linux-PAM.chroot \
+	eudev.chroot curl.chroot libaio.chroot bzip2.chroot lzo.chroot \
+	libusb.chroot libxml2.chroot Python.chroot zlib.chroot pixman.chroot \
+	multipath-tools.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(call apply_pkg_patch)
+	$(RM) $(tgt_src_dir)/build
+	$(MKDIR) $(tgt_src_dir)/build
+	cd $(tgt_src_dir)/build && ../configure --prefix=/usr \
+	--sysconfdir=/etc --target-list=x86_64-softmmu --cpu=x86_64 \
+	--disable-blobs --enable-gcrypt --enable-auth-pam --enable-libudev \
+	--enable-mpath --enable-vnc --enable-curl --enable-kvm \
+	--enable-linux-aio --enable-attr --enable-vhost-net \
+	--enable-vhost-scsi --enable-vhost-kernel --enable-libusb --enable-lzo \
+	--enable-bzip2 --enable-numa --enable-libxml2 --enable-tools \
+	--disable-user --disable-linux-user --disable-bsd-user --disable-docs \
+	--disable-guest-agent --disable-guest-agent-msi --disable-modules \
+	--disable-module-upgrades --disable-gnutls --disable-nettle \
+	--disable-auth-pam --disable-sdl --disable-sdl-image --disable-gtk \
+	--disable-vte --disable-curses --disable-iconv --disable-vnc-sasl \
+	--disable-vnc-jpeg --disable-vnc-png --disable-cocoa --disable-virtfs \
+	--disable-virtiofsd --disable-xen --disable-xen-pci-passthrough \
+	--disable-brlapi --disable-membarrier --disable-fdt --disable-hax \
+	--disable-hvf --disable-whpx --disable-rdma --disable-pvrdma \
+	--disable-vde --disable-netmap --disable-linux-io-uring \
+	--disable-cap-ng --disable-vhost-vsock --disable-vhost-user \
+	--disable-vhost-user-blk-server --disable-vhost-vdpa --disable-spice \
+	--disable-rbd --disable-libiscsi --disable-libnfs --disable-smartcard \
+	--disable-u2f --disable-live-block-migration --disable-usb-redir \
+	--disable-snappy --disable-lzfse --disable-zstd --disable-tpm \
+	--disable-libssh --disable-replication --disable-opengl \
+	--disable-virglrenderer --disable-xfsctl --disable-qom-cast-debug \
+	--disable-bochs --disable-cloop --disable-dmg --disable-qcow1 \
+	--disable-vdi --disable-vvfat --disable-qed --disable-parallels \
+	--disable-crypto-afalg --disable-capstone --disable-libpmem \
+	--disable-xkbcommon --disable-libdaxctl
+	$(CP) /usr/include/gnu/stubs-64.h /usr/include/gnu/stubs-32.h
+	$(MAKE) --directory=$(tgt_src_dir)/build
+	$(MAKE) --directory=$(tgt_src_dir)/build install
+	$(RM) /usr/include/gnu/stubs-32.h
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+pixman.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+libvirt.chroot: glibc.chroot perl.chroot Python.chroot libxml2.chroot \
+	libxslt.chroot nfs-utils.chroot gnutls.chroot yajl.chroot \
+	qemu.chroot attr.chroot util-linux.chroot eudev.chroot \
+	curl.chroot numactl.chroot openwsman.chroot libpciaccess.chroot \
+	readline.chroot multipath-tools.chroot lvm2.chroot ncurses.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(call apply_pkg_patch)
+	$(RM) $(tgt_src_dir)/build
+	$(MKDIR) $(tgt_src_dir)/build
+	cd $(tgt_src_dir) && meson build --prefix=/usr \
+	-Dapparmor=disabled -Dattr=enabled -Daudit=disabled \
+	-Dbash_completion=disabled -Dblkid=enabled -Dcapng=disabled \
+	-Dcurl=enabled -Ddocs=disabled -Ddriver_bhyve=disabled \
+	-Ddriver_esx=disabled -Ddriver_hyperv=disabled \
+	-Ddriver_interface=enabled -Ddriver_libvirtd=enabled \
+	-Ddriver_libxl=disabled -Ddriver_lxc=disabled -Ddriver_network=enabled \
+	-Ddriver_openvz=disabled -Ddriver_qemu=enabled -Ddriver_remote=enabled \
+	-Ddriver_secrets=enabled -Ddriver_test=enabled -Ddriver_vbox=disabled \
+	-Ddriver_vmware=disabled -Ddriver_vz=disabled -Ddtrace=disabled \
+	-Dexpensive_tests=disabled -Dfirewalld=disabled \
+	-Dfirewalld_zone=disabled -Dfuse=disabled -Dgit_werror=disabled \
+	-Dglusterfs=disabled -Dhost_validate=disabled -Dinit_script=none \
+	-Dlibiscsi=disabled -Dlibnl=disabled -Dlibpcap=disabled \
+	-Dlibssh=disabled -Dlibssh2=disabled -Dlogin_shell=enabled \
+	-Dnetcf=disabled -Dnls=disabled -Dno_git=false -Dnss=disabled \
+	-Dnumactl=enabled -Dnumad=disabled -Dopenwsman=enabled \
+	-Dpciaccess=enabled -Dpm_utils=disabled -Dpolkit=disabled \
+	-Dreadline=enabled -Dremote_default_mode=legacy -Drpath=disabled \
+	-Dsanlock=disabled -Dsasl=disabled -Dsecdriver_apparmor=disabled \
+	-Dsecdriver_selinux=disabled -Dselinux=disabled -Dstorage_dir=enabled \
+	-Dstorage_disk=enabled -Dstorage_fs=enabled -Dstorage_gluster=disabled \
+	-Dstorage_iscsi=disabled -Dstorage_iscsi_direct=disabled \
+	-Dstorage_lvm=enabled -Dstorage_mpath=enabled -Dstorage_rbd=disabled \
+	-Dstorage_scsi=enabled -Dstorage_sheepdog=disabled \
+	-Dstorage_vstorage=disabled -Dstorage_zfs=disabled \
+	-Dsysctl_config=enabled -Dsystem=false -Dtest_coverage=false \
+	-Dtests=disabled -Dudev=enabled -Dwireshark_dissector=disabled \
+	-Dyajl=enabled
+	cd $(tgt_src_dir) && ninja -C build
+	cd $(tgt_src_dir) && ninja -C build install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+gnutls.chroot: glibc.chroot nettle.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-guile \
+	--with-nettle-mini --with-included-libtasn1 --with-included-unistring \
+	--without-p11-kit
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+nettle.chroot: glibc.chroot openssl.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-mini-gmp
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+yajl.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure -p /usr
+	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
+	$(MAKE) --jobs=1 --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3205,6 +3352,7 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/flock /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/blkdiscard /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/agetty /sbin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/mkfs /usr/sbin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3884,6 +4032,11 @@ openwsman.chroot: glibc.chroot gcc.chroot Python.chroot libxml2.chroot \
 	openssl.chroot swig.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(SED) -i "s/2.6.1/2.7.0/" $(tgt_src_dir)/configure.ac
+	$(SED) -i "s/OPENWSMAN_MINOR=6/OPENWSMAN_MINOR=7/" \
+	$(tgt_src_dir)/configure.ac
+	$(SED) -i "s/OPENWSMAN_PATCH=1/OPENWSMAN_PATCH=0/" \
+	$(tgt_src_dir)/configure.ac
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autoconfiscate.sh \
 	  --ignore-deprecation-warning; \
@@ -3898,6 +4051,7 @@ openwsman.chroot: glibc.chroot gcc.chroot Python.chroot libxml2.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/src install
 	$(MAKE) --directory=$(tgt_src_dir)/doc install
 	$(MAKE) --directory=$(tgt_src_dir)/bindings install
+	$(MAKE) --directory=$(tgt_src_dir) install-data-local
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

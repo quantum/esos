@@ -1,16 +1,51 @@
+2020-12-17  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '306_updates' into 3.x.x
+
+	install.sh: when performing an in-place upgrade, sometimes kpartx/losetup fail to cleanup the loop device properly when the image package is used from some other file system / medium (eg, NFS) -- handle this by performing a sync first, and then if either program fails, wait a few seconds then try it again before failing permanently
+
+2020-12-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '305_updates' into 3.x.x
+
+	updated build deps
+
+	updated OpenSSL to version 1.1.1i
+
+	updated the cls_switchtec driver to produce less verbose output
+
+2020-12-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '304_update' into 3.x.x
+
+	health_chk.sh: for MegaRAID adapters, "JBOD" is a valid PD state
+
+2020-11-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'bcache_fix' into 3.x.x
+
+	updated the Linux kernel patch to include a change for bcache that fixes a common kernel panic... it seems GCC 9.1.0 "optimizes" the closure_sync_fn() function and causes the assembly produced by the compiler to be out of order; before the patch: 0000000000008af4 <closure_sync_fn>:     8af4:       48 8b 47 08             mov    0x8(%rdi),%rax     8af8:       c7 40 08 01 00 00 00    movl   $0x1,0x8(%rax)     8aff:       48 8b 38                mov    (%rax),%rdi     8b02:       e8 00 00 00 00          callq  8b07 <closure_sync_fn+0x13>     8b07:       c3                      retq
+	and after the patch:
+	0000000000008af4 <closure_sync_fn>:
+	    8af4:       48 8b 47 08             mov    0x8(%rdi),%rax
+	    8af8:       48 8b 38                mov    (%rax),%rdi
+	    8afb:       c7 40 08 01 00 00 00    movl   $0x1,0x8(%rax)
+	    8b02:       e8 00 00 00 00          callq  8b07 <closure_sync_fn+0x13>
+	    8b07:       c3                      retq
+
 2020-11-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'install_fix' into 3.x.x
 
 	install.sh: use 'losetup -d' after upgrade to close the image file
 
-2020-11-03  Marc A. Smith  <marc.smith@quantum.com>
+2020-11-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '301_updates' into 3.x.x
 
 	ocf:esos:alua: several updates to improve failover/failback duration (less) -- don't use trigger_suspend_resume() in set_tpg_trans() (appears to no longer be needed), updated bio_dev_to_real() and bio_dev_to_redirect() to background deactivate/activate operations in a loop, then wait at the end of each step
 
-2020-10-28  Marc A. Smith  <marc.smith@quantum.com>
-
 	Python.chroot: install version '0.1.0' of py-dmidecode
-
-2020-10-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated sedutil package
 
