@@ -77,9 +77,6 @@ enable_tui_usage	:= @enable_tui_usage@
 enable_login_tui	:= @enable_login_tui@
 enable_debug_kernel	:= @enable_debug_kernel@
 enable_qla32		:= @enable_qla32@
-with_rpc_agent		:= @with_rpc_agent@
-rpc_agent_dir		:= $(subst $(CHROOT_DIR),,@rpc_agent_dir@)
-ssl_dh_key_size		:= @ssl_dh_key_size@
 with_celerity_16_32	:= @with_celerity_16_32@
 celerity_16_32_dir	:= $(subst $(CHROOT_DIR),,@celerity_16_32_dir@)
 with_atto_scst		:= @with_atto_scst@
@@ -499,9 +496,6 @@ ifeq ($(enable_qla32),yes)
 else
 	qla_ini_dir=qla2x00t
 	qla_dir=qla2x00t/qla2x00-target
-endif
-ifeq ($(with_rpc_agent),yes)
-	chroot_tgts += rpc_agent.chroot
 endif
 ifeq ($(with_celerity_16_32),yes)
 	chroot_tgts += celerity_16_32.chroot
@@ -1883,18 +1877,6 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/cmd install
 	$(MAKE) --directory=$(tgt_src_dir)/man install
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-rpc_agent.chroot: glibc.chroot stunnel.chroot xmlrpc-c.chroot \
-	libxml2.chroot iniparser.chroot dlm.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	$(MKDIR) $(rpc_agent_dir)/obj
-	$(MAKE) --directory=$(rpc_agent_dir) --file=Makefile.esos
-	$(CP) -f $(rpc_agent_dir)/stunnel.conf /etc/stunnel/stunnel.conf
-	$(INSTALL) -D -m 0755 $(rpc_agent_dir)/rpc_agent /opt/sbin/rpc_agent
-	$(MAKE) --directory=$(rpc_agent_dir) --file=Makefile.esos clean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4753,20 +4735,12 @@ image:
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtltape; \
 	  $(CHMOD) 4750 $(STAGING_DIR)/usr/bin/vtllibrary; \
 	fi
-	$(QUIET) if [ "$(with_rpc_agent)" = "yes" ]; then \
-	  $(SED) -i 's/^rc\.stunnel_enable=.*/rc\.stunnel_enable=YES/' \
-	  $(STAGING_DIR)/etc/rc.conf; \
-	  $(SED) -i 's/^rc\.rpcagent_enable=.*/rc\.rpcagent_enable=YES/' \
-	  $(STAGING_DIR)/etc/rc.conf; \
-	fi
 	$(QUIET) if [ "$(enable_login_tui)" = "no" ]; then \
 	  $(TOUCH) $(STAGING_DIR)/var/state/esos/no_login_tui; \
 	fi
 	$(QUIET) if [ "$(enable_auto_dhcp)" = "yes" ]; then \
 	  $(TOUCH) $(STAGING_DIR)/var/state/esos/auto_dhcp; \
 	fi
-	$(SED) -i 's/ssl_dh_key_size/$(ssl_dh_key_size)/' \
-	$(STAGING_DIR)/etc/rc.d/rc.rpcagent
 	$(CHOWN) 101:101 $(STAGING_DIR)/var/lib/corosync
 	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/pacemaker
 	$(CHOWN) -R 101:101 $(STAGING_DIR)/var/lib/heartbeat
@@ -4856,7 +4830,7 @@ pkg_dist: $(bz2_img_file)
 # Handle additional targets via customization directory
 ifeq ($(in_chroot),no)
   ifeq ($(with_customize_dir),yes)
-    include $(customize_dir)/extra-support.mk
+    include $(customize_dir)/addtl_targets.mk
   endif
 endif
 
