@@ -380,41 +380,6 @@ AC_SUBST(customize_dir, ${customize_dir})
 AC_SUBST(with_customize_dir, ${with_customize_dir})
 AC_MSG_NOTICE([customize_dir: ${with_customize_dir}])
 
-dnl Optional package rpc_agent (user provides source directory)
-AC_ARG_WITH(rpc_agent,
-	AS_HELP_STRING([--with-rpc_agent=PATH],
-	[build and include rpc_agent; PATH is the rpc_agent source directory]),
-	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
-	[rpc_agent_path="${withval}"; with_rpc_agent="yes"],
-	[with_rpc_agent="no"]), with_rpc_agent="no")
-if test "x${with_rpc_agent}" = "xyes"; then
-	if test -d "${rpc_agent_path}"; then
-		AC_MSG_NOTICE([copying contents of the rpc_agent path...])
-		rpc_agent_dir="${chroot_dir}/build/rpc_agent"
-		${mkdir} -p ${rpc_agent_dir} || exit 1
-		${cp} -Rp ${rpc_agent_path}/* ${rpc_agent_dir}/ || exit 1
-	else
-		AC_MSG_ERROR([unable to access the rpc_agent path: ${rpc_agent_path}])
-	fi
-fi
-AS_IF([test "x$with_rpc_agent" = "xyes"],
-	[build_opts="${build_opts} rpc_agent"; opt_suffix="${opt_suffix}r"])
-AC_SUBST(rpc_agent_dir, ${rpc_agent_dir})
-AC_SUBST(with_rpc_agent, ${with_rpc_agent})
-AC_MSG_NOTICE([rpc_agent: ${with_rpc_agent}])
-
-dnl Optional OpenSSL DH key size for ESOS RPC Agent
-AC_ARG_WITH(ssl_key_size,
-	AS_HELP_STRING([--with-ssl_key_size=NUM],
-	[ESOS RPC Agent SSL key length; NUM is the size, 2048 is default]),
-	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
-	[key_length="${withval}"; with_ssl_key_size="yes"],
-	[with_ssl_key_size="no"]), with_ssl_key_size="no")
-AS_IF([test "x$with_ssl_key_size" = "xyes"],
-	[ssl_dh_key_size="${key_length}"], [ssl_dh_key_size="2048"])
-AC_SUBST(ssl_dh_key_size, ${ssl_dh_key_size})
-AC_MSG_NOTICE([ssl_dh_key_size: ${ssl_dh_key_size}])
-
 dnl Optional package celerity_16_32 (user provides package file)
 AC_ARG_WITH(celerity_16_32,
 	AS_HELP_STRING([--with-celerity_16_32=PATH],
