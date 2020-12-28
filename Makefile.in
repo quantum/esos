@@ -518,6 +518,17 @@ ifeq ($(with_rapiddisk),yes)
 	chroot_tgts += jansson.chroot
 endif
 
+# Handle additional targets via customization directory
+ifeq ($(in_chroot),no)
+  ifeq ($(with_customize_dir),yes)
+    include $(customize_dir)/addtl_targets.mk
+  endif
+else
+  ifeq ($(with_customize_dir),yes)
+    include addtl_targets.mk
+  endif
+endif
+
 # Common variables used throughout
 ifeq ($(in_chroot),yes)
 	tgt_src_dir	= $(wildcard /sources/$(basename $(@))-*)
@@ -4826,11 +4837,4 @@ pkg_dist: $(bz2_img_file)
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/vmlinux*.xz
 	$(ZIP) -9 -g -r $(pkg_prefix).zip $(pkg_prefix)/System.map*.xz
 	$(RM) $(pkg_prefix)
-
-# Handle additional targets via customization directory
-ifeq ($(in_chroot),no)
-  ifeq ($(with_customize_dir),yes)
-    include $(customize_dir)/addtl_targets.mk
-  endif
-endif
 

@@ -372,6 +372,8 @@ if test "x${with_customize_dir}" = "xyes"; then
 	if test -d "${customize_dir}"; then
 		AC_MSG_NOTICE([copying overwrites.mk to build directory...])
 		${cp} -f ${customize_dir}/overwrites.mk ${chroot_dir}/build/ || exit 1
+		AC_MSG_NOTICE([copying addtl_targets.mk to build directory...])
+		${cp} -f ${customize_dir}/addtl_targets.mk ${chroot_dir}/build/ || exit 1
 	else
 		AC_MSG_ERROR([unable to access the customization directory: ${customize_dir}])
 	fi
