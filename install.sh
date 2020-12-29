@@ -18,6 +18,8 @@ set -e
 install_dev="${1}"
 # Optional installation device transport type parameter
 install_tran="${2}"
+# Optional installation device model string parameter
+install_model="${2}"
 
 echo "*** $(cat VERSION) Install Script ***" && echo
 
@@ -72,8 +74,8 @@ image_file="$(ls *.img.bz2)" || exit 1
 
 # Check if we're doing an upgrade
 if test -f "/etc/esos-release" && test -z "${install_dev}" && \
-    test -z "${install_tran}" && ! grep esos_iso /proc/cmdline > \
-    /dev/null 2>&1; then
+    test -z "${install_tran}" && test -z "${install_model}" && \
+    ! grep esos_iso /proc/cmdline > /dev/null 2>&1; then
     # Prevent conf_sync.sh from running
     exec 200> "${SYNC_LOCK}"
     flock --timeout 300 -E 200 -x 200
@@ -235,7 +237,40 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
     done
 fi
 
-if [ -z "${install_dev}" ] && [ -z "${install_tran}" ]; then
+# For new installs directly on ESOS, we may want to wipe all devices first
+if [ -f "/etc/esos-release" ] && [ "x${WIPE_DEVS}" = "x1" ]; then
+    while : ; do
+        wipe_tran_types="sata|sas|nvme"
+        echo "### Okay to wipe all block devices matching transport" \
+            "types '${wipe_tran_types}' (yes/no)?" && read confirm
+        echo
+        if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
+            while read -r line; do
+                blk_dev="$(echo ${line} | awk '{print $1}')"
+                if [ -n "${blk_dev}" ]; then
+                    echo "### Attempting to wipe '${blk_dev}' via blkdiscard..."
+                    if ! blkdiscard ${blk_dev}; then
+                        echo "WARNING: Discarding device sectors failed," \
+                            "attempting to wipe any residual metadata" \
+                            "using 'dd'..."
+                        dd if=/dev/zero of=${blk_dev} bs=1M count=64
+                    fi
+                fi
+            done <<< "$(lsblk -p -d -o NAME,TYPE,TRAN | \
+                grep -E \"${wipe_tran_types}\$\")"
+            echo
+            break
+        elif [[ ${confirm} =~ [Nn]|[Nn][Oo] ]]; then
+            echo "WARNING: Not wiping block devices may result in first" \
+                "boot issues!"
+            echo
+            break
+        fi
+    done
+fi
+
+if [ -z "${install_dev}" ] && [ -z "${install_tran}" ] && \
+    [ -z "${install_model}" ]; then
     # Print out a list of disk devices
     echo "### Here is a list of disk devices on this machine:"
     if [ "${this_os}" = "${LINUX}" ]; then
@@ -253,39 +288,42 @@ if [ -n "${install_dev}" ]; then
     echo "### Using block device '${dev_node}' given via argument..."
     echo
 elif [ -n "${install_tran}" ]; then
-    while : ; do
-        echo "### Okay to wipe all block devices matching transport" \
-            "type '${install_tran}' (yes/no)?" && read confirm
-        echo
-        if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
-            while read -r line; do
-                blk_dev="$(echo ${line} | awk '{print $1}')"
-                if [ -n "${blk_dev}" ]; then
-                    device="/dev/${blk_dev}"
-                    echo "### Attempting to wipe '${device}' via blkdiscard..."
-                    blkdiscard ${device} || \
-                        echo "WARNING: Failed to wipe the device!"
-                fi
-            done <<< "$(lsblk -o NAME,TYPE,TRAN | grep ${install_tran}\$)"
-            echo
-            break
-        elif [[ ${confirm} =~ [Nn]|[Nn][Oo] ]]; then
-            echo "WARNING: Not wiping block devices may result in first" \
-                "boot issues!"
-            echo
-            break
+    if [ -n "${install_model}" ]; then
+        # Using device transport + model to locate install target
+        tran_model_dev=$(lsblk -p -d -o NAME,TYPE,TRAN,MODEL | \
+            grep "${install_tran}" | grep "${install_model}" | \
+            head -1 | awk '{print $1}')
+        if [ "x${tran_model_dev}" = "x" ]; then
+            echo "ERROR: Unable to resolve any devices for transport" \
+                "'${install_tran}' and model '${install_model}'."
+            exit 1
         fi
-    done
-    tran_dev=$(lsblk -o NAME,TYPE,TRAN | grep "${install_tran}\$" | \
-        head -1 | awk '{print $1}')
-    if [ "x${tran_dev}" = "x" ]; then
-        echo "ERROR: Unable to resolve any devices for transport" \
-            "'${install_tran}'."
-        exit 1
+        dev_node="${tran_model_dev}"
+    else
+        # Only use the device transport type to locate install target
+        tran_dev=$(lsblk -p -d -o NAME,TYPE,TRAN | grep "${install_tran}\$" | \
+            head -1 | awk '{print $1}')
+        if [ "x${tran_dev}" = "x" ]; then
+            echo "ERROR: Unable to resolve any devices for transport" \
+                "'${install_tran}'."
+            exit 1
+        fi
+        dev_node="${tran_dev}"
     fi
-    dev_node="/dev/${tran_dev}"
     echo "### Using block device '${dev_node}' resolved via" \
         "transport '${install_tran}' argument..."
+    echo
+elif [ -n "${install_model}" ]; then
+    model_dev=$(lsblk -p -d -o NAME,TYPE,MODEL | grep "${install_model}\$" | \
+        head -1 | awk '{print $1}')
+    if [ "x${model_dev}" = "x" ]; then
+        echo "ERROR: Unable to resolve any devices for model" \
+            "'${install_model}'."
+        exit 1
+    fi
+    dev_node="${model_dev}"
+    echo "### Using block device '${dev_node}' resolved via" \
+        "model '${install_model}' argument..."
     echo
 else
     while : ; do

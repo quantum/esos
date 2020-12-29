@@ -149,7 +149,8 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
         if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) ||
             ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) ||
             ($iface =~ /m\d+p\d+/) || ($iface =~ /s\d+p\d+/) ||
-            ($iface =~ /ens\d+/) || ($iface =~ /bond\d+/)) {
+            ($iface =~ /ens\d+/) || ($iface =~ /bond\d+/) ||
+            ($iface =~ /priv\d+/)) {
             if ($ARGV[0] eq "apply") {
                 # For "apply" we assume all the interfaces are up
                 if (!exists($conf_ifs{$iface})) {
@@ -195,7 +196,8 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
             if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) ||
                 ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) ||
                 ($iface =~ /m\d+p\d+/) || ($iface =~ /s\d+p\d+/) ||
-                ($iface =~ /ens\d+/) || ($iface =~ /bond\d+/)) {
+                ($iface =~ /ens\d+/) || ($iface =~ /bond\d+/) ||
+                ($iface =~ /priv\d+/)) {
                 my $iface_carrier_file = "$net_if_dir" . "/" .
                     "$iface" . "/carrier";
                 open(IFACE_CARRIER, "$iface_carrier_file") ||
@@ -458,7 +460,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
             ($each =~ /eth\d+/) || ($each =~ /ib\d+/) ||
             ($each =~ /m\d+p\d+/) || ($each =~ /s\d+p\d+/) ||
             ($each =~ /bond\d+/) || ($each =~ /br\d+/) ||
-            ($each =~ /ens\d+/)) {
+            ($each =~ /ens\d+/) || ($each =~ /priv\d+/)) {
             # If its a VLAN interface, make sure it exists
             if ($each =~ /.*\.\d+/) {
                 my $vlan_iface = $net_if_dir . "/" . $each;
@@ -738,7 +740,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
             ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) ||
             ($iface =~ /m\d+p\d+/) || ($iface =~ /s\d+p\d+/) ||
             ($iface =~ /bond\d+/) || ($iface =~ /br\d+/) ||
-            ($iface =~ /ens\d+/)) {
+            ($iface =~ /ens\d+/) || ($iface =~ /priv\d+/)) {
             if ($iface =~ /.*\.\d+/) {
                 # Skip VLAN interfaces
                 next;

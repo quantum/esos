@@ -22,11 +22,13 @@ cmdline() {
     # Grab the install device / install transport type (if any)
     install_dev="$(cmdline install_dev)"
     install_tran="$(cmdline install_tran)"
-    ignore_nvme="$(cmdline esos_nvme)"
+    install_model="$(cmdline install_model)"
+    wipe_devs="$(cmdline wipe_devs)"
 
     # Change to the mounted CD-ROM directory and run the installer
     cd /mnt
-    ./install.sh "${install_dev}" "${install_tran}" || bash
+    WIPE_DEVS=${wipe_devs} ./install.sh "${install_dev}" \
+        "${install_tran}" "${install_model}" || bash
 
     # Make sure the CD-ROM is still mounted
     cdrom_dev="$(findfs LABEL=ESOS-ISO)"
@@ -43,7 +45,7 @@ cmdline() {
     if [ -f "./extra_install.sh" ]; then
         echo " "
         echo "### Starting additional ESOS installation tasks..."
-        sh ./extra_install.sh $ignore_nvme || bash
+        WIPE_DEVS=${wipe_devs} sh ./extra_install.sh || bash
     fi
 
     # Done with the CD-ROM
