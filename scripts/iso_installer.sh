@@ -12,7 +12,7 @@ cmdline() {
     value=" $(cat /proc/cmdline) "
     value="${value##* $1=}"
     value="${value%% *}"
-    [ "$value" != "" ] && echo "$value"
+    [ "${value}" != "" ] && echo "${value}"
 }
 
 {
@@ -24,11 +24,12 @@ cmdline() {
     install_tran="$(cmdline install_tran)"
     install_model="$(cmdline install_model)"
     wipe_devs="$(cmdline wipe_devs)"
+    no_prompt="$(cmdline no_prompt)"
 
     # Change to the mounted CD-ROM directory and run the installer
     cd /mnt
-    WIPE_DEVS=${wipe_devs} ./install.sh "${install_dev}" \
-        "${install_tran}" "${install_model}" || bash
+    WIPE_DEVS=${wipe_devs} NO_PROMPT=${no_prompt} ./install.sh \
+        "${install_dev}" "${install_tran}" "${install_model}" || bash
 
     # Make sure the CD-ROM is still mounted
     cdrom_dev="$(findfs LABEL=ESOS-ISO)"
@@ -45,23 +46,26 @@ cmdline() {
     if [ -f "./extra_install.sh" ]; then
         echo " "
         echo "### Starting additional ESOS installation tasks..."
-        WIPE_DEVS=${wipe_devs} sh ./extra_install.sh || bash
+        WIPE_DEVS=${wipe_devs} NO_PROMPT=${no_prompt} \
+            sh ./extra_install.sh || bash
     fi
 
     # Done with the CD-ROM
     cd
     umount /mnt || bash
 
-    # Pause until the user continues, then reboot
-    echo " "
-    while : ; do
-        echo "### ESOS ISO installer complete; type 'yes' to reboot:" && \
-            read confirm
+    if [ "x${no_prompt}" != "x1" ]; then
+        # Pause until the user continues, then reboot
         echo " "
-        if [ "x${confirm}" = "xyes" ]; then
-            break
-        fi
-    done
+        while : ; do
+            echo "### ESOS ISO installer complete; type 'yes' to reboot:" && \
+                read confirm
+            echo " "
+            if [ "x${confirm}" = "xyes" ]; then
+                break
+            fi
+        done
+    fi
     reboot
 } | tee /tmp/iso_installer_$(date +%s).log
 

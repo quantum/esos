@@ -10,6 +10,7 @@ SHA256_CHECKSUM="dist_sha256sum.txt"
 LINUX="LINUX"
 MACOSX="MACOSX"
 SYNC_LOCK="/var/lock/conf_sync"
+WIPE_TRAN_TYPES="sata|sas|nvme"
 
 # Always bail on any error
 set -e
@@ -19,7 +20,7 @@ install_dev="${1}"
 # Optional installation device transport type parameter
 install_tran="${2}"
 # Optional installation device model string parameter
-install_model="${2}"
+install_model="${3}"
 
 echo "*** $(cat VERSION) Install Script ***" && echo
 
@@ -240,25 +241,34 @@ fi
 # For new installs directly on ESOS, we may want to wipe all devices first
 if [ -f "/etc/esos-release" ] && [ "x${WIPE_DEVS}" = "x1" ]; then
     while : ; do
-        wipe_tran_types="sata|sas|nvme"
-        echo "### Okay to wipe all block devices matching transport" \
-            "types '${wipe_tran_types}' (yes/no)?" && read confirm
-        echo
+        if [ -n "${NO_PROMPT}" ] && [ ${NO_PROMPT} -eq 1 ]; then
+            # Don't get confirmation, print a warning and continue
+            confirm="Y"
+            echo "NO_PROMPT=1 is set, continuing..."
+            echo
+        else
+            echo "### Okay to wipe all block devices matching transport" \
+                "types '${WIPE_TRAN_TYPES}' (yes/no)?" && read confirm
+            echo
+        fi
         if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
             while read -r line; do
                 blk_dev="$(echo ${line} | awk '{print $1}')"
                 if [ -n "${blk_dev}" ]; then
-                    echo "### Attempting to wipe '${blk_dev}' via blkdiscard..."
+                    echo "### Attempting to wipe '${blk_dev}' via" \
+                        "'blkdiscard'..."
                     if ! blkdiscard ${blk_dev}; then
                         echo "WARNING: Discarding device sectors failed," \
                             "attempting to wipe any residual metadata" \
                             "using 'dd'..."
-                        dd if=/dev/zero of=${blk_dev} bs=1M count=64
+                        dd if=/dev/zero of=${blk_dev} bs=1M count=128
+                        echo
+                    else
+                        echo
                     fi
                 fi
             done <<< "$(lsblk -p -d -o NAME,TYPE,TRAN | \
-                grep -E \"${wipe_tran_types}\$\")"
-            echo
+                grep -E "${WIPE_TRAN_TYPES}\$")"
             break
         elif [[ ${confirm} =~ [Nn]|[Nn][Oo] ]]; then
             echo "WARNING: Not wiping block devices may result in first" \
@@ -290,8 +300,8 @@ if [ -n "${install_dev}" ]; then
 elif [ -n "${install_tran}" ]; then
     if [ -n "${install_model}" ]; then
         # Using device transport + model to locate install target
-        tran_model_dev=$(lsblk -p -d -o NAME,TYPE,TRAN,MODEL | \
-            grep "${install_tran}" | grep "${install_model}" | \
+        tran_model_dev=$(lsblk -p -d -o NAME,TYPE,MODEL,TRAN | \
+            grep "${install_tran}\$" | grep "${install_model}" | \
             head -1 | awk '{print $1}')
         if [ "x${tran_model_dev}" = "x" ]; then
             echo "ERROR: Unable to resolve any devices for transport" \
@@ -299,6 +309,10 @@ elif [ -n "${install_tran}" ]; then
             exit 1
         fi
         dev_node="${tran_model_dev}"
+        echo "### Using block device '${dev_node}' resolved via" \
+            "transport '${install_tran}' and" \
+            "model '${install_model}'arguments..."
+        echo
     else
         # Only use the device transport type to locate install target
         tran_dev=$(lsblk -p -d -o NAME,TYPE,TRAN | grep "${install_tran}\$" | \
@@ -309,10 +323,10 @@ elif [ -n "${install_tran}" ]; then
             exit 1
         fi
         dev_node="${tran_dev}"
+        echo "### Using block device '${dev_node}' resolved via" \
+            "transport '${install_tran}' argument..."
+        echo
     fi
-    echo "### Using block device '${dev_node}' resolved via" \
-        "transport '${install_tran}' argument..."
-    echo
 elif [ -n "${install_model}" ]; then
     model_dev=$(lsblk -p -d -o NAME,TYPE,MODEL | grep "${install_model}\$" | \
         head -1 | awk '{print $1}')
@@ -369,9 +383,16 @@ fi
 
 # Get a final confirmation before writing the image
 while : ; do
-    echo "### Proceeding will completely wipe the '${real_dev_node}' device." \
-        "Are you sure (yes/no)?" && read confirm
-    echo
+    if [ -n "${NO_PROMPT}" ] && [ ${NO_PROMPT} -eq 1 ]; then
+        # Don't get confirmation, print a warning and continue
+        confirm="Y"
+        echo "NO_PROMPT=1 is set, continuing..."
+        echo
+    else
+        echo "### Proceeding will completely wipe the '${real_dev_node}'" \
+            "device. Are you sure (yes/no)?" && read confirm
+        echo
+    fi
     if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
         echo "### Writing '${image_file}' to '${real_dev_node}'; this may" \
             "take a while..."
