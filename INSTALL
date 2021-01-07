@@ -27,8 +27,10 @@ sudo make image
 If you would like to create a distribution tarball package:
 make pkg_dist
 
+You can also create a bootable ESOS ISO installer:
+sudo ./esos2iso.sh esos-*.img isolinux
 
-Installing ESOS:
+Installing ESOS to a USB flash drive:
 Once you have successfully built ESOS following the directions above, or you
 have downloaded/extracted a binary distribution package, run the following
 script from the ESOS source/package root directory:
@@ -36,6 +38,12 @@ script from the ESOS source/package root directory:
 
 This script will walk you through writing the ESOS disk image to a USB flash
 drive and adding any desired RAID controller management utilities.
+
+Installing ESOS in a VM or onto local boot media:
+Use the "esos2iso.sh" script as described above and burn your ESOS ISO to a CD,
+or connect the ISO file using your server's virtual media feature. When the ISO
+menu appears, choose the "ESOS ISO Installer Script" option and the ISO will
+boot and prompt for the installation device.
 
 
 Help:
