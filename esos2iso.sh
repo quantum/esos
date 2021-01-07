@@ -8,8 +8,7 @@
 # install ESOS on any machine that supports it.
 
 usage() {
-    echo "### Usage: $(basename ${0}) ESOS_IMAGE_PATH ISOLINUX_DIR" \
-        "[ADDITIONAL_FILES]"
+    echo "### Usage: $(basename ${0}) ISOLINUX_DIR [ADDITIONAL_FILES]"
     echo "  Creates a bootable ISO image from an uncompressed ESOS image."
     echo "  The path to the 'isolinux' directory must also be specified."
     echo "  Any additional files are placed in the root of the ISO image."
@@ -31,24 +30,35 @@ if [ ${#} -le 0 ]; then
 fi
 
 # Variable setup
-ESOS_IMAGE_PATH="${1}"
-ISOLINUX_DIR="${2}"
+ISOLINUX_DIR="${1}"
 shift
 ADDITIONAL_FILES="${@}"
-ESOS_IMAGE=$(basename ${ESOS_IMAGE_PATH})
-ESOS_ISO=$(basename ${ESOS_IMAGE} .img).iso
+SELF="$(readlink -f "${0}")"
+ESOS_BUILD_DIR="$(readlink -f "$(dirname "${SELF}")")"
+echo "### ESOS build directory: ${ESOS_BUILD_DIR}"
+echo "### Checking for required ESOS components..."
+ESOS_IMAGE="$(basename "$(echo ${ESOS_BUILD_DIR}/*-*.img)")"
+BASE_FILES="${ESOS_IMAGE}.bz2 ${ESOS_BUILD_DIR}/install.sh \
+${ESOS_BUILD_DIR}/dist_*.txt ${ESOS_BUILD_DIR}/VERSION"
+cd ${ESOS_BUILD_DIR} || exit 1
+for i in ${BASE_FILES}; do
+    if [ ! -r "${i}" ]; then
+        echo "ERROR: Required file '${i}' not found or unreadable!"
+        exit 1
+    fi
+done
+ESOS_ISO="$(basename ${ESOS_IMAGE} .img).iso"
 
 # Setup build tree
 echo "### Setting up the ISO build tree..."
 TEMP_DIR=$(mktemp -d -t esos2iso-XXXXXXXXX) || exit 1
 rm -rf ${ESOS_ISO} || exit 1
 cp -f -a ${ISOLINUX_DIR} ${TEMP_DIR}/isolinux || exit 1
-ESOS_SRC=$(dirname ${ESOS_IMAGE_PATH})
 echo
 
 # Loop device setup
 echo "### Creating loop device..."
-LOOP_DEV="$(losetup -Pf --show ${ESOS_IMAGE_PATH})" || exit 1
+LOOP_DEV="$(losetup -Pf --show ${ESOS_IMAGE})" || exit 1
 if [ "x${LOOP_DEV}" = "x" ]; then
     echo "Unable to get a loop device!"
     exit 1
@@ -69,12 +79,15 @@ umount ${MNT_DIR} || exit 1
 losetup -d ${LOOP_DEV} || exit 1
 echo
 
-# Put any optional files in root of ISO image
+# Get the list of files for the ISO
+ISO_FILES="${BASE_FILES}"
 if [ "x${ADDITIONAL_FILES}" != "x" ]; then
-    for file in ${ADDITIONAL_FILES}; do
-        ln -s $(readlink -f ${file}) ${TEMP_DIR}/$(basename ${file})
-    done
+    # Put any optional files in root of ISO image
+    ISO_FILES="${ISO_FILES} ${ADDITIONAL_FILES}"
 fi
+for i in ${ISO_FILES}; do
+    ln -s $(readlink -f ${i}) ${TEMP_DIR}/$(basename ${i})
+done
 
 # Explanation of arguments used with 'genisoimage' below:
 # -J                        # generate Windows compatible filenames
@@ -104,8 +117,8 @@ genisoimage -J \
     -no-emul-boot \
     -boot-load-size 4 \
     -boot-info-table \
-    -eltorito-boot ${ISOLINUX_DIR}/isolinux.bin \
-    -eltorito-catalog ${ISOLINUX_DIR}/boot.cat \
+    -eltorito-boot isolinux/isolinux.bin \
+    -eltorito-catalog isolinux/boot.cat \
     -boot-info-table \
     -V "ESOS-ISO" \
     -appid "ESOS" \
