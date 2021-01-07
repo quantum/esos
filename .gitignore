@@ -1,6 +1,7 @@
 /*.img
 /*.img.bz2
 /*.zip
+/*.iso
 /dist_*.txt
 /VERSION
 /autom4te.cache/
