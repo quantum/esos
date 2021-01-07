@@ -177,6 +177,7 @@ if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
 	chroot /mnt/root /usr/bin/sed -i \
 	's/^rc.stunnel_enable.*/rc.stunnel_enable=NO/' /etc/rc.conf
 	iso_mode="$(cmdline esos_iso)"
+	rm -f /mnt/root/etc/crontab
 	if [ "${iso_mode}" = "live" ]; then
 		mkdir -p /mnt/root/var/state/esos
 		touch /mnt/root/var/state/esos/auto_dhcp

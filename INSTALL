@@ -28,7 +28,7 @@ If you would like to create a distribution tarball package:
 make pkg_dist
 
 You can also create a bootable ESOS ISO installer:
-sudo ./esos2iso.sh esos-*.img isolinux
+sudo ./esos2iso.sh isolinux
 
 Installing ESOS to a USB flash drive:
 Once you have successfully built ESOS following the directions above, or you
