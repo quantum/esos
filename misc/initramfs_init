@@ -87,6 +87,13 @@ if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3500000 ]; then
 	rescue_shell
 fi
 
+# Get the slot kernel parameter
+slot_name="$(cmdline slot)"
+if [ -z "${slot_name}" ]; then
+	echo "Is the slot= kernel parameter missing?"
+	rescue_shell
+fi
+
 if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
 	# Resolve the CD-ROM device using the ESOS ISO name
 	root_fs_dev="$(findfs LABEL=ESOS-ISO)" || \
@@ -99,38 +106,60 @@ else
 	(echo "Error resolving the root device node!"; rescue_shell)
 fi
 
-# Mount up
-mount -t tmpfs -o size=@@root_size@@ tmpfs /mnt/root || rescue_shell
-mount -o ro ${root_fs_dev} /mnt/tmp || rescue_shell
-
-# Get the slot kernel parameter
-slot_name="$(cmdline slot)"
-if [ -z "${slot_name}" ]; then
-	echo "Is the slot= kernel parameter missing?"
-	rescue_shell
-fi
-
-# Make sure the archive exists
-cpio_arch="/mnt/tmp/${slot_name}-root.cpio.bz2"
-if [ ! -e "${cpio_arch}" ]; then
-	echo "The '${cpio_arch}' file doesn't exist!"
-	rescue_shell
+if grep -q -E 'esos_iso|esos_persist' /proc/cmdline; then
+	# Using squashfs for the root filesystem
+	mount -t tmpfs tmpfs /mnt/overlay || rescue_shell
+	esos_root_mnt="/mnt/overlay/upper/mnt/root"
+	sqsh_arch="${esos_root_mnt}/${slot_name}-root.sqsh"
+	mkdir -p ${esos_root_mnt} || rescue_shell
+	# TODO: This isn't mounted/usable after switch_root! Why?
+	mount ${root_fs_dev} ${esos_root_mnt} || rescue_shell
+	mkdir -p /mnt/overlay/lower || rescue_shell
+	mkdir -p /mnt/overlay/work || rescue_shell
+	mount -t squashfs ${sqsh_arch} /mnt/overlay/lower || rescue_shell
+	overlay_opts="lowerdir=/mnt/overlay/lower"
+	overlay_opts="${overlay_opts},upperdir=/mnt/overlay/upper"
+	overlay_opts="${overlay_opts},workdir=/mnt/overlay/work"
+	mount -t overlay overlay -o ${overlay_opts} /mnt/root || rescue_shell
+else
+	# Using tmpfs for the root filesystem
+	esos_root_mnt="/mnt/tmp"
+	sqsh_arch="${esos_root_mnt}/${slot_name}-root.sqsh"
+	mount -o ro ${root_fs_dev} ${esos_root_mnt} || rescue_shell
+	mount -t tmpfs -o size=@@root_size@@ tmpfs /mnt/root || rescue_shell
 fi
 
 # Setup the root file system
 echo "Initializing root file system..."
-cd /mnt/root
-spinner="/-\|"
-spin_pos=0
-bunzip2 -c ${cpio_arch} | \
-	cpio -imduv --quiet | while read i; do
-	printf "\b"${spinner:$spin_pos:1}
-	spin_pos=$(( ( ${spin_pos} + 1 ) % 4 ))
-done
-printf "\b"
-cd /
-cp -a /dev/* /mnt/root/dev/
-ln -s busybox /mnt/root/bin/sh
+if ! grep -q -E 'esos_iso|esos_persist' /proc/cmdline; then
+	cd /mnt/root || rescue_shell
+	spinner="/-\|"
+	spin_pos=0
+	if [ -e "${sqsh_arch}" ]; then
+		init_root_cmd="unsquashfs -n -i -f -d /mnt/root ${sqsh_arch}"
+	else
+		cpio_arch="${esos_root_mnt}/${slot_name}-root.cpio.bz2"
+		init_root_cmd="bunzip2 -c ${cpio_arch} | cpio -imduv --quiet"
+	fi
+	# Extract the archive (with a fancy spinner)
+	{ status=$(
+	  { { ${init_root_cmd}
+	      echo ${?} >&3
+	    } | \
+	        while read i; do
+	                printf "\b"${spinner:$spin_pos:1}
+	                spin_pos=$(( ( ${spin_pos} + 1 ) % 4 ))
+	        done >&4
+	         } 3>&1 )
+	       } 4>&1
+	if [ "${status}" -ne 0 ]; then
+		rescue_shell
+	fi
+	printf "\b"
+	cd / || rescue_shell
+fi
+cp -a /dev/* /mnt/root/dev/ || rescue_shell
+ln -s busybox /mnt/root/bin/sh || rescue_shell
 chroot /mnt/root /bin/sh -c "/bin/busybox --install -s"
 
 # Special setup for the ESOS ISO
@@ -161,7 +190,9 @@ if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
 fi
 
 # All done
-umount /mnt/tmp
+if ! grep -q -E 'esos_iso|esos_persist' /proc/cmdline; then
+	umount ${esos_root_mnt}
+fi
 umount /proc
 umount /sys
 

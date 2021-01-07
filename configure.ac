@@ -69,6 +69,7 @@ MY_PATH_PROG([flock])
 MY_PATH_PROG([zic])
 MY_PATH_PROG([mv])
 MY_PATH_PROG([rsync])
+MY_PATH_PROG([mksquashfs])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
@@ -136,7 +137,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${tools_dir}/lib || exit 1
 	${ln} -sf lib ${tools_dir}/lib64 || exit 1
 	${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
-	${mkdir} -p ${initramfs_dir}/mnt/{root,tmp} || exit 1
+	${mkdir} -p ${initramfs_dir}/mnt/{root,tmp,overlay} || exit 1
 	${mkdir} -p ${initramfs_dir}/usr/{bin,sbin} || exit 1
 	${mkdir} -p ${initramfs_dir}/lib/firmware || exit 1
 	${mkdir} -p ${initramfs_dir}/run/mdadm || exit 1

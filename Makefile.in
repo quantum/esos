@@ -57,6 +57,7 @@ FLOCK		:= @flock@
 ZIC		:= @zic@
 MV		:= @mv@
 RSYNC		:= @rsync@
+MKSQUASHFS	:= @mksquashfs@
 
 enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
@@ -324,6 +325,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		node_exporter-1.0.0.linux-amd64.tar.xz \
 		libcap-2.36.tar.gz \
 		sedutil-master_20201026.tar.xz \
+		squashfs-tools-4.4-git.1.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -408,7 +410,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		kmod.chroot docbook-xsl-nons.chroot acpid.chroot \
 		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
 		iotop.chroot node_exporter.chroot libcap.chroot \
-		sedutil.chroot
+		sedutil.chroot squashfs-tools.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -2104,6 +2106,7 @@ perl.chroot: glibc.chroot db.chroot sqlite-autoconf.chroot
 	$(ECHO) yes | cpan install TIMB/DBI-1.642.tar.gz
 	$(ECHO) yes | cpan install ISHIGAKI/DBD-SQLite-1.64.tar.gz
 	$(RM) /root/.cpan
+	$(RM) /.cpan
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4549,6 +4552,21 @@ sedutil.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
+squashfs-tools.chroot: glibc.chroot zlib.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools clean
+	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools unsquashfs \
+	EXTRA_LDFLAGS="-static"
+	$(INSTALL) -D $(tgt_src_dir)/squashfs-tools/unsquashfs \
+	$(chroot_build)/initramfs/usr/bin/unsquashfs
+	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools clean
+	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools
+	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools install \
+	INSTALL_DIR="/usr/bin"
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot
@@ -4788,9 +4806,7 @@ image:
 	fi
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Creating the root archive file..."
-	cd $(STAGING_DIR) && \
-	$(FIND) . -depth | $(CPIO) -ov --format=newc | $(BZIP2) -c > \
-	$(MOUNT_DIR)/PRIMARY-root.cpio.bz2
+	$(MKSQUASHFS) $(STAGING_DIR) $(MOUNT_DIR)/PRIMARY-root.sqsh -comp gzip
 	$(CHOWN) -R root:root $(MOUNT_DIR)/boot/*
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
@@ -4806,7 +4822,8 @@ image:
 	$(notdir $(bz2_img_file)) > $(BUILD_DIR)/dist_sha256sum.txt
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Clearing the staging directory..."
-	$(RM) $(STAGING_DIR)/*
+	$(RM) $(STAGING_DIR)
+	$(MKDIR) $(STAGING_DIR)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### All done; your ESOS disk image file is ready!"
 
