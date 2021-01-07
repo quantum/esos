@@ -15,9 +15,23 @@ cmdline() {
     [ "${value}" != "" ] && echo "${value}"
 }
 
+# Helper for mounting the CD-ROM / ISO (used below)
+mount_cd_iso() {
+    cdrom_dev="$(findfs LABEL=ESOS-ISO)"
+    if [ ${?} -ne 0 ]; then
+        echo "ERROR: Can't resolve 'LABEL=ESOS-ISO'!"
+        return 1
+    fi
+    if ! grep -q "${cdrom_dev} /mnt" /proc/mounts; then
+        echo "### Mounting the CD-ROM / ISO..."
+        mount ${cdrom_dev} /mnt || return 1
+    fi
+    return 0
+}
+
 {
     # Mount the CD-ROM
-    mount $(findfs LABEL=ESOS-ISO) /mnt || bash
+    mount_cd_iso || bash
 
     # Grab the install device / install transport type (if any)
     install_dev="$(cmdline install_dev)"
@@ -31,17 +45,9 @@ cmdline() {
     WIPE_DEVS=${wipe_devs} NO_PROMPT=${no_prompt} ./install.sh \
         "${install_dev}" "${install_tran}" "${install_model}" || bash
 
-    # Make sure the CD-ROM is still mounted
-    cdrom_dev="$(findfs LABEL=ESOS-ISO)"
-    if [ ${?} -ne 0 ]; then
-        echo "ERROR: Can't resolve 'LABEL=ESOS-ISO'!"
-        bash
-    fi
-    if ! grep -q "${cdrom_dev} /mnt" /proc/mounts; then
-        echo "WARNING: It appears the CD-ROM is not mounted," \
-            "attempting to remount..."
-        mount ${cdrom_dev} /mnt || bash
-    fi
+    # Make sure the CD-ROM is still mounted (may get disconnected)
+    mount_cd_iso || bash
+
     # Handle after-install customizations
     if [ -f "./extra_install.sh" ]; then
         echo " "

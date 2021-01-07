@@ -192,8 +192,19 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 ${usb_esos_mnt}/boot/SECONDARY-bzImage-esos.prod || exit 1
             mv -f ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.debug \
                 ${usb_esos_mnt}/boot/SECONDARY-bzImage-esos.debug || exit 1
-            mv -f ${usb_esos_mnt}/PRIMARY-root.cpio.bz2 \
-                ${usb_esos_mnt}/SECONDARY-root.cpio.bz2 || exit 1
+            # Handle the root cpio -> squashfs transition
+            if [ -f "${usb_esos_mnt}/PRIMARY-root.sqsh" ]; then
+                mv -f ${usb_esos_mnt}/PRIMARY-root.sqsh \
+                    ${usb_esos_mnt}/SECONDARY-root.sqsh || exit 1
+                # There might be an old cpio archive in the SECONDARY slot
+                if [ -f "${usb_esos_mnt}/SECONDARY-root.cpio.bz2" ]; then
+                    rm -f ${usb_esos_mnt}/SECONDARY-root.cpio.bz2 || exit 1
+                fi
+            fi
+            if [ -f "${usb_esos_mnt}/PRIMARY-root.cpio.bz2" ]; then
+                mv -f ${usb_esos_mnt}/PRIMARY-root.cpio.bz2 \
+                    ${usb_esos_mnt}/SECONDARY-root.cpio.bz2 || exit 1
+            fi
             echo
             echo "### Copying the new image to the primary slot..."
             img_ver="$(cat ${img_esos_mnt}/boot/PRIMARY-version | cut -d= -f2)"
@@ -205,8 +216,8 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.prod || exit 1
             cp -fp ${img_esos_mnt}/boot/PRIMARY-bzImage-esos.debug \
                 ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.debug || exit 1
-            cp -fp ${img_esos_mnt}/PRIMARY-root.cpio.bz2 \
-                ${usb_esos_mnt}/PRIMARY-root.cpio.bz2 || exit 1
+            cp -fp ${img_esos_mnt}/PRIMARY-root.sqsh \
+                ${usb_esos_mnt}/PRIMARY-root.sqsh || exit 1
             echo
             echo "### Cleaning up..."
             umount ${img_esos_mnt}/boot || exit 1
