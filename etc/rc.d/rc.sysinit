@@ -58,23 +58,25 @@ fi
 /bin/echo "Updating run-time linker cache..."
 /sbin/ldconfig
 
-fs_node=$(/sbin/findfs LABEL=esos_logs)
-base_blk_dev="$(/bin/echo ${fs_node} | \
-    /usr/bin/sed -e '/\/dev\/sd/s/4//; /\/dev\/nvme/s/p4//')"
-if [ -n "${fs_node}" ]; then
-    free_end=$(/usr/sbin/parted -m -s ${base_blk_dev} unit s print free | \
-        egrep ':free;$' | tail -n+2 | cut -d: -f3)
-    if [ -n "${free_end}" ]; then
-        echo "Growing the esos_logs file system..."
-        orig_start=`/usr/sbin/parted -m -s ${base_blk_dev} unit s print | \
-            egrep '^4:' | cut -d: -f2`
-        /usr/sbin/parted -m -s ${base_blk_dev} rm 4
-        /usr/sbin/parted -m -s ${base_blk_dev} mkpart primary \
-            ${orig_start} ${free_end}
-        /usr/sbin/udevadm settle --timeout=30
-        /sbin/blockdev --rereadpt ${base_blk_dev}
-        /bin/sleep 1
-        /usr/sbin/e2fsck -pf ${fs_node}
-        /usr/sbin/resize2fs -p ${fs_node}
+if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+    fs_node=$(/sbin/findfs LABEL=esos_logs)
+    base_blk_dev="$(/bin/echo ${fs_node} | \
+        /usr/bin/sed -e '/\/dev\/sd/s/4//; /\/dev\/nvme/s/p4//')"
+    if [ -n "${fs_node}" ]; then
+        free_end=$(/usr/sbin/parted -m -s ${base_blk_dev} unit s print free | \
+            egrep ':free;$' | tail -n+2 | cut -d: -f3)
+        if [ -n "${free_end}" ]; then
+            echo "Growing the esos_logs file system..."
+            orig_start=`/usr/sbin/parted -m -s ${base_blk_dev} unit s print | \
+                egrep '^4:' | cut -d: -f2`
+            /usr/sbin/parted -m -s ${base_blk_dev} rm 4
+            /usr/sbin/parted -m -s ${base_blk_dev} mkpart primary \
+                ${orig_start} ${free_end}
+            /usr/sbin/udevadm settle --timeout=30
+            /sbin/blockdev --rereadpt ${base_blk_dev}
+            /bin/sleep 1
+            /usr/sbin/e2fsck -pf ${fs_node}
+            /usr/sbin/resize2fs -p ${fs_node}
+        fi
     fi
 fi

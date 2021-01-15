@@ -25,6 +25,7 @@ mount_cd_iso() {
     if ! grep -q "${cdrom_dev} /mnt" /proc/mounts; then
         echo "### Mounting the CD-ROM / ISO..."
         mount ${cdrom_dev} /mnt || return 1
+        echo " "
     fi
     return 0
 }
@@ -66,12 +67,14 @@ mount_cd_iso() {
         while : ; do
             echo "### ESOS ISO installer complete; type 'yes' to reboot:" && \
                 read confirm
-            echo " "
             if [ "x${confirm}" = "xyes" ]; then
                 break
             fi
         done
     fi
+    echo " "
+    echo "### Rebooting..."
+    echo " "
     reboot
 } | tee /tmp/iso_installer_$(date +%s).log
 
