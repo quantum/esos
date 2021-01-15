@@ -3344,6 +3344,7 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/wipefs /usr/sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/lsblk /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/lscpu /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/wdctl /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/taskset /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/flock /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/blkdiscard /usr/bin/

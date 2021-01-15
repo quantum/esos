@@ -10,6 +10,11 @@ MD_BOOT="esos_boot"
 MD_ROOT="esos_root"
 MD_CONF="esos_conf"
 MD_LOGS="esos_logs"
+BOOT_LABEL="ESOS_BOOT"
+ROOT_LABEL="esos_root"
+CONF_LABEL="esos_conf"
+LOGS_LABEL="esos_logs"
+ORIG_MNT="/tmp/orig_mnt"
 TEMP_MNT="/tmp/raid1_mnt"
 RSYNC_OPTS="-axHX --numeric-ids --info=progress2"
 
@@ -33,13 +38,15 @@ if [ -n "${wipefs_out}" ]; then
     exit 1
 fi
 
-# Make sure the ESOS file systems are not mounted
-for i in /boot /mnt/root /mnt/conf /mnt/logs; do
-    if mountpoint -q ${i}; then
-        echo "ERROR: It appears that the '${i}' file system is mounted!"
-        exit 1
-    fi
-done
+if ! grep -q esos_iso /proc/cmdline; then
+    # Make sure the ESOS file systems are not mounted
+    for i in /boot /mnt/root /mnt/conf /mnt/logs; do
+        if mountpoint -q ${i}; then
+            echo "ERROR: It appears that the '${i}' file system is mounted!"
+            exit 1
+        fi
+    done
+fi
 
 # Look up the ESOS block device node
 esos_root="$(findfs LABEL=esos_root)"
@@ -132,22 +139,23 @@ mount /dev/md/${MD_CONF} ${TEMP_MNT}/conf || exit 1
 mount /dev/md/${MD_LOGS} ${TEMP_MNT}/logs || exit 1
 
 # Mount the original file systems
-mount /boot || exit 1
-mount /mnt/root || exit 1
-mount /mnt/conf || exit 1
-mount /mnt/logs || exit 1
+mkdir -p ${ORIG_MNT}/{boot,root,conf,logs} || exit 1
+mount LABEL=${BOOT_LABEL} ${ORIG_MNT}/boot || exit 1
+mount LABEL=${ROOT_LABEL} ${ORIG_MNT}/root || exit 1
+mount LABEL=${CONF_LABEL} ${ORIG_MNT}/conf || exit 1
+mount LABEL=${LOGS_LABEL} ${ORIG_MNT}/logs || exit 1
 
 # Copy contents of the orignals to the new file systems
-rsync ${RSYNC_OPTS} /boot/ ${TEMP_MNT}/boot/ || exit 1
-rsync ${RSYNC_OPTS} /mnt/root/ ${TEMP_MNT}/root/ || exit 1
-rsync ${RSYNC_OPTS} /mnt/conf/ ${TEMP_MNT}/conf/ || exit 1
-rsync ${RSYNC_OPTS} /mnt/logs/ ${TEMP_MNT}/logs/ || exit 1
+rsync ${RSYNC_OPTS} ${ORIG_MNT}/boot/ ${TEMP_MNT}/boot/ || exit 1
+rsync ${RSYNC_OPTS} ${ORIG_MNT}/root/ ${TEMP_MNT}/root/ || exit 1
+rsync ${RSYNC_OPTS} ${ORIG_MNT}/conf/ ${TEMP_MNT}/conf/ || exit 1
+rsync ${RSYNC_OPTS} ${ORIG_MNT}/logs/ ${TEMP_MNT}/logs/ || exit 1
 
 # Unmount the original file systems
-umount /boot || exit 1
-umount /mnt/root || exit 1
-umount /mnt/conf || exit 1
-umount /mnt/logs || exit 1
+umount ${ORIG_MNT}/boot || exit 1
+umount ${ORIG_MNT}/root || exit 1
+umount ${ORIG_MNT}/conf || exit 1
+umount ${ORIG_MNT}/logs || exit 1
 
 # Unmount the new file systems
 umount ${TEMP_MNT}/boot || exit 1
@@ -189,10 +197,10 @@ mdadm /dev/md/${MD_CONF} --add ${esos_blk_conf} || exit 1
 mdadm /dev/md/${MD_LOGS} --add ${esos_blk_logs} || exit 1
 
 # Create the file system labels on the new devices
-fatlabel /dev/md/${MD_BOOT} ESOS_BOOT || exit 1
-e2label /dev/md/${MD_ROOT} esos_root || exit 1
-e2label /dev/md/${MD_CONF} esos_conf || exit 1
-e2label /dev/md/${MD_LOGS} esos_logs || exit 1
+fatlabel /dev/md/${MD_BOOT} ${BOOT_LABEL} || exit 1
+e2label /dev/md/${MD_ROOT} ${ROOT_LABEL} || exit 1
+e2label /dev/md/${MD_CONF} ${CONF_LABEL} || exit 1
+e2label /dev/md/${MD_LOGS} ${LOGS_LABEL} || exit 1
 
 # GRUB setup
 mount /boot || exit 1
