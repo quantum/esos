@@ -28,12 +28,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping rasdaemon..."
-    /bin/kill -TERM $(/bin/pidof ${RASDAEMON}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${RASDAEMON}) || exit 1
     wait_for_stop ${RASDAEMON} && /bin/rm -f ${RASDAEMON_LOCK}
 }
 
 status() {
-    /bin/pidof ${RASDAEMON} > /dev/null 2>&1
+    /usr/bin/pidof ${RASDAEMON} > /dev/null 2>&1
     exit ${?}
 }
 

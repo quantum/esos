@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping watchdog..."
-    /bin/kill -TERM $(/bin/pidof ${WATCHDOG}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${WATCHDOG}) || exit 1
     wait_for_stop ${WATCHDOG} && /bin/rm -f ${WATCHDOG_LOCK}
 }
 
 status() {
-    /bin/pidof ${WATCHDOG} > /dev/null 2>&1
+    /usr/bin/pidof ${WATCHDOG} > /dev/null 2>&1
     exit ${?}
 }
 

@@ -73,9 +73,9 @@ start_user_progs() {
 
 stop_user_progs() {
     /bin/echo "Stopping SCST userland daemons..."
-    /bin/kill -TERM $(/bin/pidof ${FCOEMON}) || return 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${FCOEMON}) || return 1
     wait_for_stop ${FCOEMON} && /bin/rm -f ${FCOEMON_LOCK}
-    /bin/kill -TERM $(/bin/pidof ${ISCSI_SCSTD}) || return 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${ISCSI_SCSTD}) || return 1
     wait_for_stop ${ISCSI_SCSTD} && /bin/rm -f ${ISCSI_SCSTD_LOCK}
     /bin/sleep 1
     return 0

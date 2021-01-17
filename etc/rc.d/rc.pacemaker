@@ -34,12 +34,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping pacemakerd..."
-    /bin/kill -TERM $(/bin/pidof ${PACEMAKERD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${PACEMAKERD}) || exit 1
     wait_for_stop ${PACEMAKERD} && /bin/rm -f ${PACEMAKERD_LOCK}
 }
 
 status() {
-    /bin/pidof ${PACEMAKERD} > /dev/null 2>&1
+    /usr/bin/pidof ${PACEMAKERD} > /dev/null 2>&1
     exit ${?}
 }
 

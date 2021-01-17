@@ -55,13 +55,13 @@ stop() {
     /bin/echo "Removing exported NFS file systems..."
     ${EXPORTFS} -au || exit 1
     /bin/echo "Stopping NFS statd..."
-    /bin/kill -TERM $(/bin/pidof ${RPC_STATD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${RPC_STATD}) || exit 1
     wait_for_stop ${RPC_STATD} && /bin/rm -f ${RPC_STATD_LOCK}
     /bin/echo "Stopping NFS nfsd..."
     /usr/bin/killall -HUP nfsd || exit 1
     wait_for_stop nfsd && /bin/rm -f ${RPC_NFSD_LOCK}
     /bin/echo "Stopping NFS mountd..."
-    /bin/kill -TERM $(/bin/pidof ${RPC_MOUNTD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${RPC_MOUNTD}) || exit 1
     wait_for_stop ${RPC_MOUNTD} && /bin/rm -f ${RPC_MOUNTD_LOCK}
     # Remove a PID file that isn't done automatically
     if [ -f "/var/run/rpc.statd.pid" ]; then
@@ -69,12 +69,12 @@ stop() {
         /bin/rm -f /var/run/rpc.statd.pid
     fi
     /bin/echo "Stopping rpcbind..."
-    /bin/kill -TERM $(/bin/pidof ${RPCBIND}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${RPCBIND}) || exit 1
     wait_for_stop ${RPCBIND} && /bin/rm -f ${RPCBIND_LOCK}
 }
 
 status() {
-    /bin/pidof ${RPCBIND} > /dev/null 2>&1
+    /usr/bin/pidof ${RPCBIND} > /dev/null 2>&1
     exit ${?}
 }
 

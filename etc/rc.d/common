@@ -7,8 +7,8 @@ LATE_SERVICES="rc.lldpad rc.sshd rc.iscsid rc.multipathd rc.mdraid rc.lvm2 \
 rc.zfs rc.eio rc.dmcache rc.btier rc.drbd rc.rbdmap rc.sbd rc.corosync rc.dlm \
 rc.clvmd rc.lvmlockd rc.pacemaker rc.fsmount rc.mhvtl rc.scst rc.nvmet rc.nfsd \
 rc.nrpe rc.munin rc.snmpd rc.snmptrapd rc.nut rc.smartd rc.stunnel \
-rc.nginx rc.telegraf rc.nodeexporter rc.vmtoolsd rc.acpid rc.serial \
-rc.watchdog rc.rasdaemon rc.libvirtd"
+rc.nginx rc.telegraf rc.nodeexporter rc.prometheus rc.vmtoolsd rc.acpid \
+rc.serial rc.watchdog rc.rasdaemon rc.libvirtd"
 
 # Script status values
 RUNNING=0
@@ -45,7 +45,7 @@ wait_for_stop() {
     timer=0
     rc=1
     while [ ${timer} -lt ${STOP_TIMEOUT} ]; do
-        pid=$(/bin/pidof ${1} > /dev/null 2>&1)
+        pid=$(/usr/bin/pidof ${1} > /dev/null 2>&1)
         if [ ${?} -eq 0 ]; then
             /bin/sleep 1
             timer=$(/usr/bin/expr ${timer} + 1)

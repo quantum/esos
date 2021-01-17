@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping nginx..."
-    /bin/kill -TERM $(/bin/pidof ${NGINX}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${NGINX}) || exit 1
     wait_for_stop ${NGINX} && /bin/rm -f ${NGINX_LOCK}
 }
 
 status() {
-    /bin/pidof ${NGINX} > /dev/null 2>&1
+    /usr/bin/pidof ${NGINX} > /dev/null 2>&1
     exit ${?}
 }
 

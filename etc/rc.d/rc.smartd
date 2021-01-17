@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping smartd..."
-    /bin/kill -TERM $(/bin/pidof ${SMARTD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${SMARTD}) || exit 1
     wait_for_stop ${SMARTD} && /bin/rm -f ${SMARTD_LOCK}
 }
 
 status() {
-    /bin/pidof ${SMARTD} > /dev/null 2>&1
+    /usr/bin/pidof ${SMARTD} > /dev/null 2>&1
     exit ${?}
 }
 

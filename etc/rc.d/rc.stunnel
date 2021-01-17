@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping stunnel..."
-    /bin/kill -TERM $(/bin/pidof ${STUNNEL}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${STUNNEL}) || exit 1
     wait_for_stop ${STUNNEL} && /bin/rm -f ${STUNNEL_LOCK}
 }
 
 status() {
-    /bin/pidof ${STUNNEL} > /dev/null 2>&1
+    /usr/bin/pidof ${STUNNEL} > /dev/null 2>&1
     exit ${?}
 }
 

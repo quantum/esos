@@ -28,12 +28,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping dlm_controld..."
-    /bin/kill -TERM $(/bin/pidof ${DLM_CONTROLD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${DLM_CONTROLD}) || exit 1
     wait_for_stop ${DLM_CONTROLD} && /bin/rm -f ${DLM_CONTROLD_LOCK}
 }
 
 status() {
-    /bin/pidof ${DLM_CONTROLD} > /dev/null 2>&1
+    /usr/bin/pidof ${DLM_CONTROLD} > /dev/null 2>&1
     exit ${?}
 }
 

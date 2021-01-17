@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping snmpd..."
-    /bin/kill -TERM $(/bin/pidof ${SNMPD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${SNMPD}) || exit 1
     wait_for_stop ${SNMPD} && /bin/rm -f ${SNMPD_LOCK}
 }
 
 status() {
-    /bin/pidof ${SNMPD} > /dev/null 2>&1
+    /usr/bin/pidof ${SNMPD} > /dev/null 2>&1
     exit ${?}
 }
 

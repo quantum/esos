@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping libvirtd..."
-    /bin/kill -TERM $(/bin/pidof ${LIBVIRTD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${LIBVIRTD}) || exit 1
     wait_for_stop ${LIBVIRTD} && /bin/rm -f ${LIBVIRTD_LOCK}
 }
 
 status() {
-    /bin/pidof ${LIBVIRTD} > /dev/null 2>&1
+    /usr/bin/pidof ${LIBVIRTD} > /dev/null 2>&1
     exit ${?}
 }
 

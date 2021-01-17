@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping telegraf..."
-    /bin/kill -TERM $(/bin/pidof ${TELEGRAF}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${TELEGRAF}) || exit 1
     wait_for_stop ${TELEGRAF} && /bin/rm -f ${TELEGRAF_LOCK}
 }
 
 status() {
-    /bin/pidof ${TELEGRAF} > /dev/null 2>&1
+    /usr/bin/pidof ${TELEGRAF} > /dev/null 2>&1
     exit ${?}
 }
 

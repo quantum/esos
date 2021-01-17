@@ -29,12 +29,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping munin-node..."
-    /bin/kill -15 $(/bin/pidof ${MUNIN_INETD}) || exit 1
+    /usr/bin/kill -15 $(/usr/bin/pidof ${MUNIN_INETD}) || exit 1
     wait_for_stop ${MUNIN_INETD} && /bin/rm -f ${MUNIN_LOCK}
 }
 
 status() {
-    /bin/pidof ${MUNIN_INETD} > /dev/null 2>&1
+    /usr/bin/pidof ${MUNIN_INETD} > /dev/null 2>&1
     exit ${?}
 }
 

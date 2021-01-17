@@ -34,7 +34,7 @@ stop() {
 }
 
 status() {
-    /bin/pidof ${UPSD} > /dev/null 2>&1
+    /usr/bin/pidof ${UPSD} > /dev/null 2>&1
     exit ${?}
 }
 

@@ -44,12 +44,12 @@ stop() {
     /bin/echo "Stopping LVM lockspaces..."
     ${LVMLOCKCTL} --stop-lockspaces --wait 1 || exit 1
     /bin/echo "Stopping lvmlockd..."
-    /bin/kill -TERM $(/bin/pidof ${LVMLOCKD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${LVMLOCKD}) || exit 1
     wait_for_stop ${LVMLOCKD} && /bin/rm -f ${LVMLOCKD_LOCK}
 }
 
 status() {
-    /bin/pidof ${LVMLOCKD} > /dev/null 2>&1
+    /usr/bin/pidof ${LVMLOCKD} > /dev/null 2>&1
     exit ${?}
 }
 

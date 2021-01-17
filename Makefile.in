@@ -326,6 +326,10 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libcap-2.36.tar.gz \
 		sedutil-master_20201026.tar.xz \
 		squashfs-tools-4.4-git.1.tar.gz \
+		prometheus-2.24.0.linux-amd64.tar.xz \
+		jq-1.6.tar.gz \
+		oniguruma-6.9.6.tar.gz \
+		procps-v3.3.16.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -410,7 +414,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		kmod.chroot docbook-xsl-nons.chroot acpid.chroot \
 		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
 		iotop.chroot node_exporter.chroot libcap.chroot \
-		sedutil.chroot squashfs-tools.chroot
+		sedutil.chroot squashfs-tools.chroot prometheus.chroot \
+		jq.chroot oniguruma.chroot procps.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -1102,6 +1107,8 @@ gettext: make
 	$(MAKE) --directory=$(tgt_src_dir)/gettext-tools/src xgettext
 	$(CP) -v $(tgt_src_dir)/gettext-tools/src/{msgfmt,msgmerge,xgettext} \
 	/tools/bin/
+	$(MAKE) --directory=$(tgt_src_dir)/gettext-tools/misc
+	$(MAKE) --directory=$(tgt_src_dir)/gettext-tools/misc install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4565,6 +4572,52 @@ squashfs-tools.chroot: glibc.chroot zlib.chroot
 	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools
 	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools install \
 	INSTALL_DIR="/usr/bin"
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+prometheus.chroot:
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(INSTALL) -m 0755 $(tgt_src_dir)/prometheus.upx /usr/bin/prometheus
+	$(INSTALL) -m 0755 $(tgt_src_dir)/promtool.upx /usr/bin/promtool
+	$(MKDIR) /etc/prometheus
+	$(CP) $(tgt_src_dir)/prometheus.yml /etc/prometheus/
+	$(CP) -R $(tgt_src_dir)/console_libraries /etc/prometheus/
+	$(CP) -R $(tgt_src_dir)/consoles /etc/prometheus/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+jq.chroot: glibc.chroot oniguruma.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+oniguruma.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+procps.chroot: glibc.chroot numactl.chroot ncurses.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-numa \
+	--with-ncurses --without-systemd --without-elogind
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

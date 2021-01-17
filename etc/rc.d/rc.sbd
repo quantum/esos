@@ -29,12 +29,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping sbd..."
-    /bin/kill -TERM $(/bin/pidof ${SBD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${SBD}) || exit 1
     wait_for_stop ${SBD} && /bin/rm -f ${SBD_LOCK}
 }
 
 status() {
-    /bin/pidof ${SBD} > /dev/null 2>&1
+    /usr/bin/pidof ${SBD} > /dev/null 2>&1
     exit ${?}
 }
 

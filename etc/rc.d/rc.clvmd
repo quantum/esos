@@ -31,12 +31,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping clvmd..."
-    /bin/kill -TERM $(/bin/pidof ${CLVMD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${CLVMD}) || exit 1
     wait_for_stop ${CLVMD} && /bin/rm -f ${CLVMD_LOCK}
 }
 
 status() {
-    /bin/pidof ${CLVMD} > /dev/null 2>&1
+    /usr/bin/pidof ${CLVMD} > /dev/null 2>&1
     exit ${?}
 }
 

@@ -36,12 +36,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping sshd..."
-    /bin/kill -TERM $(/bin/pidof ${SSHD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${SSHD}) || exit 1
     wait_for_stop ${SSHD} && /bin/rm -f ${SSHD_LOCK}
 }
 
 status() {
-    /bin/pidof ${SSHD} > /dev/null 2>&1
+    /usr/bin/pidof ${SSHD} > /dev/null 2>&1
     exit ${?}
 }
 
