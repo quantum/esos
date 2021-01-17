@@ -38,7 +38,7 @@ fi
 /usr/sbin/klogd -c1
 
 /bin/echo "Configuring kernel parameters..."
-/sbin/sysctl -p /etc/sysctl.conf
+/usr/sbin/sysctl -p /etc/sysctl.conf
 
 /bin/echo "Setting the x86 energy MSR policy for maximum performance..."
 /usr/bin/x86_energy_perf_policy performance

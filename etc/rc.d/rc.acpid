@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping acpid..."
-    /bin/kill -TERM $(/bin/pidof ${ACPID}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${ACPID}) || exit 1
     wait_for_stop ${ACPID} && /bin/rm -f ${ACPID_LOCK}
 }
 
 status() {
-    /bin/pidof ${ACPID} > /dev/null 2>&1
+    /usr/bin/pidof ${ACPID} > /dev/null 2>&1
     exit ${?}
 }
 

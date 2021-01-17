@@ -45,7 +45,7 @@ wait_for_stop() {
     timer=0
     rc=1
     while [ ${timer} -lt ${STOP_TIMEOUT} ]; do
-        pid=$(/bin/pidof ${1} > /dev/null 2>&1)
+        pid=$(/usr/bin/pidof ${1} > /dev/null 2>&1)
         if [ ${?} -eq 0 ]; then
             /bin/sleep 1
             timer=$(/usr/bin/expr ${timer} + 1)

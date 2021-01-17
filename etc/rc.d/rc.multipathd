@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping multipathd..."
-    /bin/kill -TERM $(/bin/pidof ${MULTIPATHD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${MULTIPATHD}) || exit 1
     wait_for_stop ${MULTIPATHD} && /bin/rm -f ${MULTIPATHD_LOCK}
 }
 
 status() {
-    /bin/pidof ${MULTIPATHD} > /dev/null 2>&1
+    /usr/bin/pidof ${MULTIPATHD} > /dev/null 2>&1
     exit ${?}
 }
 

@@ -28,12 +28,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping nrpe..."
-    /bin/kill -15 $(/bin/pidof ${NRPE}) || exit 1
+    /usr/bin/kill -15 $(/usr/bin/pidof ${NRPE}) || exit 1
     wait_for_stop ${NRPE} && /bin/rm -f ${NRPE_LOCK}
 }
 
 status() {
-    /bin/pidof ${NRPE} > /dev/null 2>&1
+    /usr/bin/pidof ${NRPE} > /dev/null 2>&1
     exit ${?}
 }
 

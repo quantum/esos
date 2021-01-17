@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping system log daemon (syslogd)..."
-    /bin/kill -TERM $(/bin/pidof ${SYSLOGD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${SYSLOGD}) || exit 1
     wait_for_stop ${SYSLOGD} && /bin/rm -f ${SYSLOGD_LOCK}
 }
 
 status() {
-    /bin/pidof ${SYSLOGD} > /dev/null 2>&1
+    /usr/bin/pidof ${SYSLOGD} > /dev/null 2>&1
     exit ${?}
 }
 

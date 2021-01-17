@@ -36,12 +36,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping lvmetad..."
-    /bin/kill -TERM $(/bin/pidof ${LVMETAD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${LVMETAD}) || exit 1
     wait_for_stop ${LVMETAD} && /bin/rm -f ${LVMETAD_LOCK}
 }
 
 status() {
-    /bin/pidof ${LVMETAD} > /dev/null 2>&1
+    /usr/bin/pidof ${LVMETAD} > /dev/null 2>&1
     exit ${?}
 }
 

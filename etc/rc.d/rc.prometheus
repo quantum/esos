@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping prometheus..."
-    /bin/kill -TERM $(/bin/pidof ${PROMETHEUS}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${PROMETHEUS}) || exit 1
     wait_for_stop ${PROMETHEUS} && /bin/rm -f ${PROMETHEUS_LOCK}
 }
 
 status() {
-    /bin/pidof ${PROMETHEUS} > /dev/null 2>&1
+    /usr/bin/pidof ${PROMETHEUS} > /dev/null 2>&1
     exit ${?}
 }
 

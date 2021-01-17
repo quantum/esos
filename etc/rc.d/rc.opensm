@@ -28,12 +28,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping IB Subnet Manager..."
-    /bin/kill -15 $(/bin/pidof ${OPENSM}) || exit 1
+    /usr/bin/kill -15 $(/usr/bin/pidof ${OPENSM}) || exit 1
     wait_for_stop ${OPENSM} && /bin/rm -f ${OPENSM_LOCK}
 }
 
 status() {
-    /bin/pidof ${OPENSM} > /dev/null 2>&1
+    /usr/bin/pidof ${OPENSM} > /dev/null 2>&1
     exit ${?}
 }
 

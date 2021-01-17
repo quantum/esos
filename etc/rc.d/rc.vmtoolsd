@@ -27,12 +27,12 @@ start() {
 
 stop() {
     /bin/echo "Stopping VMware Tools..."
-    /bin/kill -TERM $(/bin/pidof ${VMTOOLSD}) || exit 1
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${VMTOOLSD}) || exit 1
     wait_for_stop ${VMTOOLSD} && /bin/rm -f ${VMTOOLSD_LOCK}
 }
 
 status() {
-    /bin/pidof ${VMTOOLSD} > /dev/null 2>&1
+    /usr/bin/pidof ${VMTOOLSD} > /dev/null 2>&1
     exit ${?}
 }
 
