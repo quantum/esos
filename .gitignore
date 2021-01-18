@@ -15,6 +15,9 @@
 /tui/*.o
 /ChangeLog-*.txt
 /chroot_build.sh
+/bootstrap_info
+/bootstrap-*.tar.xz
+/bootstrap-*.checksum
 /binutils.pass1
 /gcc.pass1
 /gmp

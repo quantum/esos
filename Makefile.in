@@ -562,6 +562,17 @@ bz2_img_file		:= $(img_file).bz2
 stable_img_file		:= $(BUILD_DIR)/$(pkg_name).img
 esos_target		= x86_64-esos-linux-gnu
 temp_path		= /tools/bin:/bin:/usr/bin
+dist_file_names		= $(subst $(DIST_FILES_DIR)/,,$(dist_files))
+find_bs_dist_files	= $(filter $(basename $(bs_tgt))-%,$(dist_file_names))
+bootstrap_dist_files	= $(foreach bs_tgt,$(bootstrap_tgts),\
+			$(find_bs_dist_files))
+bootstrap_info_file	:= $(BUILD_DIR)/bootstrap_info
+bootstrap_md5		= $(shell $(MD5SUM) $(bootstrap_info_file) \
+			| awk '{ print $$1 }')
+bootstrap_repo		= http://download.esos-project.com/bootstrap
+bootstrap_base		= bootstrap-$(bootstrap_md5)
+bootstrap_tarball	= $(bootstrap_base).tar.xz
+bootstrap_checksum	= $(bootstrap_base).checksum
 
 # This is used in the chroot environment
 export PKG_CONFIG_PATH = /usr/lib/pkgconfig:/usr/share/pkgconfig
@@ -669,6 +680,9 @@ $(clean_bootstrap_tgts)::
 # distclean - Remove everything including build configuration settings.
 .PHONY: distclean
 distclean: clean clean_bootstrap
+	$(RM) $(bootstrap_info_file)
+	$(RM) $(BUILD_DIR)/$(bootstrap_tarball)
+	$(RM) $(BUILD_DIR)/$(bootstrap_checksum)
 	$(RM) $(WORK_DIR)
 	$(RM) $(SRC_DIR)/autom4te.cache
 	$(RM) $(BUILD_DIR)/config.status
@@ -737,9 +751,49 @@ symlink:
 	fi
 
 
+# pre_bootstrap - Fetch/extract a canned bootstrap archive if any exists.
+.PHONY: pre_bootstrap
+pre_bootstrap:
+	$(QUIET) $(SED) --quiet \
+	'/^# bootstrap_tgts_start/,/^# bootstrap_tgts_end/p' \
+	$(abspath $(lastword $(MAKEFILE_LIST))) > $(bootstrap_info_file)
+	$(QUIET) $(ECHO) "$(bootstrap_dist_files)" >> $(bootstrap_info_file)
+	$(QUIET) $(ECHO) "### Attempting to fetch a pre-built bootstrap..."
+	$(QUIET) if $(WGET) -P $(WORK_DIR) \
+	  $(bootstrap_repo)/$(bootstrap_tarball); then \
+	  if $(WGET) -P $(WORK_DIR) \
+	    $(bootstrap_repo)/$(bootstrap_checksum); then \
+	    cd $(WORK_DIR); \
+	    if $(SHA256SUM) -c $(bootstrap_checksum); then \
+	      $(ECHO) "### Extracting the pre-built bootstrap archive..."; \
+	      $(TAR) xfJ --strip-components=1 \
+	      $(bootstrap_tarball) -C $(BUILD_DIR); \
+	    else \
+	      $(RM) $(bootstrap_tarball); \
+	      $(RM) $(bootstrap_checksum); \
+	      exit 1; \
+	    fi; \
+	  else \
+	    $(RM) $(WORK_DIR)/$(bootstrap_checksum); \
+	  fi; \
+	else \
+	  $(RM) $(WORK_DIR)/$(bootstrap_tarball); \
+	fi
+
+
 # bootstrap - Configure/compile/build the packages for chroot'ing.
 .PHONY: bootstrap
-bootstrap: symlink $(bootstrap_tgts)
+bootstrap: symlink pre_bootstrap $(bootstrap_tgts)
+	$(QUIET) if [ ! -e "$(WORK_DIR)/$(bootstrap_tarball)" ] && \
+	  [ ! -e "$(BUILD_DIR)/$(bootstrap_tarball)" ]; then \
+	  $(ECHO) "### Generating a bootstrap archive..."; \
+	  cd $(BUILD_DIR) && \
+	  $(TAR) cfJ $(BUILD_DIR)/$(bootstrap_tarball) \
+	  --transform 's,^,$(bootstrap_base)/,' $(bootstrap_tgts) \
+	  work/chroot/tools; \
+	  cd $(BUILD_DIR) && $(SHA256SUM) $(bootstrap_tarball) > \
+	  $(bootstrap_checksum); \
+	fi
 	$(CP) $(BUILD_DIR)/Makefile $(chroot_build)/
 	$(CP) -Rp $(SRC_DIR)/misc $(SRC_DIR)/tui $(chroot_build)/
 	$(ECHO) -n "$(if $(build_opts),$(build_opts),N/A)" > \
@@ -787,6 +841,7 @@ bootstrap: symlink $(bootstrap_tgts)
 	$(chroot_build)/build_all.sh
 	$(CHMOD) +x $(chroot_build)/build_all.sh
 
+# bootstrap_tgts_start - DO NOT DELETE THIS LINE (used by pre_bootstrap)
 binutils.pass1:
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
@@ -1366,6 +1421,7 @@ rsync: make
 	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
+# bootstrap_tgts_end - DO NOT DELETE THIS LINE (used by pre_bootstrap)
 
 
 # pre_chroot - Setup everything before entering the chroot environment.
