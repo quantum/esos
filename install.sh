@@ -419,6 +419,56 @@ while : ; do
         echo
         echo "### It appears the image was successfully written to disk" \
             "(no errors reported)!"
+        if [ "${this_os}" != "${LINUX}" ]; then
+            break
+        fi
+        blk_dev_bytes="$(blockdev --getsize64 ${dev_node})"
+        blk_dev_sector="$(blockdev --getss ${dev_node})"
+        if [ "${blk_dev_bytes}" -gt "103079215104" ]; then
+            # Devices that are larger than 96 GiB get a "data" file system
+            echo
+            echo "### Large installation target detected; adding the" \
+                "'esos_data' file system..."
+            blockdev --rereadpt ${dev_node} || exit 1
+            if echo ${dev_node} | grep -q "/dev/nvme"; then
+                # For NVMe drives
+                part_sep="p"
+            else
+                # For SCSI drives
+                part_sep=""
+            fi
+            free_end="$(parted -m -s ${dev_node} unit s print free | \
+                egrep ':free;$' | tail -n+2 | cut -d: -f3 | tr -d 's')"
+            orig_start="$(parted -m -s ${dev_node} unit s print | \
+                egrep '^4:' | cut -d: -f2 | tr -d 's')"
+            # Zap the original 'esos_logs' file system
+            wipefs --all ${dev_node}${part_sep}4 || exit 1
+            parted -m -s ${dev_node} rm 4 || exit 1
+            # Add a 50 GiB partition for the new 'esos_logs' FS
+            esos_logs_sectors="$(echo "53687091200 / ${blk_dev_sector}" | bc)"
+            # TODO: Make sure the sectors unit for 'parted' is the logical
+            # block size and not "Linux sectors" (512 bytes).
+            parted -m -s ${dev_node} mkpart extended \
+                ${orig_start}s ${free_end}s || exit 1
+            one_mib_sectors="$(echo "1048576 / ${blk_dev_sector}" | bc)"
+            esos_logs_start="$(echo "${orig_start} + ${one_mib_sectors}" \
+                | bc)"
+            esos_logs_end="$(echo "${esos_logs_start} + ${esos_logs_sectors}" \
+                | bc)"
+            parted -m -s ${dev_node} mkpart logical \
+                ${esos_logs_start}s ${esos_logs_end}s || exit 1
+            # Add a partition for the 'esos_data' FS using remaining space
+            esos_data_start="$(echo "${esos_logs_end} + ${one_mib_sectors}" \
+                | bc)"
+            parted -m -s ${dev_node} mkpart logical \
+                ${esos_data_start}s ${free_end}s || exit 1
+            # Create the file systems
+            udevadm settle --timeout=30 || exit 1
+            blockdev --rereadpt ${dev_node} || exit 1
+            sleep 1
+            mkfs.ext2 -L esos_logs ${dev_node}${part_sep}5 || exit 1
+            mkfs.ext2 -L esos_data ${dev_node}${part_sep}6 || exit 1
+        fi
         break
     elif [[ ${confirm} =~ [Nn]|[Nn][Oo] ]]; then
         exit 1

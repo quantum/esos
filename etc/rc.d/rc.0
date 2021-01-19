@@ -63,7 +63,8 @@ fi
 mdadm --detail --scan | while read -r row; do
     md_path="$(echo ${row} | awk '{ print $2 }')"
     md_name="$(echo ${row} | awk '{ print $4 }' | cut -d= -f2 | cut -d: -f2)"
-    if echo ${md_name} | egrep 'esos_boot|esos_root|esos_conf|esos_logs' \
+    if echo ${md_name} | \
+        egrep 'esos_boot|esos_root|esos_conf|esos_logs|esos_data' \
         > /dev/null; then
         mdadm --stop ${md_path}
     fi

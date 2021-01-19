@@ -4380,7 +4380,7 @@ nginx.chroot: glibc.chroot pcre.chroot zlib.chroot openssl.chroot
 dosfstools.chroot: glibc.chroot eudev.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-compat-symlinks
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)

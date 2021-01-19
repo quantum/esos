@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 source /etc/rc.d/common
 
@@ -7,19 +7,32 @@ check_args ${@}
 start() {
     # Check file systems for any possible errors
     /bin/echo "Checking all file systems..."
-    /usr/sbin/fsck -A -M -T -p
-    if [ $? -gt 1 ]; then
-        /bin/echo "ERROR (fsck): Your file system appears to be severely damaged."
-        /bin/echo "ERROR (fsck): You can probably correct this problem by running fsck.FSTYPE manually."
-        exit 1
-    fi
+    while read -r fstab_line; do
+        device="$(/bin/echo "${fstab_line}" | /usr/bin/awk '{print $1}')"
+        if /bin/echo "${device}" | /bin/grep -q -E \
+            'devtmpfs|proc|sysfs|devpts|tmpfs'; then
+            # Don't check these
+            continue
+        fi
+        if /bin/echo "${device}" | /bin/grep -q -E "esos_|ESOS_" && \
+            ! /sbin/findfs "${device}" > /dev/null 2>&1; then
+            # Don't check ESOS file system devices that are absent
+            continue
+        fi
+        if ! /usr/sbin/fsck -M -T -p "${device}"; then
+            /bin/echo "ERROR (${device}): Your file system appears to be" \
+                "severely damaged."
+            /bin/echo "ERROR (${device}): You can probably correct this" \
+                "problem by running fsck.FSTYPE manually."
+        fi
+    done <<< "$(cat /etc/fstab)"
 
-    # If we got this far, mount the file systems
+    # Mount the file systems
     /bin/echo "Mounting local file systems..."
-    for i in `/usr/bin/awk '{print $2}' /etc/fstab`; do
+    for i in $(/usr/bin/awk '{print $2}' /etc/fstab); do
         if [ "${i:0:1}" == "/" ]; then
             if [ ! -d "${i}" ]; then
-                /bin/mkdir -p ${i}
+                /bin/mkdir -p "${i}"
             fi
         fi
     done
