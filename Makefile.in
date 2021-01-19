@@ -617,6 +617,7 @@ endif
 all:
 	$(MAKE) -C $(BUILD_DIR) fetch
 	$(MAKE) -C $(BUILD_DIR) extract
+	$(MAKE) -C $(BUILD_DIR) pre_bootstrap
 	$(MAKE) -C $(BUILD_DIR) bootstrap
 
 
@@ -753,43 +754,47 @@ symlink:
 
 # pre_bootstrap - Fetch/extract a canned bootstrap archive if any exists.
 .PHONY: pre_bootstrap
-pre_bootstrap:
+pre_bootstrap: $(bootstrap_info_file)
+	$(QUIET) if [ ! -e "$(WORK_DIR)/$(bootstrap_tarball)" ]; then \
+	  $(ECHO) "### Attempting to fetch a pre-built bootstrap..."; \
+	  if $(WGET) -P $(WORK_DIR) \
+	    $(bootstrap_repo)/$(bootstrap_tarball); then \
+	    if $(WGET) -P $(WORK_DIR) \
+	      $(bootstrap_repo)/$(bootstrap_checksum); then \
+	      cd $(WORK_DIR); \
+	      if $(SHA256SUM) -c $(bootstrap_checksum); then \
+	        $(ECHO) "### Extracting the pre-built bootstrap archive..."; \
+	        $(TAR) xfJ $(bootstrap_tarball) \
+	        --strip-components=1 -C $(BUILD_DIR); \
+	      else \
+	        $(RM) $(bootstrap_tarball); \
+	        $(RM) $(bootstrap_checksum); \
+	        exit 1; \
+	      fi; \
+	    else \
+	      $(RM) $(WORK_DIR)/$(bootstrap_checksum); \
+	    fi; \
+	  else \
+	    $(RM) $(WORK_DIR)/$(bootstrap_tarball); \
+	  fi; \
+	fi
+
+$(bootstrap_info_file):
 	$(QUIET) $(SED) --quiet \
 	'/^# bootstrap_tgts_start/,/^# bootstrap_tgts_end/p' \
 	$(abspath $(lastword $(MAKEFILE_LIST))) > $(bootstrap_info_file)
 	$(QUIET) $(ECHO) "$(bootstrap_dist_files)" >> $(bootstrap_info_file)
-	$(QUIET) $(ECHO) "### Attempting to fetch a pre-built bootstrap..."
-	$(QUIET) if $(WGET) -P $(WORK_DIR) \
-	  $(bootstrap_repo)/$(bootstrap_tarball); then \
-	  if $(WGET) -P $(WORK_DIR) \
-	    $(bootstrap_repo)/$(bootstrap_checksum); then \
-	    cd $(WORK_DIR); \
-	    if $(SHA256SUM) -c $(bootstrap_checksum); then \
-	      $(ECHO) "### Extracting the pre-built bootstrap archive..."; \
-	      $(TAR) xfJ --strip-components=1 \
-	      $(bootstrap_tarball) -C $(BUILD_DIR); \
-	    else \
-	      $(RM) $(bootstrap_tarball); \
-	      $(RM) $(bootstrap_checksum); \
-	      exit 1; \
-	    fi; \
-	  else \
-	    $(RM) $(WORK_DIR)/$(bootstrap_checksum); \
-	  fi; \
-	else \
-	  $(RM) $(WORK_DIR)/$(bootstrap_tarball); \
-	fi
 
 
 # bootstrap - Configure/compile/build the packages for chroot'ing.
 .PHONY: bootstrap
-bootstrap: symlink pre_bootstrap $(bootstrap_tgts)
+bootstrap: symlink $(bootstrap_tgts)
 	$(QUIET) if [ ! -e "$(WORK_DIR)/$(bootstrap_tarball)" ] && \
 	  [ ! -e "$(BUILD_DIR)/$(bootstrap_tarball)" ]; then \
 	  $(ECHO) "### Generating a bootstrap archive..."; \
 	  cd $(BUILD_DIR) && \
-	  $(TAR) cfJ $(BUILD_DIR)/$(bootstrap_tarball) \
-	  --transform 's,^,$(bootstrap_base)/,' $(bootstrap_tgts) \
+	  $(TAR) cfJ $(BUILD_DIR)/$(bootstrap_tarball) --hard-dereference \
+	  --transform 'flags=r;s,^,$(bootstrap_base)/,' $(bootstrap_tgts) \
 	  work/chroot/tools; \
 	  cd $(BUILD_DIR) && $(SHA256SUM) $(bootstrap_tarball) > \
 	  $(bootstrap_checksum); \
