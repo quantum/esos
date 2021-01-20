@@ -10,10 +10,12 @@ MD_BOOT="esos_boot"
 MD_ROOT="esos_root"
 MD_CONF="esos_conf"
 MD_LOGS="esos_logs"
+MD_DATA="esos_data"
 BOOT_LABEL="ESOS_BOOT"
 ROOT_LABEL="esos_root"
 CONF_LABEL="esos_conf"
 LOGS_LABEL="esos_logs"
+DATA_LABEL="esos_data"
 ORIG_MNT="/tmp/orig_mnt"
 TEMP_MNT="/tmp/raid1_mnt"
 RSYNC_OPTS="-axHX --numeric-ids --info=progress2"
@@ -40,7 +42,7 @@ fi
 
 if ! grep -q esos_iso /proc/cmdline; then
     # Make sure the ESOS file systems are not mounted
-    for i in /boot /mnt/root /mnt/conf /mnt/logs; do
+    for i in /boot /mnt/root /mnt/conf /mnt/logs /mnt/data; do
         if mountpoint -q ${i}; then
             echo "ERROR: It appears that the '${i}' file system is mounted!"
             exit 1
@@ -92,23 +94,34 @@ if [ ${RC} -ne 0 ]; then
     exit ${RC}
 fi
 
-# Copy the MBR from the current boot drive to the additional device
-dd if=${esos_blk_dev} of=${addtl_blk_dev} bs=512 count=1 || exit 1
+# Copy the partition table from the current boot drive to the additional device
+sfdisk -d ${esos_blk_dev} > /tmp/sfdisk_pt || exit 1
+sfdisk ${addtl_blk_dev} < /tmp/sfdisk_pt || exit 1
 
 # Re-read the partition table and set variables
 blockdev --rereadpt ${addtl_blk_dev}
 if echo ${addtl_blk_dev} | grep -q "/dev/nvme"; then
     # For NVMe drives
-    addtl_blk_boot="${addtl_blk_dev}p1"
-    addtl_blk_root="${addtl_blk_dev}p2"
-    addtl_blk_conf="${addtl_blk_dev}p3"
-    addtl_blk_logs="${addtl_blk_dev}p4"
+    part_sep="p"
 else
     # For SCSI drives
-    addtl_blk_boot="${addtl_blk_dev}1"
-    addtl_blk_root="${addtl_blk_dev}2"
-    addtl_blk_conf="${addtl_blk_dev}3"
-    addtl_blk_logs="${addtl_blk_dev}4"
+    part_sep=""
+fi
+if [ -b "${esos_blk_dev}${part_sep}5" ] && \
+    [ -b "${esos_blk_dev}${part_sep}6" ]; then
+    # Extended partitions
+    addtl_blk_boot="${addtl_blk_dev}${part_sep}1"
+    addtl_blk_root="${addtl_blk_dev}${part_sep}2"
+    addtl_blk_conf="${addtl_blk_dev}${part_sep}3"
+    addtl_blk_logs="${addtl_blk_dev}${part_sep}5"
+    addtl_blk_data="${addtl_blk_dev}${part_sep}6"
+else
+    # Standard partitions
+    addtl_blk_boot="${addtl_blk_dev}${part_sep}1"
+    addtl_blk_root="${addtl_blk_dev}${part_sep}2"
+    addtl_blk_conf="${addtl_blk_dev}${part_sep}3"
+    addtl_blk_logs="${addtl_blk_dev}${part_sep}4"
+    addtl_blk_data=""
 fi
 
 # Create the new MD RAID1 arrays
@@ -124,58 +137,90 @@ mdadm --create --verbose --run /dev/md/${MD_CONF} --name=${MD_CONF} \
 mdadm --create --verbose --run /dev/md/${MD_LOGS} --name=${MD_LOGS} \
     --level=1 --raid-devices=2 --bitmap=internal --metadata=${MD_META_VER} \
     missing ${addtl_blk_logs} || exit 1
+if [ -n "${addtl_blk_data}" ]; then
+    mdadm --create --verbose --run /dev/md/${MD_DATA} --name=${MD_DATA} \
+        --level=1 --raid-devices=2 --bitmap=internal --metadata=${MD_META_VER} \
+        missing ${addtl_blk_data} || exit 1
+fi
 
 # Create file systems on the new MD arrays (no FS labels for now)
 mkfs.vfat -F 32 /dev/md/${MD_BOOT} || exit 1
 mkfs.ext2 /dev/md/${MD_ROOT} || exit 1
 mkfs.ext2 /dev/md/${MD_CONF} || exit 1
 mkfs.ext2 /dev/md/${MD_LOGS} || exit 1
+if [ -n "${addtl_blk_data}" ]; then
+    mkfs.ext2 /dev/md/${MD_DATA} || exit 1
+fi
 
 # Mount the new file systems
-mkdir -p ${TEMP_MNT}/{boot,root,conf,logs} || exit 1
+mkdir -p ${TEMP_MNT}/{boot,root,conf,logs,data} || exit 1
 mount /dev/md/${MD_BOOT} ${TEMP_MNT}/boot || exit 1
 mount /dev/md/${MD_ROOT} ${TEMP_MNT}/root || exit 1
 mount /dev/md/${MD_CONF} ${TEMP_MNT}/conf || exit 1
 mount /dev/md/${MD_LOGS} ${TEMP_MNT}/logs || exit 1
+if [ -n "${addtl_blk_data}" ]; then
+    mount /dev/md/${MD_DATA} ${TEMP_MNT}/data || exit 1
+fi
 
 # Mount the original file systems
-mkdir -p ${ORIG_MNT}/{boot,root,conf,logs} || exit 1
+mkdir -p ${ORIG_MNT}/{boot,root,conf,logs,data} || exit 1
 mount LABEL=${BOOT_LABEL} ${ORIG_MNT}/boot || exit 1
 mount LABEL=${ROOT_LABEL} ${ORIG_MNT}/root || exit 1
 mount LABEL=${CONF_LABEL} ${ORIG_MNT}/conf || exit 1
 mount LABEL=${LOGS_LABEL} ${ORIG_MNT}/logs || exit 1
+if [ -n "${addtl_blk_data}" ]; then
+    mount LABEL=${DATA_LABEL} ${ORIG_MNT}/data || exit 1
+fi
 
 # Copy contents of the orignals to the new file systems
 rsync ${RSYNC_OPTS} ${ORIG_MNT}/boot/ ${TEMP_MNT}/boot/ || exit 1
 rsync ${RSYNC_OPTS} ${ORIG_MNT}/root/ ${TEMP_MNT}/root/ || exit 1
 rsync ${RSYNC_OPTS} ${ORIG_MNT}/conf/ ${TEMP_MNT}/conf/ || exit 1
 rsync ${RSYNC_OPTS} ${ORIG_MNT}/logs/ ${TEMP_MNT}/logs/ || exit 1
+if [ -n "${addtl_blk_data}" ]; then
+    rsync ${RSYNC_OPTS} ${ORIG_MNT}/data/ ${TEMP_MNT}/data/ || exit 1
+fi
 
 # Unmount the original file systems
 umount ${ORIG_MNT}/boot || exit 1
 umount ${ORIG_MNT}/root || exit 1
 umount ${ORIG_MNT}/conf || exit 1
 umount ${ORIG_MNT}/logs || exit 1
+if [ -n "${addtl_blk_data}" ]; then
+    umount ${ORIG_MNT}/data || exit 1
+fi
 
 # Unmount the new file systems
 umount ${TEMP_MNT}/boot || exit 1
 umount ${TEMP_MNT}/root || exit 1
 umount ${TEMP_MNT}/conf || exit 1
 umount ${TEMP_MNT}/logs || exit 1
+if [ -n "${addtl_blk_data}" ]; then
+    umount ${TEMP_MNT}/data || exit 1
+fi
 
 # The variables make it clearer for the remaining steps
 if echo ${esos_blk_dev} | grep -q "/dev/nvme"; then
     # For NVMe drives
-    esos_blk_boot="${esos_blk_dev}p1"
-    esos_blk_root="${esos_blk_dev}p2"
-    esos_blk_conf="${esos_blk_dev}p3"
-    esos_blk_logs="${esos_blk_dev}p4"
+    part_sep="p"
 else
     # For SCSI drives
-    esos_blk_boot="${esos_blk_dev}1"
-    esos_blk_root="${esos_blk_dev}2"
-    esos_blk_conf="${esos_blk_dev}3"
-    esos_blk_logs="${esos_blk_dev}4"
+    part_sep=""
+fi
+if [ -n "${addtl_blk_data}" ]; then
+    # Extended partitions
+    esos_blk_boot="${esos_blk_dev}${part_sep}1"
+    esos_blk_root="${esos_blk_dev}${part_sep}2"
+    esos_blk_conf="${esos_blk_dev}${part_sep}3"
+    esos_blk_logs="${esos_blk_dev}${part_sep}5"
+    esos_blk_data="${esos_blk_dev}${part_sep}6"
+else
+    # Standard partitions
+    esos_blk_boot="${esos_blk_dev}${part_sep}1"
+    esos_blk_root="${esos_blk_dev}${part_sep}2"
+    esos_blk_conf="${esos_blk_dev}${part_sep}3"
+    esos_blk_logs="${esos_blk_dev}${part_sep}4"
+    esos_blk_data=""
 fi
 
 # Remove labels from the original file systems
@@ -183,24 +228,36 @@ fatlabel ${esos_blk_boot} OLD_BOOT || exit 1
 e2label ${esos_blk_root} old_root || exit 1
 e2label ${esos_blk_conf} old_conf || exit 1
 e2label ${esos_blk_logs} old_logs || exit 1
+if [ -n "${esos_blk_data}" ]; then
+    e2label ${esos_blk_data} old_data || exit 1
+fi
 
 # Wipe the original file system signatures (don't exit on error)
 wipefs --all ${esos_blk_boot}
 wipefs --all ${esos_blk_root}
 wipefs --all ${esos_blk_conf}
 wipefs --all ${esos_blk_logs}
+if [ -n "${esos_blk_data}" ]; then
+    wipefs --all ${esos_blk_data}
+fi
 
 # Add the original block devices into the new MD RAID1 arrays
 mdadm /dev/md/${MD_BOOT} --add ${esos_blk_boot} || exit 1
 mdadm /dev/md/${MD_ROOT} --add ${esos_blk_root} || exit 1
 mdadm /dev/md/${MD_CONF} --add ${esos_blk_conf} || exit 1
 mdadm /dev/md/${MD_LOGS} --add ${esos_blk_logs} || exit 1
+if [ -n "${esos_blk_data}" ]; then
+    mdadm /dev/md/${MD_DATA} --add ${esos_blk_data} || exit 1
+fi
 
 # Create the file system labels on the new devices
 fatlabel /dev/md/${MD_BOOT} ${BOOT_LABEL} || exit 1
 e2label /dev/md/${MD_ROOT} ${ROOT_LABEL} || exit 1
 e2label /dev/md/${MD_CONF} ${CONF_LABEL} || exit 1
 e2label /dev/md/${MD_LOGS} ${LOGS_LABEL} || exit 1
+if [ -n "${esos_blk_data}" ]; then
+    e2label /dev/md/${MD_DATA} ${DATA_LABEL} || exit 1
+fi
 
 # GRUB setup
 mount /boot || exit 1

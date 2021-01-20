@@ -23,7 +23,7 @@ assem_boot_md() {
 		md_path="$(echo ${row} | awk '{ print $2 }')"
 		md_name="$(echo ${row} | awk '{ print $5 }' | cut -d= -f2)"
 		if echo ${md_name} | \
-		egrep 'esos_boot|esos_root|esos_conf|esos_logs' > \
+		egrep 'esos_boot|esos_root|esos_conf|esos_logs|esos_data' > \
 		/dev/null; then
 			mdadm --assemble ${md_path} --name ${md_name} || \
 			return 1
