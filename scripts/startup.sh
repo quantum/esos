@@ -7,6 +7,11 @@ EMAIL_TO="root"
 EMAIL_FROM="root"
 LOGS_MNT="/mnt/logs"
 
+if grep -q esos_iso /proc/cmdline; then
+    # Don't do anything if we're booted off a CD-ROM / ISO
+    exit 0
+fi
+
 # Check for kernel crash dump files on the esos_logs filesystem
 mount ${LOGS_MNT}
 if ls ${LOGS_MNT}/*dumpfile* > /dev/null 2>&1; then
