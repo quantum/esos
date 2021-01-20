@@ -182,7 +182,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		e2fsprogs-1.45.1.tar.xz \
 		zlib-1.2.11.tar.xz \
 		lsscsi-030r154.tar.gz \
-		sg3_utils-1.44.tar.xz \
+		sg3_utils-1.45.tar.xz \
 		groff-1.22.4.tar.gz \
 		qlogic_fw-20190427.tar.gz \
 		iniparser-4.1.tar.gz \
