@@ -146,7 +146,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		sed-4.7.tar.xz \
 		tar-1.32.tar.xz \
 		texinfo-6.6.tar.xz \
-		util-linux-2.33.2.tar.xz \
+		util-linux-2.36.1.tar.xz \
 		xz-5.2.4.tar.xz \
 		pkg-config-0.29.2.tar.gz \
 		which-2.21.tar.gz \
@@ -559,7 +559,6 @@ tarball_src_dirs	= $(addprefix $(SOURCES_DIR)/,$(subst .tar.xz,,\
 			$(notdir $(dist_files))))))
 img_file		:= $(BUILD_DIR)/$(pkg_name)-$(esos_ver).img
 bz2_img_file		:= $(img_file).bz2
-stable_img_file		:= $(BUILD_DIR)/$(pkg_name).img
 esos_target		= x86_64-esos-linux-gnu
 temp_path		= /tools/bin:/bin:/usr/bin
 dist_file_names		= $(subst $(DIST_FILES_DIR)/,,$(dist_files))
@@ -641,7 +640,6 @@ clean: $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.bz2
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.iso
-	$(RM) $(BUILD_DIR)/$(pkg_name).img
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Successfully cleaned the chroot structure!"
@@ -3413,6 +3411,7 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/lsblk /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/lscpu /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/wdctl /usr/bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/sfdisk /usr/sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/taskset /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/flock /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/blkdiscard /usr/bin/
@@ -4927,7 +4926,6 @@ image:
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
 	$(LOSETUP) -d $(loop_dev)
-	$(LN) $(img_file) $(stable_img_file)
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Compressing image file..."
 	$(BZIP2) -z -9 -c $(img_file) > $(bz2_img_file)

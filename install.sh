@@ -451,6 +451,7 @@ while : ; do
             parted -m -s ${dev_node} mkpart extended \
                 ${orig_start}s ${free_end}s || exit 1
             one_mib_sectors="$(echo "1048576 / ${blk_dev_sector}" | bc)"
+            two_mib_sectors="$(echo "2 * (1048576 / ${blk_dev_sector})" | bc)"
             esos_logs_start="$(echo "${orig_start} + ${one_mib_sectors}" \
                 | bc)"
             esos_logs_end="$(echo "${esos_logs_start} + ${esos_logs_sectors}" \
@@ -458,10 +459,12 @@ while : ; do
             parted -m -s ${dev_node} mkpart logical \
                 ${esos_logs_start}s ${esos_logs_end}s || exit 1
             # Add a partition for the 'esos_data' FS using remaining space
-            esos_data_start="$(echo "${esos_logs_end} + ${one_mib_sectors}" \
+            esos_data_start="$(echo "${esos_logs_end} + ${two_mib_sectors}" \
+                | bc)"
+            esos_data_end="$(echo "${free_end} - ${one_mib_sectors}" \
                 | bc)"
             parted -m -s ${dev_node} mkpart logical \
-                ${esos_data_start}s ${free_end}s || exit 1
+                ${esos_data_start}s ${esos_data_end}s || exit 1
             # Create the file systems
             udevadm settle --timeout=30 || exit 1
             blockdev --rereadpt ${dev_node} || exit 1

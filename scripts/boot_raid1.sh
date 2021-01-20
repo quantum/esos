@@ -94,8 +94,9 @@ if [ ${RC} -ne 0 ]; then
     exit ${RC}
 fi
 
-# Copy the MBR from the current boot drive to the additional device
-dd if=${esos_blk_dev} of=${addtl_blk_dev} bs=512 count=1 || exit 1
+# Copy the partition table from the current boot drive to the additional device
+sfdisk -d ${esos_blk_dev} > /tmp/sfdisk_pt || exit 1
+sfdisk ${addtl_blk_dev} < /tmp/sfdisk_pt || exit 1
 
 # Re-read the partition table and set variables
 blockdev --rereadpt ${addtl_blk_dev}
