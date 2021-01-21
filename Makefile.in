@@ -780,7 +780,7 @@ pre_bootstrap: $(bootstrap_info_file)
 $(bootstrap_info_file):
 	$(QUIET) $(SED) --quiet \
 	'/^# bootstrap_tgts_start/,/^# bootstrap_tgts_end/p' \
-	$(abspath $(lastword $(MAKEFILE_LIST))) > $(bootstrap_info_file)
+	$(BUILD_DIR)/Makefile > $(bootstrap_info_file)
 	$(QUIET) $(ECHO) "$(bootstrap_dist_files)" >> $(bootstrap_info_file)
 
 
@@ -3412,9 +3412,9 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/lscpu /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/wdctl /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/sfdisk /usr/sbin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/blkdiscard /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/taskset /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/flock /usr/bin/
-	$(INSTALL) -m 0755 $(tgt_src_dir)/blkdiscard /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/agetty /sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/mkfs /usr/sbin/
 	$(TOUCH) $(@)
@@ -4861,6 +4861,8 @@ image:
 	$(FIND) $(STAGING_DIR)/etc/vmware-tools -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/acpi -type f -print0 | \
+	$(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(STAGING_DIR)/etc/infiniband -name '*.sh' -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/etckeeper/*.d -type f ! -path "*/README" \
 	-print0 | $(XARGS) -0 $(CHMOD) 0755
