@@ -4873,7 +4873,7 @@ image:
 	$(FIND) $(STAGING_DIR)/etc/acpi -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/infiniband -name '*.sh' -type f -print0 | \
-	$(XARGS) -0 $(CHMOD) 0755
+	$(XARGS) -0 -r $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/etckeeper/*.d -type f ! -path "*/README" \
 	-print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
