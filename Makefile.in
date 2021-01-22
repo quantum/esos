@@ -330,6 +330,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		jq-1.6.tar.gz \
 		oniguruma-6.9.6.tar.gz \
 		procps-v3.3.16.tar.gz \
+		haveged-1.9.14.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -415,7 +416,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
 		iotop.chroot node_exporter.chroot libcap.chroot \
 		sedutil.chroot squashfs-tools.chroot prometheus.chroot \
-		jq.chroot oniguruma.chroot procps.chroot
+		jq.chroot oniguruma.chroot procps.chroot haveged.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -780,7 +781,7 @@ pre_bootstrap: $(bootstrap_info_file)
 $(bootstrap_info_file):
 	$(QUIET) $(SED) --quiet \
 	'/^# bootstrap_tgts_start/,/^# bootstrap_tgts_end/p' \
-	$(abspath $(lastword $(MAKEFILE_LIST))) > $(bootstrap_info_file)
+	$(BUILD_DIR)/Makefile > $(bootstrap_info_file)
 	$(QUIET) $(ECHO) "$(bootstrap_dist_files)" >> $(bootstrap_info_file)
 
 
@@ -3412,9 +3413,9 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/lscpu /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/wdctl /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/sfdisk /usr/sbin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/.libs/blkdiscard /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/taskset /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/flock /usr/bin/
-	$(INSTALL) -m 0755 $(tgt_src_dir)/blkdiscard /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/agetty /sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/mkfs /usr/sbin/
 	$(TOUCH) $(@)
@@ -4681,6 +4682,15 @@ procps.chroot: glibc.chroot numactl.chroot ncurses.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
+haveged.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot
@@ -4862,6 +4872,8 @@ image:
 	$(XARGS) -0 $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/acpi -type f -print0 | \
 	$(XARGS) -0 $(CHMOD) 0755
+	$(FIND) $(STAGING_DIR)/etc/infiniband -name '*.sh' -type f -print0 | \
+	$(XARGS) -0 -r $(CHMOD) 0755
 	$(FIND) $(STAGING_DIR)/etc/etckeeper/*.d -type f ! -path "*/README" \
 	-print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui

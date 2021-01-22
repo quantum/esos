@@ -4,7 +4,7 @@ source /etc/rc.d/common
 
 PROMETHEUS="/usr/bin/prometheus"
 PROMETHEUS_LOCK="/var/lock/prometheus"
-DFLT_OPTS="--log.level error > /var/log/prometheus.log 2>&1 &"
+DFLT_OPTS="--config.file /etc/prometheus/prometheus.yml --log.level error > /var/log/prometheus.log 2>&1 &"
 
 check_args ${@}
 
