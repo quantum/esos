@@ -2,7 +2,7 @@ RC_D_PREFIX="/etc/rc.d"
 STOP_TIMEOUT=300
 
 # User settable services; started in this order and reversed on shutdown
-EARLY_SERVICES="rc.openibd rc.opensm"
+EARLY_SERVICES="rc.haveged rc.openibd rc.opensm"
 LATE_SERVICES="rc.lldpad rc.sshd rc.iscsid rc.multipathd rc.mdraid rc.lvm2 \
 rc.zfs rc.eio rc.dmcache rc.btier rc.drbd rc.rbdmap rc.sbd rc.corosync rc.dlm \
 rc.clvmd rc.lvmlockd rc.pacemaker rc.fsmount rc.mhvtl rc.scst rc.nvmet rc.nfsd \

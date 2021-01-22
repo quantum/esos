@@ -1,0 +1,40 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+HAVEGED="/usr/sbin/haveged"
+HAVEGED_LOCK="/var/lock/haveged"
+DFLT_OPTS="-w 1024 -v 1"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting haveged..."
+    eval ${HAVEGED} ${USER_OPTS} || exit 1
+    /bin/touch ${HAVEGED_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping haveged..."
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${HAVEGED}) || exit 1
+    wait_for_stop ${HAVEGED} && /bin/rm -f ${HAVEGED_LOCK}
+}
+
+status() {
+    /usr/bin/pidof ${HAVEGED} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

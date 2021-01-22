@@ -330,6 +330,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		jq-1.6.tar.gz \
 		oniguruma-6.9.6.tar.gz \
 		procps-v3.3.16.tar.gz \
+		haveged-1.9.14.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -415,7 +416,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
 		iotop.chroot node_exporter.chroot libcap.chroot \
 		sedutil.chroot squashfs-tools.chroot prometheus.chroot \
-		jq.chroot oniguruma.chroot procps.chroot
+		jq.chroot oniguruma.chroot procps.chroot haveged.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -4676,6 +4677,15 @@ procps.chroot: glibc.chroot numactl.chroot ncurses.chroot
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-numa \
 	--with-ncurses --without-systemd --without-elogind
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+haveged.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
