@@ -60,12 +60,25 @@ if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
     /usr/local/sbin/archive_logs.sh
 fi
 
+if /bin/grep esos_persist /proc/cmdline > /dev/null 2>&1; then
+    /bin/echo "Unmounting persistent file systems..."
+    # Unmount all except for esos_root (it's busy)
+    for i in /boot /mnt/conf /var/log /mnt/logs /mnt/data; do
+        if /bin/mountpoint -q ${i}; then
+            /bin/umount ${i}
+        fi
+    done
+fi
+
+if /bin/mountpoint -q /mnt/root; then
+    md_stop_names="esos_boot|esos_conf|esos_logs|esos_data"
+else
+    md_stop_names="esos_boot|esos_root|esos_conf|esos_logs|esos_data"
+fi
 mdadm --detail --scan | while read -r row; do
     md_path="$(echo ${row} | awk '{ print $2 }')"
     md_name="$(echo ${row} | awk '{ print $4 }' | cut -d= -f2 | cut -d: -f2)"
-    if echo ${md_name} | \
-        egrep 'esos_boot|esos_root|esos_conf|esos_logs|esos_data' \
-        > /dev/null; then
+    if echo ${md_name} | egrep "${md_stop_names}" > /dev/null; then
         mdadm --stop ${md_path}
     fi
 done
@@ -76,9 +89,16 @@ done
 /bin/echo "Flushing file system buffers..."
 /bin/sync
 
-/bin/echo "Unmounting local file systems..."
-/bin/umount -l /dev
-/bin/umount -a
+if /bin/grep esos_persist /proc/cmdline > /dev/null 2>&1; then
+    /bin/echo "Attempting to re-mount all remaining file systems read-only..."
+    /bin/echo "u" > /proc/sysrq-trigger
+else
+    /bin/echo "Unmounting local file systems..."
+    /bin/umount -l /dev
+    /bin/umount -a
+fi
+
+sleep 300
 
 case "$0" in
     *6)

@@ -54,6 +54,9 @@ echo "### Setting up the ISO build tree..."
 TEMP_DIR=$(mktemp -d -t esos2iso-XXXXXXXXX) || exit 1
 rm -rf ${ESOS_ISO} || exit 1
 cp -f -a ${ISOLINUX_DIR} ${TEMP_DIR}/isolinux || exit 1
+VER_STRING="$(cat ${ESOS_BUILD_DIR}/VERSION)"
+sed 's/@@ver_string@@/${VER_STRING}/' ${ISOLINUX_DIR}/isolinux.cfg > \
+    ${TEMP_DIR}/isolinux/isolinux.cfg || exit 1
 echo
 
 # Loop device setup

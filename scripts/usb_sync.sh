@@ -16,7 +16,9 @@ ROOT_PATH="/"
 function unmount_fs {
     umount ${CONF_MNT} || exit 1
 }
-trap unmount_fs EXIT
+if ! grep -q esos_persist /proc/cmdline; then
+    trap unmount_fs EXIT
+fi
 
 # Read the options and extract
 TEMP=$(getopt -o i --long initial -n 'usb_sync.sh' -- "$@")
@@ -31,8 +33,10 @@ done
 
 # Mount, sync, and unmount
 if cat /proc/mounts | awk '{print $2}' | grep -q ${CONF_MNT}; then
-    logger -s -t $(basename ${0}) -p "local4.warn" \
-        "It appears '${CONF_MNT}' is already mounted! Continuing anyway..."
+    if ! grep -q esos_persist /proc/cmdline; then
+        logger -s -t $(basename ${0}) -p "local4.warn" \
+            "It appears '${CONF_MNT}' is already mounted! Continuing anyway..."
+    fi
 else
     mount ${CONF_MNT} || exit 1
 fi
@@ -51,7 +55,7 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
             echo "Sync'ing previous /etc configuration locally..."
             rsync --archive --exclude etc/esos-release \
                 ${CONF_MNT}/etc ${ROOT_PATH} || exit 1
-            rm -rf ${CONF_MNT}/etc || exit 1
+            rm -rf ${CONF_MNT:?}/etc || exit 1
         fi
         if [ -d "${CONF_MNT}/var" ]; then
             echo "Moving USB /var directory to new location..."

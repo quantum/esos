@@ -13,14 +13,18 @@ if grep -q esos_iso /proc/cmdline; then
 fi
 
 # Check for kernel crash dump files on the esos_logs filesystem
-mount ${LOGS_MNT}
+if ! grep -q esos_persist /proc/cmdline; then
+    mount ${LOGS_MNT}
+fi
 if ls ${LOGS_MNT}/*dumpfile* > /dev/null 2>&1; then
 	dump_files=""
 	for i in $(ls ${LOGS_MNT}/*dumpfile*); do
 		dump_files="${dump_files}${i}\n"
 	done
 fi
-umount ${LOGS_MNT}
+if ! grep -q esos_persist /proc/cmdline; then
+    umount ${LOGS_MNT}
+fi
 
 # Send the email message
 sendmail -t << _EOF_

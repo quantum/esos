@@ -29,8 +29,10 @@ if [ ${RC} -ne 0 ]; then
     exit ${RC}
 fi
 
-# Mount the ESOS config FS
-mount ${CONF_MNT} || exit 1
+if ! grep -q esos_persist /proc/cmdline; then
+    # Mount the ESOS config FS
+    mount ${CONF_MNT} || exit 1
+fi
 
 # Grab all items from the config - exclude stuff under /opt
 rsync -aq ${CONF_MNT}/* --exclude=rsync_dirs/opt ${ARCHIVE_DIR} || exit 1
@@ -40,6 +42,8 @@ tar cpfz ${ARCHIVE_FILE} --transform 's,^tmp/,,' \
     ${ARCHIVE_DIR} 2> /dev/null || exit 1
 
 # All done
-umount ${CONF_MNT} || exit 1
+if ! grep -q esos_persist /proc/cmdline; then
+    umount ${CONF_MNT} || exit 1
+fi
 rm -rf ${ARCHIVE_DIR} || exit 1
 echo "${ARCHIVE_FILE}"
