@@ -279,7 +279,7 @@ if [ -f "/etc/esos-release" ] && [ "x${WIPE_DEVS}" = "x1" ]; then
                 if [ -n "${blk_dev}" ]; then
                     echo "### Attempting to wipe '${blk_dev}' via" \
                         "'blkdiscard'..."
-                    if ! blkdiscard ${blk_dev}; then
+                    if ! blkdiscard --force ${blk_dev}; then
                         echo "WARNING: Discarding device sectors failed," \
                             "attempting to wipe any residual metadata" \
                             "using 'dd'..."
@@ -489,13 +489,9 @@ while : ; do
     fi
 done
 
-# We're all done, users can install RAID tools in the ESOS instance
-echo && echo
-echo "*** RAID controller management utilities are now installed using" \
-    "the 'raid_tools.py' script in a running ESOS instance. ***"
+# We finished successfully
 echo
 echo "### ESOS boot device installation complete!"
-echo "### You may now remove and use your ESOS bootable drive."
 
 # Done
 rm -rf ${TEMP_DIR}
