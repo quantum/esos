@@ -12,9 +12,21 @@
 /bin/mount -t debugfs nodev /sys/kernel/debug
 /bin/mount -t cgroup -o all cgroup /sys/fs/cgroup
 
-/sbin/bootlogd -c
-
 /bin/ln -sf bash /bin/sh
+/bin/grep -v rootfs /proc/mounts > /etc/mtab
+
+if /bin/grep esos_persist /proc/cmdline > /dev/null 2>&1; then
+    /bin/echo "Persistent mode enabled; checking and mounting file systems..."
+    ESOS_PERSIST=1 /etc/rc.d/rc.fsmount start
+    if /bin/mountpoint -q /mnt/logs; then
+        /bin/mkdir -p /mnt/logs/var_log
+        /bin/mount --bind /mnt/logs/var_log /var/log
+    else
+        /bin/echo "ERROR: It appears 'esos_logs' is not mounted!"
+    fi
+fi
+
+/sbin/bootlogd -c
 
 if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
     /bin/echo "Performing initial configuration sync..."
@@ -26,7 +38,6 @@ if [ -x /etc/rc.d/rc.udev ]; then
     /etc/rc.d/rc.udev
 fi
 
-/bin/grep -v rootfs /proc/mounts > /etc/mtab
 /bin/touch /var/log/wtmp
 /bin/touch /var/log/lastlog
 
@@ -58,7 +69,7 @@ fi
 /bin/echo "Updating run-time linker cache..."
 /sbin/ldconfig
 
-if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
+if ! /bin/grep -E 'esos_iso|esos_persist' /proc/cmdline > /dev/null 2>&1; then
     fs_node=$(/sbin/findfs LABEL=esos_logs)
     base_blk_dev="$(/bin/echo ${fs_node} | \
         /usr/bin/sed -e '/\/dev\/sd/s/4//; /\/dev\/nvme/s/p4//')"

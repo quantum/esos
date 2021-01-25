@@ -24,8 +24,10 @@ else
     nr_cpus="1"
 fi
 
-# Need the boot file system so we can load a kernel
-/bin/mount /boot || exit 1
+if ! /bin/grep esos_persist /proc/cmdline > /dev/null 2>&1; then
+    # Need the boot file system so we can load a kernel
+    /bin/mount /boot || exit 1
+fi
 
 # Load a kernel (prod or debug) for use on panic
 case "`/bin/uname -r`" in
@@ -44,5 +46,7 @@ case "`/bin/uname -r`" in
 esac
 
 # Done
-/bin/umount /boot || exit 1
+if ! /bin/grep esos_persist /proc/cmdline > /dev/null 2>&1; then
+    /bin/umount /boot || exit 1
+fi
 

@@ -4,7 +4,7 @@ source /etc/rc.d/common
 
 HAVEGED="/usr/sbin/haveged"
 HAVEGED_LOCK="/var/lock/haveged"
-DFLT_OPTS="-w 1024 -v 1"
+DFLT_OPTS="-w 1024 -v 0"
 
 check_args ${@}
 

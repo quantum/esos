@@ -109,18 +109,20 @@ fi
 if grep -q -E 'esos_iso|esos_persist' /proc/cmdline; then
 	# Using squashfs for the root filesystem
 	mount -t tmpfs tmpfs /mnt/overlay || rescue_shell
-	esos_root_mnt="/mnt/overlay/upper/mnt/root"
+	esos_root_mnt="/mnt/tmp"
 	sqsh_arch="${esos_root_mnt}/${slot_name}-root.sqsh"
-	mkdir -p ${esos_root_mnt} || rescue_shell
-	# TODO: This isn't mounted/usable after switch_root! Why?
-	mount ${root_fs_dev} ${esos_root_mnt} || rescue_shell
+	mount -o sync ${root_fs_dev} ${esos_root_mnt} || rescue_shell
 	mkdir -p /mnt/overlay/lower || rescue_shell
+	mkdir -p /mnt/overlay/upper || rescue_shell
 	mkdir -p /mnt/overlay/work || rescue_shell
 	mount -t squashfs ${sqsh_arch} /mnt/overlay/lower || rescue_shell
 	overlay_opts="lowerdir=/mnt/overlay/lower"
 	overlay_opts="${overlay_opts},upperdir=/mnt/overlay/upper"
 	overlay_opts="${overlay_opts},workdir=/mnt/overlay/work"
 	mount -t overlay overlay -o ${overlay_opts} /mnt/root || rescue_shell
+	mount --move ${esos_root_mnt} /mnt/root/mnt/root || rescue_shell
+	mkdir -p /mnt/root/mnt/overlay || rescue_shell
+	mount --move /mnt/overlay /mnt/root/mnt/overlay || rescue_shell
 else
 	# Using tmpfs for the root filesystem
 	esos_root_mnt="/mnt/tmp"

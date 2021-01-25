@@ -160,70 +160,81 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             echo "### Increasing the /tmp file system..."
             mount -o remount,size=6G /tmp || exit 1
             echo
-            echo "### Mounting the ESOS boot drive file systems..."
-            usb_esos_mnt="${TEMP_DIR}/old_esos"
-            mkdir -p ${usb_esos_mnt} || exit 1
-            mount ${esos_blk_root} ${usb_esos_mnt} || exit 1
-            mount ${esos_blk_boot} ${usb_esos_mnt}/boot || exit 1
-            echo
+            if grep -q esos_persist /proc/cmdline; then
+                usb_esos_root="/mnt/root"
+                usb_esos_boot="/boot"
+            else
+                echo "### Mounting the ESOS boot drive file systems..."
+                usb_esos_root="${TEMP_DIR}/old_esos_root"
+                usb_esos_boot="${TEMP_DIR}/old_esos_boot"
+                mkdir -p ${usb_esos_root} || exit 1
+                mkdir -p ${usb_esos_boot} || exit 1
+                mount ${esos_blk_root} ${usb_esos_root} || exit 1
+                mount ${esos_blk_boot} ${usb_esos_boot} || exit 1
+                echo
+            fi
             echo "### Extracting the image file..."
             mkdir -p ${TEMP_DIR} || exit 1
             extracted_img="${TEMP_DIR}/$(basename ${image_file} .bz2)"
             bunzip2 -d -c ${image_file} > ${extracted_img} || exit 1
             echo
             echo "### Mounting the image file partitions..."
-            img_esos_mnt="${TEMP_DIR}/new_esos"
-            mkdir -p ${img_esos_mnt} || exit 1
+            img_esos_root="${TEMP_DIR}/new_esos_root"
+            img_esos_boot="${TEMP_DIR}/new_esos_boot"
+            mkdir -p ${img_esos_root} || exit 1
+            mkdir -p ${img_esos_boot} || exit 1
             loop_dev="$(losetup -f)"
             losetup ${loop_dev} ${extracted_img} || exit 1
             kpartx -a -s ${loop_dev} || exit 1
             boot_dev="$(echo ${loop_dev} | sed 's/^\/dev/\/dev\/mapper/')p1"
             root_dev="$(echo ${loop_dev} | sed 's/^\/dev/\/dev\/mapper/')p2"
-            mount ${root_dev} ${img_esos_mnt} || exit 1
-            mount ${boot_dev} ${img_esos_mnt}/boot || exit 1
+            mount ${root_dev} ${img_esos_root} || exit 1
+            mount ${boot_dev} ${img_esos_boot} || exit 1
             echo
             echo "### Moving the current primary image to the secondary slot..."
-            usb_ver="$(cat ${usb_esos_mnt}/boot/PRIMARY-version | cut -d= -f2)"
-            mv -f ${usb_esos_mnt}/boot/PRIMARY-version \
-                ${usb_esos_mnt}/boot/SECONDARY-version || exit 1
-            mv -f ${usb_esos_mnt}/boot/PRIMARY-initramfs.cpio.gz \
-                ${usb_esos_mnt}/boot/SECONDARY-initramfs.cpio.gz || exit 1
-            mv -f ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.prod \
-                ${usb_esos_mnt}/boot/SECONDARY-bzImage-esos.prod || exit 1
-            mv -f ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.debug \
-                ${usb_esos_mnt}/boot/SECONDARY-bzImage-esos.debug || exit 1
+            usb_ver="$(cat ${usb_esos_boot}/PRIMARY-version | cut -d= -f2)"
+            mv -f ${usb_esos_boot}/PRIMARY-version \
+                ${usb_esos_boot}/SECONDARY-version || exit 1
+            mv -f ${usb_esos_boot}/PRIMARY-initramfs.cpio.gz \
+                ${usb_esos_boot}/SECONDARY-initramfs.cpio.gz || exit 1
+            mv -f ${usb_esos_boot}/PRIMARY-bzImage-esos.prod \
+                ${usb_esos_boot}/SECONDARY-bzImage-esos.prod || exit 1
+            mv -f ${usb_esos_boot}/PRIMARY-bzImage-esos.debug \
+                ${usb_esos_boot}/SECONDARY-bzImage-esos.debug || exit 1
             # Handle the root cpio -> squashfs transition
-            if [ -f "${usb_esos_mnt}/PRIMARY-root.sqsh" ]; then
-                mv -f ${usb_esos_mnt}/PRIMARY-root.sqsh \
-                    ${usb_esos_mnt}/SECONDARY-root.sqsh || exit 1
+            if [ -f "${usb_esos_root}/PRIMARY-root.sqsh" ]; then
+                mv -f ${usb_esos_root}/PRIMARY-root.sqsh \
+                    ${usb_esos_root}/SECONDARY-root.sqsh || exit 1
                 # There might be an old cpio archive in the SECONDARY slot
-                if [ -f "${usb_esos_mnt}/SECONDARY-root.cpio.bz2" ]; then
-                    rm -f ${usb_esos_mnt}/SECONDARY-root.cpio.bz2 || exit 1
+                if [ -f "${usb_esos_root}/SECONDARY-root.cpio.bz2" ]; then
+                    rm -f ${usb_esos_root}/SECONDARY-root.cpio.bz2 || exit 1
                 fi
             fi
-            if [ -f "${usb_esos_mnt}/PRIMARY-root.cpio.bz2" ]; then
-                mv -f ${usb_esos_mnt}/PRIMARY-root.cpio.bz2 \
-                    ${usb_esos_mnt}/SECONDARY-root.cpio.bz2 || exit 1
+            if [ -f "${usb_esos_root}/PRIMARY-root.cpio.bz2" ]; then
+                mv -f ${usb_esos_root}/PRIMARY-root.cpio.bz2 \
+                    ${usb_esos_root}/SECONDARY-root.cpio.bz2 || exit 1
             fi
             echo
             echo "### Copying the new image to the primary slot..."
-            img_ver="$(cat ${img_esos_mnt}/boot/PRIMARY-version | cut -d= -f2)"
-            cp -fp ${img_esos_mnt}/boot/PRIMARY-version \
-                ${usb_esos_mnt}/boot/PRIMARY-version || exit 1
-            cp -fp ${img_esos_mnt}/boot/PRIMARY-initramfs.cpio.gz \
-                ${usb_esos_mnt}/boot/PRIMARY-initramfs.cpio.gz || exit 1
-            cp -fp ${img_esos_mnt}/boot/PRIMARY-bzImage-esos.prod \
-                ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.prod || exit 1
-            cp -fp ${img_esos_mnt}/boot/PRIMARY-bzImage-esos.debug \
-                ${usb_esos_mnt}/boot/PRIMARY-bzImage-esos.debug || exit 1
-            cp -fp ${img_esos_mnt}/PRIMARY-root.sqsh \
-                ${usb_esos_mnt}/PRIMARY-root.sqsh || exit 1
+            img_ver="$(cat ${img_esos_boot}/PRIMARY-version | cut -d= -f2)"
+            cp -fp ${img_esos_boot}/PRIMARY-version \
+                ${usb_esos_boot}/PRIMARY-version || exit 1
+            cp -fp ${img_esos_boot}/PRIMARY-initramfs.cpio.gz \
+                ${usb_esos_boot}/PRIMARY-initramfs.cpio.gz || exit 1
+            cp -fp ${img_esos_boot}/PRIMARY-bzImage-esos.prod \
+                ${usb_esos_boot}/PRIMARY-bzImage-esos.prod || exit 1
+            cp -fp ${img_esos_boot}/PRIMARY-bzImage-esos.debug \
+                ${usb_esos_boot}/PRIMARY-bzImage-esos.debug || exit 1
+            cp -fp ${img_esos_root}/PRIMARY-root.sqsh \
+                ${usb_esos_root}/PRIMARY-root.sqsh || exit 1
             echo
             echo "### Cleaning up..."
-            umount ${img_esos_mnt}/boot || exit 1
-            umount ${img_esos_mnt} || exit 1
-            umount ${usb_esos_mnt}/boot || exit 1
-            umount ${usb_esos_mnt} || exit 1
+            umount ${img_esos_boot} || exit 1
+            umount ${img_esos_root} || exit 1
+            if ! grep -q esos_persist /proc/cmdline; then
+                umount ${usb_esos_boot} || exit 1
+                umount ${usb_esos_root} || exit 1
+            fi
             sync
             if ! kpartx -d ${loop_dev}; then
                 sleep 5

@@ -13,7 +13,9 @@ TMP_DIR="/tmp"
 function unmount_fs {
     umount ${LOGS_MNT} || exit 1
 }
-trap unmount_fs EXIT
+if ! grep -q esos_persist /proc/cmdline; then
+    trap unmount_fs EXIT
+fi
 
 # Check free space; this is in KiB (1 KiB blocks), not kilobytes
 check_free() {
@@ -24,8 +26,10 @@ check_free() {
 
 # Mount the file system and set a file prefix
 if cat /proc/mounts | awk '{print $2}' | grep -q ${LOGS_MNT}; then
-    logger -s -t $(basename ${0}) -p "local4.warn" \
-        "It appears '${LOGS_MNT}' is already mounted! Continuing anyway..."
+    if ! grep -q esos_persist /proc/cmdline; then
+        logger -s -t $(basename ${0}) -p "local4.warn" \
+            "It appears '${LOGS_MNT}' is already mounted! Continuing anyway..."
+    fi
 else
     mount ${LOGS_MNT} || exit 1
 fi
@@ -33,9 +37,9 @@ archive_prefix="`hostname`_`date +%F`_`date +%s`"
 
 # Archive the logs -- we should only fail if there is no room in /tmp (tmpfs)
 mkdir -m 0755 -p ${TMP_DIR}/${archive_prefix} || exit 1
-find /var/log -type f ! -path "*/boot" ! -path "*/pacemaker.log" \
+find ${LOG_DIR} -type f ! -path "*/boot" ! -path "*/pacemaker.log" \
     -exec mv -f {} ${TMP_DIR}/${archive_prefix}/ \; || exit 1
-for i in /var/log/boot /var/log/pacemaker.log; do
+for i in ${LOG_DIR}/boot ${LOG_DIR}/pacemaker.log; do
     # TODO: Need a better solution, we're losing log lines using cp + truncate!
     if [ -f "${i}" ]; then
         cp -p ${i} ${TMP_DIR}/${archive_prefix}/ || exit 1
@@ -56,7 +60,8 @@ fi
 
 # Get rid of old files (if needed) until we have enough space free
 while [ ${new_arch_size} -gt $(check_free) ]; do
-    find ${LOGS_MNT} -type f -print0 | sort -z | xargs -0 ls | head -n 1 | xargs rm
+    find ${LOGS_MNT} -type f ! -path "${LOGS_MNT}/var_log/*" -print0 | \
+        sort -z | xargs -0 ls | head -n 1 | xargs rm
 done
 
 # Move the new archive to USB
@@ -66,9 +71,9 @@ mv -f ${file_path} ${LOGS_MNT}/ || exit 1
 killall -q -SIGHUP syslogd
 
 # Re-create some files
-touch /var/log/wtmp
-touch /var/log/lastlog
+touch ${LOG_DIR}/wtmp
+touch ${LOG_DIR}/lastlog
 
 # Done
-rm -rf ${TMP_DIR}/${archive_prefix}
+rm -rf ${TMP_DIR:?}/${archive_prefix}
 
