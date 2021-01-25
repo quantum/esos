@@ -22,16 +22,16 @@ mount_cd_iso() {
         echo "ERROR: Can't resolve 'LABEL=ESOS-ISO'!"
         return 1
     fi
-    if ! grep -q "${cdrom_dev} /mnt" /proc/mounts; then
+    if ! grep -q "${cdrom_dev} /mnt/root" /proc/mounts; then
         echo "### Mounting the CD-ROM / ISO..."
-        mount ${cdrom_dev} /mnt || return 1
+        mount ${cdrom_dev} /mnt/root || return 1
         echo " "
     fi
     return 0
 }
 
 {
-    # Mount the CD-ROM
+    # Mount the CD-ROM (if it's not already)
     mount_cd_iso || bash
 
     # Grab the install device / install transport type (if any)
@@ -42,7 +42,7 @@ mount_cd_iso() {
     no_prompt="$(cmdline no_prompt)"
 
     # Change to the mounted CD-ROM directory and run the installer
-    cd /mnt
+    cd /mnt/root || bash
     WIPE_DEVS=${wipe_devs} NO_PROMPT=${no_prompt} ./install.sh \
         "${install_dev}" "${install_tran}" "${install_model}" || bash
 
@@ -59,7 +59,6 @@ mount_cd_iso() {
 
     # Done with the CD-ROM
     cd
-    umount /mnt || bash
 
     if [ "x${no_prompt}" != "x1" ]; then
         # Pause until the user continues, then reboot

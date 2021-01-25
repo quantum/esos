@@ -160,14 +160,19 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             echo "### Increasing the /tmp file system..."
             mount -o remount,size=6G /tmp || exit 1
             echo
-            echo "### Mounting the ESOS boot drive file systems..."
-            usb_esos_root="${TEMP_DIR}/old_esos_root"
-            usb_esos_boot="${TEMP_DIR}/old_esos_boot"
-            mkdir -p ${usb_esos_root} || exit 1
-            mkdir -p ${usb_esos_boot} || exit 1
-            mount ${esos_blk_root} ${usb_esos_root} || exit 1
-            mount ${esos_blk_boot} ${usb_esos_boot} || exit 1
-            echo
+            if grep -q esos_persist /proc/cmdline; then
+                usb_esos_root="/mnt/root"
+                usb_esos_boot="/boot"
+            else
+                echo "### Mounting the ESOS boot drive file systems..."
+                usb_esos_root="${TEMP_DIR}/old_esos_root"
+                usb_esos_boot="${TEMP_DIR}/old_esos_boot"
+                mkdir -p ${usb_esos_root} || exit 1
+                mkdir -p ${usb_esos_boot} || exit 1
+                mount ${esos_blk_root} ${usb_esos_root} || exit 1
+                mount ${esos_blk_boot} ${usb_esos_boot} || exit 1
+                echo
+            fi
             echo "### Extracting the image file..."
             mkdir -p ${TEMP_DIR} || exit 1
             extracted_img="${TEMP_DIR}/$(basename ${image_file} .bz2)"
@@ -226,8 +231,10 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             echo "### Cleaning up..."
             umount ${img_esos_boot} || exit 1
             umount ${img_esos_root} || exit 1
-            umount ${usb_esos_boot} || exit 1
-            umount ${usb_esos_root} || exit 1
+            if ! grep -q esos_persist /proc/cmdline; then
+                umount ${usb_esos_boot} || exit 1
+                umount ${usb_esos_root} || exit 1
+            fi
             sync
             if ! kpartx -d ${loop_dev}; then
                 sleep 5

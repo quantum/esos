@@ -26,8 +26,6 @@ if /bin/grep esos_persist /proc/cmdline > /dev/null 2>&1; then
     fi
 fi
 
-sleep 300
-
 /sbin/bootlogd -c
 
 if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then

@@ -98,8 +98,6 @@ else
     /bin/umount -a
 fi
 
-sleep 300
-
 case "$0" in
     *6)
         /bin/echo "Rebooting..."
