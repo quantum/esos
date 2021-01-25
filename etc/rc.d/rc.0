@@ -77,7 +77,15 @@ else
 fi
 mdadm --detail --scan | while read -r row; do
     md_path="$(echo ${row} | awk '{ print $2 }')"
-    md_name="$(echo ${row} | awk '{ print $4 }' | cut -d= -f2 | cut -d: -f2)"
+    fourth_col="$(echo ${row} | awk '{ print $4 }')"
+    # If an array is rebuilding, the fourth column may not be the "name" field
+    if /bin/echo "${fourth_col}" | /bin/grep -q "name="; then
+        md_name="$(echo ${row} | awk '{ print $4 }' | \
+            cut -d= -f2 | cut -d: -f2)"
+    else
+        md_name="$(echo ${row} | awk '{ print $5 }' | \
+            cut -d= -f2 | cut -d: -f2)"
+    fi
     if echo ${md_name} | egrep "${md_stop_names}" > /dev/null; then
         mdadm --stop ${md_path}
     fi
@@ -89,7 +97,7 @@ done
 /bin/echo "Flushing file system buffers..."
 /bin/sync
 
-if /bin/grep esos_persist /proc/cmdline > /dev/null 2>&1; then
+if /bin/grep -E 'esos_iso|esos_persist' /proc/cmdline > /dev/null 2>&1; then
     /bin/echo "Attempting to re-mount all remaining file systems read-only..."
     /bin/echo "u" > /proc/sysrq-trigger
 else
