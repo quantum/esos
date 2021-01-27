@@ -526,6 +526,32 @@ AC_SUBST(rapiddisk_dir, ${rapiddisk_dir})
 AC_SUBST(with_rapiddisk, ${with_rapiddisk})
 AC_MSG_NOTICE([rapiddisk: ${with_rapiddisk}])
 
+dnl Optional package qla2xxx_scst (user provides package file)
+AC_ARG_WITH(qla2xxx_scst,
+	AS_HELP_STRING([--with-qla2xxx_scst=PATH],
+	[build and include qla2xxx_scst; PATH is the qla2xxx_scst package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[qla2xxx_scst_file="${withval}"; with_qla2xxx_scst="yes"],
+	[with_qla2xxx_scst="no"]), with_qla2xxx_scst="no")
+if test "x${with_qla2xxx_scst}" = "xyes"; then
+	if test "x${enable_qla32}" = "xyes"; then
+		AC_MSG_ERROR([the qla32 option is not compatible with qla2xxx_scst, use one or the other])
+	fi
+	if test -f "${qla2xxx_scst_file}"; then
+		AC_MSG_NOTICE([extracting the qla2xxx_scst package file...])
+		qla2xxx_scst_dir="${chroot_dir}/build/qla2xxx_scst"
+		${mkdir} -p ${qla2xxx_scst_dir} || exit 1
+		${tar} xfz ${qla2xxx_scst_file} --strip-components=1 -C ${qla2xxx_scst_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the qla2xxx_scst file: ${qla2xxx_scst_file}])
+	fi
+fi
+AS_IF([test "x$with_qla2xxx_scst" = "xyes"],
+	[build_opts="${build_opts} qla2xxx_scst"; opt_suffix="${opt_suffix}Q"])
+AC_SUBST(qla2xxx_scst_dir, ${qla2xxx_scst_dir})
+AC_SUBST(with_qla2xxx_scst, ${with_qla2xxx_scst})
+AC_MSG_NOTICE([qla2xxx_scst: ${with_qla2xxx_scst}])
+
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],
 	[real_src_dir="${srcdir}"])
