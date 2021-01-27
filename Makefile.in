@@ -185,7 +185,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		lsscsi-030r154.tar.gz \
 		sg3_utils-1.44.tar.xz \
 		groff-1.22.4.tar.gz \
-		qlogic_fw-20200717.tar.xz \
+		qlogic_fw-20210126.tar.xz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
 		scst-3.3.x_r8493.tar.xz \

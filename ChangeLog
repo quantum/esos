@@ -1,3 +1,15 @@
+2021-01-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '218_updates' into 2.x.x
+
+	updated QLogic firmware package
+
+2021-01-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '217_updates' into 2.x.x
+
+	tweaked 'qla2xxx' options in modprobe.conf for increased initiator/login handling
+
 2020-12-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '216_updates' into 2.x.x
