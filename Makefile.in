@@ -1723,6 +1723,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  KVER=$(kernel_ver)$$i \
 	  INSTALL_DIR_H=/usr/include/scst scst_install; \
 	  if [ "$(with_qla2xxx_scst)" = "yes" ]; then \
+	    $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
 	    $(CP) /usr/include/scst/Module.symvers $(qla2xxx_scst_dir)/; \
 	    $(MAKE) --directory=$(qla2xxx_scst_dir) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) SCST_INC_DIR=$(scst_src)/scst/include all; \
