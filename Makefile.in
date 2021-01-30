@@ -92,6 +92,8 @@ with_mlnx_ofed		:= @with_mlnx_ofed@
 mlnx_ofed_dir		:= $(subst $(CHROOT_DIR),,@mlnx_ofed_dir@)
 with_qla2xxx_scst	:= @with_qla2xxx_scst@
 qla2xxx_scst_dir	:= $(subst $(CHROOT_DIR),,@qla2xxx_scst_dir@)
+with_bnxt_en		:= @with_bnxt_en@
+bnxt_en_dir		:= $(subst $(CHROOT_DIR),,@bnxt_en_dir@)
 with_customize_dir	:= @with_customize_dir@
 customize_dir		:= @customize_dir@
 build_opts		:= @build_opts@
@@ -1610,6 +1612,9 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    FIRMWARE_PATH="$(uwire_dir)/src/network/firmware" \
 	    KDIR=$(linux_src) clean; \
 	  fi; \
+	  if [ "$(with_bnxt_en)" = "yes" ]; then \
+	    $(MAKE) --directory=$(bnxt_en_dir) KDIR=$(linux_src) clean; \
+	  fi; \
 	  if [ "$(with_rapiddisk)" = "yes" ]; then \
 	    $(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/module \
 	    clean; \
@@ -1876,6 +1881,15 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    target=1; \
 	    $(MAKE) --directory=$(linux_src) M="$(uwire_dir)/src/chfcoe/src" \
 	    KVER=$(kernel_ver)$$i modules_install; \
+	  fi; \
+	  if [ "$(with_bnxt_en)" = "yes" ]; then \
+	    $(ECHO) "### Compiling the Broadcom NetXtreme Ethernet module..."; \
+	    $(MAKE) --directory=$(bnxt_en_dir) KDIR=$(linux_src) \
+	    KVER=$(kernel_ver)$$i PREFIX=/ build; \
+	    $(MAKE) --directory=$(bnxt_en_dir) \
+	    KVER=$(kernel_ver)$$i PREFIX=/ install; \
+	    $(MV) -f /lib/modules/$(kernel_ver)$$i/updates/bnxt_en.ko \
+	    /lib/modules/$(kernel_ver)$$i/kernel/drivers/net/ethernet/broadcom/bnxt/; \
 	  fi; \
 	  if [ "$(with_rapiddisk)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the RapidDisk modules..."; \

@@ -552,6 +552,29 @@ AC_SUBST(qla2xxx_scst_dir, ${qla2xxx_scst_dir})
 AC_SUBST(with_qla2xxx_scst, ${with_qla2xxx_scst})
 AC_MSG_NOTICE([qla2xxx_scst: ${with_qla2xxx_scst}])
 
+dnl Optional package bnxt_en (user provides package file)
+AC_ARG_WITH(bnxt_en,
+	AS_HELP_STRING([--with-bnxt_en=PATH],
+	[build and include bnxt_en; PATH is the bnxt_en package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[bnxt_en_file="${withval}"; with_bnxt_en="yes"],
+	[with_bnxt_en="no"]), with_bnxt_en="no")
+if test "x${with_bnxt_en}" = "xyes"; then
+	if test -f "${bnxt_en_file}"; then
+		AC_MSG_NOTICE([extracting the bnxt_en package file...])
+		bnxt_en_dir="${chroot_dir}/build/bnxt_en"
+		${mkdir} -p ${bnxt_en_dir} || exit 1
+		${tar} xfz ${bnxt_en_file} --strip-components=1 -C ${bnxt_en_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the bnxt_en file: ${bnxt_en_file}])
+	fi
+fi
+AS_IF([test "x$with_bnxt_en" = "xyes"],
+	[build_opts="${build_opts} bnxt_en"; opt_suffix="${opt_suffix}B"])
+AC_SUBST(bnxt_en_dir, ${bnxt_en_dir})
+AC_SUBST(with_bnxt_en, ${with_bnxt_en})
+AC_MSG_NOTICE([bnxt_en: ${with_bnxt_en}])
+
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],
 	[real_src_dir="${srcdir}"])

@@ -30,6 +30,9 @@ fi
 /bin/echo "Loading the QLogic FastLinQ 4xxxx Ethernet driver..."
 /sbin/modprobe qede
 
+/bin/echo "Loading the Broadcom NetXtreme Ethernet driver..."
+/sbin/modprobe bnxt_en
+
 #/bin/echo "Loading the Microsemi Switchtec NTB driver..."
 #/sbin/modprobe ntb_hw_switchtec
 /sbin/modprobe cls_switchtec
