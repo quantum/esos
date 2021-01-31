@@ -111,7 +111,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${chroot_dir}/mnt/{root,conf,logs,data,vdisks,mhvtl} || exit 1
 	${mkdir} -p ${chroot_dir}/lib/firmware || exit 1
 	${mkdir} -p ${chroot_dir}/usr/{bin,sbin,libexec,lib} || exit 1
-	${mkdir} -p ${chroot_dir}/usr/local/{bin,sbin} || exit 1
+	${mkdir} -p ${chroot_dir}/usr/local/{bin,sbin,lib} || exit 1
 	${mkdir} -p ${chroot_dir}/opt/{bin,sbin,lib} || exit 1
 	${mkdir} -p ${chroot_dir}/run/lvm || exit 1
 	${mkdir} -p ${chroot_dir}/run/lock/iscsi || exit 1
@@ -134,6 +134,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${chroot_dir}/var/lib/esos || exit 1
 	${ln} -sf lib ${chroot_dir}/lib64 || exit 1
 	${ln} -sf lib ${chroot_dir}/usr/lib64 || exit 1
+	${ln} -sf lib ${chroot_dir}/usr/local/lib64 || exit 1
 	${mkdir} -p ${tools_dir}/lib || exit 1
 	${ln} -sf lib ${tools_dir}/lib64 || exit 1
 	${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
