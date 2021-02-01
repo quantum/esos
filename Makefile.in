@@ -471,12 +471,20 @@ ifeq ($(enable_qemu),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,gnutls-3.6.15.tar.xz)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,nettle-3.6.tar.gz)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,yajl-2.1.0.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,iptables-1.8.7.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,libmnl-1.0.4.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,libnftnl-1.1.9.tar.bz2)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,dnsmasq-2.84.tar.xz)
 	chroot_tgts += qemu.chroot
 	chroot_tgts += pixman.chroot
 	chroot_tgts += libvirt.chroot
 	chroot_tgts += gnutls.chroot
 	chroot_tgts += nettle.chroot
 	chroot_tgts += yajl.chroot
+	chroot_tgts += iptables.chroot
+	chroot_tgts += libmnl.chroot
+	chroot_tgts += libnftnl.chroot
+	chroot_tgts += dnsmasq.chroot
 endif
 ifeq ($(enable_mhvtl),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
@@ -2951,7 +2959,7 @@ qemu.chroot: glibc.chroot numactl.chroot libgcrypt.chroot Linux-PAM.chroot \
 	$(MKDIR) $(tgt_src_dir)/build
 	cd $(tgt_src_dir)/build && ../configure --prefix=/usr \
 	--sysconfdir=/etc --target-list=x86_64-softmmu --cpu=x86_64 \
-	--disable-blobs --enable-gcrypt --enable-auth-pam --enable-libudev \
+	--enable-gcrypt --enable-auth-pam --enable-libudev \
 	--enable-mpath --enable-vnc --enable-curl --enable-kvm \
 	--enable-linux-aio --enable-attr --enable-vhost-net \
 	--enable-vhost-scsi --enable-vhost-kernel --enable-libusb --enable-lzo \
@@ -2981,6 +2989,7 @@ qemu.chroot: glibc.chroot numactl.chroot libgcrypt.chroot Linux-PAM.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/build
 	$(MAKE) --directory=$(tgt_src_dir)/build install
 	$(RM) /usr/include/gnu/stubs-32.h
+	$(RM) /usr/share/qemu/edk2-*
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2997,7 +3006,8 @@ libvirt.chroot: glibc.chroot perl.chroot Python.chroot libxml2.chroot \
 	libxslt.chroot nfs-utils.chroot gnutls.chroot yajl.chroot \
 	qemu.chroot attr.chroot util-linux.chroot eudev.chroot \
 	curl.chroot numactl.chroot openwsman.chroot libpciaccess.chroot \
-	readline.chroot multipath-tools.chroot lvm2.chroot ncurses.chroot
+	readline.chroot multipath-tools.chroot lvm2.chroot ncurses.chroot \
+	iptables.chroot dnsmasq.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(call apply_pkg_patch)
@@ -3010,7 +3020,8 @@ libvirt.chroot: glibc.chroot perl.chroot Python.chroot libxml2.chroot \
 	-Ddriver_esx=disabled -Ddriver_hyperv=disabled \
 	-Ddriver_interface=enabled -Ddriver_libvirtd=enabled \
 	-Ddriver_libxl=disabled -Ddriver_lxc=disabled -Ddriver_network=enabled \
-	-Ddriver_openvz=disabled -Ddriver_qemu=enabled -Ddriver_remote=enabled \
+	-Ddriver_openvz=disabled -Ddriver_qemu=enabled -Dqemu_user=qemu \
+	-Dqemu_group=qemu -Ddriver_remote=enabled \
 	-Ddriver_secrets=enabled -Ddriver_test=enabled -Ddriver_vbox=disabled \
 	-Ddriver_vmware=disabled -Ddriver_vz=disabled -Ddtrace=disabled \
 	-Dexpensive_tests=disabled -Dfirewalld=disabled \
@@ -3034,6 +3045,7 @@ libvirt.chroot: glibc.chroot perl.chroot Python.chroot libxml2.chroot \
 	-Dyajl=enabled
 	cd $(tgt_src_dir) && ninja -C build
 	cd $(tgt_src_dir) && ninja -C build install
+	$(CP) -R $(tgt_src_dir)/docs/schemas /usr/share/libvirt/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3063,6 +3075,41 @@ yajl.chroot: glibc.chroot
 	cd $(tgt_src_dir) && ./configure -p /usr
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)
 	$(MAKE) --jobs=1 --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+iptables.chroot: glibc.chroot libmnl.chroot libnftnl.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+libmnl.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+libnftnl.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+dnsmasq.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) PREFIX=/usr install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

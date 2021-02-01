@@ -238,3 +238,7 @@ e68fbd6a992e36f1ac48c99bbf825d6b  jq-1.6.tar.gz
 0fe88a7b18726aa8ea1676b9eabcb07c  oniguruma-6.9.6.tar.gz
 2af440d54f94a3b44020bf0ea1bf9de8  procps-v3.3.16.tar.gz
 f756474201bec9a46b41e8712f79468a  haveged-1.9.14.tar.gz
+602ba7e937c72fbb7b1c2b71c3b0004b  iptables-1.8.7.tar.bz2
+be9b4b5328c6da1bda565ac5dffadb2d  libmnl-1.0.4.tar.bz2
+e03cefd53f4b076d959abe36de5c38f8  libnftnl-1.1.9.tar.bz2
+1875b70e98569f5d0abd84b78b816d31  dnsmasq-2.84.tar.xz

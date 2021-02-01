@@ -238,7 +238,7 @@ AC_ARG_ENABLE(qemu,
 	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
 	[enable_qemu="${enableval}"], [enable_qemu="no"]), enable_qemu="no")
 AS_IF([test "x$enable_qemu" = "xyes"],
-	[build_opts="${build_opts} qemu"; opt_suffix="${opt_suffix}Q"])
+	[build_opts="${build_opts} qemu"; opt_suffix="${opt_suffix}V"])
 AC_SUBST(enable_qemu, ${enable_qemu})
 AC_MSG_NOTICE([qemu: ${enable_qemu}])
 

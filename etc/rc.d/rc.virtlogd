@@ -1,0 +1,40 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+VIRTLOGD="/usr/sbin/virtlogd"
+VIRTLOGD_LOCK="/var/lock/virtlogd"
+DFLT_OPTS="-d"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting virtlogd..."
+    eval ${VIRTLOGD} ${USER_OPTS} || exit 1
+    /bin/touch ${VIRTLOGD_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping virtlogd..."
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${VIRTLOGD}) || exit 1
+    wait_for_stop ${VIRTLOGD} && /bin/rm -f ${VIRTLOGD_LOCK}
+}
+
+status() {
+    /usr/bin/pidof ${VIRTLOGD} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}
