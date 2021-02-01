@@ -30,11 +30,11 @@ nogroup::65533:vtl
 nobody::65534:
 sshd:x:22:
 cron:x:16:
-shadow:x:42:webui
+shadow:x:42:
 haclient:x:101:hacluster
 vtl:x:102:vtl
 nagios:x:498:nagios
 nut:x:103:nutmon
 input:x:999:
-webui:x:104:webui
-kvm:x:36:
+kvm:x:36:qemu
+qemu:x:107:
