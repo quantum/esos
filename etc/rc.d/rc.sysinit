@@ -10,7 +10,12 @@
 /bin/mount /dev/shm
 /bin/mount -t configfs none /sys/kernel/config
 /bin/mount -t debugfs nodev /sys/kernel/debug
-/bin/mount -t cgroup -o all cgroup /sys/fs/cgroup
+/bin/mount -t tmpfs tmpfs /sys/fs/cgroup
+for i in cpuset cpu cpuacct blkio memory devices freezer perf_event pids; do
+    /bin/mkdir -p /sys/fs/cgroup/${i}
+    /bin/mount -t cgroup -o ${i} none /sys/fs/cgroup/${i}
+done
+/bin/echo 1 > /sys/fs/cgroup/memory/memory.use_hierarchy
 
 /bin/ln -sf bash /bin/sh
 /bin/grep -v rootfs /proc/mounts > /etc/mtab
