@@ -2162,9 +2162,9 @@ sysvinit.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(call apply_pkg_patch)
-	$(MAKE) --directory=$(tgt_src_dir)/src SULOGINLIBS=-lcrypt \
+	$(MAKE) --directory=$(tgt_src_dir) SULOGINLIBS=-lcrypt \
 	CFLAGS="-O2 -fomit-frame-pointer"
-	$(MAKE) --directory=$(tgt_src_dir)/src ROOT=/ install
+	$(MAKE) --directory=$(tgt_src_dir) ROOT=/ install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
