@@ -1181,10 +1181,7 @@ alua_demote() {
             echo 0 > ${i}
         done
         # Change the backing device to the redirected one
-        # TODO: This adds a lot of time to this 'demote' operation; devices
-        # will get set to the redirected block devices during a 'monitor'.
-        #bio_dev_to_redirect || change_tpg_safe=0
-        change_tpg_safe=0
+        bio_dev_to_redirect || change_tpg_safe=0
         # Unmap the device LUN from the internal redirection target
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         for i in $(find ${dev_grp_path}/devices -maxdepth 1 -type l); do
