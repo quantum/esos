@@ -311,7 +311,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		blktrace-master_20181015.tar.xz \
 		hwloc-2.0.3.tar.bz2 \
 		mstflint-4.11.0-3.tar.xz \
-		cls_switchtec-4.0.0_5.4_20201211.tar.xz \
+		cls_switchtec-4.0.0_5.4_20210204.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
 		telegraf-1.14.3_linux_amd64.tar.xz \
@@ -1918,10 +1918,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(zfs_src)/module modules_install; \
 	  fi; \
 	  $(ECHO) "### Compiling the Celestica Switchtec NTB driver..."; \
-	  $(CP) -f $(switchtec_src)/Driver/Switchtec/switchtec_sg.c \
-	  $(cls_switchtec)/; \
-	  $(CP) -f $(switchtec_src)/Driver/Switchtec/switchtec_sg.h \
-	  $(cls_switchtec)/; \
 	  $(CHMOD) +x $(cls_switchtec)/VERSION-GEN; \
 	  $(MAKE) --directory=$(cls_switchtec) MODULE_NAME=cls_switchtec \
 	  KDIR=$(linux_src) KVER=$(kernel_ver)$$i; \
