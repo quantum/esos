@@ -335,6 +335,9 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		oniguruma-6.9.6.tar.gz \
 		procps-v3.3.16.tar.gz \
 		haveged-1.9.14.tar.gz \
+		msmtp-1.8.14.tar.xz \
+		gnutls-3.6.15.tar.xz \
+		nettle-3.6.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -420,7 +423,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		ibutils.chroot tcl.chroot numactl.chroot iowatcher.chroot \
 		iotop.chroot node_exporter.chroot libcap.chroot \
 		sedutil.chroot squashfs-tools.chroot prometheus.chroot \
-		jq.chroot oniguruma.chroot procps.chroot haveged.chroot
+		jq.chroot oniguruma.chroot procps.chroot haveged.chroot \
+		msmtp.chroot gnutls.chroot nettle.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -468,8 +472,6 @@ ifeq ($(enable_qemu),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,qemu-5.2.0.tar.xz)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,pixman-0.40.0.tar.gz)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,libvirt-6.10.0.tar.xz)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,gnutls-3.6.15.tar.xz)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,nettle-3.6.tar.gz)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,yajl-2.1.0.tar.gz)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,iptables-1.8.7.tar.bz2)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,libmnl-1.0.4.tar.bz2)
@@ -478,8 +480,6 @@ ifeq ($(enable_qemu),yes)
 	chroot_tgts += qemu.chroot
 	chroot_tgts += pixman.chroot
 	chroot_tgts += libvirt.chroot
-	chroot_tgts += gnutls.chroot
-	chroot_tgts += nettle.chroot
 	chroot_tgts += yajl.chroot
 	chroot_tgts += iptables.chroot
 	chroot_tgts += libmnl.chroot
@@ -3045,26 +3045,6 @@ libvirt.chroot: glibc.chroot perl.chroot Python.chroot libxml2.chroot \
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-gnutls.chroot: glibc.chroot nettle.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-guile \
-	--with-nettle-mini --with-included-libtasn1 --with-included-unistring \
-	--without-p11-kit
-	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
-nettle.chroot: glibc.chroot openssl.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-mini-gmp
-	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
 yajl.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -4776,6 +4756,37 @@ haveged.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+msmtp.chroot: glibc.chroot openssl.chroot gnutls.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-tls=gnutls \
+	--without-libgsasl --without-libidn --without-libsecret \
+	--without-macosx-keyring --with-msmtpd
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+gnutls.chroot: glibc.chroot nettle.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-guile \
+	--with-nettle-mini --with-included-libtasn1 --with-included-unistring \
+	--without-p11-kit
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+nettle.chroot: glibc.chroot openssl.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-mini-gmp
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
