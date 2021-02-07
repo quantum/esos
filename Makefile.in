@@ -3488,6 +3488,7 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/flock /usr/bin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/agetty /sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/mkfs /usr/sbin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/sulogin /usr/sbin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

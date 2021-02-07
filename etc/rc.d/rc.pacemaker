@@ -35,7 +35,15 @@ start() {
 stop() {
     /bin/echo "Stopping pacemakerd..."
     /usr/bin/kill -TERM $(/usr/bin/pidof ${PACEMAKERD}) || exit 1
-    wait_for_stop ${PACEMAKERD} && /bin/rm -f ${PACEMAKERD_LOCK}
+    if wait_for_stop ${PACEMAKERD}; then
+        /bin/rm -f ${PACEMAKERD_LOCK}
+    else
+        # If Pacemaker fails to stop, prompt to login so we can investigate
+        /bin/echo "ERROR: The cluster resource manager failed to stop!"
+        if /sbin/runlevel | /usr/bin/cut -d' ' -f2 | /bin/grep -q -E '0|6'; then
+            /usr/sbin/sulogin --force /dev/console
+        fi
+    fi
 }
 
 status() {
