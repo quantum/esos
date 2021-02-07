@@ -145,11 +145,11 @@ fi
 
 # Create file systems on the new MD arrays (no FS labels for now)
 mkfs.vfat -F 32 /dev/md/${MD_BOOT} || exit 1
-mkfs.ext2 /dev/md/${MD_ROOT} || exit 1
-mkfs.ext2 /dev/md/${MD_CONF} || exit 1
-mkfs.ext2 /dev/md/${MD_LOGS} || exit 1
+mkfs.ext4 -I 256 /dev/md/${MD_ROOT} || exit 1
+mkfs.ext4 -I 256 /dev/md/${MD_CONF} || exit 1
+mkfs.ext4 -I 256 /dev/md/${MD_LOGS} || exit 1
 if [ -n "${addtl_blk_data}" ]; then
-    mkfs.ext2 /dev/md/${MD_DATA} || exit 1
+    mkfs.ext4 -I 256 /dev/md/${MD_DATA} || exit 1
 fi
 
 # Mount the new file systems

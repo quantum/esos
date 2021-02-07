@@ -5,7 +5,7 @@ devpts /dev/pts devpts gid=5,mode=620 0 0
 tmpfs /dev/shm tmpfs size=256m,mode=1777 0 0
 tmpfs /tmp tmpfs mode=1777,nosuid,noatime 0 0
 LABEL=ESOS_BOOT /boot vfat sync,noauto 1 1
-LABEL=esos_root /mnt/root ext2	sync,noauto 1 1
-LABEL=esos_conf /mnt/conf ext2	sync,noauto 1 1
-LABEL=esos_logs /mnt/logs ext2	sync,noauto 1 1
-LABEL=esos_data /mnt/data ext2	sync,noauto 1 1
+LABEL=esos_root /mnt/root ext4	sync,noauto 1 1
+LABEL=esos_conf /mnt/conf ext4	sync,noauto 1 1
+LABEL=esos_logs /mnt/logs ext4	sync,noauto 1 1
+LABEL=esos_data /mnt/data ext4	sync,noauto 1 1
