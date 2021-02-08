@@ -480,8 +480,8 @@ while : ; do
             udevadm settle --timeout=30 || exit 1
             blockdev --rereadpt ${dev_node} || exit 1
             sleep 1
-            mkfs.ext2 -L esos_logs ${dev_node}${part_sep}5 || exit 1
-            mkfs.ext2 -L esos_data ${dev_node}${part_sep}6 || exit 1
+            mkfs.ext4 -I 256 -L esos_logs ${dev_node}${part_sep}5 || exit 1
+            mkfs.ext4 -I 256 -L esos_data ${dev_node}${part_sep}6 || exit 1
         fi
         break
     elif [[ ${confirm} =~ [Nn]|[Nn][Oo] ]]; then

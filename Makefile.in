@@ -30,7 +30,7 @@ CAT		:= @cat@
 GREP		:= @grep@
 DD		:= @dd@
 MKFS_VFAT	:= @mkfs_vfat@
-MKFS_EXT2	:= @mkfs_ext2@
+MKFS_EXT4	:= @mkfs_ext4@
 LN		:= @ln@ -sf
 MOUNT		:= @mount@
 UMOUNT		:= @umount@
@@ -4860,11 +4860,11 @@ image:
 	$(SLEEP) 1
 	$(MKFS_VFAT) -F 32 -n ESOS_BOOT $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p1
-	$(MKFS_EXT2) -L esos_root $$($(ECHO) $(loop_dev) | \
+	$(MKFS_EXT4) -I 256 -L esos_root $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p2
-	$(MKFS_EXT2) -L esos_conf $$($(ECHO) $(loop_dev) | \
+	$(MKFS_EXT4) -I 256 -L esos_conf $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p3
-	$(MKFS_EXT2) -L esos_logs $$($(ECHO) $(loop_dev) | \
+	$(MKFS_EXT4) -I 256 -L esos_logs $$($(ECHO) $(loop_dev) | \
 	$(SED) 's/^\/dev/\/dev\/mapper/')p4
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Installing image (staging)..."
