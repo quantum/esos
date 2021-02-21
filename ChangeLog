@@ -1,3 +1,13 @@
+2021-02-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '307_updates' into 3.x.x
+
+	updated drbd-utils to version 9.16.0
+
+2021-02-03  msevy  <michael.sevy@quantum.com>
+
+	Update sg_utils package to 1.45
+
 2020-12-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '306_updates' into 3.x.x

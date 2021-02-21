@@ -189,7 +189,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		cdk-5.0-20161210.tar.gz \
 		scst-3.4.x_r9170.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
-		drbd-utils-9.8.0.tar.gz \
+		drbd-utils-9.16.0.tar.gz \
 		lvm2-2_02_184.tar.xz \
 		xfsprogs-4.20.0.tar.xz \
 		mdadm-4.1.tar.xz \
@@ -2471,7 +2471,6 @@ xfsprogs.chroot: glibc.chroot util-linux.chroot
 drbd-utils.chroot: glibc.chroot eudev.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(call apply_pkg_patch)
 	$(SED) -e '/install -d $$(DESTDIR)$$(INITDIR)/ s/^#*/#/' -i \
 	$(tgt_src_dir)/scripts/Makefile.in
 	$(SED) -e '/install -m 755 drbd $$(DESTDIR)$$(INITDIR)\// s/^#*/#/' -i \
@@ -3832,7 +3831,7 @@ open-isns.chroot: glibc.chroot openssl.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-coreutils.chroot: glibc.chroot perl.chroot
+coreutils.chroot: glibc.chroot gcc.chroot perl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
