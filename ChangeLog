@@ -1,3 +1,9 @@
+2021-02-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '2110_update' into 2.x.x
+
+	set new qla2xxx module params (ql2xiniexchg=0 ql2xtgtexchg=16384)
+
 2021-02-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '219_updates' into 2.x.x
