@@ -339,6 +339,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gnutls-3.6.15.tar.xz \
 		nettle-3.6.tar.gz \
 		tcpdump-4.99.0.tar.gz \
+		vim-8.2.2562.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -425,7 +426,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		iotop.chroot node_exporter.chroot libcap.chroot \
 		sedutil.chroot squashfs-tools.chroot prometheus.chroot \
 		jq.chroot oniguruma.chroot procps.chroot haveged.chroot \
-		msmtp.chroot gnutls.chroot nettle.chroot tcpdump.chroot
+		msmtp.chroot gnutls.chroot nettle.chroot tcpdump.chroot \
+		vim.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -4797,6 +4799,17 @@ tcpdump.chroot: glibc.chroot libpcap.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+vim.chroot: glibc.chroot ncurses.chroot acl.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-nls
+	$(SED) -e '/LINKIT = ln -f/ s/^#*//g' -i $(tgt_src_dir)/src/Makefile
+	$(SED) -e '/LINKIT = @echo/ s/^#*/#/g' -i $(tgt_src_dir)/src/Makefile
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
