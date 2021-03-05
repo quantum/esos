@@ -1,3 +1,9 @@
+2021-03-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '308_updates' into 3.x.x
+
+	Python.chroot: include the 'wrapt' package
+
 2021-02-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '307_updates' into 3.x.x
