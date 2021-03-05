@@ -2635,6 +2635,7 @@ mdadm.chroot: glibc.chroot corosync.chroot dlm.chroot
 	CXFLAGS="-Wno-address-of-packed-member -Wno-absolute-value"
 	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdadm /sbin/mdadm
 	$(INSTALL) -D -m 755 $(tgt_src_dir)/mdmon /sbin/mdmon
+	$(INSTALL) -D -m 755 $(tgt_src_dir)/misc/mdcheck /sbin/mdcheck
 	$(MAKE) --directory=$(tgt_src_dir) install-man
 	$(MAKE) --directory=$(tgt_src_dir) UDEVDIR=/usr/lib/udev install-udev
 	$(MAKE) --directory=$(tgt_src_dir) clean
