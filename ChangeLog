@@ -1,10 +1,248 @@
+2021-03-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210304_tweaks'
+
+	Python.chroot: include the 'wrapt' package
+
+	mdadm.chroot: include the 'mdcheck' script; move rc.virtlogd + rc.libvirtd to start earlier in rc.d/common
+
+2021-03-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'real_vim'
+
+	disable 'vi' in Busybox and use real vim
+
+2021-02-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_tcpdump'
+
+	added the tcpdump package (version 4.99.0)
+
+2021-02-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'up_drbd-utils'
+
+	updated drbd-utils to version 9.16.0
+
+2021-02-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'ext4_boot'
+
+2021-02-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	use 'ext4' instead of 'ext2' for the ESOS file systems
+
+2021-02-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'pacemaker_stop'
+
+	use 'sulogin' from the util-linux package (instead of BB); when calling stop() in rc.pacemakerd, if we fail to stop call sulogin so we can investigate (critical to understand/diagnose why the cluster failed to stop cleanly)
+
+2021-02-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_msmtp'
+
+	added the 'msmtp' package and associated 'rc.msmtpd' init/rc script (disabled by default)
+
+2021-02-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'cls_switchtec'
+
+	updated the cls_switchtec package (4.0.0_5.4_20210204)
+
+2021-02-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'msevy-quantum-new_pkg'
+
+	Merge branch 'new_pkg' of https://github.com/msevy-quantum/esos into msevy-quantum-new_pkg
+
+	Merge branch 'alua_rescan_fix'
+
+	misc:esos:alua: in alua_demote() restore original use of bio_dev_to_redirect otherwise we fail to rescan the SCSI bus and miss device name changes
+
+2021-02-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'sysvinit_ver'
+
+	fixed make path for sysvinit (now shows version string correctly on boot)
+
+2021-02-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'virt_fixes'
+
+	use individual mounts for cgroup controllers (resolves cgroup issue with libvirt); enabled CONFIG_IP6_NF_NAT in the kernel config (libvirt)
+
+	added iptables (deps libmnl, libnftnl) and dnsmasq packages (for libvirt); qemu.chroot: install most firmware/bios blobs; libvirt.chroot: specify a qemu user/group, install schemas directory; cleaned up users/groups (added qemu); added the rc.virtlogd init/rc script; enabled kernel options for firewall support and cgroups
+
+2021-01-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_local_lib'
+
+	create /usr/local/lib[64] for "local" libraries; updated ld.so.conf to use it
+
+2021-01-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'bnxt_mod'
+
+	added build optional for third-party bnxt_en driver compile/install; set in-tree bnxt_en driver as a module; load bnxt_en in rc.2
+
+2021-01-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qla_fix'
+
+	when using '--with-qla2xxx_scst=' zap the in-tree qla2xxx.ko module so it doesn't conflict
+
+2021-01-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qlogic_updates'
+
+	updated QLogic firmware package; added support for newer third-party QLogic drivers (eg, 11.x); updated default QLogic module parameters optimized for target mode
+
+2021-01-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '0125_updates'
+
+	use "CREATE bbl=no" in the default /etc/mdadm.conf file to ensure the MD RAID BBL feature is not used during creation; rc.0: if MD boot arrays are resync'ing, then the "name" column is off by one so we handle this; install.sh: provide the '--force' argument to blkdiscard to minimize noise, and removed old info lines (echo'd)
+
+2021-01-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'esos_persist'
+
+	esos2iso.sh: fix version-string sed line; removed sleep debug lines in rc.0 and rc.sysinit; install.sh: updates to handle esos_persist; iso_installer.sh: use new root FS path (/mnt/root)
+
+	include the helpful 'findmnt' utility from util-linux; display the version string the ISO menu; updated cron job for fsck to only print for fatal errors; updates to rc.0, rc.fsmount, rc.dump, rc.sysinit, helper scripts and install.sh for 'esos_persist' mode
+
+2021-01-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'more_enhancements'
+
+	fixed an issue in image target (handle non-existent file with xargs)
+
+2021-01-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the 'haveged' package and created and associated rc/init script... this daemon helps provide/increase entropy (in certain cases, some systems don't produce enough on boot for other services that rely on /dev/random)
+
+	several build fixes; updated default rc options for prometheus; added kernel option for detecting hung tasks (soft/hard)
+
+2021-01-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'esos_data'
+
+	updated util-linux version (resolves issue with 'sfdisk'); install.sh: updates for large-disk-partition scheme to work with sfdisk; boot_raid1.sh: use sfdisk to copy the partition table as it seems simply copying the MBR does not work for extended/logical partitions
+
+	startup.sh: resolved issue with lingering 'esos_logs' mount (stuck) when doing an ISO install
+
+2021-01-19  msevy  <michael.sevy@quantum.com>
+
+	Update sg_utils package to 1.45
+
+2021-01-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	dosfstools.chroot: install the compatibility links; configure.ac: create the /mnt/data directory; /etc/fstab: add an entry for /mnt/data; rc.0: stop 'esos_data' if exists; rc.fsmount: don't exit the script early if a FS fails fsck, handle non-existent ESOS file system devices; rc.mdraid: ignore 'esos_data' if exists; install.sh: support creating an additional 'esos_data' file system (and partition) for large target installation devices; boot_raid1.sh: support the new 'esos_data' file system (create matching MD RAID1 array if found)
+
+	Merge branch 'bootstrap_fix'
+
+2021-01-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	call 'pre_bootstrap' in default target; updated pre_bootstrap target (moved info file generation into separate target, check for existence of local file before attempting to download again); tar invocation fixes when generating the bootstrap archive
+
+	Merge branch 'canned_bootstrap'
+
+	first crack at a pre-built bootstrap setup where "bootstrap" (everything generated by said target) is archived and can be published -- a file using the Makefile lines for all of the bootstrap targets and package versions is created and checksum'd... we then use that checksum to determine if we can fetch/extract a pre-built bootstrap tarball, or if we need to build fresh
+
+2021-01-16  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_pkgs'
+
+	added the 'procps' package and removed associated programs from Busybox config + updated rc/init scripts that use absolute path to affected programs
+
+	added the 'jq' package (and required dep 'oniguruma')
+
+	added the 'prometheus' package and created a new rc/init script for the service (disabled by default)
+
+2021-01-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'more_tweaks'
+
+	util-linux.chroot: include the wdctl tool; rc.sysinit: only attempt to expand 'esos_logs' if we're NOT running from an ISO; boot_raid1.sh: updates to use separate mount points for original file systems, keep label names in variables, and don't get for mounted file systems if we're running on an ISO; iso_installer.sh: make output prettier
+
+2021-01-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'gen_iso_fix'
+
+	updated INSTALL doc; fixed issue in esos2iso.sh; initramfs_init: zap /etc/crontab when booting with 'esos_iso' (no need for crons to run during ISO install)
+
+	Merge branch 'gen_iso'
+
+	added the esos2iso.sh script for generating a bootable ESOS ISO file and isolinux components
+
+	Merge branch 'add_squashfs'
+
+	added squashfs-tools; cleanup (rm) /.cpan properly in perl.chroot; use mksquashfs instead of cpio for the root FS image; fix improper staging dir cleanup; require mksquashfs in configure script; use new squashfs/overlayfs setup in initramfs; updated install.sh script to handle sqsh images (and SECONDARY cpio slot); enabled squashfs/overlayfs options in kernel config; simplify iso_installer.sh
+
+2021-01-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'install_tweaks_2'
+
+	updated install.sh script to handle NO_PROMPT env var and fixed issue with arguments passed in; updated iso_installer.sh to handle pass NO_PROMPT as needed
+
+2020-12-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'iso_inst_fix'
+
+	rc.network: updated interface matching lines for 'privN' names; install.sh: re-work of device wiping logic and accept a third parameter to specify the install target "model" string; iso_installer.sh: use new kernel param syntax
+
+2020-12-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'customize_fix'
+
+	build fixes for the with-customize-dir option
+
+	Merge branch 'remove_ra'
+
+	remove rpc_agent stuff
+
+2020-12-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_kvm'
+
+2020-12-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the rc.libvirtd script and updated rc.conf (does not start on boot by default)
+
+2020-12-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	enabled additional IOMMU and VFIO kernel drivers
+
+	more build fixes for libvirt
+
+	more build updates for libvirt
+
+2020-12-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the pixman package (dep for qemu); added a patch for qemu which resolves bild issues; updated qemu recipe
+
+2020-12-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	initial commit for KVM (QEMU)
+
 2020-12-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '306_updates' into 3.x.x
 
 	install.sh: when performing an in-place upgrade, sometimes kpartx/losetup fail to cleanup the loop device properly when the image package is used from some other file system / medium (eg, NFS) -- handle this by performing a sync first, and then if either program fails, wait a few seconds then try it again before failing permanently
 
+2020-12-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	install.sh: when performing an in-place upgrade, sometimes kpartx/losetup fail to cleanup the loop device properly when the image package is used from some other file system / medium (eg, NFS) -- handle this by performing a sync first, and then if either program fails, wait a few seconds then try it again before failing permanently
+
 2020-12-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated build deps
+
+	updated OpenSSL to version 1.1.1i
+
+	updated the cls_switchtec driver to produce less verbose output
 
 	Merge branch '305_updates' into 3.x.x
 
@@ -20,7 +258,20 @@
 
 	health_chk.sh: for MegaRAID adapters, "JBOD" is a valid PD state
 
+2020-12-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	health_chk.sh: for MegaRAID adapters, "JBOD" is a valid PD state
+
 2020-11-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated the Linux kernel patch to include a change for bcache that fixes a common kernel panic... it seems GCC 9.1.0 "optimizes" the closure_sync_fn() function and causes the assembly produced by the compiler to be out of order; before the patch: 0000000000008af4 <closure_sync_fn>:     8af4:       48 8b 47 08             mov    0x8(%rdi),%rax     8af8:       c7 40 08 01 00 00 00    movl   $0x1,0x8(%rax)     8aff:       48 8b 38                mov    (%rax),%rdi     8b02:       e8 00 00 00 00          callq  8b07 <closure_sync_fn+0x13>     8b07:       c3                      retq
+	and after the patch:
+	0000000000008af4 <closure_sync_fn>:
+	    8af4:       48 8b 47 08             mov    0x8(%rdi),%rax
+	    8af8:       48 8b 38                mov    (%rax),%rdi
+	    8afb:       c7 40 08 01 00 00 00    movl   $0x1,0x8(%rax)
+	    8b02:       e8 00 00 00 00          callq  8b07 <closure_sync_fn+0x13>
+	    8b07:       c3                      retq
 
 	Merge branch 'bcache_fix' into 3.x.x
 
@@ -35,6 +286,8 @@
 
 2020-11-20  Marc A. Smith  <marc.smith@quantum.com>
 
+	install.sh: use 'losetup -d' after upgrade to close the image file
+
 	Merge branch 'install_fix' into 3.x.x
 
 	install.sh: use 'losetup -d' after upgrade to close the image file
@@ -46,6 +299,18 @@
 	ocf:esos:alua: several updates to improve failover/failback duration (less) -- don't use trigger_suspend_resume() in set_tpg_trans() (appears to no longer be needed), updated bio_dev_to_real() and bio_dev_to_redirect() to background deactivate/activate operations in a loop, then wait at the end of each step
 
 	Python.chroot: install version '0.1.0' of py-dmidecode
+
+	updated sedutil package
+
+2020-11-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	ocf:esos:alua: several updates to improve failover/failback duration (less) -- don't use trigger_suspend_resume() in set_tpg_trans() (appears to no longer be needed), updated bio_dev_to_real() and bio_dev_to_redirect() to background deactivate/activate operations in a loop, then wait at the end of each step
+
+2020-10-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Python.chroot: install version '0.1.0' of py-dmidecode
+
+2020-10-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated sedutil package
 
