@@ -1,3 +1,9 @@
+2021-03-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'initramfs_fsck'
+
+	e2fsprogs.chroot: include the static version of 'e2fsck' for initramfs; initramfs_init: run e2fsck on the root FS (boot media) and exit to the rescue shell if uncorrectable errors are present
+
 2021-03-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210304_tweaks'

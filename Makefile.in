@@ -2387,6 +2387,11 @@ e2fsprogs.chroot: glibc.chroot util-linux.chroot
 	$(MAKE) --directory=$(chroot_build)/e2fsprogs-build \
 	LIBUUID="-luuid" LIBBLKID="-lblkid"
 	$(MAKE) --directory=$(chroot_build)/e2fsprogs-build install
+	$(MAKE) --directory=$(chroot_build)/e2fsprogs-build/e2fsck \
+	e2fsck.static
+	$(INSTALL) -D -m 755 \
+	$(chroot_build)/e2fsprogs-build/e2fsck/e2fsck.static \
+	$(chroot_build)/initramfs/usr/sbin/e2fsck
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
