@@ -104,6 +104,13 @@ else
 	# Attempt to resolve the FS label here for regular boot
 	root_fs_dev="$(findfs LABEL=esos_root)" || \
 	(echo "Error resolving the root device node!"; rescue_shell)
+	# Check the root file system and bail on non-correctable errors
+	EXT2FS_NO_MTAB_OK=1 e2fsck -p ${root_fs_dev} > /dev/null
+	fsck_status="${?}"
+	if [ "${fsck_status}" -gt 1 ]; then
+		echo "Error detected on '${root_fs_dev}' while fsck'ing!"
+		rescue_shell
+	fi
 fi
 
 if grep -q -E 'esos_iso|esos_persist' /proc/cmdline; then
