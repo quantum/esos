@@ -1,3 +1,9 @@
+2021-03-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'vim_defaults'
+
+	updated vim defaults to disable visual mouse feature
+
 2021-03-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'initramfs_fsck'
