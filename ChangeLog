@@ -1,3 +1,9 @@
+2021-03-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'fix_profile'
+
+	set EDITOR and VISUAL env vars to point to 'vim'
+
 2021-03-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'vim_defaults'

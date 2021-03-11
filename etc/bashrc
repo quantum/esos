@@ -1,7 +1,7 @@
 # Environment settings
 export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:/opt/bin:/opt/sbin"
-export EDITOR="/bin/vi"
-export VISUAL="/bin/vi"
+export EDITOR="/usr/bin/vim"
+export VISUAL="/usr/bin/vim"
 export MANPATH="/usr/share/man"
 export PAGER="/usr/bin/less -R"
 
