@@ -1696,6 +1696,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(SED) -i 's/ \/bin\// /g; s/@\/bin\//@/g' \
 	    $(mlnx_ofed_dir)/makefile; \
 	    cd $(mlnx_ofed_dir)/compat && ./autogen.sh; \
+	    $(SED) -i 's/CONFIG_NVME_MULTIPATH="y"/CONFIG_NVME_MULTIPATH=/g' \
+	    $(mlnx_ofed_dir)/configure; \
 	    cd $(mlnx_ofed_dir) && ./configure --prefix=/usr --with-njobs=10 \
 	    --kernel-version=$(kernel_ver)$$i --kernel-sources=$(linux_src) \
 	    --with-core-mod --with-ipoib-mod --with-ipoib-cm --with-srp-mod \
@@ -3227,7 +3229,7 @@ open-fcoe.chroot: glibc.chroot open-lldp.chroot libpciaccess.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-open-lldp.chroot: glibc.chroot libconfig.chroot libnl.chroot
+open-lldp.chroot: glibc.chroot libconfig.chroot libnl.chroot readline.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(SED) -i 's/^AC_FUNC_MALLOC/dnl AC_FUNC_MALLOC/' \
