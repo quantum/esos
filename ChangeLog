@@ -1,3 +1,9 @@
+2021-03-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mlnx_nvme_mp'
+
+	disable CONFIG_NVME_MULTIPATH for the MOFED NVMe drivers; fixed a build dep issue for open-lldp.chroot
+
 2021-03-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'fix_profile'
