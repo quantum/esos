@@ -1,3 +1,9 @@
+2021-04-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210401_tweaks'
+
+	added the 'sdparm' software package; install.sh: for now, rely on lazy sleep statements for partition devices to be created (TODO: handle this in a loop)
+
 2021-03-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'mlnx_nvme_mp'
