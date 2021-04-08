@@ -441,6 +441,7 @@ while : ; do
             echo "### Large installation target detected; adding the" \
                 "'esos_data' file system..."
             blockdev --rereadpt ${dev_node} || exit 1
+            sleep 5
             if echo ${dev_node} | grep -q "/dev/nvme"; then
                 # For NVMe drives
                 part_sep="p"
@@ -479,7 +480,7 @@ while : ; do
             # Create the file systems
             udevadm settle --timeout=30 || exit 1
             blockdev --rereadpt ${dev_node} || exit 1
-            sleep 1
+            sleep 5
             mkfs.ext4 -I 256 -L esos_logs ${dev_node}${part_sep}5 || exit 1
             mkfs.ext4 -I 256 -L esos_data ${dev_node}${part_sep}6 || exit 1
         fi
