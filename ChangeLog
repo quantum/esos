@@ -1,3 +1,7 @@
+2021-04-20  Chris Graves  <chris.graves@quantum.com>
+
+	added the 'sdparm' software package
+	
 2021-03-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '308_updates' into 3.x.x
