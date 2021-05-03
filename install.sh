@@ -333,7 +333,7 @@ elif [ -n "${install_tran}" ]; then
         dev_node="${tran_model_dev}"
         echo "### Using block device '${dev_node}' resolved via" \
             "transport '${install_tran}' and" \
-            "model '${install_model}'arguments..."
+            "model '${install_model}' arguments..."
         echo
     else
         # Only use the device transport type to locate install target

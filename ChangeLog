@@ -1,3 +1,9 @@
+2021-05-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '0430_tweaks'
+
+	install.sh: added missing whitespace in echo statement
+
 2021-04-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210401_tweaks'
