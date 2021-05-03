@@ -1,3 +1,7 @@
+2021-05-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	added a bcache patch that resolves a data corruption issue (applied v2 of this patch): https://marc.info/?l=linux-bcache&m=161979388124331&w=2
+
 2021-05-03  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '0430_tweaks'
