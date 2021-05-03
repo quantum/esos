@@ -1,7 +1,17 @@
+2021-05-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'bcache_bypass_bug' into 3.x.x
+
+	added a bcache patch that resolves a data corruption issue (applied v2 of this patch): https://marc.info/?l=linux-bcache&m=161979388124331&w=2
+
+2021-04-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'gearshot-3.x.x' into 3.x.x
+
 2021-04-20  Chris Graves  <chris.graves@quantum.com>
 
 	added the 'sdparm' software package
-	
+
 2021-03-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '308_updates' into 3.x.x
