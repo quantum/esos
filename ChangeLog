@@ -1,3 +1,9 @@
+2021-05-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'bcache-tools_fix'
+
+	applied additional patches to the bcache-tools package which updates the udev rule to reliably create the CACHED_UUID and CACHED_LABEL symlinks
+
 2021-05-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	added a bcache patch that resolves a data corruption issue (applied v2 of this patch): https://marc.info/?l=linux-bcache&m=161979388124331&w=2
