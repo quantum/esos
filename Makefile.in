@@ -3466,6 +3466,8 @@ bcache-tools.chroot: glibc.chroot util-linux.chroot openssl.chroot eudev.chroot
 	/usr/lib/udev/probe-bcache
 	$(INSTALL) -m 0755 $(tgt_src_dir)/bcache-register \
 	/usr/lib/udev/bcache-register
+	$(INSTALL) -m 0755 $(tgt_src_dir)/bcache-export-cached \
+	/usr/lib/udev/bcache-export-cached
 	$(INSTALL) -m 0644 $(tgt_src_dir)/*.8 /usr/share/man/man8/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
