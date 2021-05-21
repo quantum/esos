@@ -1,3 +1,9 @@
+2021-05-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '3011_update' into 3.x.x
+
+	rc.sbd: updates to handle starting SBD with SBD_STARTMODE="always" if the number of starts is below the threshold in the given amount of time (3 or less in 15 minutes)
+
 2021-05-03  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'bcache_bypass_bug' into 3.x.x
