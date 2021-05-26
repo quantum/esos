@@ -1,3 +1,9 @@
+2021-05-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_sbd_fix'
+
+	rc.sbd: updates to auto-unfencing logic that relies on filenames instead of file metadata (creation time) since using Git for /etc/ obliterates ctime attributes
+
 2021-05-16  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_sbd_unfence'
