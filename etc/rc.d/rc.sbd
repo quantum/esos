@@ -6,7 +6,7 @@ SBD_CONFIG="/etc/sysconfig/sbd"
 SBD="/usr/sbin/sbd"
 SBD_LOCK="/var/lock/sbd"
 SBD_STARTS_DIR="/etc/esos_sbd/starts"
-SBD_STARTS_MIN="15"
+SBD_STARTS_SEC="900"
 SBD_MAX_STARTS="3"
 RC_SBD_LOGGER="/usr/bin/logger -t rc.sbd -p daemon.info"
 
@@ -28,11 +28,18 @@ start() {
     /bin/mkdir -p "${SBD_STARTS_DIR}"
     /bin/touch "${SBD_STARTS_DIR}/$(/bin/date +%s)"
     /usr/local/sbin/conf_sync.sh
-    start_cnt="$(/usr/bin/find "${SBD_STARTS_DIR}" -type f \
-        -cmin -"${SBD_STARTS_MIN}" | /usr/bin/wc -l)"
+    curr_time="$(/bin/date +%s)"
+    time_thresh="$(("${curr_time}" - "${SBD_STARTS_SEC}"))"
+    start_cnt="0"
+    while read -r start_file; do
+        start_time="$(/usr/bin/basename "${start_file}")"
+        if [ "${start_time}" -gt "${time_thresh}" ]; then
+            start_cnt="$(("${start_cnt}" + "1"))"
+        fi
+    done <<< "$(/usr/bin/find "${SBD_STARTS_DIR}" -type f)"
     if [ "${start_cnt}" -gt "${SBD_MAX_STARTS}" ]; then
         ${RC_SBD_LOGGER} "More than ${SBD_MAX_STARTS} SBD starts in the" \
-            "last ${SBD_STARTS_MIN} minutes have been detected!"
+            "last ${SBD_STARTS_SEC} seconds have been detected!"
         ${RC_SBD_LOGGER} "Configuration file 'SBD_STARTMODE'" \
             "value: ${SBD_STARTMODE}"
     else
