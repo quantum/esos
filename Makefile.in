@@ -1722,11 +1722,9 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(atto_scst_dir)/Module.symvers; \
 	    $(MAKE) --directory=$(atto_scst_dir) KDIR=$(linux_src) \
 	    FULL_KERNEL_VERSION=$(kernel_ver)$$i PWD=$(atto_scst_dir) \
-	    MODULE_ROOT=/lib/modules/$(kernel_ver)$$i/extra \
-	    atto_scst_16fc; \
-	    $(INSTALL) -D -m 0644 \
-	    $(atto_scst_dir)/atto_scst_16fc.ko \
-	    /lib/modules/$(kernel_ver)$$i/extra/atto_scst_16fc.ko; \
+	    MODULE_ROOT=/lib/modules/$(kernel_ver)$$i/extra module; \
+	    $(INSTALL) -D -m 0644 $(atto_scst_dir)/atto_scst.ko \
+	    /lib/modules/$(kernel_ver)$$i/extra/atto_scst.ko; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Emulex OCS SCST module..."; \
