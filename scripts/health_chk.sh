@@ -194,11 +194,11 @@ echo -e "Memory Used Percent:\t$(echo ${prct_mem_used} | \
     awk '{ printf("%d", $1 * 100) }')%"
 echo
 
-# Check disk space (well, tmpfs root FS space)
-disk_total=$(df -m / | grep tmpfs | awk '{print $2}')
-disk_used=$(df -m / | grep tmpfs | awk '{print $3}')
-disk_avail=$(df -m / | grep tmpfs | awk '{print $4}')
-echo "Disk (/ -> root tmpfs) space check..."
+# Check disk space (well, tmpfs/overlay root FS space)
+disk_total=$(df -m / | egrep 'tmpfs|overlay' | awk '{print $2}')
+disk_used=$(df -m / | egrep 'tmpfs|overlay' | awk '{print $3}')
+disk_avail=$(df -m / | egrep 'tmpfs|overlay' | awk '{print $4}')
+echo "Disk (/ -> root tmpfs/overlay) space check..."
 echo -e "Total Disk Space:\t${disk_total} MB\nUsed Disk" \
     "Space:\t${disk_used} MB\nAvail. Disk Space:\t${disk_avail} MB"
 prct_disk_used=$(echo "${disk_used} ${disk_total}" | \
