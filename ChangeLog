@@ -1,5 +1,9 @@
 2021-06-27  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch '20210627_changes'
+
+	iso_installer.sh: don't attempt to mount the CD-ROM if we're using the NFS option, applied several shellcheck recommendations
+
 	Merge branch '20210625_changes'
 
 	include the bnxt_en driver in the initramfs image, install the default.script file for udhcp, create /etc in the initramfs image (udhcpc writes to resolv.conf); build dep fix for libnftnl; rc.0: don't stop the network if we're using an ISO via NFS; busybox: enable NFS mount support; initramfs_init: load bnxt_en, handle new 'nfs_dhcp_iface', 'nfs_iso_device', and 'nfs_mnt_opts' kernel params (mount an ISO via NFS); health_chk.sh: fix parsing issue when using 'esos_persist' mode

@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Helper script that gets run by init (/etc/inittab) when booting an ESOS ISO
 # using installation mode (esos_iso=install). This script will mount the CD-ROM
@@ -24,15 +24,17 @@ mount_cd_iso() {
     fi
     if ! grep -q "${cdrom_dev} /mnt/root" /proc/mounts; then
         echo "### Mounting the CD-ROM / ISO..."
-        mount ${cdrom_dev} /mnt/root || return 1
+        mount "${cdrom_dev}" /mnt/root || return 1
         echo " "
     fi
     return 0
 }
 
 {
-    # Mount the CD-ROM (if it's not already)
-    mount_cd_iso || bash
+    if ! grep -q nfs_iso_device /proc/cmdline; then
+        # Mount the CD-ROM (if it's not already)
+        mount_cd_iso || bash
+    fi
 
     # Grab the install device / install transport type (if any)
     install_dev="$(cmdline install_dev)"
@@ -46,8 +48,10 @@ mount_cd_iso() {
     WIPE_DEVS=${wipe_devs} NO_PROMPT=${no_prompt} ./install.sh \
         "${install_dev}" "${install_tran}" "${install_model}" || bash
 
-    # Make sure the CD-ROM is still mounted (may get disconnected)
-    mount_cd_iso || bash
+    if ! grep -q nfs_iso_device /proc/cmdline; then
+        # Make sure the CD-ROM is still mounted (may get disconnected)
+        mount_cd_iso || bash
+    fi
 
     # Handle after-install customizations
     if [ -f "./extra_install.sh" ]; then
@@ -65,7 +69,7 @@ mount_cd_iso() {
         echo " "
         while : ; do
             echo "### ESOS ISO installer complete; type 'yes' to reboot:" && \
-                read confirm
+                read -r confirm
             if [ "x${confirm}" = "xyes" ]; then
                 break
             fi
@@ -75,5 +79,5 @@ mount_cd_iso() {
     echo "### Rebooting..."
     echo " "
     reboot
-} | tee /tmp/iso_installer_$(date +%s).log
+} | tee "/tmp/iso_installer_$(date +%s).log"
 
