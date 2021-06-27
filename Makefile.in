@@ -1905,6 +1905,10 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MV) -f /lib/modules/$(kernel_ver)$$i/updates/bnxt_en.ko \
 	    /lib/modules/$(kernel_ver)$$i/kernel/drivers/net/ethernet/broadcom/bnxt/; \
 	  fi; \
+	  $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
+	  cd /lib/modules/$(kernel_ver)$$i/kernel && \
+	  $(INSTALL) -m 0644 drivers/net/ethernet/broadcom/bnxt/bnxt_en.ko \
+	  $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && cd -; \
 	  if [ "$(with_rapiddisk)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the RapidDisk modules..."; \
 	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
@@ -2136,6 +2140,9 @@ busybox.chroot: glibc.chroot Linux-PAM.chroot
 	$(INSTALL) -d /usr/share/udhcpc
 	$(INSTALL) $(tgt_src_dir)/examples/udhcp/simple.script \
 	/usr/share/udhcpc/default.script
+	$(INSTALL) -d $(chroot_build)/initramfs/usr/share/udhcpc
+	$(INSTALL) $(tgt_src_dir)/examples/udhcp/simple.script \
+	$(chroot_build)/initramfs/usr/share/udhcpc/default.script
 	$(ECHO) -e "#! /bin/sh\n\n/bin/busybox awk \"\044\0100\"\n" > \
 	/usr/bin/gawk
 	$(CHMOD) +x /usr/bin/gawk
@@ -3084,7 +3091,7 @@ libmnl.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-libnftnl.chroot: glibc.chroot
+libnftnl.chroot: glibc.chroot libmnl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr

@@ -137,7 +137,7 @@ if test -d "${chroot_dir}"; then
 	${ln} -sf lib ${chroot_dir}/usr/local/lib64 || exit 1
 	${mkdir} -p ${tools_dir}/lib || exit 1
 	${ln} -sf lib ${tools_dir}/lib64 || exit 1
-	${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp} || exit 1
+	${mkdir} -p ${initramfs_dir}/{bin,sbin,proc,sys,dev,tmp,etc} || exit 1
 	${mkdir} -p ${initramfs_dir}/mnt/{root,tmp,overlay} || exit 1
 	${mkdir} -p ${initramfs_dir}/usr/{bin,sbin} || exit 1
 	${mkdir} -p ${initramfs_dir}/lib/firmware || exit 1

@@ -44,6 +44,9 @@ fi
 insmod /lib/modules/$(uname -r)/nvme-core.ko || rescue_shell
 insmod /lib/modules/$(uname -r)/nvme.ko || rescue_shell
 
+# Load early network adapter drivers
+insmod /lib/modules/$(uname -r)/bnxt_en.ko || rescue_shell
+
 # Some devices are delayed
 echo "Waiting for devices to settle..."
 sleep 5
@@ -94,10 +97,36 @@ if [ -z "${slot_name}" ]; then
 	rescue_shell
 fi
 
+# Configure the interface for DHCP if using an ISO via NFS
+nfs_dhcp_iface="$(cmdline nfs_dhcp_iface)"
+if [ -n "${nfs_dhcp_iface}" ]; then
+	echo "Bringing up interface '${nfs_dhcp_iface}'..."
+	ifconfig ${nfs_dhcp_iface} up || rescue_shell
+	sleep 5
+	udhcpc -i ${nfs_dhcp_iface} -q || rescue_shell
+fi
+
+# The default root FS mount options may get overridden below
+root_opts="sync"
+
 if grep esos_iso /proc/cmdline > /dev/null 2>&1; then
-	# Resolve the CD-ROM device using the ESOS ISO name
-	root_fs_dev="$(findfs LABEL=ESOS-ISO)" || \
-	(echo "Error resolving the ESOS-ISO device!"; rescue_shell)
+	nfs_iso_device="$(cmdline nfs_iso_device)"
+	if [ -n "${nfs_iso_device}" ]; then
+		# Using an NFS device (host + path) for the ISO
+		root_fs_dev="${nfs_iso_device}"
+		nfs_mnt_opts="$(cmdline nfs_mnt_opts)"
+		if [ -n "${nfs_mnt_opts}" ]; then
+			# User gave special NFS mount options
+			root_opts="${nfs_mnt_opts}"
+		else
+			# Just use our default NFS options
+			root_opts="port=2049,nolock,proto=tcp"
+		fi
+	else
+		# Resolve the CD-ROM device using the ESOS ISO name
+		root_fs_dev="$(findfs LABEL=ESOS-ISO)" || \
+		(echo "Error resolving the ESOS-ISO device!"; rescue_shell)
+	fi
 else
 	# Assemble ESOS boot drive MD arrays here (if any)
 	assem_boot_md || rescue_shell
@@ -118,7 +147,7 @@ if grep -q -E 'esos_iso|esos_persist' /proc/cmdline; then
 	mount -t tmpfs tmpfs /mnt/overlay || rescue_shell
 	esos_root_mnt="/mnt/tmp"
 	sqsh_arch="${esos_root_mnt}/${slot_name}-root.sqsh"
-	mount -o sync ${root_fs_dev} ${esos_root_mnt} || rescue_shell
+	mount -o ${root_opts} ${root_fs_dev} ${esos_root_mnt} || rescue_shell
 	mkdir -p /mnt/overlay/lower || rescue_shell
 	mkdir -p /mnt/overlay/upper || rescue_shell
 	mkdir -p /mnt/overlay/work || rescue_shell

@@ -10,8 +10,10 @@ for i in $(/bin/echo ${LATE_SERVICES} | /usr/bin/tr ' ' '\n' | \
     fi
 done
 
-if [ -x /etc/rc.d/rc.network ]; then
-    /etc/rc.d/rc.network stop
+if ! /bin/grep nfs_iso_device /proc/cmdline > /dev/null 2>&1; then
+    if [ -x /etc/rc.d/rc.network ]; then
+        /etc/rc.d/rc.network stop
+    fi
 fi
 
 # Stop the EARLY user settable services (reverse order)
