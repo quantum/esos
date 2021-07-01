@@ -60,6 +60,7 @@
 /libtool
 /flex
 /zlib
+/libffi
 /Python
 /cmake
 /ninja
