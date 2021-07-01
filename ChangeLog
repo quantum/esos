@@ -1,3 +1,13 @@
+2021-07-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'gearshot-master'
+
+	ignore 'libffi' dep file
+
+2021-06-30  Chris Graves  <chris.graves@quantum.com>
+
+	Python is upgraded from 3.6.8 to 3.9.5, and python package cherrypy is added, (with 9 required modules).  A few makefile changes are required for the build. All python packages are updated to latest available based on pip3 install with Python-3.9.5.
+
 2021-06-27  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210627_changes'
