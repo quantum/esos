@@ -144,7 +144,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		grep-3.3.tar.xz \
 		gzip-1.10.tar.xz \
 		m4-1.4.18.tar.xz \
-		make-4.2.1.tar.bz2 \
+		make-4.3.tar.gz \
 		patch-2.7.6.tar.xz \
 		perl-5.28.2.tar.xz \
 		sed-4.7.tar.xz \
@@ -1223,10 +1223,6 @@ m4: make
 make: gcc.pass2
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call no_chroot)
-	$(QUIET) if $(GREP) -q 'defined __alloca && !defined __GNU_LIBRARY__' \
-	  $(tgt_src_dir)/glob/glob.c; then \
-	  $(SED) -i '211,217 d; 219,229 d; 232 d' $(tgt_src_dir)/glob/glob.c; \
-	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/tools --without-guile
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install

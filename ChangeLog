@@ -1,5 +1,9 @@
 2021-07-06  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch '20210706_changes'
+
+	updated 'make' to version 4.3 (resolves slow parallel build issue related to pselect)
+
 	Merge branch '20210705_changes'
 
 	bootstrap build fixes
