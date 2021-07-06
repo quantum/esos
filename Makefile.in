@@ -1247,7 +1247,7 @@ perl: make
 	$(call no_chroot)
 	cd $(tgt_src_dir) && sh Configure -des -Dprefix=/tools \
 	-Dlibs=-lm -Uloclibpth -Ulocincpth
-	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) MAKE=$(MAKE)
 	$(CP) -v $(tgt_src_dir)/perl \
 	$(tgt_src_dir)/cpan/podlators/scripts/pod2man /tools/bin/
 	$(MKDIR) -v /tools/lib/perl5/5.28.2
@@ -1396,8 +1396,8 @@ Python: make zlib libffi
 	  $(SED) -i '/def add_multiarch_paths/a \        return' \
 	  $(tgt_src_dir)/setup.py; \
 	fi
-	cd $(tgt_src_dir) && ./configure --prefix=/tools --without-ensurepip \
-	--without-system-ffi
+	cd $(tgt_src_dir) && PKG_CONFIG_PATH=/tools/lib/pkgconfig \
+	./configure --prefix=/tools --without-ensurepip --with-system-ffi
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(MV) $(tgt_src_dir)/setup.py.orig $(tgt_src_dir)/setup.py
