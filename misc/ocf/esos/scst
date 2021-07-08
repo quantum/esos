@@ -28,8 +28,8 @@ fi
 
 # For optional SCST modules
 OPTL_MODS=""
-if [ -f "/lib/modules/$(uname -r)/extra/atto_scst_16fc.ko" ]; then
-    OPTL_MODS="${OPTL_MODS} atto_scst_16fc"
+if [ -f "/lib/modules/$(uname -r)/extra/atto_scst.ko" ]; then
+    OPTL_MODS="${OPTL_MODS} atto_scst"
 fi
 if [ -f "/lib/modules/$(uname -r)/extra/ocs_fc_scst.ko" ]; then
     OPTL_MODS="${OPTL_MODS} ocs_fc_scst"
