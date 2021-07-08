@@ -1,3 +1,13 @@
+2021-07-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'new_atto_scst' into 2.x.x
+
+	updated ATTO SCST module name ('atto_scst') for new driver version
+
+2021-06-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	updates to the esos_kernels target for new ATTO Celerity 16/32 FC driver
+
 2021-02-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '2110_update' into 2.x.x
