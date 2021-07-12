@@ -1,3 +1,9 @@
+2021-07-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210711_changes'
+
+	updated GDB to version 10.2 and enabled Python support; updated mount options for fstab
+
 2021-07-06  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210706_changes'
