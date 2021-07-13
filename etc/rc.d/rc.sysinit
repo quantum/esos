@@ -59,6 +59,12 @@ fi
 /bin/echo "Setting the x86 energy MSR policy for maximum performance..."
 /usr/bin/x86_energy_perf_policy performance
 
+/bin/echo "Disabling the C2 CPU idle state..."
+/usr/bin/cpupower idle-set -d 2 > /dev/null
+
+/bin/echo "Setting the CPU governor to 'performance'..."
+/usr/bin/cpupower frequency-set -g performance > /dev/null
+
 if [ -f "/var/lib/esos/random-seed" ]; then
     /bin/echo "Initializing random number generator..."
     /bin/cat /var/lib/esos/random-seed > /dev/urandom

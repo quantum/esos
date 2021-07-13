@@ -1,0 +1,8 @@
+# Begin /etc/pam.d/sudo
+
+auth        include        system-auth
+account     include        system-account
+password    include        system-password
+session     include        system-session
+
+# End /etc/pam.d/sudo
