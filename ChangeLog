@@ -1,3 +1,9 @@
+2021-07-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'cpupower_tweaks'
+
+	added the '/etc/pam.d/sudo' file; rc.sysinit: disable C2 state and set CPU governor to "performance"
+
 2021-07-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210711_changes'
