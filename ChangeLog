@@ -1,3 +1,9 @@
+2021-07-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_iproute2'
+
+	added the 'iproute2' package (provides 'ip' program among others); disabled 'ip' and 'tc' applets in Busybox
+
 2021-07-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'cpupower_tweaks'
