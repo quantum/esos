@@ -97,13 +97,19 @@ if [ -z "${slot_name}" ]; then
 	rescue_shell
 fi
 
-# Configure the interface for DHCP if using an ISO via NFS
-nfs_dhcp_iface="$(cmdline nfs_dhcp_iface)"
-if [ -n "${nfs_dhcp_iface}" ]; then
-	echo "Bringing up interface '${nfs_dhcp_iface}'..."
-	ifconfig ${nfs_dhcp_iface} up || rescue_shell
-	sleep 5
-	udhcpc -i ${nfs_dhcp_iface} -q || rescue_shell
+# Configure all interfaces that have link for DHCP if using an ISO via NFS
+if [ -n "$(cmdline nfs_iso_device)" ]; then
+	for i in /sys/class/net/eth*; do
+		iface="$(basename "${i}")"
+		echo "Bringing up interface '${iface}'..."
+		ifconfig "${iface}" up || rescue_shell
+		sleep 5
+		carrier="$(head -1 "${i}/carrier")"
+		if [ -n "${carrier}" ] && [ "${carrier}" = "1" ]; then
+			# Break the loop on the first lease obtained
+			udhcpc -i "${iface}" -n && break
+		fi
+	done
 fi
 
 # The default root FS mount options may get overridden below
