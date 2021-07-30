@@ -1,3 +1,9 @@
+2021-07-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210726_tweaks'
+
+	rc.2: re-enable the Microsemi NTB driver and Virtual Ethernet (NTB) driver; install.sh: on some systems, blockdev and wipefs fail on the first attempt... lame work-around for now is to simply wait and retry; initramfs: rather than taking an explicit interface name, attempt a DHCP lease on all interfaces that have link, and stop after the first lease is obtained (needs testing)
+
 2021-07-15  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_iproute2'
