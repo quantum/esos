@@ -25,22 +25,32 @@ start() {
 
 stop() {
     /bin/echo "Stopping MD RAID arrays..."
-    ${MDADM} --detail --scan | while read -r row; do
-        md_path="$(echo ${row} | awk '{ print $2 }')"
-        md_name="$(echo ${row} | awk '{ print $4 }' | \
-            cut -d= -f2 | cut -d: -f2)"
-        # Only stop arrays that aren't the ESOS boot media
-        if ! echo ${md_name} | \
-            egrep 'esos_boot|esos_root|esos_conf|esos_logs|esos_data' \
-            > /dev/null; then
-            ${MDADM} --stop ${md_path} || exit 1
-        fi
+    # We do two runs to handle "nested" MD RAID arrays
+    for i in 1 2; do
+        ${MDADM} --detail --scan | while read -r row; do
+            md_path="$(echo "${row}" | awk '{ print $2 }')"
+            md_name="$(echo "${row}" | awk '{ print $4 }' | \
+                cut -d= -f2 | cut -d: -f2)"
+            # We can't stop nested MD RAID arrays that have member arrays
+            md_device="$(readlink -f "${md_path}")"
+            short_md="$(echo "${md_device}" | cut -d/ -f3)"
+            if find "/sys/block/${short_md}/holders/" \
+                -type l -name 'md*' | grep -q .; then
+                continue
+            fi
+            # Only stop arrays that aren't the ESOS boot media
+            if ! echo "${md_name}" | \
+                grep -E 'esos_boot|esos_root|esos_conf|esos_logs|esos_data' \
+                > /dev/null; then
+                ${MDADM} --stop "${md_path}" || exit 1
+            fi
+        done
     done
 }
 
 status() {
     # We don't know anything
-    exit ${UNKNOWN}
+    exit "${UNKNOWN}"
 }
 
 # Perform specified action

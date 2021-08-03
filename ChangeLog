@@ -1,3 +1,9 @@
+2021-08-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mdraid_stop_nested'
+
+	Makefile.in: massage 'scstadmin' so it doesn't produce an ugly warning when applying the config with the '-lip' option and no FC ports present; rc.mdraid: handle stopping "nested" MD RAID arrays
+
 2021-07-30  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210726_tweaks'
