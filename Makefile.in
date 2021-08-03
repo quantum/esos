@@ -2338,6 +2338,7 @@ scstadmin.chroot: perl.chroot scst.chroot
 	$(MAKE) --directory=$(perl_mod) PERL5LIB="$(perl_lib)"
 	$(MAKE) --directory=$(perl_mod) PERL5LIB="$(perl_lib)" install
 	$(INSTALL) -m 755 $(scst_src)/scstadmin/scstadmin/scstadmin /usr/sbin/
+	$(SED) -i 's/$$rc = issueLip() if ($$changes \&\& $$lip);/$$rc = issueLip($$driver, $$issueLip, TRUE) if ($$changes \&\& $$lip);/' /usr/sbin/scstadmin
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
