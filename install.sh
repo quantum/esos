@@ -445,8 +445,8 @@ while : ; do
                 sleep 5
                 blockdev --rereadpt ${dev_node}
             fi
-            if echo ${dev_node} | grep -q "/dev/nvme"; then
-                # For NVMe drives
+            if echo ${dev_node} | grep -E -q 'nvme|nbd'; then
+                # For NVMe/NBD drives
                 part_sep="p"
             else
                 # For SCSI drives
