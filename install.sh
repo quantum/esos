@@ -425,7 +425,9 @@ while : ; do
         fi
         if [ "${this_os}" = "${LINUX}" ]; then
             # Re-read the partition table (not fatal)
-            blockdev --rereadpt ${dev_node}
+            if ! echo ${dev_node} | grep -E -q 'loop'; then
+                blockdev --rereadpt ${dev_node}
+            fi
         fi
         echo
         echo "### It appears the image was successfully written to disk" \
@@ -441,27 +443,41 @@ while : ; do
             echo "### Large installation target detected; adding the" \
                 "'esos_data' file system..."
             udevadm settle --timeout=30
-            if ! blockdev --rereadpt ${dev_node}; then
-                sleep 5
-                blockdev --rereadpt ${dev_node}
+            if echo ${dev_node} | grep -E -q 'loop'; then
+                kpartx -a "${dev_node}"
+            else
+                if ! blockdev --rereadpt "${dev_node}"; then
+                    sleep 5
+                    blockdev --rereadpt "${dev_node}"
+                fi
             fi
             if echo ${dev_node} | grep -E -q 'nvme|nbd'; then
                 # For NVMe/NBD drives
-                part_sep="p"
+                old_logs_part_dev="${dev_node}p4"
+                new_logs_part_dev="${dev_node}p5"
+                new_data_part_dev="${dev_node}p6"
+            elif echo ${dev_node} | grep -E -q 'loop'; then
+                # For loop devices
+                short_dev="$(basename "${dev_node}")"
+                old_logs_part_dev="/dev/mapper/${short_dev}p4"
+                new_logs_part_dev="/dev/mapper/${short_dev}p5"
+                new_data_part_dev="/dev/mapper/${short_dev}p6"
             else
-                # For SCSI drives
-                part_sep=""
+                # For everything else (eg, SCSI drives)
+                old_logs_part_dev="${dev_node}4"
+                new_logs_part_dev="${dev_node}5"
+                new_data_part_dev="${dev_node}6"
             fi
             free_end="$(parted -m -s ${dev_node} unit s print free | \
                 egrep ':free;$' | tail -n+2 | cut -d: -f3 | tr -d 's')"
             orig_start="$(parted -m -s ${dev_node} unit s print | \
                 egrep '^4:' | cut -d: -f2 | tr -d 's')"
             # Zap the original 'esos_logs' file system
-            if ! wipefs --all ${dev_node}${part_sep}4; then
+            if ! wipefs --all "${old_logs_part_dev}"; then
                 sleep 5
-                wipefs --all ${dev_node}${part_sep}4
+                wipefs --all "${old_logs_part_dev}"
             fi
-            parted -m -s ${dev_node} rm 4 || exit 1
+            parted -m -s "${dev_node}" rm 4 || exit 1
             # Add a 50 GiB partition for the new 'esos_logs' FS
             esos_logs_sectors="$(echo "53687091200 / ${blk_dev_sector}" | bc)"
             # TODO: Make sure the sectors unit for 'parted' is the logical
@@ -485,12 +501,19 @@ while : ; do
                 ${esos_data_start}s ${esos_data_end}s || exit 1
             # Create the file systems
             udevadm settle --timeout=30
-            if ! blockdev --rereadpt ${dev_node}; then
-                sleep 5
-                blockdev --rereadpt ${dev_node}
+            if echo ${dev_node} | grep -E -q 'loop'; then
+                kpartx -a "${dev_node}"
+            else
+                if ! blockdev --rereadpt "${dev_node}"; then
+                    sleep 5
+                    blockdev --rereadpt "${dev_node}"
+                fi
             fi
-            mkfs.ext4 -I 256 -L esos_logs ${dev_node}${part_sep}5 || exit 1
-            mkfs.ext4 -I 256 -L esos_data ${dev_node}${part_sep}6 || exit 1
+            mkfs.ext4 -I 256 -L esos_logs "${new_logs_part_dev}" || exit 1
+            mkfs.ext4 -I 256 -L esos_data "${new_data_part_dev}" || exit 1
+            if echo ${dev_node} | grep -E -q 'loop'; then
+                kpartx -d "${dev_node}"
+            fi
         fi
         break
     elif [[ ${confirm} =~ [Nn]|[Nn][Oo] ]]; then
