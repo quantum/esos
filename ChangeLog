@@ -1,3 +1,15 @@
+2021-08-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'install_loop'
+
+	install.sh: updated to support "loop" devices as install targets
+
+2021-08-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'install_nbd'
+
+	install.sh: support NBD block devices
+
 2021-08-03  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'mdraid_stop_nested'
