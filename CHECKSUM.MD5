@@ -242,6 +242,12 @@ f756474201bec9a46b41e8712f79468a  haveged-1.9.14.tar.gz
 be9b4b5328c6da1bda565ac5dffadb2d  libmnl-1.0.4.tar.bz2
 e03cefd53f4b076d959abe36de5c38f8  libnftnl-1.1.9.tar.bz2
 1875b70e98569f5d0abd84b78b816d31  dnsmasq-2.84.tar.xz
+8435e530d81147a87a83b835da4e1f66  libguestfs-1.44.1.tar.gz
+81628f176a768c7c834563d49226d3e8  xorriso-1.5.4.tar.gz
+74f1c7b8550f4e728486091f6b907175  augeas-1.12.0.tar.gz
+1b9168c6454ba21c469990d90e4b93b5  hivex-1.3.21.tar.gz
+770e0b7a3cd02cf47f2233e54e7ea344  ocaml-4.12.0.tar.gz
+65e6dc9b305ccbed1267275fe180f538  findlib-1.9.1.tar.gz
 a1a35dd7cc053fca143a6886a1dea635  msmtp-1.8.14.tar.xz
 b10aa2f497def7283bc060f626879ce5  tcpdump-4.99.0.tar.gz
 6f1fc6f506a51545ef8781b9005732a6  vim-8.2.2562.tar.gz
