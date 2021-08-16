@@ -1,3 +1,9 @@
+2021-08-16  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_libguestfs'
+
+	when using '--enable-qemu' also build/install "libguestfs" (and required deps)
+
 2021-08-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'install_loop'

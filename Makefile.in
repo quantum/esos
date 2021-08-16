@@ -343,6 +343,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		sdparm-1.11.tar.xz \
 		iproute2-5.9.0.tar.xz \
 		libmnl-1.0.4.tar.bz2 \
+		jansson-2.12.tar.bz2 \
+		pcre-8.43.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -430,7 +432,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		sedutil.chroot squashfs-tools.chroot prometheus.chroot \
 		jq.chroot oniguruma.chroot procps.chroot haveged.chroot \
 		msmtp.chroot gnutls.chroot nettle.chroot tcpdump.chroot \
-		vim.chroot sdparm.chroot iproute2.chroot libmnl.chroot
+		vim.chroot sdparm.chroot iproute2.chroot libmnl.chroot \
+		file.chroot jansson.chroot pcre.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -450,9 +453,7 @@ ifeq ($(enable_strace),yes)
 endif
 ifeq ($(enable_nginx),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,nginx-1.16.0.tar.gz)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,pcre-8.43.tar.gz)
 	chroot_tgts += nginx.chroot
-	chroot_tgts += pcre.chroot
 endif
 ifeq ($(enable_python_sql),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,postgresql-9.6.13.tar.bz2)
@@ -482,6 +483,12 @@ ifeq ($(enable_qemu),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,iptables-1.8.7.tar.bz2)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,libnftnl-1.1.9.tar.bz2)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,dnsmasq-2.84.tar.xz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,libguestfs-1.44.1.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,xorriso-1.5.4.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,augeas-1.12.0.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,hivex-1.3.21.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,ocaml-4.12.0.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,findlib-1.9.1.tar.gz)
 	chroot_tgts += qemu.chroot
 	chroot_tgts += pixman.chroot
 	chroot_tgts += libvirt.chroot
@@ -489,6 +496,12 @@ ifeq ($(enable_qemu),yes)
 	chroot_tgts += iptables.chroot
 	chroot_tgts += libnftnl.chroot
 	chroot_tgts += dnsmasq.chroot
+	chroot_tgts += libguestfs.chroot
+	chroot_tgts += xorriso.chroot
+	chroot_tgts += augeas.chroot
+	chroot_tgts += hivex.chroot
+	chroot_tgts += ocaml.chroot
+	chroot_tgts += findlib.chroot
 endif
 ifeq ($(enable_mhvtl),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
@@ -537,9 +550,7 @@ ifeq ($(with_mlnx_ofed),yes)
 	chroot_tgts += mlnx_ofed.chroot
 endif
 ifeq ($(with_rapiddisk),yes)
-	dist_files += $(addprefix $(DIST_FILES_DIR)/,jansson-2.12.tar.bz2)
 	chroot_tgts += rapiddisk.chroot
-	chroot_tgts += jansson.chroot
 endif
 
 # Handle additional targets via customization directory
@@ -2096,15 +2107,6 @@ rapiddisk.chroot: glibc.chroot jansson.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-jansson.chroot: glibc.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
-	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
 Linux-PAM.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -2150,6 +2152,7 @@ busybox.chroot: glibc.chroot Linux-PAM.chroot
 	$(ECHO) -e "#! /bin/sh\n\n/bin/busybox awk \"\044\0100\"\n" > \
 	/usr/bin/gawk
 	$(CHMOD) +x /usr/bin/gawk
+	$(LN) -sf /bin/busybox /bin/cpio
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3094,7 +3097,7 @@ yajl.chroot: glibc.chroot
 iptables.chroot: glibc.chroot libmnl.chroot libnftnl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -3114,6 +3117,77 @@ dnsmasq.chroot: glibc.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) PREFIX=/usr install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+libguestfs.chroot: glibc.chroot qemu.chroot gperf.chroot perl.chroot \
+	Python.chroot libxml2.chroot ncurses.chroot busybox.chroot \
+	xorriso.chroot pcre.chroot augeas.chroot file.chroot \
+	jansson.chroot hivex.chroot fuse.chroot ocaml.chroot \
+	findlib.chroot libvirt.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(SED) -i 's,/usr/bin/ld,ld,' $(tgt_src_dir)/configure
+	cd $(tgt_src_dir) && NCURSES_CONFIG="ncursesw6-config" \
+	HAVE_RPM_FALSE="#" HAVE_DPKG_FALSE="#" HAVE_PACMAN_FALSE="#" \
+	./configure --prefix=/usr --sysconfdir=/etc --disable-appliance \
+	--disable-daemon --with-distro="ESOS"
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=/ install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+xorriso.chroot: glibc.chroot readline.chroot acl.chroot attr.chroot \
+	zlib.chroot bzip2.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-libreadline \
+	--enable-libacl --enable-xattr --enable-zlib --enable-jtethreads \
+	--enable-libbz2
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(LN) -sf xorriso /usr/bin/mkisofs
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+augeas.chroot: glibc.chroot readline.chroot libxml2.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+hivex.chroot: glibc.chroot libxml2.chroot perl.chroot Python.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(SED) -i 's,/usr/bin/ld,ld,' $(tgt_src_dir)/configure
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-nls \
+	--enable-perl --enable-python --disable-ruby
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+ocaml.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-ocamldoc \
+	--disable-ocamltest --disable-stdlib-manpages
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) MANDIR=/usr/share/man install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+findlib.chroot: glibc.chroot ocaml.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure -mandir /usr/share/man \
+	-config /etc/findlib.conf
+	$(MAKE) --directory=$(tgt_src_dir) all
+	$(MAKE) --directory=$(tgt_src_dir) opt
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4454,15 +4528,6 @@ kbd.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-pcre.chroot: glibc.chroot
-	$(QUIET) $(ECHO) "### Building $(@)"
-	$(call chroot_only)
-	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
-	$(MAKE) --directory=$(tgt_src_dir)
-	$(MAKE) --directory=$(tgt_src_dir) install
-	$(TOUCH) $(@)
-	$(QUIET) $(ECHO) "### Done $(@)"
-
 nginx.chroot: glibc.chroot pcre.chroot zlib.chroot openssl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -4866,6 +4931,33 @@ libmnl.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+file.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+jansson.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+pcre.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
