@@ -345,6 +345,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libmnl-1.0.4.tar.bz2 \
 		jansson-2.12.tar.bz2 \
 		pcre-8.43.tar.gz \
+		pv-1.6.6.tar.bz2 \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -433,7 +434,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		jq.chroot oniguruma.chroot procps.chroot haveged.chroot \
 		msmtp.chroot gnutls.chroot nettle.chroot tcpdump.chroot \
 		vim.chroot sdparm.chroot iproute2.chroot libmnl.chroot \
-		file.chroot jansson.chroot pcre.chroot
+		file.chroot jansson.chroot pcre.chroot pv.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -489,6 +490,7 @@ ifeq ($(enable_qemu),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,hivex-1.3.21.tar.gz)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,ocaml-4.12.0.tar.gz)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,findlib-1.9.1.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,guestfs_app-1.40.1.tar.xz)
 	chroot_tgts += qemu.chroot
 	chroot_tgts += pixman.chroot
 	chroot_tgts += libvirt.chroot
@@ -502,6 +504,7 @@ ifeq ($(enable_qemu),yes)
 	chroot_tgts += hivex.chroot
 	chroot_tgts += ocaml.chroot
 	chroot_tgts += findlib.chroot
+	chroot_tgts += guestfs_app.chroot
 endif
 ifeq ($(enable_mhvtl),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
@@ -3124,14 +3127,14 @@ libguestfs.chroot: glibc.chroot qemu.chroot gperf.chroot perl.chroot \
 	Python.chroot libxml2.chroot ncurses.chroot busybox.chroot \
 	xorriso.chroot pcre.chroot augeas.chroot file.chroot \
 	jansson.chroot hivex.chroot fuse.chroot ocaml.chroot \
-	findlib.chroot libvirt.chroot
+	findlib.chroot guestfs_app.chroot libvirt.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(SED) -i 's,/usr/bin/ld,ld,' $(tgt_src_dir)/configure
 	cd $(tgt_src_dir) && NCURSES_CONFIG="ncursesw6-config" \
 	HAVE_RPM_FALSE="#" HAVE_DPKG_FALSE="#" HAVE_PACMAN_FALSE="#" \
-	./configure --prefix=/usr --sysconfdir=/etc --disable-appliance \
-	--disable-daemon --with-distro="ESOS"
+	./configure --prefix=/usr --exec-prefix=/usr --sysconfdir=/etc \
+	--disable-appliance --disable-daemon --with-distro="ESOS"
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) DESTDIR=/ install
 	$(TOUCH) $(@)
@@ -3188,6 +3191,14 @@ findlib.chroot: glibc.chroot ocaml.chroot
 	$(MAKE) --directory=$(tgt_src_dir) all
 	$(MAKE) --directory=$(tgt_src_dir) opt
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+guestfs_app.chroot:
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MKDIR) /usr/lib/guestfs
+	$(CP) --sparse=always $(tgt_src_dir)/* /usr/lib/guestfs/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4958,6 +4969,15 @@ pcre.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-static
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+pv.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
