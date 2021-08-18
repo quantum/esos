@@ -67,4 +67,6 @@
 /meson
 /setuptools
 /rsync
+/ocaml
+/findlib
 

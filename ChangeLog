@@ -1,3 +1,11 @@
+2021-08-17  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210816_tweaks'
+
+	moved ocaml and findlib to bootstrap targets (not needed at run time); util-linux complains about ncurses dep at times; updated image target to select root tmpfs size based on build options
+
+	added the 'guestfs_app' package (libguestfs appliance image); added the 'pv' utility; fixed exec path for libguestfs
+
 2021-08-16  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_libguestfs'

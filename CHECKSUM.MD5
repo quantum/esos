@@ -41,6 +41,8 @@ f6e931e319531b736fadc017f470e68a  pkg-config-0.29.2.tar.gz
 f340be768a76724b83e6daab69009902  ninja-1.9.0.tar.gz
 67ce2c0c3eab1b8ee9ddaa1c5143e7c0  meson-0.56.0.tar.gz
 7a07fe2796aa98631d50dc107e266368  setuptools-28.6.0.tar.gz
+770e0b7a3cd02cf47f2233e54e7ea344  ocaml-4.12.0.tar.gz
+65e6dc9b305ccbed1267275fe180f538  findlib-1.9.1.tar.gz
 d10dabb9f74830008244a5e356f837df  e2fsprogs-1.45.1.tar.xz
 bf050f002fe510e1daecd39044e1122d  openssh-8.0p1.tar.gz
 65b4e0df4934a6cd08c506cabcbe584f  ssmtp-2.64.tar.bz2
@@ -246,10 +248,10 @@ e03cefd53f4b076d959abe36de5c38f8  libnftnl-1.1.9.tar.bz2
 81628f176a768c7c834563d49226d3e8  xorriso-1.5.4.tar.gz
 74f1c7b8550f4e728486091f6b907175  augeas-1.12.0.tar.gz
 1b9168c6454ba21c469990d90e4b93b5  hivex-1.3.21.tar.gz
-770e0b7a3cd02cf47f2233e54e7ea344  ocaml-4.12.0.tar.gz
-65e6dc9b305ccbed1267275fe180f538  findlib-1.9.1.tar.gz
+8af7543ea4ec99440836118c9c2221dc  guestfs_app-1.40.1.tar.xz
 a1a35dd7cc053fca143a6886a1dea635  msmtp-1.8.14.tar.xz
 b10aa2f497def7283bc060f626879ce5  tcpdump-4.99.0.tar.gz
 6f1fc6f506a51545ef8781b9005732a6  vim-8.2.2562.tar.gz
 12250299825966c04713252f88ae92e0  sdparm-1.11.tar.xz
 3966f12374e1beb70f1c21f30a350673  iproute2-5.9.0.tar.xz
+ff3564fddcc2b9bd4a9c1d143aba4b4c  pv-1.6.6.tar.bz2
