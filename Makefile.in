@@ -5019,12 +5019,12 @@ image:
 	$(MKNOD) $(INITRAMFS_DIR)/dev/null c 1 3
 	$(MKNOD) $(INITRAMFS_DIR)/dev/console c 5 1
 	$(MKNOD) $(INITRAMFS_DIR)/dev/tty c 5 0
-	$(QUIET) if [ "x$(enable_debug)" = "xyes" ] && \
-	  [ "x$(enable_qemu)" = "xyes" ]; then \
-	  $(SED) 's/@@root_size@@/7936m/' $(SRC_DIR)/misc/initramfs_init > \
+	$(QUIET) if [ "x$(enable_qemu)" = "xyes" ] && \
+	  [ "x$(enable_debug)" = "xyes" ]; then \
+	  $(SED) 's/@@root_size@@/3840m/' $(SRC_DIR)/misc/initramfs_init > \
 	  $(INITRAMFS_DIR)/init; \
 	elif [ "x$(enable_qemu)" = "xyes" ]; then \
-	  $(SED) 's/@@root_size@@/6912m/' $(SRC_DIR)/misc/initramfs_init > \
+	  $(SED) 's/@@root_size@@/2816m/' $(SRC_DIR)/misc/initramfs_init > \
 	  $(INITRAMFS_DIR)/init; \
 	elif [ "x$(enable_debug)" = "xyes" ]; then \
 	  $(SED) 's/@@root_size@@/2816m/' $(SRC_DIR)/misc/initramfs_init > \
@@ -5078,7 +5078,7 @@ image:
 	! -path "./bin/pwd" ! -path "./bin/rm" ! -path "./bin/stty" \
 	! -path "./bin/sh" ! -path "./usr/bin/install" \
 	! -path "./usr/bin/env" ! -path "./etc/resolv.conf" | \
-	$(CPIO) -pmdvu $(STAGING_DIR)
+	$(CPIO) -pmdvu --sparse $(STAGING_DIR)
 	$(INSTALL) -D $(wildcard $(CHROOT_DIR)/usr/include/python*/pyconfig.h) \
 	$(STAGING_DIR)/usr/include/$(notdir \
 	$(wildcard $(CHROOT_DIR)/usr/include/python*))/pyconfig.h
