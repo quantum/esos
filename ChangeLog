@@ -1,3 +1,13 @@
+2021-08-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'edac_drivers'
+
+	enabled the CONFIG_EDAC_AMD64 and CONFIG_EDAC_SKX drivers
+
+2021-08-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	adjust root tmpfs sizes again; use '--sparse' with cpio to staging directory
+
 2021-08-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210816_tweaks'
