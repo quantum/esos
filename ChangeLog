@@ -1,3 +1,9 @@
+2021-08-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_gptfdisk'
+
+	added the 'gptfdisk' package (provides gdisk, cgdisk, sgdisk, and fixparts)
+
 2021-08-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'edac_drivers'
