@@ -1,3 +1,9 @@
+2021-08-31  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_usbutils'
+
+	added the 'usbutils' package and disabled 'lsusb' in Busybox config
+
 2021-08-23  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_gptfdisk'

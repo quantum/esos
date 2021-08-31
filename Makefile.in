@@ -349,6 +349,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		pcre-8.43.tar.gz \
 		pv-1.6.6.tar.bz2 \
 		gptfdisk-1.0.8.tar.gz \
+		usbutils-014.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -438,7 +439,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		msmtp.chroot gnutls.chroot nettle.chroot tcpdump.chroot \
 		vim.chroot sdparm.chroot iproute2.chroot libmnl.chroot \
 		file.chroot jansson.chroot pcre.chroot pv.chroot \
-		gptfdisk.chroot
+		gptfdisk.chroot usbutils.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -4995,6 +4996,19 @@ gptfdisk.chroot: glibc.chroot util-linux.chroot ncurses.chroot popt.chroot
 	$(INSTALL) -m 0644 $(tgt_src_dir)/cgdisk.8 /usr/share/man/man8/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/sgdisk.8 /usr/share/man/man8/
 	$(INSTALL) -m 0644 $(tgt_src_dir)/fixparts.8 /usr/share/man/man8/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+usbutils.chroot: glibc.chroot libusb.chroot curl.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr \
+	--datadir=/usr/share/hwdata
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(INSTALL) -d -m 0755 /usr/share/hwdata/
+	curl http://www.linux-usb.org/usb.ids \
+	--output /usr/share/hwdata/usb.ids
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
