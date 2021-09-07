@@ -1,3 +1,9 @@
+2021-09-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'libvirtd_exporter'
+
+	added the 'libvirtd_exporter' package and associated rc/init script (disabled by default)
+
 2021-08-31  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_usbutils'
