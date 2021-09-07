@@ -1,0 +1,40 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+LIBVIRTD_EXPORTER="/usr/bin/libvirtd_exporter"
+LIBVIRTD_EXPORTER_LOCK="/var/lock/libvirtd_exporter"
+DFLT_OPTS="> /var/log/libvirtd_exporter.log 2>&1 &"
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting libvirtd_exporter..."
+    eval ${LIBVIRTD_EXPORTER} ${USER_OPTS} || exit 1
+    /bin/touch ${LIBVIRTD_EXPORTER_LOCK}
+}
+
+stop() {
+    /bin/echo "Stopping libvirtd_exporter..."
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${LIBVIRTD_EXPORTER}) || exit 1
+    wait_for_stop ${LIBVIRTD_EXPORTER} && /bin/rm -f ${LIBVIRTD_EXPORTER_LOCK}
+}
+
+status() {
+    /usr/bin/pidof ${LIBVIRTD_EXPORTER} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}

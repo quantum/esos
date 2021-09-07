@@ -7,8 +7,9 @@ LATE_SERVICES="rc.lldpad rc.sshd rc.iscsid rc.multipathd rc.mdraid rc.lvm2 \
 rc.zfs rc.eio rc.dmcache rc.btier rc.drbd rc.rbdmap rc.virtlogd rc.libvirtd \
 rc.sbd rc.corosync rc.dlm rc.clvmd rc.lvmlockd rc.pacemaker rc.fsmount \
 rc.mhvtl rc.scst rc.nvmet rc.nfsd rc.nrpe rc.munin rc.snmpd rc.snmptrapd \
-rc.nut rc.smartd rc.stunnel rc.nginx rc.telegraf rc.nodeexporter rc.prometheus \
-rc.vmtoolsd rc.acpid rc.serial rc.watchdog rc.rasdaemon rc.msmtpd"
+rc.nut rc.smartd rc.stunnel rc.nginx rc.telegraf rc.nodeexporter \
+rc.libvirtdexporter rc.prometheus rc.vmtoolsd rc.acpid rc.serial rc.watchdog \
+rc.rasdaemon rc.msmtpd"
 
 # Script status values
 RUNNING=0
