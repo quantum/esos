@@ -32,7 +32,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
     CDKENTRY *host_name = 0, *domain_name = 0, *default_gw = 0,
             *name_server_1 = 0, *name_server_2 = 0, *name_server_3 = 0,
             *ip_addy = 0, *netmask = 0, *broadcast = 0, *iface_mtu = 0;
-    CDKMENTRY *bond_opts = 0, *ethtool_opts = 0;
+    CDKMENTRY *bond_opts = 0, *ethtool_opts = 0, *vlan_egress_map = 0;
     CDKRADIO *ip_config = 0;
     CDKBUTTON *ok_button = 0, *cancel_button = 0;
     CDKSELECTION *slave_select = 0, *br_member_select = 0;
@@ -56,7 +56,7 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             *conf_bootproto = NULL, *conf_ipaddr = NULL, *conf_netmask = NULL,
             *conf_broadcast = NULL, *conf_if_mtu = NULL, *conf_slaves = NULL,
             *conf_brmembers = NULL, *conf_bondopts = NULL,
-            *conf_ethtoolopts = NULL;
+            *conf_ethtoolopts = NULL, *conf_vlanegressmap = NULL;
     char net_if_name[MISC_STRING_LEN] = {0}, net_if_mac[MISC_STRING_LEN] = {0},
             net_if_speed[MISC_STRING_LEN] = {0},
             net_if_duplex[MISC_STRING_LEN] = {0},
@@ -64,7 +64,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             slaves_list_line_buffer[MAX_SLAVES_LIST_BUFF] = {0},
             br_members_list_line_buffer[MAX_BR_MEMBERS_LIST_BUFF] = {0},
             bond_opts_buffer[MAX_BOND_OPTS_BUFF] = {0},
-            ethtool_opts_buffer[MAX_ETHTOOL_OPTS_BUFF] = {0};
+            ethtool_opts_buffer[MAX_ETHTOOL_OPTS_BUFF] = {0},
+            vlan_egress_map_buffer[MAX_VLAN_EGRESS_MAP_BUFF] = {0};
     bonding_t net_if_bonding = {0};
     boolean general_opt = FALSE, question = FALSE, net_if_bridge = FALSE;
 
@@ -450,6 +451,10 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
             snprintf(temp_ini_str, MAX_INI_VAL, "%s:ethtoolopts",
                     net_if_name);
             conf_ethtoolopts = iniparser_getstring(ini_dict, temp_ini_str, "");
+            snprintf(temp_ini_str, MAX_INI_VAL, "%s:vlanegressmap",
+                    net_if_name);
+            conf_vlanegressmap = iniparser_getstring(ini_dict, temp_ini_str,
+                    "");
 
             /* If value doesn't exist, use a default MTU based on the
              * interface type */
@@ -473,7 +478,8 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
                     DEFAULT_ETH_MTU);
             else
-                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str, "");
+                conf_if_mtu = iniparser_getstring(ini_dict, temp_ini_str,
+                    DEFAULT_ETH_MTU);
 
             /* Information label */
             net_label = newCDKLabel(net_screen, (window_x + 1), (window_y + 1),
@@ -666,6 +672,23 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                 setCDKMentryBackgroundAttrib(ethtool_opts,
                         g_color_dialog_text[g_curr_theme]);
                 setCDKMentryValue(ethtool_opts, conf_ethtoolopts);
+                /* And the VLAN egress priority map */
+                vlan_egress_map = newCDKMentry(net_screen, (window_x + 30),
+                        (window_y + 11), "</B>VLAN Egress Priority Map:", NULL,
+                        g_color_dialog_select[g_curr_theme],
+                        '_' | g_color_dialog_input[g_curr_theme], vMIXED,
+                        25, 2, 50, 0, TRUE, FALSE);
+                if (!vlan_egress_map) {
+                    errorDialog(main_cdk_screen, MENTRY_ERR_MSG, NULL);
+                    break;
+                }
+                // TODO: Some tweaking to make this widget look like the
+                // others; CDK bug?
+                setCDKMentryBoxAttribute(vlan_egress_map,
+                        g_color_mentry_box[g_curr_theme]);
+                setCDKMentryBackgroundAttrib(vlan_egress_map,
+                        g_color_dialog_text[g_curr_theme]);
+                setCDKMentryValue(vlan_egress_map, conf_vlanegressmap);
             }
 
             /* Buttons */
@@ -884,6 +907,20 @@ void networkDialog(CDKSCREEN *main_cdk_screen) {
                             net_if_name);
                     if (iniparser_set(ini_dict, temp_ini_str,
                             ethtool_opts_buffer) == -1) {
+                        errorDialog(main_cdk_screen,
+                                "Couldn't set configuration file value!", NULL);
+                        break;
+                    }
+                }
+
+                if (vlan_egress_map) {
+                    /* Store VLAN egress priority map if the widget exists */
+                    snprintf(vlan_egress_map_buffer, MAX_VLAN_EGRESS_MAP_BUFF,
+                            "%s", getCDKMentryValue(vlan_egress_map));
+                    snprintf(temp_ini_str, MAX_INI_VAL, "%s:vlanegressmap",
+                            net_if_name);
+                    if (iniparser_set(ini_dict, temp_ini_str,
+                            vlan_egress_map_buffer) == -1) {
                         errorDialog(main_cdk_screen,
                                 "Couldn't set configuration file value!", NULL);
                         break;

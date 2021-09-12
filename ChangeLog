@@ -1,3 +1,9 @@
+2021-09-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210910_updates'
+
+	rc.network: updates to handle the VLAN egress priority map (vlanegressmap) setting; TUI: allow user to set the VLAN egress priority map of an interface in the network settings dialog, always set a default MTU value (1500) even if we don't recognize the interface
+
 2021-09-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'libvirtd_exporter'
