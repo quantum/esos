@@ -151,6 +151,7 @@ extern int g_color_dialog_title[MAX_TUI_THEMES];
 #define MAX_BR_MEMBERS_LIST_BUFF        512
 #define MAX_BOND_OPTS_BUFF              512
 #define MAX_ETHTOOL_OPTS_BUFF           512
+#define MAX_VLAN_EGRESS_MAP_BUFF        512
 #define MAX_HWRAID_CTRLRS               64
 #define MAX_HWRAID_PDRVS                256
 #define MAX_HWRAID_LDRVS                128

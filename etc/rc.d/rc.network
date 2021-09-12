@@ -22,6 +22,7 @@ my $ifenslave_prog = "/sbin/ifenslave";
 my $brctl_prog = "/usr/sbin/brctl";
 my $ethtool_prog = "/usr/sbin/ethtool";
 my $vconfig_prog = "/sbin/vconfig";
+my $tcwrap_prog = "/usr/bin/tc_wrap.py";
 my $net_if_dir = "/sys/class/net";
 my $section;
 my @sections;
@@ -464,9 +465,9 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
             # If its a VLAN interface, make sure it exists
             if ($each =~ /.*\.\d+/) {
                 my $vlan_iface = $net_if_dir . "/" . $each;
+                my @vlan_if_parts = split(/\./, $each);
                 if (! -e "$vlan_iface") {
                     printf("Creating VLAN interface " . $each . "...\n");
-                    my @vlan_if_parts = split(/\./, $each);
                     system($vconfig_prog . " add " . $vlan_if_parts[0] .
                         " " . $vlan_if_parts[1] . " 2>&1");
                     if ($? == -1) {
@@ -478,6 +479,53 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                         print("ERROR: The $vconfig_prog program exited with " .
                             "value $exit_status.\n");
                         next;
+                    }
+                }
+                # The VLAN egress priority map is completely optional
+                if (exists($ini_hash{$each . ":vlanegressmap"})) {
+                    my $vlanegressmap = $ini_hash{$each . ":vlanegressmap"};
+                    if ($vlanegressmap ne "") {
+                        # Loop through the VLAN egress priority map entries
+                        my @egprio_vals = split(/,/, $vlanegressmap);
+                        foreach my $each_egprio (@egprio_vals) {
+                            # Split each option into a key/value pair
+                            (my $skprio_val, my $pcp_val) =
+                                split(/:/, $each_egprio, 2);
+                            # Run the vconfig program
+                            print("Setting the VLAN egress priority " .
+                                "($each_egprio) on interface $each...\n");
+                            system($vconfig_prog . " set_egress_map " .
+                                $each . " " . $skprio_val . " " .
+                                $pcp_val . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $vconfig_prog " .
+                                    "failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $vconfig_prog program " .
+                                    "exited with value $exit_status.\n");
+                                next;
+                            }
+                            # Run the tc_wrap.py program
+                            print("Setting the traffic class priority " .
+                                "($pcp_val) on interface " .
+                                "$vlan_if_parts[0]...\n");
+                            system($tcwrap_prog . " -i " . $vlan_if_parts[0] .
+                                " -u " . $pcp_val . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $tcwrap_prog " .
+                                    "failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $tcwrap_prog program " .
+                                    "exited with value $exit_status.\n");
+                                next;
+                            }
+                        }
                     }
                 }
             }
