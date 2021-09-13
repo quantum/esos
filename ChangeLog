@@ -1,3 +1,13 @@
+2021-09-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210913_updates'
+
+	updated OpenSSL to version 1.1.1l; updated OpenSSH to version 8.7p1; added the xz.chroot target and set as a dep for Python.chroot (this will then build the lzma module properly; disabled xz/lzma Busybox applets
+
+	updated Linux to version 5.4.145
+
+	enabled the CONFIG_NTB_PINGPONG and CONFIG_NTB_TOOL kernel options (as modules for testing NTB)
+
 2021-09-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210910_updates'
