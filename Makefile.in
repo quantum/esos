@@ -181,9 +181,9 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libnes-1.1.4.tar.gz \
 		libocrdma-1.0.8.tar.gz \
 		srptools-1.0.3.tar.gz \
-		openssh-8.0p1.tar.gz \
+		openssh-8.7p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
-		openssl-1.1.1i.tar.gz \
+		openssl-1.1.1l.tar.gz \
 		e2fsprogs-1.45.1.tar.xz \
 		zlib-1.2.11.tar.xz \
 		lsscsi-030r154.tar.gz \
@@ -440,7 +440,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		msmtp.chroot gnutls.chroot nettle.chroot tcpdump.chroot \
 		vim.chroot sdparm.chroot iproute2.chroot libmnl.chroot \
 		file.chroot jansson.chroot pcre.chroot pv.chroot \
-		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot
+		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
+		xz.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -1317,6 +1318,7 @@ xz: make
 	cd $(tgt_src_dir) && ./configure --prefix=/tools
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(MAKE) --directory=$(tgt_src_dir) distclean
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2274,7 +2276,7 @@ perl.chroot: glibc.chroot db.chroot sqlite-autoconf.chroot
 Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	openssl.chroot zlib.chroot sqlite-autoconf.chroot ncurses.chroot \
 	db.chroot libxml2.chroot libxslt.chroot curl.chroot util-linux.chroot \
-	libffi.chroot \
+	libffi.chroot xz.chroot \
 	$(if $(findstring yes,$(enable_python_sql)),\
 	postgresql.chroot mysql.chroot,)
 	$(QUIET) $(ECHO) "### Building $(@)"
@@ -5018,6 +5020,15 @@ libvirtd_exporter.chroot:
 	$(call chroot_only)
 	$(INSTALL) -m 0755 $(tgt_src_dir)/libvirtd_exporter \
 	/usr/bin/libvirtd_exporter
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+xz.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

@@ -44,7 +44,7 @@ f340be768a76724b83e6daab69009902  ninja-1.9.0.tar.gz
 770e0b7a3cd02cf47f2233e54e7ea344  ocaml-4.12.0.tar.gz
 65e6dc9b305ccbed1267275fe180f538  findlib-1.9.1.tar.gz
 d10dabb9f74830008244a5e356f837df  e2fsprogs-1.45.1.tar.xz
-bf050f002fe510e1daecd39044e1122d  openssh-8.0p1.tar.gz
+f545230799f131aecca04da56e61990a  openssh-8.7p1.tar.gz
 65b4e0df4934a6cd08c506cabcbe584f  ssmtp-2.64.tar.bz2
 885ae742d51dbae8d16f535455c0240a  sysvinit-2.94.tar.xz
 09dc04f9879684d27c64c910174a9536  vixie-cron-4.1.tar.bz2
@@ -124,7 +124,7 @@ d2d668223e795dcf750da44dc3e7076b  cryptsetup-1.7.5.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
 3a1ba25fe7b43577de4a5c1edb018526  sg3_utils-1.45.tar.xz
 077e4f49320cad82bf17a997068b1db9  elfutils-0.176.tar.bz2
-08987c3cf125202e2b0840035efb392c  openssl-1.1.1i.tar.gz
+ac0d4387f3ba0ad741b0580dd45f6ff3  openssl-1.1.1l.tar.gz
 696ccedc02c5a44b8b33641902792241  libusb_compat-0.1.7.tar.xz
 d3d3a48d0157e6a92abe25f7484036aa  win_binaries-20180813.tar.xz
 ce8f0e44671fb0c7d9ec30bb0bfa8b5c  mtx-1.3.12.tar.gz
