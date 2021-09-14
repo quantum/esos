@@ -1,3 +1,7 @@
+2021-09-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	build dep fix for makedumpfile
+
 2021-09-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210913_updates'
