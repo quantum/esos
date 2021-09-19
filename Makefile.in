@@ -2340,6 +2340,11 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install jaraco.collections==3.3.0
 	pip3 install cheroot==8.5.2
 	pip3 install cherrypy==18.6.0
+	pip3 install colorama==0.4.4
+	pip3 install pyperclip==1.8.2
+	pip3 install wcwidth==0.2.5
+	pip3 install attrs==21.2.0
+	pip3 install cmd2==2.2.0
 	$(QUIET) if [ "$(enable_python_sql)" = "yes" ]; then \
 	  pip3 install psycopg2==2.8.1; \
 	  pip3 install mysqlclient==2.0.3; \
