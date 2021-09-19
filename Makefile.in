@@ -4637,6 +4637,7 @@ sbd.chroot: glibc.chroot glib.chroot libqb.chroot corosync.chroot \
 	pacemaker.chroot libxml2.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
