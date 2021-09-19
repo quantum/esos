@@ -1,3 +1,17 @@
+2021-09-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210919_changes'
+
+	sbd: added patch to handle non-quorum disk writes (allows fencing with a single SBD device)
+
+	updated resource-agents patch (ocf:heartbeat:VirtualDomain -> handle detecting all "domain not found" strings)
+
+	disabled the AoE (ATA over Ethernet) driver... i doubt anyone is using this still, and it produces ugly log spam in some setups (eg, "aoe: packet could not be sent on vnet22.  consider increasing tx_queue_len")
+
+	Merge branch 'add_cmd2'
+
+	Python.chroot: added the 'cmd2' module (and required deps)
+
 2021-09-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	build dep fix for makedumpfile

@@ -1,6 +1,5 @@
-diff -Naur resource-agents-4.2.0.orig/heartbeat/Raid1 resource-agents-4.2.0/heartbeat/Raid1
---- resource-agents-4.2.0.orig/heartbeat/Raid1	2018-10-24 01:12:09.000000000 -0700
-+++ resource-agents-4.2.0/heartbeat/Raid1	2019-05-01 10:58:13.399354818 -0700
+--- a/heartbeat/Raid1	2018-10-24 01:12:09.000000000 -0700
++++ b/heartbeat/Raid1	2019-05-01 10:58:13.399354818 -0700
 @@ -182,7 +182,7 @@
  
  md_assemble() {
@@ -65,3 +64,14 @@ diff -Naur resource-agents-4.2.0.orig/heartbeat/Raid1 resource-agents-4.2.0/hear
  		# TODO: At this stage, there's nothing to actually do
  		# here. Either this worked or it did not.
  	fi
+--- a/heartbeat/VirtualDomain	2021-09-14 07:56:25.201636489 -0400
++++ b/heartbeat/VirtualDomain	2021-09-19 11:11:06.856157215 -0400
+@@ -460,7 +460,7 @@
+ 		try=$(($try + 1 ))
+ 		status=$(LANG=C virsh $VIRSH_OPTIONS domstate $DOMAIN_NAME 2>&1 | tr 'A-Z' 'a-z')
+ 		case "$status" in
+-			*"error:"*"domain not found"|*"error:"*"failed to get domain"*|"shut off")
++			*"error:"*"domain not found"*|*"error:"*"failed to get domain"*|"shut off")
+ 				# shut off: domain is defined, but not started, will not happen if
+ 				#   domain is created but not defined
+ 				# "Domain not found" or "failed to get domain": domain is not defined
