@@ -1,3 +1,9 @@
+2021-09-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'bash_history'
+
+	handle appending bash history and sync'ing it
+
 2021-09-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210919_changes'
