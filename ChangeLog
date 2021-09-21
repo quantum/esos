@@ -1,3 +1,9 @@
+2021-09-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'squashfs_lzma'
+
+	use xz compression (LZMA2) for squashfs images; make sure /root/.bash_history always exists by default (fixes rsync problem with recent change)
+
 2021-09-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'bash_history'
