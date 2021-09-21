@@ -1,3 +1,9 @@
+2021-09-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '3013_update' into 3.x.x
+
+	sbd: added patch to handle non-quorum disk writes (allows fencing with a single SBD device)
+
 2021-05-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '312_updates' into 3.x.x
