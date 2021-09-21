@@ -108,6 +108,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${chroot_dir}/{build,etc,bin,sbin,dev,proc,sys,root,home,run} || exit 1
 	${mkdir} -p ${chroot_dir}/boot/grub || exit 1
 	${mkdir} -p ${chroot_dir}/root/.ssh || exit 1
+	${touch} ${chroot_dir}/root/.bash_history || exit 1
 	${mkdir} -p ${chroot_dir}/mnt/{root,conf,logs,data,vdisks,mhvtl} || exit 1
 	${mkdir} -p ${chroot_dir}/lib/firmware || exit 1
 	${mkdir} -p ${chroot_dir}/usr/{bin,sbin,libexec,lib} || exit 1

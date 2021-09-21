@@ -4806,16 +4806,16 @@ sedutil.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-squashfs-tools.chroot: glibc.chroot zlib.chroot
+squashfs-tools.chroot: glibc.chroot zlib.chroot xz.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools clean
 	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools unsquashfs \
-	EXTRA_LDFLAGS="-static"
+	EXTRA_LDFLAGS="-static" XZ_SUPPORT=1
 	$(INSTALL) -D $(tgt_src_dir)/squashfs-tools/unsquashfs \
 	$(chroot_build)/initramfs/usr/bin/unsquashfs
 	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools clean
-	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools
+	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools XZ_SUPPORT=1
 	$(MAKE) --directory=$(tgt_src_dir)/squashfs-tools install \
 	INSTALL_DIR="/usr/bin"
 	$(TOUCH) $(@)
@@ -5287,7 +5287,7 @@ image:
 	fi
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Creating the root archive file..."
-	$(MKSQUASHFS) $(STAGING_DIR) $(MOUNT_DIR)/PRIMARY-root.sqsh -comp gzip
+	$(MKSQUASHFS) $(STAGING_DIR) $(MOUNT_DIR)/PRIMARY-root.sqsh -comp xz
 	$(CHOWN) -R root:root $(MOUNT_DIR)/boot/*
 	$(UMOUNT) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
