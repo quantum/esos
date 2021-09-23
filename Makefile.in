@@ -51,13 +51,13 @@ ZIP		:= @zip@
 XZ		:= @xz@
 READLINK	:= @readlink@
 STRIP		:= @strip@
-BZIP2		:= @bzip2@
 GIT		:= @git@
 FLOCK		:= @flock@
 ZIC		:= @zic@
 MV		:= @mv@
 RSYNC		:= @rsync@
 MKSQUASHFS	:= @mksquashfs@
+RMDIR		:= @rmdir@
 
 enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
@@ -592,7 +592,7 @@ tarball_src_dirs	= $(addprefix $(SOURCES_DIR)/,$(subst .tar.xz,,\
 			$(subst .tar.bz2,,$(subst .tar.gz,,\
 			$(notdir $(dist_files))))))
 img_file		:= $(BUILD_DIR)/$(pkg_name)-$(esos_ver).img
-bz2_img_file		:= $(img_file).bz2
+tar_bz2_img_file	:= $(img_file).tar.bz2
 esos_target		= x86_64-esos-linux-gnu
 temp_path		= /tools/bin:/bin:/usr/bin
 dist_file_names		= $(subst $(DIST_FILES_DIR)/,,$(dist_files))
@@ -5102,12 +5102,12 @@ image:
 	$(GZIP) > $(CHROOT_DIR)/boot/PRIMARY-initramfs.cpio.gz
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Setting up the ESOS image file ($(img_file))..."
-	# 4000 MB (not MiB)
-	# 4000000000 B
-	# 4000000000 B / 512 B = 7812500 sectors
-	$(DD) if=/dev/zero of=$(img_file) bs=512 count=0 seek=7812500
-	$(ECHO) -e "2048,819200,EF,*\n821248,4096000,L\n4917248,409600,L\n\
-	5326848,2048000,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
+	# 8192 MiB (not MB)
+	# 8589934592 B
+	# 8589934592 B / 512 B = 16777216 sectors
+	$(DD) if=/dev/zero of=$(img_file) bs=512 count=0 seek=16777216
+	$(ECHO) -e "2048,2097152,EF,*\n2099200,8388608,L\n10487808,4194304,L\n\
+	14682112,2095104,L\n" | $(SFDISK) --no-reread -uS -L $(img_file)
 	$(LOSETUP) -f --show $(img_file) > $(WORK_DIR)/loop_dev
 	$(KPARTX) -a -s $(loop_dev)
 	$(SLEEP) 1
@@ -5290,16 +5290,18 @@ image:
 	$(MKSQUASHFS) $(STAGING_DIR) $(MOUNT_DIR)/PRIMARY-root.sqsh -comp xz
 	$(CHOWN) -R root:root $(MOUNT_DIR)/boot/*
 	$(UMOUNT) $(MOUNT_DIR)/boot
+	$(RMDIR) $(MOUNT_DIR)/boot
 	$(UMOUNT) $(MOUNT_DIR)
 	$(KPARTX) -d $(loop_dev)
 	$(LOSETUP) -d $(loop_dev)
 	$(QUIET) $(ECHO) && $(ECHO)
-	$(QUIET) $(ECHO) "### Compressing image file..."
-	$(BZIP2) -z -9 -c $(img_file) > $(bz2_img_file)
-	cd $(dir $(bz2_img_file)) && $(MD5SUM) -b \
-	$(notdir $(bz2_img_file)) > $(BUILD_DIR)/dist_md5sum.txt
-	cd $(dir $(bz2_img_file)) && $(SHA256SUM) -b \
-	$(notdir $(bz2_img_file)) > $(BUILD_DIR)/dist_sha256sum.txt
+	$(QUIET) $(ECHO) "### Archiving/compressing (sparse) image file..."
+	$(TAR) cfj $(tar_bz2_img_file) -C $(dir $(tar_bz2_img_file)) \
+	$(notdir $(img_file)) --sparse
+	cd $(dir $(tar_bz2_img_file)) && $(MD5SUM) -b \
+	$(notdir $(tar_bz2_img_file)) > $(BUILD_DIR)/dist_md5sum.txt
+	cd $(dir $(tar_bz2_img_file)) && $(SHA256SUM) -b \
+	$(notdir $(tar_bz2_img_file)) > $(BUILD_DIR)/dist_sha256sum.txt
 	$(QUIET) $(ECHO) && $(ECHO)
 	$(QUIET) $(ECHO) "### Clearing the staging directory..."
 	$(RM) $(STAGING_DIR)
@@ -5311,14 +5313,15 @@ image:
 # pkg_dist - Create the ESOS package distribution file (tarball).
 .PHONY: pkg_dist
 pkg_dist: pkg_prefix = $(pkg_name)-$(esos_ver)
-pkg_dist: $(bz2_img_file)
+pkg_dist: $(tar_bz2_img_file)
 	$(call no_chroot)
 	$(ECHO) "$(product) $(esos_ver)" > $(BUILD_DIR)/VERSION
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(RM) $(BUILD_DIR)/esos_*.zip
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
 	$(LN) $(BUILD_DIR) $(pkg_prefix)
-	$(ZIP) -9 $(pkg_prefix).zip $(pkg_prefix)/$(notdir $(bz2_img_file)) \
+	$(ZIP) -9 $(pkg_prefix).zip \
+	$(pkg_prefix)/$(notdir $(tar_bz2_img_file)) \
 	$(pkg_prefix)/dist_*.txt
 	$(RM) $(pkg_prefix)
 	$(LN) $(SRC_DIR) $(pkg_prefix)

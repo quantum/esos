@@ -3,8 +3,8 @@
 PKG_DIR="${PWD}"
 TEMP_DIR="${PKG_DIR}/temp"
 MNT_DIR="${TEMP_DIR}/mnt"
-LINUX_REQD_TOOLS="dd md5sum sha256sum grep egrep blockdev lsblk findfs bunzip2"
-MACOSX_REQD_TOOLS="dd md5 shasum cat cut sed diff grep egrep diskutil bunzip2"
+LINUX_REQD_TOOLS="dd md5sum sha256sum grep egrep blockdev lsblk findfs tar"
+MACOSX_REQD_TOOLS="dd md5 shasum cat cut sed diff grep egrep diskutil tar"
 MD5_CHECKSUM="dist_md5sum.txt"
 SHA256_CHECKSUM="dist_sha256sum.txt"
 LINUX="LINUX"
@@ -71,7 +71,7 @@ fi
 echo
 
 # Locate the image file
-image_file="$(ls *.img.bz2)" || exit 1
+image_file="$(ls *.img.tar.bz2)" || exit 1
 
 # Check if we're doing an upgrade
 if test -f "/etc/esos-release" && test -z "${install_dev}" && \
@@ -121,7 +121,7 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
             disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
             image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
-            bunzip2 -d -c ${image_file} | dd of=${image_mbr} bs=512 count=1 > \
+            tar xfOj ${image_file} | dd of=${image_mbr} bs=512 count=1 > \
                 /dev/null 2>&1 || exit 1
             fdisk -u -l ${esos_blk_dev} | egrep "^${esos_blk_dev}" | \
                 sed -e 's/\*//' | awk '{ print $2 }' > ${disk_parts}
@@ -157,9 +157,12 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             fi
         fi
         if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
-            echo "### Increasing the /tmp file system..."
-            mount -o remount,size=6G /tmp || exit 1
-            echo
+            curr_tmp_size="$(df --block-size=1 --output=size /tmp | tail -1)"
+            if [ "${curr_tmp_size}" -lt "6442450944" ]; then
+                echo "### Increasing the /tmp file system..."
+                mount -o remount,size=6G /tmp || exit 1
+                echo
+            fi
             if grep -q esos_persist /proc/cmdline; then
                 usb_esos_root="/mnt/root"
                 usb_esos_boot="/boot"
@@ -175,8 +178,8 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             fi
             echo "### Extracting the image file..."
             mkdir -p ${TEMP_DIR} || exit 1
-            extracted_img="${TEMP_DIR}/$(basename ${image_file} .bz2)"
-            bunzip2 -d -c ${image_file} > ${extracted_img} || exit 1
+            extracted_img="${TEMP_DIR}/$(basename ${image_file} .tar.bz2)"
+            tar xfj ${image_file} -C ${TEMP_DIR}/ --sparse || exit 1
             echo
             echo "### Mounting the image file partitions..."
             img_esos_root="${TEMP_DIR}/new_esos_root"
@@ -389,9 +392,9 @@ elif [ "${this_os}" = "${MACOSX}" ]; then
         grep -A1 "<key>TotalSize</key>" | grep -o '<integer>'.*'</integer>' | \
         grep -o [^'<'integer'>'].*[^'<''/'integer'>']) || exit 1
 fi
-if [ ${dev_bytes} -lt 4000000000 ]; then
+if [ ${dev_bytes} -lt 8589934592 ]; then
     echo "ERROR: Your target install drive isn't large enough;" \
-        "it must be at least 4000 MiB."
+        "it must be at least 8192 MiB."
     exit 1
 fi
 
@@ -418,7 +421,7 @@ while : ; do
     if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
         echo "### Writing '${image_file}' to '${real_dev_node}'; this may" \
             "take a while..."
-        bunzip2 -d -c ${image_file} | dd of=${real_dev_node} bs=1${suffix} || \
+        tar xfOj ${image_file} | dd of=${real_dev_node} bs=1${suffix} || \
             exit 1
         if [ ${PIPESTATUS[0]} -ne 0 ]; then
             exit 1
@@ -437,8 +440,8 @@ while : ; do
         fi
         blk_dev_bytes="$(blockdev --getsize64 ${dev_node})"
         blk_dev_sector="$(blockdev --getss ${dev_node})"
-        if [ "${blk_dev_bytes}" -gt "103079215104" ]; then
-            # Devices that are larger than 96 GiB get a "data" file system
+        if [ "${blk_dev_bytes}" -gt "137438953472" ]; then
+            # Devices that are larger than 128 GiB get a "data" file system
             echo
             echo "### Large installation target detected; adding the" \
                 "'esos_data' file system..."
@@ -478,8 +481,8 @@ while : ; do
                 wipefs --all "${old_logs_part_dev}"
             fi
             parted -m -s "${dev_node}" rm 4 || exit 1
-            # Add a 50 GiB partition for the new 'esos_logs' FS
-            esos_logs_sectors="$(echo "53687091200 / ${blk_dev_sector}" | bc)"
+            # Add a 64 GiB partition for the new 'esos_logs' FS
+            esos_logs_sectors="$(echo "68719476736 / ${blk_dev_sector}" | bc)"
             # TODO: Make sure the sectors unit for 'parted' is the logical
             # block size and not "Linux sectors" (512 bytes).
             parted -m -s ${dev_node} mkpart extended \

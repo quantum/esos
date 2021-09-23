@@ -58,18 +58,13 @@ MY_PATH_PROG([zip])
 MY_PATH_PROG([xz])
 MY_PATH_PROG([readlink])
 MY_PATH_PROG([strip])
-AC_CHECK_PROG(PBZIP2,pbzip2,yes)
-if test x"${PBZIP2}" = x"yes"; then
-	bzip2=pbzip2
-else
-	MY_PATH_PROG([bzip2])
-fi
 MY_PATH_PROG([git])
 MY_PATH_PROG([flock])
 MY_PATH_PROG([zic])
 MY_PATH_PROG([mv])
 MY_PATH_PROG([rsync])
 MY_PATH_PROG([mksquashfs])
+MY_PATH_PROG([rmdir])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then

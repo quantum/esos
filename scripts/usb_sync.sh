@@ -21,6 +21,13 @@ if ! grep -q esos_persist /proc/cmdline; then
     trap unmount_fs EXIT
 fi
 
+function initial_rsync {
+    # Use rsync for the other directories/files
+    mkdir -p ${USB_RSYNC} || exit 1
+    rsync --archive --update --exclude "System Volume Information" \
+        --exclude "lost+found" ${USB_RSYNC}/ ${ROOT_PATH} || exit 1
+}
+
 # Read the options and extract
 TEMP=$(getopt -o i --long initial -n 'usb_sync.sh' -- "$@")
 eval set -- "$TEMP"
@@ -50,6 +57,8 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
         cd /etc && git checkout -q -f -b master --track origin/master || exit 1
         cd /etc && git reset -q --hard origin/master || exit 1
         etckeeper init > /dev/null || exit 1
+        # Populate the other directories/files
+        initial_rsync
     else
         # Migrate any old configuration directories
         if [ -d "${CONF_MNT}/etc" ]; then
@@ -68,6 +77,8 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
             mkdir -p ${USB_RSYNC} || exit 1
             mv ${CONF_MNT}/opt ${USB_RSYNC}/ || exit 1
         fi
+        # Pull down other directories first as special overrides might exist
+        initial_rsync
         # Initialize and configure the new Git repo
         git init -q --bare ${ETCKEEPER_REPO} || exit 1
 	echo -en "# Specific to ESOS\n/rc.d/\n/esos-release\n/issue\n\n" > \
@@ -79,10 +90,6 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
         cd /etc && git remote add origin ${ETCKEEPER_REPO} || exit 1
 	cd /etc && git push -q origin master || exit 1
     fi
-    # Use rsync for the other directories/files
-    mkdir -p ${USB_RSYNC} || exit 1
-    rsync --archive --update --exclude "System Volume Information" \
-        --exclude "lost+found" ${USB_RSYNC}/ ${ROOT_PATH} || exit 1
 else
     # During an upgrade, the user may wipe esos_conf, so recreate if needed
     if ! git ls-remote ${ETCKEEPER_REPO} > /dev/null 2>&1; then

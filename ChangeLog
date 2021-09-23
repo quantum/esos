@@ -1,3 +1,9 @@
+2021-09-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'bigger_esos_root'
+
+	for the compressed image archive used by the upgrade process, use a .tar.bz2 instead of just .bz2 so we can keep the sparse image file sparse; increased the base image size from 4 GB to 8 GiB; increased the file system size of ESOS_BOOT, esos_root, esos_conf, and esos_logs; use powers of 1024 for partition sizes/alignment; delete the /boot directory that was leftover in the LABEL=esos_root file system; install.sh: only increase the /tmp size to 6G if it's less than 6G (otherwise keep current size), check for an 8 GiB sized block device install target, for large install devices, make LABEL=esos_logs 64 GiB in size; usb_sync.sh: run the initial-rsync command BEFORE initializing the local /etc Git repo (allows special override files in rsync_dirs/ to copy down properly regardless of date/time)
+
 2021-09-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'squashfs_lzma'
