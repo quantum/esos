@@ -38,7 +38,7 @@ ESOS_BUILD_DIR="$(readlink -f "$(dirname "${SELF}")")"
 echo "### ESOS build directory: ${ESOS_BUILD_DIR}"
 echo "### Checking for required ESOS components..."
 ESOS_IMAGE="$(basename "$(echo ${ESOS_BUILD_DIR}/*-*.img)")"
-BASE_FILES="${ESOS_IMAGE}.bz2 ${ESOS_BUILD_DIR}/install.sh \
+BASE_FILES="${ESOS_IMAGE}.tar.bz2 ${ESOS_BUILD_DIR}/install.sh \
 ${ESOS_BUILD_DIR}/dist_*.txt ${ESOS_BUILD_DIR}/VERSION"
 cd ${ESOS_BUILD_DIR} || exit 1
 for i in ${BASE_FILES}; do
