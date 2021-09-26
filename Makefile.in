@@ -132,7 +132,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		dejagnu-1.6.2.tar.gz \
 		check-0.12.0.tar.gz \
 		ncurses-6.1.tar.gz \
-		bash-5.0.007.tar.xz \
+		bash-5.1.8.tar.gz \
 		bison-3.3.2.tar.xz \
 		bzip2-1.0.6.tar.gz \
 		coreutils-8.31.tar.xz \
@@ -5280,7 +5280,7 @@ image:
 	  $(FIND) $(STAGING_DIR)/{,usr/}{lib,bin,sbin} -type f \
 	  -executable -exec $(STRIP) --strip-debug '{}' ';'; \
 	fi
-	$(QUIET) if [ "$(with_customize_dir)" = "yes" ]; then \
+	$(QUIET) set -e; if [ "$(with_customize_dir)" = "yes" ]; then \
 	  if [ -x "$(customize_dir)/inject.sh" ]; then \
 	    $(customize_dir)/inject.sh $(STAGING_DIR); \
 	  fi; \

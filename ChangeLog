@@ -1,3 +1,9 @@
+2021-09-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20210924_changes'
+
+	updated bash to version 5.1.8 (fixes leaked FD issue when .bash_history is empty); use 'set -e' when calling inject.sh so we exit on any errors; set nvme_core 'admin_timeout' to 5s in rc.2
+
 2021-09-23  Marc A. Smith  <marc.smith@quantum.com>
 
 	fixed issue in esos2iso script (new archived/compressed image name)
