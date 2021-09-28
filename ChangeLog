@@ -1,3 +1,9 @@
+2021-09-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_wget'
+
+	added the real 'wget' program and disabled the Busybox variant
+
 2021-09-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210924_changes'
