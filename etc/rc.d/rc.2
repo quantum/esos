@@ -99,6 +99,7 @@ fi
 /bin/echo "Loading the NVMeoF target modules..."
 /sbin/modprobe nvmet-rdma
 /sbin/modprobe nvmet-fc
+/bin/echo 5 > /sys/module/nvme_core/parameters/admin_timeout
 
 # Start the LATE user settable services
 for i in ${LATE_SERVICES}; do

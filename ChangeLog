@@ -1,3 +1,9 @@
+2021-09-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '3014_update' into 3.x.x
+
+	set nvme_core 'admin_timeout' to 5s in rc.2
+
 2021-09-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '3013_update' into 3.x.x
