@@ -1,3 +1,9 @@
+2021-09-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_cacerts'
+
+	added the 'cacerts' package (SSL root CA certificates)
+
 2021-09-28  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_wget'
