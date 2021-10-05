@@ -147,11 +147,11 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
-        if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) ||
-            ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) ||
-            ($iface =~ /m\d+p\d+/) || ($iface =~ /s\d+p\d+/) ||
-            ($iface =~ /ens\d+/) || ($iface =~ /bond\d+/) ||
-            ($iface =~ /priv\d+/)) {
+        if (($iface =~ /^enp\d+s\d+/) || ($iface =~ /^eno\d+/) ||
+            ($iface =~ /^eth\d+/) || ($iface =~ /^ib\d+/) ||
+            ($iface =~ /^m\d+p\d+/) || ($iface =~ /^s\d+p\d+/) ||
+            ($iface =~ /^ens\d+/) || ($iface =~ /^bond\d+/) ||
+            ($iface =~ /^priv\d+/)) {
             if ($ARGV[0] eq "apply") {
                 # For "apply" we assume all the interfaces are up
                 if (!exists($conf_ifs{$iface})) {
@@ -194,11 +194,11 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
         sleep(5);
         foreach my $each (@net_ifaces) {
             my $iface = (split(/\//, $each))[-1];
-            if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) ||
-                ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) ||
-                ($iface =~ /m\d+p\d+/) || ($iface =~ /s\d+p\d+/) ||
-                ($iface =~ /ens\d+/) || ($iface =~ /bond\d+/) ||
-                ($iface =~ /priv\d+/)) {
+            if (($iface =~ /^enp\d+s\d+/) || ($iface =~ /^eno\d+/) ||
+                ($iface =~ /^eth\d+/) || ($iface =~ /^ib\d+/) ||
+                ($iface =~ /^m\d+p\d+/) || ($iface =~ /^s\d+p\d+/) ||
+                ($iface =~ /^ens\d+/) || ($iface =~ /^bond\d+/) ||
+                ($iface =~ /^priv\d+/)) {
                 my $iface_carrier_file = "$net_if_dir" . "/" .
                     "$iface" . "/carrier";
                 open(IFACE_CARRIER, "$iface_carrier_file") ||
@@ -230,7 +230,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
     foreach my $each (@sections) {
         if ($ARGV[0] eq "start") {
             # For bonding interfaces
-            if ($each =~ /bond\d+$/) {
+            if ($each =~ /^bond\d+$/) {
                 my $bm_file = "$net_if_dir" . "/bonding_masters";
                 my $bond_iface_file = "$net_if_dir" . "/" . "$each";
 
@@ -397,7 +397,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
             }
 
             # For bridge interfaces
-            if ($each =~ /br\d+/) {
+            if ($each =~ /^br\d+/) {
                 if (!exists($ini_hash{$each . ":brmembers"})) {
                     print("ERROR: The 'brmembers' name is missing!\n");
                     next;
@@ -457,11 +457,11 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
         }
 
         # Interface configuration
-        if (($each =~ /enp\d+s\d+/) || ($each =~ /eno\d+/) ||
-            ($each =~ /eth\d+/) || ($each =~ /ib\d+/) ||
-            ($each =~ /m\d+p\d+/) || ($each =~ /s\d+p\d+/) ||
-            ($each =~ /bond\d+/) || ($each =~ /br\d+/) ||
-            ($each =~ /ens\d+/) || ($each =~ /priv\d+/)) {
+        if (($each =~ /^enp\d+s\d+/) || ($each =~ /^eno\d+/) ||
+            ($each =~ /^eth\d+/) || ($each =~ /^ib\d+/) ||
+            ($each =~ /^m\d+p\d+/) || ($each =~ /^s\d+p\d+/) ||
+            ($each =~ /^bond\d+/) || ($each =~ /^br\d+/) ||
+            ($each =~ /^ens\d+/) || ($each =~ /^priv\d+/)) {
             # If its a VLAN interface, make sure it exists
             if ($each =~ /.*\.\d+/) {
                 my $vlan_iface = $net_if_dir . "/" . $each;
@@ -763,7 +763,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
         my $iface = (split(/\//, $each))[-1];
 
         # Remove slaves from bond interface
-        if ($iface =~ /bond\d+$/) {
+        if ($iface =~ /^bond\d+$/) {
             my @raw_bond_slaves = glob($net_if_dir . "/" . $iface . "/slave_*");
             foreach my $raw_slave_iface (@raw_bond_slaves) {
                 my $slave_iface = (split('slave_', $raw_slave_iface))[-1];
@@ -784,11 +784,11 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
         }
 
         # Bring down interface
-        if (($iface =~ /enp\d+s\d+/) || ($iface =~ /eno\d+/) ||
-            ($iface =~ /eth\d+/) || ($iface =~ /ib\d+/) ||
-            ($iface =~ /m\d+p\d+/) || ($iface =~ /s\d+p\d+/) ||
-            ($iface =~ /bond\d+/) || ($iface =~ /br\d+/) ||
-            ($iface =~ /ens\d+/) || ($iface =~ /priv\d+/)) {
+        if (($iface =~ /^enp\d+s\d+/) || ($iface =~ /^eno\d+/) ||
+            ($iface =~ /^eth\d+/) || ($iface =~ /^ib\d+/) ||
+            ($iface =~ /^m\d+p\d+/) || ($iface =~ /^s\d+p\d+/) ||
+            ($iface =~ /^bond\d+/) || ($iface =~ /^br\d+/) ||
+            ($iface =~ /^ens\d+/) || ($iface =~ /^priv\d+/)) {
             if ($iface =~ /.*\.\d+/) {
                 # Skip VLAN interfaces
                 next;
@@ -808,7 +808,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
         }
 
         # Delete bonding interface
-        if ($iface =~ /bond\d+/) {
+        if ($iface =~ /^bond\d+/) {
             print("Deleting bonding interface $iface...\n");
             my $bm_file = "$net_if_dir" . "/bonding_masters";
             open(BONDING_MASTERS, "> $bm_file") ||
@@ -818,7 +818,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
         }
 
         # Delete bridge interface
-        if ($iface =~ /br\d+/) {
+        if ($iface =~ /^br\d+/) {
             print("Deleting bridge interface $iface...\n");
             system($brctl_prog . " delbr " . $iface . " 2>&1");
             if ($? == -1) {

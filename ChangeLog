@@ -1,3 +1,9 @@
+2021-10-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'virbr_fix'
+
+	rc.network: use '^' in front of each interface name regex match so we match starting from the beginning of the string (eg, so we don't match 'virbr0')
+
 2021-09-30  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_cacerts'
