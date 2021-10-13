@@ -1,3 +1,9 @@
+2021-10-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20211008_tweaks'
+
+	applied several Makefile fixes/tweaks for kernel driver builds; updated sysctl.conf for virtual memory settings
+
 2021-10-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'virbr_fix'
