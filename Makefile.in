@@ -1640,8 +1640,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
 	  fi; \
 	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
-	    $(SED) -i 's/@depmod/#depmod/' \
-	    $(celerity_16_32_dir)/src/Makefile; \
 	    $(MAKE) --directory=$(celerity_16_32_dir)/src KDIR=$(linux_src) \
 	    FULL_KERNEL_VERSION=$(kernel_ver)$$i DRIVER_NAME=celerity16fc \
 	    clean; \
@@ -1651,7 +1649,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(atto_scst_dir)/Makefile; \
 	    $(SED) -i 's/-m 0744 -o root -g root/-m 0644/g' \
 	    $(atto_scst_dir)/Makefile; \
-	    $(SED) -i 's/depmod/#depmod/' \
+	    $(SED) -i 's/depmod/true/' \
 	    $(atto_scst_dir)/Makefile; \
 	    $(SED) -i 's/SUBDIRS=/M=/' \
 	    $(atto_scst_dir)/Makefile; \
@@ -1712,14 +1710,23 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) QLA_INI_DIR=$(qla_ini_dir) QLA_DIR=$(qla_dir) \
 	    2debug; \
+	    if [ "$(with_celerity_16_32)" = "yes" ]; then \
+	      $(linux_src)/scripts/config --file $(linux_src)/.config \
+	      --disable CONFIG_DEBUG_OBJECTS_WORK \
+	      --disable CONFIG_PROVE_LOCKING \
+	      --disable CONFIG_DEBUG_RT_MUTEXES \
+	      --disable CONFIG_DEBUG_SPINLOCK \
+	      --disable CONFIG_DEBUG_MUTEXES \
+	      --disable CONFIG_DEBUG_WW_MUTEX_SLOWPATH \
+	      --disable CONFIG_DEBUG_LOCK_ALLOC \
+	      --disable CONFIG_LOCKDEP; \
+	    fi; \
 	  fi; \
 	  if [ "$(with_uwire)" = "yes" ]; then \
-	    $(SED) -i 's/CONFIG_CHELSIO_T4\=m/# CONFIG_CHELSIO_T4 is not set/' \
-	    $(linux_src)/.config; \
-	    $(SED) -i 's/CONFIG_CHELSIO_T4VF\=m/# CONFIG_CHELSIO_T4VF is not set/' \
-	    $(linux_src)/.config; \
-	    $(SED) -i 's/# CONFIG_FRAME_POINTER is not set/CONFIG_FRAME_POINTER=y/' \
-	    $(linux_src)/.config; \
+	    $(linux_src)/scripts/config --file $(linux_src)/.config \
+	    --disable CONFIG_CHELSIO_T4 \
+	    --disable CONFIG_CHELSIO_T4VF \
+	    --disable CONFIG_FRAME_POINTER; \
 	  fi; \
 	  $(ECHO) "### Compiling the Linux kernel..."; \
 	  $(MAKE) --directory=$(linux_src); \
@@ -1875,7 +1882,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the ATTO Celerity 16/32 HBA module..."; \
 	    $(MAKE) --directory=$(celerity_16_32_dir)/src KDIR=$(linux_src) \
-	    DRIVER_NAME=celerity16fc PWD=$(celerity_16_32_dir)/src install; \
+	    DRIVER_NAME=celerity16fc PWD=$(celerity_16_32_dir)/src \
+	    DEPMOD=true install; \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the ATTO SCST Target module..."; \
@@ -3715,12 +3723,14 @@ sysstat.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-pciutils.chroot: glibc.chroot zlib.chroot
+pciutils.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr
-	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr install
-	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes PREFIX=/usr install-lib
+	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes ZLIB=no PREFIX=/usr
+	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes ZLIB=no PREFIX=/usr \
+	install
+	$(MAKE) --directory=$(tgt_src_dir) SHARED=yes ZLIB=no PREFIX=/usr \
+	install-lib
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
