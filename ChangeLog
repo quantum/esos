@@ -1,3 +1,9 @@
+2021-10-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_network_sort'
+
+	rc.network: updated to accept the "None" bootproto value which does not configure an IP address (no DHCP, no Static) and only sets the MTU of an interface, sort network.conf interface sections alphabetically so bondX's are configured before brX's
+
 2021-10-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20211008_tweaks'
