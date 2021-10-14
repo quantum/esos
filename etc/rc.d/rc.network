@@ -143,7 +143,8 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
     }
 
     # Bring up all interfaces
-    my %conf_ifs = map { $_ => 1 } @sections;
+    my @sorted_sections = sort @sections;
+    my %conf_ifs = map { $_ => 1 } @sorted_sections;
     my @net_ifaces = glob($net_if_dir . "/*");
     foreach my $each (@net_ifaces) {
         my $iface = (split(/\//, $each))[-1];
@@ -227,7 +228,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
     }
 
     # Configure the network interfaces
-    foreach my $each (@sections) {
+    foreach my $each (@sorted_sections) {
         if ($ARGV[0] eq "start") {
             # For bonding interfaces
             if ($each =~ /^bond\d+$/) {
@@ -682,6 +683,48 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                     my $exit_status = $? >> 8;
                     if ($exit_status != 0) {
                         print("ERROR: The $ifconfig_prog program exited with " .
+                            "value $exit_status.\n");
+                        next;
+                    }
+
+                } elsif (lc($ini_hash{$hash_key}) eq "none") {
+                    # Only set the MTU value(s) with no IP addressing
+                    if (!exists($ini_hash{$each . ":mtu"})) {
+                        print("ERROR: The 'mtu' name is missing!\n");
+                        next;
+                    }
+                    my $mtu = $ini_hash{$each . ":mtu"};
+                    if ($mtu eq "") {
+                        print("ERROR: The 'mtu' value is empty!\n");
+                        next;
+                    }
+                    if ($each =~ /.*\.\d+/) {
+                        # It's a VLAN interface so set the parent MTU first
+                        my @vlan_if_parts = split(/\./, $each);
+                        print("Setting MTU for interface " .
+                            "$vlan_if_parts[0]...\n");
+                        system($ip_prog . " link set " . $vlan_if_parts[0] .
+                            " mtu " . $mtu . " 2>&1");
+                        if ($? == -1) {
+                            print("ERROR: Running $ip_prog failed: $!\n");
+                            next;
+                        }
+                        my $exit_status = $? >> 8;
+                        if ($exit_status != 0) {
+                            print("ERROR: The $ip_prog program exited with " .
+                                "value $exit_status.\n");
+                            next;
+                        }
+                    }
+                    system($ip_prog . " link set " . $each .
+                        " mtu " . $mtu . " 2>&1");
+                    if ($? == -1) {
+                        print("ERROR: Running $ip_prog failed: $!\n");
+                        next;
+                    }
+                    my $exit_status = $? >> 8;
+                    if ($exit_status != 0) {
+                        print("ERROR: The $ip_prog program exited with " .
                             "value $exit_status.\n");
                         next;
                     }
