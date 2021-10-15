@@ -1640,8 +1640,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(btier_src)/kernel/btier clean; \
 	  fi; \
 	  if [ "$(with_celerity_16_32)" = "yes" ]; then \
-	    $(MAKE) --directory=$(celerity_16_32_dir)/src KDIR=$(linux_src) \
-	    FULL_KERNEL_VERSION=$(kernel_ver)$$i DRIVER_NAME=celerity16fc \
+	    $(MAKE) --directory=$(linux_src) M=$(celerity_16_32_dir)/src \
 	    clean; \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
