@@ -1,3 +1,9 @@
+2021-10-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'new_qla_fw'
+
+	updated QLogic firmware to the latest version
+
 2021-10-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'celer_clean_fix'
