@@ -81,14 +81,14 @@ if [ ${INITIAL_SYNC} -eq 1 ]; then
         initial_rsync
         # Initialize and configure the new Git repo
         git init -q --bare ${ETCKEEPER_REPO} || exit 1
-	echo -en "# Specific to ESOS\n/rc.d/\n/esos-release\n/issue\n\n" > \
+        echo -en "# Specific to ESOS\n/rc.d/\n/esos-release\n/issue\n\n" > \
             /etc/.gitignore || exit 1
-        etckeeper init > /dev/null || exit 1
         git config --system user.name "ESOS Superuser" || exit 1
-	git config --system user.email "root@esos" || exit 1
+        git config --system user.email "root@esos" || exit 1
+        etckeeper init > /dev/null || exit 1
         cd /etc && git commit -q -m "initial check-in via usb_sync.sh" || exit 1
         cd /etc && git remote add origin ${ETCKEEPER_REPO} || exit 1
-	cd /etc && git push -q origin master || exit 1
+        cd /etc && git push -q origin master || exit 1
     fi
 else
     # During an upgrade, the user may wipe esos_conf, so recreate if needed

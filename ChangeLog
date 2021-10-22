@@ -1,3 +1,7 @@
+2021-10-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	usb_sync.sh: during initial sync on new systems, set the Git name/email BEFORE running 'etckeeper init', swap tabs for spaces
+
 2021-10-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'new_qla_fw'
