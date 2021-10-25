@@ -1,3 +1,7 @@
+2021-10-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	enabled the CONFIG_PCI_STUB and CONFIG_PCI_PF_STUB options as modules
+
 2021-10-22  Marc A. Smith  <marc.smith@quantum.com>
 
 	usb_sync.sh: during initial sync on new systems, set the Git name/email BEFORE running 'etckeeper init', swap tabs for spaces
