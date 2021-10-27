@@ -58,6 +58,8 @@ MV		:= @mv@
 RSYNC		:= @rsync@
 MKSQUASHFS	:= @mksquashfs@
 RMDIR		:= @rmdir@
+CUT		:= @cut@
+TR		:= @tr@
 
 enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
@@ -192,7 +194,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20211021.tar.xz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.4.x_r9170.tar.xz \
+		scst-3.5.x_r9586.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.16.0.tar.gz \
 		lvm2-2_02_184.tar.xz \
@@ -1613,6 +1615,13 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    if [ -e "$(mlnx_ofed_dir)/configure.mk.kernel" ]; then \
 	      $(MAKE) --directory=$(mlnx_ofed_dir) clean; \
 	    fi; \
+	    $(CAT) $(mlnx_ofed_dir)/mlnx-ofa_kernel.spec | \
+	    $(GREP) "global _version" | $(CUT) -d' ' -f4 | $(TR) -d '}' > \
+	    $(mlnx_ofed_dir)/MOFED_VERSION; \
+	    $(SED) -i '/MLNX OFED has not been installed/c\\tOFED_VERS=$$(shell head -1 $(mlnx_ofed_dir)/MOFED_VERSION)' \
+	    $(scst_src)/iscsi-scst/Makefile; \
+	    $(SED) -i 's,/usr/src/ofa_kernel/default,$(mlnx_ofed_dir),' \
+	    $(scst_src)/iscsi-scst/kernel/isert-scst/Kbuild; \
 	  fi; \
 	  if [ "$(with_qla2xxx_scst)" = "yes" ]; then \
 	    $(SED) -i '/obj-m/s/tcm_qla2xxx.o/scst_qla2xxx.o/' \
@@ -1816,11 +1825,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
 	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true OFED_FLAVOR=MOFED \
-	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
-	    -I$(mlnx_ofed_dir)/include/uapi \
-	    -DMOFED_MAJOR=5 -DMOFED_MINOR=0" \
-	    ISER_SYMVERS="$(mlnx_ofed_dir)/Module.symvers \
-	    $(scst_src)/iscsi-scst/kernel/Module.symvers" V=1 mods; \
+	    OFED_DIR=$(mlnx_ofed_dir) V=1 mods; \
 	  else \
 	    $(MAKE) --directory=$(scst_src)/iscsi-scst KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i INFINIBAND_ENABLED=true mods; \
@@ -1834,10 +1839,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
 	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i OFED_FLAVOR=MOFED \
-	    OFED_CFLAGS="-I$(mlnx_ofed_dir)/include \
-	    -I$(mlnx_ofed_dir)/include/uapi \
-	    -DMOFED_MAJOR=5 -DMOFED_MINOR=0" \
-	    OFED_MODULE_SYMVERS="$(mlnx_ofed_dir)/Module.symvers" V=1 all; \
+	    OFED_VERS="$(shell head -1 $(mlnx_ofed_dir)/MOFED_VERSION)" \
+	    OFED_KERNEL_DIR=$(mlnx_ofed_dir) V=1 all; \
 	  else \
 	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
 	    KVER=$(kernel_ver)$$i all; \
@@ -2120,16 +2123,13 @@ uwire.chroot: glibc.chroot
 mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(SED) -i 's,etc/udev/rules.d,usr/lib/udev/rules.d,g' \
+	$(SED) -i 's,)/lib/udev/rules.d$$,)/usr/lib/udev/rules.d,g' \
 	$(mlnx_ofed_dir)/makefile
-	$(SED) -i '312,318 s/^#*/#/' $(mlnx_ofed_dir)/makefile
-	$(SED) -i '323,326 s/^#*/#/' $(mlnx_ofed_dir)/makefile
-	$(SED) -i '/param, val/s/line.strip()/line.decode("utf-8").strip()/' \
-	$(mlnx_ofed_dir)/ofed_scripts/utils/tc_wrap.py
-	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
-	V=1 build_py_scripts
-	$(MAKE) --directory=$(mlnx_ofed_dir) MLNX_PYTHON_EXECUTABLE=python3 \
-	V=1 install_scripts
+	$(SED) -i 's,)/lib/udev$$,)/usr/lib/udev,g' \
+	$(mlnx_ofed_dir)/makefile
+	$(SED) -i '312,319 s/^#*/#/' $(mlnx_ofed_dir)/makefile
+	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 build_py_scripts
+	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 install_scripts
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -5249,6 +5249,8 @@ image:
 	$(INSTALL) -m 0644 $(SRC_DIR)/contrib/50-rbd.rules \
 	$(STAGING_DIR)/usr/lib/udev/rules.d/
 	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/ceph-rbdnamer \
+	$(STAGING_DIR)/usr/bin/
+	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/tc_wrap.py \
 	$(STAGING_DIR)/usr/bin/
 	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
 	$(ECHO) "$(product) $(esos_ver)" > \
