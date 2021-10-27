@@ -1622,6 +1622,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(scst_src)/iscsi-scst/Makefile; \
 	    $(SED) -i 's,/usr/src/ofa_kernel/default,$(mlnx_ofed_dir),' \
 	    $(scst_src)/iscsi-scst/kernel/isert-scst/Kbuild; \
+	    $(SED) -i 's,/usr/src/ofa_kernel/default,$(mlnx_ofed_dir),' \
+	    $(scst_src)/srpt/src/Kbuild; \
 	  fi; \
 	  if [ "$(with_qla2xxx_scst)" = "yes" ]; then \
 	    $(SED) -i '/obj-m/s/tcm_qla2xxx.o/scst_qla2xxx.o/' \
@@ -1838,7 +1840,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  M=$(scst_src)/iscsi-scst/kernel/isert-scst modules_install; \
 	  if [ "$(with_mlnx_ofed)" = "yes" ]; then \
 	    $(MAKE) --directory=$(scst_src)/srpt KDIR=$(linux_src) \
-	    KVER=$(kernel_ver)$$i OFED_FLAVOR=MOFED \
+	    KVER=$(kernel_ver)$$i OFED_KERNEL_IB_PKG=mlnx-ofa_kernel \
+	    OFED_KERNEL_IB_DEVEL_PKG=mlnx-ofa_kernel-devel OFED_FLAVOR=MOFED \
 	    OFED_VERS="$(shell head -1 $(mlnx_ofed_dir)/MOFED_VERSION)" \
 	    OFED_KERNEL_DIR=$(mlnx_ofed_dir) V=1 all; \
 	  else \
@@ -2095,7 +2098,7 @@ ocs_sdk.chroot: glibc.chroot libxml2.chroot
 	$(call chroot_only)
 	$(MAKE) --directory=$(ocs_sdk_dir)/tools/user/elxsdkutil \
 	LIBXML2_INC="-I/usr/include/libxml2" \
-	LIBXML2_LIB="-lxml2 -lm -ldl"
+	LIBXML2_LIB="-lxml2 -lm -ldl" WARNINGS="-Wall"
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/user/elxsdkutil/elxsdkutil \
 	/usr/sbin/
 	$(INSTALL) -m 0755 $(ocs_sdk_dir)/tools/bin/ocs_config.py \
