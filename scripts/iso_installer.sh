@@ -18,6 +18,7 @@ cmdline() {
 # Helper for mounting the CD-ROM / ISO (used below)
 mount_cd_iso() {
     cdrom_dev="$(findfs LABEL=ESOS-ISO)"
+    # shellcheck disable=SC2181
     if [ ${?} -ne 0 ]; then
         echo "ERROR: Can't resolve 'LABEL=ESOS-ISO'!"
         return 1
@@ -42,10 +43,11 @@ mount_cd_iso() {
     install_model="$(cmdline install_model)"
     wipe_devs="$(cmdline wipe_devs)"
     no_prompt="$(cmdline no_prompt)"
+    image_server="$(cmdline image_server)"
 
     # Change to the mounted CD-ROM directory and run the installer
     cd /mnt/root || bash
-    WIPE_DEVS=${wipe_devs} NO_PROMPT=${no_prompt} ./install.sh \
+    WIPE_DEVS="${wipe_devs}" NO_PROMPT="${no_prompt}" ./install.sh \
         "${install_dev}" "${install_tran}" "${install_model}" || bash
 
     if ! grep -q nfs_iso_device /proc/cmdline; then
@@ -57,12 +59,13 @@ mount_cd_iso() {
     if [ -f "./extra_install.sh" ]; then
         echo " "
         echo "### Starting additional ESOS installation tasks..."
-        WIPE_DEVS=${wipe_devs} NO_PROMPT=${no_prompt} \
+        WIPE_DEVS="${wipe_devs}" NO_PROMPT="${no_prompt}" \
+            IMAGE_SERVER="${image_server}" \
             sh ./extra_install.sh || bash
     fi
 
     # Done with the CD-ROM
-    cd
+    cd || exit 1
 
     if [ "x${no_prompt}" != "x1" ]; then
         # Pause until the user continues, then reboot
@@ -70,7 +73,7 @@ mount_cd_iso() {
         while : ; do
             echo "### ESOS ISO installer complete; type 'yes' to reboot:" && \
                 read -r confirm
-            if [ "x${confirm}" = "xyes" ]; then
+            if [ "${confirm}" = "yes" ]; then
                 break
             fi
         done
