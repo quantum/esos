@@ -1,3 +1,7 @@
+2021-10-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated kernel param option to parse as 'imageserver'
+
 2021-10-28  Marc A. Smith  <marc.smith@quantum.com>
 
 	openib.conf: always load mlx5_ib; iso_installer.sh: handle 'image_server' kernel param, applied several shellcheck recommendations

@@ -43,7 +43,7 @@ mount_cd_iso() {
     install_model="$(cmdline install_model)"
     wipe_devs="$(cmdline wipe_devs)"
     no_prompt="$(cmdline no_prompt)"
-    image_server="$(cmdline image_server)"
+    image_server="$(cmdline imageserver)"
 
     # Change to the mounted CD-ROM directory and run the installer
     cd /mnt/root || bash
