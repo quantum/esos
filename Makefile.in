@@ -197,7 +197,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		scst-3.5.x_r9586.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.16.0.tar.gz \
-		lvm2-2_02_184.tar.xz \
+		lvm2-2.03.14.tar.xz \
 		xfsprogs-4.20.0.tar.xz \
 		mdadm-4.1.tar.xz \
 		parted-3.2.tar.xz \
@@ -236,7 +236,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		perftest-4.4-0.5.tar.xz \
 		bcache-tools-1.0.8.tar.gz \
 		nrpe-3.2.1.tar.gz \
-		thin-provisioning-tools-0.8.1.tar.xz \
+		thin-provisioning-tools-0.9.0.tar.gz \
 		expat-2.2.6.tar.bz2 \
 		boost-1.70.0.tar.xz \
 		librdmacm-1.1.0.tar.gz \
