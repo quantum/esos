@@ -3660,7 +3660,7 @@ boost.chroot: glibc.chroot gcc.chroot
 	--without-context --without-contract --without-coroutine \
 	--without-date_time --without-exception --without-fiber \
 	--without-filesystem --without-graph --without-graph_parallel \
-	--without-iostreams --without-locale --without-log --without-math \
+	--without-locale --without-log --without-math \
 	--without-mpi --witout-program_options --without-python \
 	--without-random --without-regex --without-serialization \
 	--without-stacktrace --without-system --without-test --without-timer \
