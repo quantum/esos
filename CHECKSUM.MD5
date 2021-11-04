@@ -153,7 +153,7 @@ b5c184b13b6b5de32af630af2fd013fd  sudo-1.8.27.tar.gz
 5ef9542c5d6490bc566855467abeb012  dlm-4.0.8.tar.xz
 69db29ff4bc035936946be44fc8be5cd  corosync-2.4.4.tar.gz
 2d68d72a1c99bc7806364096bdcfcc7d  pacemaker-1.1.20.tar.xz
-7dd7f68d484959a634cf412259ff1f94  multipath-tools-0.8.1.tar.xz
+5374165735591fac16e9274426a3c56e  multipath-tools-0.8.7.tar.gz
 52b47340d05955efeb384897e813d554  json-c-0.13.1-20180305.tar.xz
 859bbc1a2411d9158f482feefb9c66ce  scst_qla2xxx_unified-master_20190620.tar.xz
 f0d0dbc2c7d67f1fa912a6fad3b2485a  archivemount-0.8.12.tar.gz

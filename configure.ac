@@ -67,6 +67,7 @@ MY_PATH_PROG([mksquashfs])
 MY_PATH_PROG([rmdir])
 MY_PATH_PROG([cut])
 MY_PATH_PROG([tr])
+MY_PATH_PROG([mountpoint])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
