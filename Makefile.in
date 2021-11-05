@@ -5268,6 +5268,8 @@ image:
 	$(STAGING_DIR)/usr/bin/
 	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/tc_wrap.py \
 	$(STAGING_DIR)/usr/bin/
+	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/lvmconf \
+	$(STAGING_DIR)/usr/sbin/
 	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
 	$(ECHO) "$(product) $(esos_ver)" > \
 	$(STAGING_DIR)/etc/esos-release
