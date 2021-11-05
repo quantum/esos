@@ -1788,6 +1788,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	      -name $${module} -type f -delete; \
 	    done <<< "$$($(FIND) \
 	    /lib/modules/$(kernel_ver)$$i/extra/mlnx-ofa_kernel -name *.ko)"; \
+	    $(RM) /lib/modules/$(kernel_ver)$$i/extra/mlnx-ofa_kernel/drivers/nvme/host/qla2xxx.ko; \
 	    $(FIND) /lib/modules/$(kernel_ver)$$i/kernel/drivers \
 	    -empty -type d -delete; \
 	    $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
