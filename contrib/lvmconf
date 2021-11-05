@@ -52,7 +52,7 @@ function usage
 function set_default_use_lvmetad_var
 {
 	eval "$(lvm dumpconfig --type default global/use_lvmetad 2>/dev/null)"
-	if [ "$?" != 0 ]; then
+	if [ -z "$use_lvmetad" ]; then
 		USE_LVMETAD=0
 	else
                 USE_LVMETAD=$use_lvmetad

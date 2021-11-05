@@ -1,5 +1,7 @@
 2021-11-05  Marc A. Smith  <marc.smith@quantum.com>
 
+	lvmconf: fixed for cluster enable/disable
+
 	include the missing 'lvmconf' tool (no longer present in latest LVM2 package)
 
 	MOFED: zap the dummy qla2xxx.ko module
