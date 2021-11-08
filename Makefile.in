@@ -296,7 +296,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		swig-4.0.0.tar.gz \
 		userspace-rcu-0.11.0.tar.bz2 \
 		tzdata-2019a.tar.xz \
-		nvme-cli-1.8.1.tar.gz \
+		nvme-cli-1.15.tar.gz \
 		freetype-2.10.0.tar.bz2 \
 		ledmon-0.92.tar.gz \
 		nvmetcli-master_20180523.tar.xz \
@@ -4380,7 +4380,7 @@ tzdata.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-nvme-cli.chroot: glibc.chroot eudev.chroot
+nvme-cli.chroot: glibc.chroot eudev.chroot json-c.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	$(QUIET) if ! $(GREP) -q no-format-truncation \
@@ -5268,8 +5268,6 @@ image:
 	$(STAGING_DIR)/usr/bin/
 	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/tc_wrap.py \
 	$(STAGING_DIR)/usr/bin/
-	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/lvmconf \
-	$(STAGING_DIR)/usr/sbin/
 	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
 	$(ECHO) "$(product) $(esos_ver)" > \
 	$(STAGING_DIR)/etc/esos-release
