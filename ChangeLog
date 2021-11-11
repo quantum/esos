@@ -1,3 +1,9 @@
+2021-11-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_mlnx-tools'
+
+	removed our own tc_wrap.py script and added the mlnx-tools package
+
 2021-11-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20211106_tweaks'

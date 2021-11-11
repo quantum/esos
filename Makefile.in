@@ -356,6 +356,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libvirtd_exporter-master_20210907.tar.xz \
 		wget-1.21.2.tar.gz \
 		cacerts-20210930.tar.xz \
+		mlnx-tools-5.2.0.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -446,7 +447,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		vim.chroot sdparm.chroot iproute2.chroot libmnl.chroot \
 		file.chroot jansson.chroot pcre.chroot pv.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
-		xz.chroot wget.chroot cacerts.chroot
+		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -5090,6 +5091,17 @@ cacerts.chroot: glibc.chroot openssl.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
+mlnx-tools.chroot: glibc.chroot Python.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	PKG_VERSION=$(shell $(CAT) $(tgt_src_dir)/mlnx-tools.spec | \
+	$(GREP) Version: | $(CUT) -d: -f2 | $(TR) -d ' ') \
+	$(MAKE) --directory=$(tgt_src_dir) install UDEV_DIR=/usr/lib/udev
+	$(SED) -i '/param, val/s/line.strip()/line.decode("utf-8").strip()/' \
+	/usr/bin/tc_wrap.py
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot
@@ -5265,8 +5277,6 @@ image:
 	$(INSTALL) -m 0644 $(SRC_DIR)/contrib/50-rbd.rules \
 	$(STAGING_DIR)/usr/lib/udev/rules.d/
 	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/ceph-rbdnamer \
-	$(STAGING_DIR)/usr/bin/
-	$(INSTALL) -m 0755 $(SRC_DIR)/contrib/tc_wrap.py \
 	$(STAGING_DIR)/usr/bin/
 	$(LN) libncursesw.so $(STAGING_DIR)/usr/lib/libncurses.so.5
 	$(ECHO) "$(product) $(esos_ver)" > \
