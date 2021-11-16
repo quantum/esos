@@ -1,3 +1,9 @@
+2021-11-16  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'nix_lvmetad'
+
+	lvmetad and clvmd are deprecated in latest LVM2 version, removed references from rc.lvm2 and rc.conf, removed rc.clvmd; updated default /etc/lvm/ config files
+
 2021-11-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_mlnx-tools'
