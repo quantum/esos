@@ -36,7 +36,7 @@ if [ "x$(uname -s)" = "xLinux" ]; then
 elif [ "x$(uname -s)" = "xDarwin" ]; then
     this_os="${MACOSX}"
 else
-    echo "ERROR: Only Linux and Mac OS X are supported with this script!"
+    echo "ERROR: Only Linux and Mac OS X are supported with this script!" 1>&2
     exit 1
 fi
 
@@ -46,7 +46,7 @@ reqd_tools=${this_os}_REQD_TOOLS
 for i in ${!reqd_tools}; do
     if ! which ${i} > /dev/null 2>&1; then
         echo "ERROR: The '${i}' utility is required to use this" \
-            "installation script."
+            "installation script." 1>&2
         exit 1
     fi
 done
@@ -89,7 +89,8 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
         # Look up the ESOS block device node
         esos_root="$(findfs LABEL=esos_root)"
         if [ ${?} -ne 0 ]; then
-            echo "ERROR: We couldn't find the LABEL=esos_root file system!"
+            echo "ERROR: We couldn't find the LABEL=esos_root" \
+                "file system!" 1>&2
             exit 1
         fi
         # We only support upgrading if using a MD RAID boot drive
@@ -116,8 +117,8 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             fi
         else
             # Make sure the image disk label and the ESOS boot drive match
-            esos_blk_dev="$(echo ${esos_root} | \
-                sed -e '/\/dev\/sd/s/2//; /\/dev\/nvme/s/p2//')"
+            esos_blk_dev="$(echo ${esos_root} | sed -e '/\/dev\/sd/s/2//' \
+                -e '/\/dev\/nvme/s/p2//' -e '/\/dev\/vd/s/2//')"
             image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
             disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
             image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
@@ -129,7 +130,8 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 sed -e 's/\*//' | awk '{ print $2 }' > ${image_parts}
             if ! diff ${disk_parts} ${image_parts} > /dev/null 2>&1; then
                 echo "### The image file and current ESOS disk labels do not" \
-                    "match! An in-place upgrade is not supported, continuing..."
+                    "match! An in-place upgrade is not supported," \
+                    "continuing..." 1>&2
                 echo
                 rm -f ${image_mbr} ${disk_parts} ${image_parts}
                 break
@@ -138,6 +140,10 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 # For NVMe drives
                 esos_blk_root="${esos_blk_dev}p2"
                 esos_blk_boot="${esos_blk_dev}p1"
+            elif echo ${esos_blk_dev} | grep -q "/dev/vd"; then
+                # For VirtIO drives
+                esos_blk_root="${esos_blk_dev}2"
+                esos_blk_boot="${esos_blk_dev}1"
             else
                 # For SCSI drives
                 esos_blk_root="${esos_blk_dev}2"
@@ -330,7 +336,7 @@ elif [ -n "${install_tran}" ]; then
             head -1 | awk '{print $1}')
         if [ "x${tran_model_dev}" = "x" ]; then
             echo "ERROR: Unable to resolve any devices for transport" \
-                "'${install_tran}' and model '${install_model}'."
+                "'${install_tran}' and model '${install_model}'." 1>&2
             exit 1
         fi
         dev_node="${tran_model_dev}"
@@ -344,7 +350,7 @@ elif [ -n "${install_tran}" ]; then
             head -1 | awk '{print $1}')
         if [ "x${tran_dev}" = "x" ]; then
             echo "ERROR: Unable to resolve any devices for transport" \
-                "'${install_tran}'."
+                "'${install_tran}'." 1>&2
             exit 1
         fi
         dev_node="${tran_dev}"
@@ -357,7 +363,7 @@ elif [ -n "${install_model}" ]; then
         head -1 | awk '{print $1}')
     if [ "x${model_dev}" = "x" ]; then
         echo "ERROR: Unable to resolve any devices for model" \
-            "'${install_model}'."
+            "'${install_model}'." 1>&2
         exit 1
     fi
     dev_node="${model_dev}"
@@ -375,12 +381,12 @@ else
     done
 fi
 if [ "x${dev_node}" = "x" ] || [ ! -e ${dev_node} ]; then
-    echo "ERROR: That device node doesn't seem to exist."
+    echo "ERROR: That device node doesn't seem to exist." 1>&2
     exit 1
 fi
 if mount | grep ${dev_node} > /dev/null; then
     echo "ERROR: It looks like that device is mounted; unmount it" \
-        "and try again."
+        "and try again." 1>&2
     exit 1
 fi
 if [ "${this_os}" = "${LINUX}" ]; then
@@ -394,7 +400,7 @@ elif [ "${this_os}" = "${MACOSX}" ]; then
 fi
 if [ ${dev_bytes} -lt 8589934592 ]; then
     echo "ERROR: Your target install drive isn't large enough;" \
-        "it must be at least 8192 MiB."
+        "it must be at least 8192 MiB." 1>&2
     exit 1
 fi
 
