@@ -1,3 +1,9 @@
+2021-11-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'install_fixup'
+
+	install.sh: handle using /dev/vdX block devices for upgrades, echo error messages to stderr
+
 2021-11-16  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'nix_lvmetad'
