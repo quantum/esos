@@ -1,0 +1,35 @@
+--- a/scripts/rescan-scsi-bus.sh	2019-09-17 17:53:05.000000000 -0400
++++ b/scripts/rescan-scsi-bus.sh	2021-11-21 00:05:28.289350779 -0500
+@@ -272,7 +272,7 @@
+   RC=$?
+ 
+   # Handle in progress of becoming ready and unit attention
+-  while [ $RC = 2 -o $RC = 6 ] && [ $ctr -le 30 ] ; do
++  while [ $RC = 2 -o $RC = 6 ] && [ $ctr -le $online_wait ] ; do
+     if [ $RC = 2 ] && [ "$RMB" != "1" ] ; then
+       echo -n "."
+       let LN+=1
+@@ -1143,6 +1143,7 @@
+     echo "--multipath:     same as -m"
+     echo "--nooptscan:     don't stop looking for LUNs if 0 is not found"
+     echo "--remove:        same as -r"
++    echo "--online-wait=SECS:     wait SECS seconds in online test [default: 30]"
+     echo "--reportlun2:    Tell kernel to try REPORT_LUN even on SCSI2 devices"
+     echo "--resize:        same as -s"
+     echo "--sparselun:     Tell kernel to support sparse LUN numbering"
+@@ -1198,6 +1199,7 @@
+ filter_ids=0
+ opt_channelsearch=
+ remove=
++online_wait=30
+ updated=0
+ update=0
+ resize=0
+@@ -1246,6 +1248,7 @@
+     -nooptscan) optscan=0 ;;
+     -nosync) sync=0 ;;
+     -remove)      remove=1 ;;
++    -online-wait=*) online_wait=${opt#-online-wait=};;
+     -reportlun2) scan_flags=$((scan_flags|0x20000)) ;;
+     -resize) resize=1;;
+     -sparselun) scan_flags=$((scan_flags|0x40)) ;;

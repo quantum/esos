@@ -93,6 +93,20 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 "file system!" 1>&2
             exit 1
         fi
+        # If the extracted package resides in /tmp we may need to increase size
+        if echo "${PKG_DIR}" | grep -q -E '^/tmp'; then
+            curr_tmp_size="$(df --block-size=1 --output=size /tmp | tail -1)"
+            if [ "${curr_tmp_size}" -lt "6442450944" ]; then
+                echo "### Increasing the /tmp file system..."
+                mount -o remount,size=6G /tmp || exit 1
+                echo
+            fi
+        fi
+        echo "### Extracting the image file..."
+        mkdir -p ${TEMP_DIR} || exit 1
+        extracted_img="${TEMP_DIR}/$(basename ${image_file} .tar.bz2)"
+        tar xfj ${image_file} -C ${TEMP_DIR}/ --sparse || exit 1
+        echo
         # We only support upgrading if using a MD RAID boot drive
         if echo ${esos_root} | grep -q "/dev/md"; then
             using_md=1
@@ -103,7 +117,7 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             # Set block device variables for below
             esos_blk_root="$(findfs LABEL=esos_root)"
             esos_blk_boot="$(findfs LABEL=ESOS_BOOT)"
-            if [[ ! -z ${FORCE_UPGRADE} ]]; then
+            if [ -n "${FORCE_UPGRADE}" ]; then
                 confirm="Y"
             else
                 # Get confirmation for an upgrade (only option for MD boot)
@@ -116,25 +130,27 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                     echo
             fi
         else
-            # Make sure the image disk label and the ESOS boot drive match
-            esos_blk_dev="$(echo ${esos_root} | sed -e '/\/dev\/sd/s/2//' \
-                -e '/\/dev\/nvme/s/p2//' -e '/\/dev\/vd/s/2//')"
-            image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
-            disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
-            image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
-            tar xfOj ${image_file} | dd of=${image_mbr} bs=512 count=1 > \
-                /dev/null 2>&1 || exit 1
-            fdisk -u -l ${esos_blk_dev} | egrep "^${esos_blk_dev}" | \
-                sed -e 's/\*//' | awk '{ print $2 }' > ${disk_parts}
-            fdisk -u -l ${image_mbr} | egrep "^${image_mbr}" | \
-                sed -e 's/\*//' | awk '{ print $2 }' > ${image_parts}
-            if ! diff ${disk_parts} ${image_parts} > /dev/null 2>&1; then
-                echo "### The image file and current ESOS disk labels do not" \
-                    "match! An in-place upgrade is not supported," \
-                    "continuing..." 1>&2
-                echo
-                rm -f ${image_mbr} ${disk_parts} ${image_parts}
-                break
+            if [ -z "${FORCE_UPGRADE}" ]; then
+                # Make sure the image disk label and the ESOS boot drive match
+                esos_blk_dev="$(echo ${esos_root} | sed -e '/\/dev\/sd/s/2//' \
+                    -e '/\/dev\/nvme/s/p2//' -e '/\/dev\/vd/s/2//')"
+                image_mbr="$(mktemp -u -t mbr.XXXXXX)" || exit 1
+                disk_parts="$(mktemp -u -t disk_parts.XXXXXX)" || exit 1
+                image_parts="$(mktemp -u -t image_parts.XXXXXX)" || exit 1
+                dd if=${extracted_img} of=${image_mbr} bs=512 count=1 > \
+                    /dev/null 2>&1 || exit 1
+                fdisk -u -l ${esos_blk_dev} | egrep "^${esos_blk_dev}" | \
+                    sed -e 's/\*//' | awk '{ print $2 }' > ${disk_parts}
+                fdisk -u -l ${image_mbr} | egrep "^${image_mbr}" | \
+                    sed -e 's/\*//' | awk '{ print $2 }' > ${image_parts}
+                if ! diff ${disk_parts} ${image_parts} > /dev/null 2>&1; then
+                    echo "### The image file and current ESOS disk labels" \
+                        "do not match! An in-place upgrade is not supported," \
+                        "continuing..." 1>&2
+                    echo
+                    rm -f ${image_mbr} ${disk_parts} ${image_parts}
+                    break
+                fi
             fi
             if echo ${esos_blk_dev} | grep -q "/dev/nvme"; then
                 # For NVMe drives
@@ -149,7 +165,7 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 esos_blk_root="${esos_blk_dev}2"
                 esos_blk_boot="${esos_blk_dev}1"
             fi
-            if [[ ! -z ${FORCE_UPGRADE} ]]; then
+            if [ -n "${FORCE_UPGRADE}" ]; then
                 confirm="Y"
             else
                 # Get confirmation for an upgrade
@@ -163,12 +179,6 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             fi
         fi
         if [[ ${confirm} =~ [Yy]|[Yy][Ee][Ss] ]]; then
-            curr_tmp_size="$(df --block-size=1 --output=size /tmp | tail -1)"
-            if [ "${curr_tmp_size}" -lt "6442450944" ]; then
-                echo "### Increasing the /tmp file system..."
-                mount -o remount,size=6G /tmp || exit 1
-                echo
-            fi
             if grep -q esos_persist /proc/cmdline; then
                 usb_esos_root="/mnt/root"
                 usb_esos_boot="/boot"
@@ -182,11 +192,6 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
                 mount ${esos_blk_boot} ${usb_esos_boot} || exit 1
                 echo
             fi
-            echo "### Extracting the image file..."
-            mkdir -p ${TEMP_DIR} || exit 1
-            extracted_img="${TEMP_DIR}/$(basename ${image_file} .tar.bz2)"
-            tar xfj ${image_file} -C ${TEMP_DIR}/ --sparse || exit 1
-            echo
             echo "### Mounting the image file partitions..."
             img_esos_root="${TEMP_DIR}/new_esos_root"
             img_esos_boot="${TEMP_DIR}/new_esos_boot"

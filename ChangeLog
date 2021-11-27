@@ -1,3 +1,9 @@
+2021-11-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20211121_tweaks'
+
+	added the '--online-wait=' optional argument to the rescan-scsi-bus.sh script (to control how long we wait for devices to be marked for removal); install.sh: updates to handle in-place upgrades for /dev/vdX install devices; ocf:esos:alua RA: changed behavior of set-ALUA-transitioning-state to use SSH by default (using node names with public key auth), use the '--online-wait=' argument with the rescan-scsi-bus.sh call, increased RESCAN_SCSI_TIMEOUT to 20s
+
 2021-11-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'install_fixup'

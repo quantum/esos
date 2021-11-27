@@ -2612,6 +2612,7 @@ lsscsi.chroot: glibc.chroot
 sg3_utils.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
