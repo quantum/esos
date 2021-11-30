@@ -82,5 +82,5 @@ mount_cd_iso() {
     echo "### Rebooting..."
     echo " "
     reboot
-} | tee "/tmp/iso_installer_$(date +%s).log"
+} 2>&1 | tee "/tmp/iso_installer_$(date +%s).log"
 
