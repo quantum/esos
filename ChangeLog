@@ -1,3 +1,9 @@
+2021-11-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20211130_tweaks'
+
+	increase rc script stop timeout to 10 minutes
+
 2021-11-29  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20211129_tweaks'
