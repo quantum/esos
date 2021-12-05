@@ -1,3 +1,9 @@
+2021-12-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20211203_mas'
+
+	patched dlm to spitout active lockspaces on shutdown (when active lockspaces exist); in bio_dev_to_redirect() of ocf:esos:alua we need an additional call to iscsi_sess_rescan() when attempting to set the redirection device
+
 2021-11-30  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20211130_tweaks'

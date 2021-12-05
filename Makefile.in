@@ -3436,6 +3436,7 @@ linux_firmware.chroot:
 dlm.chroot: glibc.chroot corosync.chroot libxml2.chroot pacemaker.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	$(MAKE) --directory=$(tgt_src_dir) USE_SD_NOTIFY=no
 	$(SED) -e '/$$(INSTALL) -d $$(DESTDIR)\/$$(MANDIR)\/man8/ s/^#*/#/' \
 	-i $(tgt_src_dir)/fence/Makefile
