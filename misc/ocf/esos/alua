@@ -931,6 +931,7 @@ bio_dev_to_redirect() {
             if [ "x${active_val}" = "x1" ]; then
                 deact_devs+=" ${i}"
             fi
+            iscsi_sess_rescan
             if ! test_if_dev_ready ${new_filename}; then
                 rc=1
                 continue
