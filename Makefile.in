@@ -4064,6 +4064,7 @@ rsync.chroot: glibc.chroot attr.chroot acl.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --sysconfdir=/etc
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(INSTALL) -m 0755 $(tgt_src_dir)/support/rsync-no-vanished /usr/bin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

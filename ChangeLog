@@ -1,3 +1,9 @@
+2021-12-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rsync-no-vanished'
+
+	install the rsync-no-vanished script from support/ in rsync source; updated usb_sync.sh to use rsync-no-vanished instead of rsync when sync'ing under normal conditions (not initial) -- this should prevent transient failures when temporary files exist in rsync USB locations (eg, work-around "rsync warning: some files vanished before they could be transferred (code 24)")
+
 2021-12-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20211203_mas'
