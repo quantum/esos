@@ -100,6 +100,7 @@ else
     fi
     # Push changes up to the USB Git repo / file system
     cd /etc && git push -q origin master || exit 1
-    rsync --archive --relative --delete ${RSYNC_DIRS} ${USB_RSYNC} || exit 1
+    rsync-no-vanished --archive --relative --delete \
+        ${RSYNC_DIRS} ${USB_RSYNC} || exit 1
 fi
 
