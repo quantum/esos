@@ -587,6 +587,61 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                             next;
                         }
                     }
+                    # For bridge interfaces set the brmembers MTU to match the bridge
+                    if ($each =~ /^br\d+/) {
+                        if (!exists($ini_hash{$each . ":brmembers"})) {
+                            print("ERROR: The 'brmembers' name is missing!\n");
+                            next;
+                        }
+                        my $brmembers = $ini_hash{$each . ":brmembers"};
+                        if ($brmembers eq "") {
+                            print("WARNING: The 'brmembers' value is empty!\n");
+                        }
+                        # Set the member interface MTU to match the bridge
+                        my @brmember_vals = split(/,/, $brmembers);
+                        foreach my $each_brmember (@brmember_vals) {
+                            print("Setting MTU for interface $each_brmember...\n");
+                            system($ip_prog . " link set " . $each_brmember . " mtu " .
+                                $mtu . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $ip_prog failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $ip_prog program exited with " .
+                                    "value $exit_status.\n");
+                                next;
+                            }
+                        }
+		    }
+                    # For bond slaves set the slaves MTU to match the bond
+                    if ($each =~ /^bond\d+/) {
+                        if (!exists($ini_hash{$each . ":slaves"})) {
+                            print("ERROR: The 'slaves' name is missing!\n");
+                            next;
+                        }
+                        my $slaves = $ini_hash{$each . ":slaves"};
+                        if ($slaves eq "") {
+                            print("WARNING: The 'slaves' value is empty!\n");
+                        }
+                        my @slave_vals = split(/,/, $slaves);
+                        foreach my $each_slave (@slave_vals) {
+                            print("Setting MTU for interface $each_slave...\n");
+                            system($ip_prog . " link set " . $each_slave . " mtu " .
+                                $mtu . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $ip_prog failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $ip_prog program exited with " .
+                                    "value $exit_status.\n");
+                                next;
+                            }
+                        }
+		    }
                     print("Setting MTU for interface $each...\n");
                     system($ip_prog . " link set " . $each . " mtu " .
                         $mtu . " 2>&1");
@@ -655,6 +710,63 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                         print("ERROR: The 'mtu' value is empty!\n");
                         next;
                     }
+
+                    # For bridge interfaces set the brmembers MTU to match the bridge
+                    if ($each =~ /^br\d+/) {
+                        if (!exists($ini_hash{$each . ":brmembers"})) {
+                            print("ERROR: The 'brmembers' name is missing!\n");
+                            next;
+                        }
+                        my $brmembers = $ini_hash{$each . ":brmembers"};
+                        if ($brmembers eq "") {
+                            print("WARNING: The 'brmembers' value is empty!\n");
+                        }
+                        # Set the member interface MTU to match the bridge
+                        my @brmember_vals = split(/,/, $brmembers);
+                        foreach my $each_brmember (@brmember_vals) {
+                            print("Setting MTU for interface $each_brmember...\n");
+                            system($ip_prog . " link set " . $each_brmember . " mtu " .
+                                $mtu . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $ip_prog failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $ip_prog program exited with " .
+                                    "value $exit_status.\n");
+                                next;
+                            }
+                        }
+                    }
+                    # For bond slaves set the slaves MTU to match the bond
+                    if ($each =~ /^bond\d+/) {
+                        if (!exists($ini_hash{$each . ":slaves"})) {
+                            print("ERROR: The 'slaves' name is missing!\n");
+                            next;
+                        }
+                        my $slaves = $ini_hash{$each . ":slaves"};
+                        if ($slaves eq "") {
+                            print("WARNING: The 'slaves' value is empty!\n");
+                        }
+                        my @slave_vals = split(/,/, $slaves);
+                        foreach my $each_slave (@slave_vals) {
+                            print("Setting MTU for interface $each_slave...\n");
+                            system($ip_prog . " link set " . $each_slave . " mtu " .
+                                $mtu . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $ip_prog failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $ip_prog program exited with " .
+                                    "value $exit_status.\n");
+                                next;
+                            }
+                        }
+                    }
+
                     if ($each =~ /.*\.\d+/) {
                         # It's a VLAN interface so set the parent MTU first
                         my @vlan_if_parts = split(/\./, $each);
@@ -698,6 +810,62 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                         print("ERROR: The 'mtu' value is empty!\n");
                         next;
                     }
+                    # For bridge interfaces set the brmembers MTU to match the bridge
+                    if ($each =~ /^br\d+/) {
+                        if (!exists($ini_hash{$each . ":brmembers"})) {
+                            print("ERROR: The 'brmembers' name is missing!\n");
+                            next;
+                        }
+                        my $brmembers = $ini_hash{$each . ":brmembers"};
+                        if ($brmembers eq "") {
+                            print("WARNING: The 'brmembers' value is empty!\n");
+                        }
+                        # Set the member interface MTU to match the bridge
+                        my @brmember_vals = split(/,/, $brmembers);
+                        foreach my $each_brmember (@brmember_vals) {
+                            print("Setting MTU for interface $each_brmember...\n");
+                            system($ip_prog . " link set " . $each_brmember . " mtu " .
+                                $mtu . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $ip_prog failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $ip_prog program exited with " .
+                                    "value $exit_status.\n");
+                                next;
+                            }
+                        }
+                    }
+                    # For bond slaves set the slaves MTU to match the bond
+                    if ($each =~ /^bond\d+/) {
+                        if (!exists($ini_hash{$each . ":slaves"})) {
+                            print("ERROR: The 'slaves' name is missing!\n");
+                            next;
+                        }
+                        my $slaves = $ini_hash{$each . ":slaves"};
+                        if ($slaves eq "") {
+                            print("WARNING: The 'slaves' value is empty!\n");
+                        }
+                        my @slave_vals = split(/,/, $slaves);
+                        foreach my $each_slave (@slave_vals) {
+                            print("Setting MTU for interface $each_slave...\n");
+                            system($ip_prog . " link set " . $each_slave . " mtu " .
+                                $mtu . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $ip_prog failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $ip_prog program exited with " .
+                                    "value $exit_status.\n");
+                                next;
+                            }
+                        }
+                    }
+
                     if ($each =~ /.*\.\d+/) {
                         # It's a VLAN interface so set the parent MTU first
                         my @vlan_if_parts = split(/\./, $each);

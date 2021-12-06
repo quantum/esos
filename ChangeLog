@@ -1,3 +1,9 @@
+2021-12-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_network_tweak'
+
+	rc.network: handle setting the bridge member and bond slave interface MTU to match the parent
+
 2021-12-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rsync-no-vanished'
