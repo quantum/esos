@@ -209,7 +209,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                 if ($iface_carrier_lines[0] =~ /1/) {
                     print("Interface $iface has link, running $dhcp_prog...\n");
                     system($dhcp_prog . " -i " . $iface . " -b " .
-                        " -q -F " . $hostname . " 2>&1");
+                        " -q -S -F " . $hostname . " 2>&1");
                     if ($? == -1) {
                         print("ERROR: Running $dhcp_prog failed: $!\n");
                         next;
@@ -658,7 +658,7 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                     # Do DHCP configuration for interface
                     print("Running $dhcp_prog for interface $each...\n");
                     system($dhcp_prog . " -i " . $each . " -b " .
-                        " -q -F " . $hostname . " 2>&1");
+                        " -q -S -F " . $hostname . " 2>&1");
                     if ($? == -1) {
                         print("ERROR: Running $dhcp_prog failed: $!\n");
                         next;

@@ -1,3 +1,9 @@
+2021-12-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'udhcpc_syslog'
+
+	use the '-S' option with udhcpc so it logs to syslog as well
+
 2021-12-06  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_network_tweak'
