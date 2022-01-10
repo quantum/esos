@@ -2371,6 +2371,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install wcwidth==0.2.5
 	pip3 install attrs==21.2.0
 	pip3 install cmd2==2.2.0
+	pip3 install xmltodict==0.12.0
 	$(QUIET) if [ "$(enable_python_sql)" = "yes" ]; then \
 	  pip3 install psycopg2==2.8.1; \
 	  pip3 install mysqlclient==2.0.3; \
