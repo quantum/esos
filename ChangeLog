@@ -1,3 +1,9 @@
+2022-01-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20220109_mas'
+
+	Python.chroot: include the 'xmltodict' module, install.sh: don't utilize the SECONDARY image slot if the root FS won't hold both images
+
 2021-12-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'udhcpc_syslog'

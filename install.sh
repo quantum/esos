@@ -204,29 +204,59 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             root_dev="$(echo ${loop_dev} | sed 's/^\/dev/\/dev\/mapper/')p2"
             mount ${root_dev} ${img_esos_root} || exit 1
             mount ${boot_dev} ${img_esos_boot} || exit 1
-            echo
-            echo "### Moving the current primary image to the secondary slot..."
-            usb_ver="$(cat ${usb_esos_boot}/PRIMARY-version | cut -d= -f2)"
-            mv -f ${usb_esos_boot}/PRIMARY-version \
-                ${usb_esos_boot}/SECONDARY-version || exit 1
-            mv -f ${usb_esos_boot}/PRIMARY-initramfs.cpio.gz \
-                ${usb_esos_boot}/SECONDARY-initramfs.cpio.gz || exit 1
-            mv -f ${usb_esos_boot}/PRIMARY-bzImage-esos.prod \
-                ${usb_esos_boot}/SECONDARY-bzImage-esos.prod || exit 1
-            mv -f ${usb_esos_boot}/PRIMARY-bzImage-esos.debug \
-                ${usb_esos_boot}/SECONDARY-bzImage-esos.debug || exit 1
-            # Handle the root cpio -> squashfs transition
-            if [ -f "${usb_esos_root}/PRIMARY-root.sqsh" ]; then
-                mv -f ${usb_esos_root}/PRIMARY-root.sqsh \
-                    ${usb_esos_root}/SECONDARY-root.sqsh || exit 1
-                # There might be an old cpio archive in the SECONDARY slot
-                if [ -f "${usb_esos_root}/SECONDARY-root.cpio.bz2" ]; then
-                    rm -f ${usb_esos_root}/SECONDARY-root.cpio.bz2 || exit 1
-                fi
-            fi
+            # Ensure the root FS has space for both image slots
+            new_root_img_bytes="$(stat -c "%s" \
+                "${img_esos_root}/PRIMARY-root.sqsh")"
             if [ -f "${usb_esos_root}/PRIMARY-root.cpio.bz2" ]; then
-                mv -f ${usb_esos_root}/PRIMARY-root.cpio.bz2 \
-                    ${usb_esos_root}/SECONDARY-root.cpio.bz2 || exit 1
+                curr_pri_img_file="${usb_esos_root}/PRIMARY-root.cpio.bz2"
+            else
+                curr_pri_img_file="${usb_esos_root}/PRIMARY-root.sqsh"
+            fi
+            curr_pri_img_bytes="$(stat -c "%s" "${curr_pri_img_file}")"
+            both_img_bytes="$(expr "${new_root_img_bytes}" + \
+                "${curr_pri_img_bytes}")"
+            curr_usb_root_size="$(df --block-size=1 --output=size \
+                "${usb_esos_root}" | tail -1)"
+            if [ "${both_img_bytes}" -lt "${curr_usb_root_size}" ]; then
+                # Both images will fit, proceed with PRIMARY/SECONDARY setup
+                echo
+                echo "### Moving the current primary image to the" \
+                    "secondary slot..."
+                usb_ver="$(cat ${usb_esos_boot}/PRIMARY-version | cut -d= -f2)"
+                mv -f ${usb_esos_boot}/PRIMARY-version \
+                    ${usb_esos_boot}/SECONDARY-version || exit 1
+                mv -f ${usb_esos_boot}/PRIMARY-initramfs.cpio.gz \
+                    ${usb_esos_boot}/SECONDARY-initramfs.cpio.gz || exit 1
+                mv -f ${usb_esos_boot}/PRIMARY-bzImage-esos.prod \
+                    ${usb_esos_boot}/SECONDARY-bzImage-esos.prod || exit 1
+                mv -f ${usb_esos_boot}/PRIMARY-bzImage-esos.debug \
+                    ${usb_esos_boot}/SECONDARY-bzImage-esos.debug || exit 1
+                # Handle the root cpio -> squashfs transition
+                if [ -f "${usb_esos_root}/PRIMARY-root.sqsh" ]; then
+                    mv -f ${usb_esos_root}/PRIMARY-root.sqsh \
+                        ${usb_esos_root}/SECONDARY-root.sqsh || exit 1
+                    # There might be an old cpio archive in the SECONDARY slot
+                    if [ -f "${usb_esos_root}/SECONDARY-root.cpio.bz2" ]; then
+                        rm -f ${usb_esos_root}/SECONDARY-root.cpio.bz2 || exit 1
+                    fi
+                fi
+                if [ -f "${usb_esos_root}/PRIMARY-root.cpio.bz2" ]; then
+                    mv -f ${usb_esos_root}/PRIMARY-root.cpio.bz2 \
+                        ${usb_esos_root}/SECONDARY-root.cpio.bz2 || exit 1
+                fi
+            else
+                # Only one image will fit, zap SECONDARY + overwrite PRIMARY
+                echo
+                echo "### Removing secondary slot image (if any)..."
+                rm -f "${usb_esos_boot}/SECONDARY-version" || exit 1
+                rm -f "${usb_esos_boot}/SECONDARY-initramfs.cpio.gz" || exit 1
+                rm -f "${usb_esos_boot}/SECONDARY-bzImage-esos.prod" || exit 1
+                rm -f "${usb_esos_boot}/SECONDARY-bzImage-esos.debug" || exit 1
+                rm -f "${usb_esos_root}/SECONDARY-root.sqsh" || exit 1
+                # There might be an old cpio archive in the PRIMARY slot
+                rm -f "${usb_esos_root}/PRIMARY-root.cpio.bz2" || exit 1
+                # There might be an old cpio archive in the SECONDARY slot
+                rm -f "${usb_esos_root}/SECONDARY-root.cpio.bz2" || exit 1
             fi
             echo
             echo "### Copying the new image to the primary slot..."
@@ -262,7 +292,9 @@ if test -f "/etc/esos-release" && test -z "${install_dev}" && \
             echo
             echo "### The ESOS upgrade succeeded! Here are the details:"
             echo "Primary slot version: ${img_ver}"
-            echo "Secondary slot version: ${usb_ver}"
+            if [ -n "${usb_ver}" ]; then
+                echo "Secondary slot version: ${usb_ver}"
+            fi
             exit 0
         else
             if [ ${using_md} -eq 1 ]; then
