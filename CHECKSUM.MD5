@@ -225,7 +225,7 @@ b75c43797e817529d486be640232d708  lftp-4.8.4.tar.xz
 317dbaf90a9f85ea0ec7b12d080d173d  jansson-2.12.tar.bz2
 1cbebb54aecb857c5ac1880fbd131cf4  iowatcher-master_20200318.tar.xz
 51609c197566275139029628a6e4ee0f  iotop-master_20200318.tar.xz
-4ec8084ff2c1a04ac3879a3278b96f04  node_exporter-1.0.0.linux-amd64.tar.xz
+d8908f45812aa67dee1a378944e7c42f  node_exporter-1.3.1.linux-amd64.tar.xz
 a5060b974950f83dc825a6fb3de18b61  libcap-2.36.tar.gz
 de92b6cec8c1da36d3da9bd1dd02d450  sedutil-master_20201026.tar.xz
 179f86928835da857c237b42f4b2df73  qemu-5.2.0.tar.xz
@@ -235,7 +235,7 @@ e80e0d20a8bb337a15fa63caa7f67006  gnutls-3.6.15.tar.xz
 c45ee24ed7361dcda152a035d396fe8a  nettle-3.6.tar.gz
 6887e0ed7479d2549761a4d284d3ecb0  yajl-2.1.0.tar.gz
 b2d8b75a9faad75b2be4e9e0383effcc  squashfs-tools-4.4-git.1.tar.gz
-626d682b0a5ace92ef462cfdbfcbb5d4  prometheus-2.24.0.linux-amd64.tar.xz
+91bd3168a534dcfaf8e21a8386498bfa  prometheus-2.32.1.linux-amd64.tar.xz
 e68fbd6a992e36f1ac48c99bbf825d6b  jq-1.6.tar.gz
 0fe88a7b18726aa8ea1676b9eabcb07c  oniguruma-6.9.6.tar.gz
 2af440d54f94a3b44020bf0ea1bf9de8  procps-v3.3.16.tar.gz
