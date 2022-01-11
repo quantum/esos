@@ -1,3 +1,9 @@
+2022-01-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'prometheus_update'
+
+	updated the 'prometheus' and 'node_exporter' packages to the latest versions (bloated binaries are packed via upx)
+
 2022-01-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20220109_mas'
