@@ -357,6 +357,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		wget-1.21.2.tar.gz \
 		cacerts-20210930.tar.xz \
 		mlnx-tools-5.2.0.tar.gz \
+		zip-3.0.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -447,7 +448,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		vim.chroot sdparm.chroot iproute2.chroot libmnl.chroot \
 		file.chroot jansson.chroot pcre.chroot pv.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
-		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot
+		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot \
+		zip.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -5103,6 +5105,15 @@ mlnx-tools.chroot: glibc.chroot Python.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install UDEV_DIR=/usr/lib/udev
 	$(SED) -i '/param, val/s/line.strip()/line.decode("utf-8").strip()/' \
 	/usr/bin/tc_wrap.py
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+zip.chroot: glibc.chroot bzip2.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir) -f unix/Makefile generic_gcc
+	$(MAKE) --directory=$(tgt_src_dir) -f unix/Makefile prefix=/usr \
+	MANDIR=/usr/share/man/man1 install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
