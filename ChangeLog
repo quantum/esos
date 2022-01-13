@@ -1,3 +1,9 @@
+2022-01-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_zip'
+
+	added the 'zip' utility (and friends) to allow zip'ing stuff
+
 2022-01-10  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'prometheus_update'
