@@ -1814,6 +1814,11 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(SED) -i -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/^\/\* //' \
 	  -e '/CONFIG_SCST_FORWARD_MODE_PASS_THROUGH/s/ \*\/$$//' \
 	  $(scst_src)/scst/include/scst.h; \
+	  if [ ! -d $(scst_src)/$(notdir $(scst_src)).patch ]; then \
+	    $(PATCH) -d $(scst_src) -b \
+	    -B $(scst_src)/$(notdir $(scst_src)).patch/ -p1 < \
+	    $(chroot_build)/misc/$(notdir $(scst_src)).patch; \
+	  fi; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \
 	  KVER=$(kernel_ver)$$i scst; \
 	  $(MAKE) --directory=$(scst_src) KDIR=$(linux_src) \

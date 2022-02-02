@@ -1,3 +1,9 @@
+2022-02-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20220201_tweaks'
+
+	updated qla2xxx module options to increase target exchange count for target-mode; updated Busybox config to disable the ifup/ifdown applets (we don't use RHEL-style network config files, so these don't really work for us); applied SCST patch to ack aborts even if they are outside of the 2048 window (and print a warning message when this occurs) -- resolves VMware ESXi iSER oddity w/ aborts
+
 2022-01-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_zip'
