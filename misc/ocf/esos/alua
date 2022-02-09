@@ -539,6 +539,15 @@ remote_inactive() {
 }
 
 
+pending_fence() {
+    # Determine if there is a pending fence event
+    crm_mon --as-xml | \
+        grep "fence_event.*state=\"pending\"" \
+        > /dev/null 2>&1
+    return ${?}
+}
+
+
 crm_get_peer_name() {
     local peer_name
     peer_name="$(crm_resource --resource "${OCF_RESOURCE_INSTANCE}" --locate \
@@ -579,34 +588,39 @@ set_tpg_trans() {
     ocf_log debug "Detected peer node name as '${peer_name}'!"
     # If we're not setting the ALUA transitioning state via notifications
     if ! ocf_is_true ${OCF_RESKEY_trans_notify} && [ -n "${peer_name}" ]; then
-        # Set the local + remote target port group state on the peer via SSH
-        ocf_log info "${FUNCNAME[1]}() -> Setting target group" \
-            "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
-            "'${TRANSITION_STATE}' on peer '${peer_name}'..."
-        ocf_run ssh -q -o StrictHostKeyChecking=no \
-            -o PasswordAuthentication=no "root@${peer_name}" \
-            scstadmin -noprompt -set_tgrp_attr \
-            ${OCF_RESKEY_local_tgt_grp} -dev_group \
-            ${OCF_RESKEY_device_group} -attributes \
-            state\=${TRANSITION_STATE}
-        if [ ${?} -ne 0 ]; then
-            error_msg="Failed to set the peer local target group state!"
-            ocf_exit_reason "${error_msg}"
-            exit ${OCF_ERR_GENERIC}
-        fi
-        ocf_log info "${FUNCNAME[1]}() -> Setting target group" \
-            "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
-            "'${TRANSITION_STATE}' on peer '${peer_name}'..."
-        ocf_run ssh -q -o StrictHostKeyChecking=no \
-            -o PasswordAuthentication=no "root@${peer_name}" \
-            scstadmin -noprompt -set_tgrp_attr \
-            ${OCF_RESKEY_remote_tgt_grp} -dev_group \
-            ${OCF_RESKEY_device_group} -attributes \
-            state\=${TRANSITION_STATE}
-        if [ ${?} -ne 0 ]; then
-            error_msg="Failed to set the peer remote target group state!"
-            ocf_exit_reason "${error_msg}"
-            exit ${OCF_ERR_GENERIC}
+        if ping -c 1 -W 1 "${peer_name}" > /dev/null; then
+            # Set the local + remote TPG state on the peer via SSH
+            ocf_log info "${FUNCNAME[1]}() -> Setting target group" \
+                "'${OCF_RESKEY_local_tgt_grp}' ALUA state to" \
+                "'${TRANSITION_STATE}' on peer '${peer_name}'..."
+            ocf_run ssh -q -o ConnectTimeout=5 -o StrictHostKeyChecking=no \
+                -o PasswordAuthentication=no "root@${peer_name}" \
+                scstadmin -noprompt -set_tgrp_attr \
+                ${OCF_RESKEY_local_tgt_grp} -dev_group \
+                ${OCF_RESKEY_device_group} -attributes \
+                state\=${TRANSITION_STATE}
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set the peer local target group state!"
+                ocf_exit_reason "${error_msg}"
+                exit ${OCF_ERR_GENERIC}
+            fi
+            ocf_log info "${FUNCNAME[1]}() -> Setting target group" \
+                "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
+                "'${TRANSITION_STATE}' on peer '${peer_name}'..."
+            ocf_run ssh -q -o ConnectTimeout=5 -o StrictHostKeyChecking=no \
+                -o PasswordAuthentication=no "root@${peer_name}" \
+                scstadmin -noprompt -set_tgrp_attr \
+                ${OCF_RESKEY_remote_tgt_grp} -dev_group \
+                ${OCF_RESKEY_device_group} -attributes \
+                state\=${TRANSITION_STATE}
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set the peer remote target group state!"
+                ocf_exit_reason "${error_msg}"
+                exit ${OCF_ERR_GENERIC}
+            fi
+        else
+            ocf_log warn "${FUNCNAME[1]}() -> Failed to ping '${peer_name}'!" \
+                "It may be offline..."
         fi
     fi
     # TODO: It appears this is no longer needed, and when used it seems to
@@ -1365,9 +1379,15 @@ alua_notify() {
         "'${OCF_RESKEY_CRM_meta_notify_operation}' notification."
     case ${OCF_RESKEY_CRM_meta_notify_type} in
     pre)
-        # Set TPG's to transitioning before a start/stop/promote/demote occurs
-        if ocf_is_true ${OCF_RESKEY_use_trans_state} && \
+        if [ "${OCF_RESKEY_CRM_meta_notify_operation}" = "demote" ] && \
+            pending_fence; then
+            # Handle this special case regardless of 'trans_notify' value
+            ocf_log info "Pre-demote + pending fence detected," \
+                "setting TPG's to transitioning..."
+            set_tpg_trans
+        elif ocf_is_true ${OCF_RESKEY_use_trans_state} && \
             ocf_is_true ${OCF_RESKEY_trans_notify}; then
+            # Set transitioning before a start/stop/promote/demote occurs
             set_tpg_trans
         fi
         ;;
