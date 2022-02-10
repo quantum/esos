@@ -114,6 +114,7 @@ if test -d "${chroot_dir}"; then
 	${mkdir} -p ${chroot_dir}/opt/{bin,sbin,lib} || exit 1
 	${mkdir} -p ${chroot_dir}/run/lvm || exit 1
 	${mkdir} -p ${chroot_dir}/run/lock/iscsi || exit 1
+	${mkdir} -p ${chroot_dir}/run/irqbalance || exit 1
 	${mkdir} -p -m 1777 ${chroot_dir}/tmp || exit 1
 	${mkdir} -p ${chroot_dir}/var/{spool,lock,run,state,cache,log} || exit 1
 	${mkdir} -p ${chroot_dir}/var/lock/subsys || exit 1

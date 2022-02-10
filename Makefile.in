@@ -230,7 +230,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		sysklogd-new_remote_opt_20190715.tar.xz \
 		ipmitool-1.8.18.tar.bz2 \
 		less-530.tar.gz \
-		irqbalance-1.5.0.tar.gz \
+		irqbalance-1.8.0.tar.gz \
 		ethtool-5.0.tar.xz \
 		infiniband-diags-1.6.7.tar.gz \
 		libibmad-1.3.13.tar.gz \
@@ -3493,12 +3493,13 @@ less.chroot: glibc.chroot ncurses.chroot
 irqbalance.chroot: glibc.chroot glib.chroot ncurses.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
 	cd $(tgt_src_dir) && NCURSESW_CFLAGS="-D_GNU_SOURCE -D_DEFAULT_SOURCE" \
-	NCURSESW_LIBS="-lncursesw" ./configure --prefix=/usr --enable-numa \
-	--without-systemd --without-libcap-ng
+	NCURSESW_LIBS="-lncursesw" CFLAGS="-g" ./configure --prefix=/usr \
+	--enable-numa --without-systemd --without-libcap-ng
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)

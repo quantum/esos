@@ -1,5 +1,9 @@
 2022-02-09  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'irqbalance_update'
+
+	updated irqbalance to version 1.8.0 (including a patch that fixes irqbalance-ui seg fault); enabled additional 'nc' applet features in Busybox
+
 	Merge branch 'alua_ra_fence'
 
 	updated the 'alua' RA to handle the special case of a pre-demote notify if there is a pending fence event, and attempt to ping the peer node before running any ssh commands to set TPG state on peer
