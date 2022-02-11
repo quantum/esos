@@ -231,3 +231,25 @@ init_crypto() {
     return ${ret}
 }
 
+# Get the logical CPU(s) for a given socket + physical core
+get_logical_cpus() {
+    local socket="${1}"
+    local core="${2}"
+    local logi_cpus
+    while read -r cpu_line; do
+        socket_val="$(echo "${cpu_line}" | cut -d, -f1)"
+        core_val="$(echo "${cpu_line}" | cut -d, -f2)"
+        cpu_num="$(echo "${cpu_line}" | cut -d, -f3)"
+        if [ "${socket}" = "${socket_val}" ]; then
+            if [ "${core}" = "${core_val}" ]; then
+                if [ -z "${logi_cpus}" ]; then
+                    logi_cpus="${cpu_num}"
+                else
+                    logi_cpus="${logi_cpus},${cpu_num}"
+                fi
+            fi
+        fi
+    done <<< "$(lscpu --online --parse=SOCKET,CORE,CPU)"
+    echo "${logi_cpus}"
+}
+
