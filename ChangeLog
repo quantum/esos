@@ -1,3 +1,9 @@
+2022-02-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20220210_tweaks'
+
+	rc.d/common: added the get_logical_cpus() helper function for parsing physical to logical cores; rc.d/rc.corosync: support logger when needed; updated Linux config for NO_HZ_FULL
+
 2022-02-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'irqbalance_update'

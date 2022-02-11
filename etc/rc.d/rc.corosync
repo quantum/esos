@@ -4,6 +4,7 @@ source /etc/rc.d/common
 
 COROSYNC="/usr/sbin/corosync"
 COROSYNC_LOCK="/var/lock/corosync"
+RC_COROSYNC_LOGGER="/usr/bin/logger -t rc.corosync -p daemon.info"
 DFLT_OPTS=""
 
 check_args ${@}
