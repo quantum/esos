@@ -1,3 +1,9 @@
+2022-02-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20220211_tweaks'
+
+	added the cpuset package; updated cls_switchtec driver to latest version; use CONFIG_PREEMPT_VOLUNTARY instead of CONFIG_PREEMPT_NONE in kernel config
+
 2022-02-10  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20220210_tweaks'

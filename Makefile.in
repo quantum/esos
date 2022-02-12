@@ -316,7 +316,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		blktrace-master_20181015.tar.xz \
 		hwloc-2.0.3.tar.bz2 \
 		mstflint-4.11.0-3.tar.xz \
-		cls_switchtec-4.0.0_5.4_20210204.tar.xz \
+		cls_switchtec-4.1.0_5.4_20220211.tar.xz \
 		lshw-B.02.18.tar.gz \
 		iozone3-487.tar.xz \
 		telegraf-1.14.3_linux_amd64.tar.xz \
@@ -358,6 +358,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		cacerts-20210930.tar.xz \
 		mlnx-tools-5.2.0.tar.gz \
 		zip-3.0.tar.xz \
+		cpuset-1.6.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -449,7 +450,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		file.chroot jansson.chroot pcre.chroot pv.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
 		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot \
-		zip.chroot
+		zip.chroot cpuset.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -1597,7 +1598,7 @@ esos_kernels.chroot: btier_src = $(wildcard /sources/btier-*)
 esos_kernels.chroot: zfs_src = $(wildcard /sources/zfs-*)
 esos_kernels.chroot: switchtec_src = $(wildcard /sources/cls_switchtec-*)
 esos_kernels.chroot: cls_base = $(switchtec_src)/Driver/Switchtec
-esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.13_to_4.14
+esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.19
 esos_kernels.chroot: cls_switchtec = $(cls_base)/$(switchtec_kern)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot \
@@ -5120,6 +5121,13 @@ zip.chroot: glibc.chroot bzip2.chroot
 	$(MAKE) --directory=$(tgt_src_dir) -f unix/Makefile generic_gcc
 	$(MAKE) --directory=$(tgt_src_dir) -f unix/Makefile prefix=/usr \
 	MANDIR=/usr/share/man/man1 install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+cpuset.chroot: glibc.chroot Python.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
