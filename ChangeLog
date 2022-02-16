@@ -1,3 +1,9 @@
+2022-02-16  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '401_update' into 4.x.x
+
+	rc.sbd: increase SBD_STARTS_SEC to 1200 seconds (handles slower-booting controllers)
+
 2022-02-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20220211_tweaks'
