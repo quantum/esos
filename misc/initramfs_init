@@ -84,10 +84,12 @@ if [ -e /proc/vmcore ]; then
 	reboot -f || rescue_shell
 fi
 
-# Make sure we have enough physical memory
-if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3500000 ]; then
-	echo "ESOS requires at least 3.5 GB of usable RAM!"
-	rescue_shell
+# Make sure we have enough physical memory if the system is running from RAM (default)
+if ! grep esos_persist /proc/cmdline > /dev/null 2>&1; then
+	if [ `cat /proc/meminfo | grep MemTotal | awk '{print $2}'` -lt 3500000 ]; then
+		echo "ESOS requires at least 3.5 GB of usable RAM!"
+		rescue_shell
+	fi
 fi
 
 # Get the slot kernel parameter
