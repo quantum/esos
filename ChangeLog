@@ -1,3 +1,9 @@
+2022-02-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'cheroot_fix'
+
+	added a patch for the 'cheroot' module in Python to prevent an excessive logging / hang condition from SSL errors
+
 2022-02-16  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'sbd_auto_unfence'
