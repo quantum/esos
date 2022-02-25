@@ -2386,6 +2386,8 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	  pip3 install SQLAlchemy==1.4.19; \
 	fi
 	$(RM) /.cache
+	cd /usr/lib/python*/site-packages/ && \
+	$(PATCH) -p1 < $(chroot_build)/misc/post_python_pip.patch
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
