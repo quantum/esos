@@ -1,3 +1,9 @@
+2022-03-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_switchtec-user'
+
+	added the switchtec-user package (provides the 'switchtec' CLI tool)
+
 2022-02-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'cheroot_fix'

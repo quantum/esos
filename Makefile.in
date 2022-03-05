@@ -359,6 +359,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		mlnx-tools-5.2.0.tar.gz \
 		zip-3.0.tar.xz \
 		cpuset-1.6.tar.gz \
+		switchtec-user-3.0.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -450,7 +451,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		file.chroot jansson.chroot pcre.chroot pv.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
 		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot \
-		zip.chroot cpuset.chroot
+		zip.chroot cpuset.chroot switchtec-user.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -5130,6 +5131,16 @@ cpuset.chroot: glibc.chroot Python.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+switchtec-user.chroot: glibc.chroot ncurses.chroot openssl.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --with-curses --with-openssl
+	$(SED) -i 's/install -s/install/g' $(tgt_src_dir)/Makefile
+	$(MAKE) --directory=$(tgt_src_dir) V=1
+	$(MAKE) --directory=$(tgt_src_dir) V=1 PREFIX=/usr install-bin
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
