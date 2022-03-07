@@ -1,3 +1,9 @@
+2022-03-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc.0_check_state'
+
+	rc.0: when stopping LATE_SERVICES and EARLY_SERVICES check that they return a status of either RUNNING or UNKNOWN before attempting
+
 2022-03-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_switchtec-user'
