@@ -19,7 +19,7 @@ set -e
 install_dev="${1}"
 # Optional installation device transport type parameter
 install_tran="${2}"
-# Optional installation device model string parameter
+# Optional installation device model string parameter (can be an egrep pattern)
 install_model="${3}"
 
 echo "*** $(cat VERSION) Install Script ***" && echo
@@ -369,7 +369,7 @@ elif [ -n "${install_tran}" ]; then
     if [ -n "${install_model}" ]; then
         # Using device transport + model to locate install target
         tran_model_dev=$(lsblk -p -d -o NAME,TYPE,MODEL,TRAN | \
-            grep "${install_tran}\$" | grep "${install_model}" | \
+            grep "${install_tran}\$" | grep -E "${install_model}" | \
             head -1 | awk '{print $1}')
         if [ "x${tran_model_dev}" = "x" ]; then
             echo "ERROR: Unable to resolve any devices for transport" \
@@ -396,7 +396,7 @@ elif [ -n "${install_tran}" ]; then
         echo
     fi
 elif [ -n "${install_model}" ]; then
-    model_dev=$(lsblk -p -d -o NAME,TYPE,MODEL | grep "${install_model}\$" | \
+    model_dev=$(lsblk -p -d -o NAME,TYPE,MODEL | grep -E "${install_model}" | \
         head -1 | awk '{print $1}')
     if [ "x${model_dev}" = "x" ]; then
         echo "ERROR: Unable to resolve any devices for model" \
