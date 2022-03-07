@@ -1,3 +1,23 @@
+2022-03-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '403_updates' into 4.x.x
+
+	install.sh: if "install_model" is specified pass it to 'grep -E' so we can match multiple model strings (eg, "TOSHIBA|Micron|SONY")
+
+	rc.0: when stopping LATE_SERVICES and EARLY_SERVICES check that they return a status of either RUNNING or UNKNOWN before attempting
+
+	added the switchtec-user package (provides the 'switchtec' CLI tool)
+
+2022-03-07  Alberto Bursi  <alberto.bursi@outlook.it>
+
+	no RAM size check with esos_persist option
+	Disable the RAM size check if esos_persist kernel commandline option is used.
+	Enforcing this ram amount is relevant only if ESOS needs to run from RAM.
+	If ESOS is run with esos_persist kernel parameter, it is not doing that.
+	With this change, people that want to use ESOS with less than 3GB of RAM
+	only need to edit the grub config in their boot partition to add esos_persist
+	and they are set, no need to recompile/rebuild initramfs.
+
 2022-02-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '402_update' into 4.x.x

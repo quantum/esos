@@ -6,7 +6,12 @@ source /etc/rc.d/common
 for i in $(/bin/echo ${LATE_SERVICES} | /usr/bin/tr ' ' '\n' | \
     /usr/bin/tac | /usr/bin/tr '\n' ' '); do
     if check_enabled "${i}"; then
-        ${RC_D_PREFIX}/${i} stop
+        ${RC_D_PREFIX}/${i} status
+        rc_status=${?}
+        if [ ${rc_status} -eq ${RUNNING} ] || \
+            [ ${rc_status} -eq ${UNKNOWN} ]; then
+            ${RC_D_PREFIX}/${i} stop
+        fi
     fi
 done
 
@@ -20,7 +25,12 @@ fi
 for i in $(/bin/echo ${EARLY_SERVICES} | /usr/bin/tr ' ' '\n' | \
     /usr/bin/tac | /usr/bin/tr '\n' ' '); do
     if check_enabled "${i}"; then
-        ${RC_D_PREFIX}/${i} stop
+        ${RC_D_PREFIX}/${i} status
+        rc_status=${?}
+        if [ ${rc_status} -eq ${RUNNING} ] || \
+            [ ${rc_status} -eq ${UNKNOWN} ]; then
+            ${RC_D_PREFIX}/${i} stop
+        fi
     fi
 done
 
