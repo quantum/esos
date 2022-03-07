@@ -1,5 +1,9 @@
 2022-03-07  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'bobafetthotmail-patch-1'
+
+	Merge branch 'patch-1' of git://github.com/bobafetthotmail/esos into bobafetthotmail-patch-1
+
 	Merge branch 'install_model_egrep'
 
 	install.sh: if "install_model" is specified pass it to 'grep -E' so we can match multiple model strings (eg, "TOSHIBA|Micron|SONY")
@@ -13,6 +17,16 @@
 	Merge branch 'add_switchtec-user'
 
 	added the switchtec-user package (provides the 'switchtec' CLI tool)
+
+2022-02-25  Alberto Bursi  <alberto.bursi@outlook.it>
+
+	no RAM size check with esos_persist option
+	Disable the RAM size check if esos_persist kernel commandline option is used.
+	Enforcing this ram amount is relevant only if ESOS needs to run from RAM.
+	If ESOS is run with esos_persist kernel parameter, it is not doing that.
+	With this change, people that want to use ESOS with less than 3GB of RAM
+	only need to edit the grub config in their boot partition to add esos_persist
+	and they are set, no need to recompile/rebuild initramfs.
 
 2022-02-25  Marc A. Smith  <marc.smith@quantum.com>
 
