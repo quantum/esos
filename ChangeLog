@@ -1,3 +1,9 @@
+2022-03-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'openssl_bump'
+
+	updated OpenSSL to version 1.1.1n
+
 2022-03-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'bobafetthotmail-patch-1'
