@@ -74,6 +74,7 @@ enable_qemu		:= @enable_qemu@
 enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
+enable_memcached	:= @enable_memcached@
 enable_simple_tui	:= @enable_simple_tui@
 enable_auto_dhcp	:= @enable_auto_dhcp@
 enable_tui_eula		:= @enable_tui_eula@
@@ -533,6 +534,11 @@ ifeq ($(enable_btier),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
 	btier-1.3.11.tar.gz)
 	chroot_tgts += btier.chroot
+endif
+ifeq ($(enable_memcached),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
+	memcached-1.6.14.tar.gz)
+	chroot_tgts += memcached.chroot
 endif
 ifeq ($(enable_simple_tui),yes)
 	tui_cpp_flags += -DSIMPLE_TUI
@@ -2314,7 +2320,9 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	db.chroot libxml2.chroot libxslt.chroot curl.chroot util-linux.chroot \
 	libffi.chroot xz.chroot \
 	$(if $(findstring yes,$(enable_python_sql)),\
-	postgresql.chroot mysql.chroot,)
+	postgresql.chroot mysql.chroot ,)\
+	$(if $(findstring yes,$(enable_memcached)),\
+	memcached.chroot,)
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared \
@@ -2385,6 +2393,9 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	  pip3 install psycopg2==2.8.1; \
 	  pip3 install mysqlclient==2.0.3; \
 	  pip3 install SQLAlchemy==1.4.19; \
+	fi
+	$(QUIET) if [ "$(enable_memcached)" = "yes" ]; then \
+	  pip3 install pymemcache==3.5.1; \
 	fi
 	$(RM) /.cache
 	cd /usr/lib/python*/site-packages/ && \
@@ -5144,6 +5155,14 @@ switchtec-user.chroot: glibc.chroot ncurses.chroot openssl.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
+memcached.chroot: glibc.chroot libevent.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot

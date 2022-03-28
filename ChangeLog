@@ -1,3 +1,7 @@
+2022-03-28  Chris Graves  <chris.graves@quantum.com>
+
+	Adds memcached=1.6.14 & pymemcache=3.5.1 as configure option --enable-memcached
+
 2022-03-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'openssl_bump'

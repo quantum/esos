@@ -272,6 +272,16 @@ AS_IF([test "x$enable_btier" = "xyes"],
 AC_SUBST(enable_btier, ${enable_btier})
 AC_MSG_NOTICE([btier: ${enable_btier}])
 
+dnl Optional feature memcached
+AC_ARG_ENABLE(memcached,
+	AS_HELP_STRING([--enable-memcached], [build and include memcached]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_memcached="${enableval}"], [enable_memcached="no"]), enable_memcached="no")
+AS_IF([test "x$enable_memcached" = "xyes"],
+	[build_opts="${build_opts} memcached"; opt_suffix="${opt_suffix}s"])
+AC_SUBST(enable_memcached, ${enable_memcached})
+AC_MSG_NOTICE([memcached: ${enable_memcached}])
+
 dnl Optional simple text-based user interface (TUI)
 AC_ARG_ENABLE(simple_tui,
 	AS_HELP_STRING([--enable-simple_tui], [build the simple TUI version]),
