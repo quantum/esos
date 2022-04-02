@@ -1,3 +1,9 @@
+2022-04-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'alua_ra_rescan'
+
+	updated 'ocf:esos:alua' RA to also rescan the iSCSI bus when setting the redirection device
+
 2022-03-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'openssl_bump'
