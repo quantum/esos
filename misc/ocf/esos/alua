@@ -932,6 +932,7 @@ bio_dev_to_redirect() {
                     "what it should be..."
                 if [ "x${active_val}" = "x0" ]; then
                     iscsi_sess_rescan
+                    scsi_bus_rescan
                     if ! test_if_dev_ready ${new_filename}; then
                         rc=1
                         continue
@@ -946,6 +947,7 @@ bio_dev_to_redirect() {
                 deact_devs+=" ${i}"
             fi
             iscsi_sess_rescan
+            scsi_bus_rescan
             if ! test_if_dev_ready ${new_filename}; then
                 rc=1
                 continue
@@ -1003,6 +1005,7 @@ bio_dev_to_redirect() {
 scsi_bus_rescan() {
     # Find all iSCSI host entries and rescan the SCSI bus on any found
     local host_list=""
+    local i
     for i in $(find /sys/class/iscsi_host -maxdepth 1 -type l); do
         iscsi_host="$(basename ${i})"
         host_num="$(echo ${iscsi_host} | tr -d "host")"

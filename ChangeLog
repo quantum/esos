@@ -1,6 +1,12 @@
-2022-03-28  Chris Graves  <chris.graves@quantum.com>
+2022-04-06  Chris Graves  <chris.graves@quantum.com>
 
 	Adds memcached=1.6.14 & pymemcache=3.5.1 as configure option --enable-memcached
+
+2022-04-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'alua_ra_rescan'
+
+	updated 'ocf:esos:alua' RA to also rescan the iSCSI bus when setting the redirection device
 
 2022-03-19  Marc A. Smith  <marc.smith@quantum.com>
 
