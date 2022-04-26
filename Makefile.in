@@ -2699,6 +2699,8 @@ lvm2.chroot: glibc.chroot corosync.chroot dlm.chroot \
 	$(MAKE) --directory=$(tgt_src_dir)/scripts install
 	$(MAKE) --directory=$(tgt_src_dir)/daemons install
 	$(MAKE) --directory=$(tgt_src_dir)/udev install
+	$(SED) -i '/systemd-run/c\ENV{LVM_VG_NAME_COMPLETE}=="?*", RUN+="\/usr\/sbin\/lvm vgchange -aay --nohints $$env{LVM_VG_NAME_COMPLETE}"' \
+	/usr/lib/udev/rules.d/69-dm-lvm.rules
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4115,6 +4117,8 @@ multipath-tools.chroot: glibc.chroot lvm2.chroot readline.chroot \
 	libudevdir=/usr/lib/udev install
 	$(SED) -i 's/"\/sbin\//"\/usr\/sbin\//' \
 	/usr/lib/udev/rules.d/66-kpartx.rules
+	$(SED) -i '/systemd-run/c\RUN+="/usr/bin/udevadm trigger --action=add $$sys$$devpath"' \
+	/usr/lib/udev/rules.d/56-multipath.rules
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -5110,6 +5114,7 @@ cacerts.chroot: glibc.chroot openssl.chroot
 mlnx-tools.chroot: glibc.chroot Python.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	PKG_VERSION=$(shell $(CAT) $(tgt_src_dir)/mlnx-tools.spec | \
 	$(GREP) Version: | $(CUT) -d: -f2 | $(TR) -d ' ') \
 	$(MAKE) --directory=$(tgt_src_dir) install UDEV_DIR=/usr/lib/udev
