@@ -1,5 +1,9 @@
 2022-04-26  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch '20220426_tweaks'
+
+	mlnx-tools: added a patch set that fixes Python 3.9 compatability; Makefile.in: several udev rules use 'systemd-run' so fix that
+
 	Merge branch '5.4.x_update'
 
 	updated Linux to version 5.4.190

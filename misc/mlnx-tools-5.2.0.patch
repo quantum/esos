@@ -1,0 +1,169 @@
+From caad4192280a710bbfd2a208ef0685f4a93cdaa8 Mon Sep 17 00:00:00 2001
+From: Roy Novich <royno@nvidia.com>
+Date: Sun, 16 Jan 2022 11:04:40 +0200
+Subject: [PATCH] dcbnetlink: Use frombytes instead of depracated fromstring
+
+Issue: 2804305
+Signed-off-by: Roy Novich <royno@nvidia.com>
+---
+ python/dcbnetlink.py | 28 +++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 9 deletions(-)
+
+diff --git a/python/dcbnetlink.py b/python/dcbnetlink.py
+index 305e76a..57847e0 100644
+--- a/python/dcbnetlink.py
++++ b/python/dcbnetlink.py
+@@ -37,7 +37,6 @@
+ import socket
+ import struct
+ 
+-
+ import array
+ 
+ from netlink import hexdump, parse_attributes, Message, Nested, U8Attr, StrAttr, NulStrAttr, Connection, NETLINK_GENERIC, U32Attr, NLM_F_REQUEST
+@@ -112,6 +111,17 @@
+ 
+ IEEE_8021QAZ_APP_SEL_ETHERTYPE	= 1
+ 
++_PY_VERSION = sys.version
++
++# Use this function instead of direct call to frombytes
++# Will call the right attr depend on python version used
++def from_bytes(a, string):
++	if sys.version_info[0] < 3:
++		a.fromstring(string)
++	else:
++		a.frombytes(string)
++
++
+ class DcbnlHdr:
+ 	def __init__(self, len, type):
+ 		self.len = len
+@@ -200,7 +210,7 @@ def get_ieee_pfc_en(self):
+ 		ieee = m.attrs[DCB_ATTR_IEEE].nested()
+ 
+ 		a = array.array('B')
+-		a.fromstring(ieee[DCB_ATTR_IEEE_PFC].str()[0:])
++		from_bytes(a, ieee[DCB_ATTR_IEEE_PFC].str()[0:])
+ 
+ 		return a[1]
+ 
+@@ -214,7 +224,7 @@ def get_ieee_pfc_delay(self):
+ 		ieee = m.attrs[DCB_ATTR_IEEE].nested()
+ 
+ 		a = array.array('B')
+-		a.fromstring(ieee[DCB_ATTR_IEEE_PFC].str()[0:])
++		from_bytes(a, ieee[DCB_ATTR_IEEE_PFC].str()[0:])
+ 
+ 		return a[4] + (a[5] << 8)
+ 
+@@ -230,7 +240,7 @@ def get_ieee_ets(self):
+ 		willing, ets_cap, cbs = struct.unpack_from("BBB", ieee[DCB_ATTR_IEEE_ETS].str(), 0)
+ 
+ 		a = array.array('B')
+-		a.fromstring(ieee[DCB_ATTR_IEEE_ETS].str()[3:])
++		from_bytes(a, ieee[DCB_ATTR_IEEE_ETS].str()[3:])
+ 
+ 		f = lambda A, n=8: [A[i:i+n] for i in range(0, len(A), n)]
+ 
+@@ -248,9 +258,9 @@ def get_ieee_dcb_buffer(self):
+ 		ieee = m.attrs[DCB_ATTR_IEEE].nested()
+ 
+ 		prio2buffer = array.array('B')
+-		prio2buffer.fromstring(ieee[DCB_ATTR_DCB_BUFFER].str()[:8])
++		from_bytes(prio2buffer, ieee[DCB_ATTR_DCB_BUFFER].str()[:8])
+ 		buffer_size = array.array('I')
+-		buffer_size.fromstring(ieee[DCB_ATTR_DCB_BUFFER].str()[8:])
++		from_bytes(buffer_size, ieee[DCB_ATTR_DCB_BUFFER].str()[8:])
+ 
+ 		return prio2buffer, buffer_size[:8], buffer_size[8]
+ 
+@@ -369,9 +379,9 @@ def get_ieee_qcn(self):
+ 		ieee = m.attrs[DCB_ATTR_IEEE].nested()
+ 
+ 		rpg_enable = array.array('B')
+-		rpg_enable.fromstring(ieee[DCB_ATTR_IEEE_QCN].str()[:8])
++		from_bytes(rpg_enable, ieee[DCB_ATTR_IEEE_QCN].str()[:8])
+ 		a = array.array('I')
+-		a.fromstring(ieee[DCB_ATTR_IEEE_QCN].str()[8:])
++		from_bytes(a, ieee[DCB_ATTR_IEEE_QCN].str()[8:])
+ 
+ 		lst_params = self.__parse_array(a,8)
+ 
+@@ -400,7 +410,7 @@ def get_ieee_qcnstats(self):
+ 
+ 		rppp_rp_centiseconds = struct.unpack_from("QQQQQQQQ",ieee[DCB_ATTR_IEEE_QCN_STATS].str(), 0);
+ 		a = array.array('I')
+-		a.fromstring(ieee[DCB_ATTR_IEEE_QCN_STATS].str()[64:])
++		from_bytes(a, ieee[DCB_ATTR_IEEE_QCN_STATS].str()[64:])
+ 
+ 		lst_statistics = self.__parse_array(a,8)
+ 
+From cd96141e3439b91b2796048bedc361f024e52bd9 Mon Sep 17 00:00:00 2001
+From: Roy Novich <royno@nvidia.com>
+Date: Tue, 1 Feb 2022 15:59:53 +0200
+Subject: [PATCH] dcbnetlink: Use tobytes instead of depracated tostring
+
+Issue: 2939873
+Signed-off-by: Roy Novich <royno@nvidia.com>
+---
+ python/dcbnetlink.py | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/python/dcbnetlink.py b/python/dcbnetlink.py
+index 57847e0..282d17a 100644
+--- a/python/dcbnetlink.py
++++ b/python/dcbnetlink.py
+@@ -122,6 +122,13 @@ def from_bytes(a, string):
+ 		a.frombytes(string)
+ 
+ 
++def to_bytes(a):
++	if sys.version_info[0] < 3:
++		return a.tostring()
++	else:
++		return a.tobytes()
++
++
+ class DcbnlHdr:
+ 	def __init__(self, len, type):
+ 		self.len = len
+@@ -266,7 +273,7 @@ def get_ieee_dcb_buffer(self):
+ 
+ 	def set_dcb_buffer(self, _prio2buffer, _buffer_size, _tot_size):
+ 		_buffer_size.append(_tot_size)
+-		dcb_buffer = _prio2buffer.tostring() + _buffer_size.tostring()
++		dcb_buffer = to_bytes(_prio2buffer) + to_bytes(_buffer_size)
+ 
+ 		intf = NulStrAttr(DCB_ATTR_IFNAME, self.intf)
+ 		dcb_buffer_str = StrAttr(DCB_ATTR_DCB_BUFFER, dcb_buffer)
+@@ -289,7 +296,7 @@ def set_ieee_pfc(self, _pfc_en, _delay):
+ 		pads = array.array('B', b'\0' * 3)
+ 
+ 		#delay is 16bit value
+-		pfc = struct.pack("BBBBBB", pfc_cap, _pfc_en, mbc, 0, _delay & 0xFF , _delay >> 8) + (requests + indications + pads).tostring()
++		pfc = struct.pack("BBBBBB", pfc_cap, _pfc_en, mbc, 0, _delay & 0xFF , _delay >> 8) + to_bytes(requests + indications + pads)
+ 
+ 		intf = NulStrAttr(DCB_ATTR_IFNAME, self.intf)
+ 		ieee_pfc = StrAttr(DCB_ATTR_IEEE_PFC, pfc)
+@@ -318,9 +325,8 @@ def set_ieee_ets(self, _prio_tc, _tsa, _tc_bw):
+ 		for tc in range(len(_tsa)): tc_tsa[tc] = _tsa[tc]
+ 		for tc in range(len(_tc_bw)): tc_tc_bw[tc] = _tc_bw[tc]
+ 
+-		ets = struct.pack("BBB", willing, ets_cap, cbs) + (tc_tc_bw + tc_rx_bw +
+-				tc_tsa + prio_tc + tc_reco_bw + tc_reco_tsa +
+-				reco_prio_tc).tostring()
++		ets = struct.pack("BBB", willing, ets_cap, cbs) + to_bytes(tc_tc_bw + tc_rx_bw +
++				tc_tsa + prio_tc + tc_reco_bw + tc_reco_tsa + reco_prio_tc)
+ 
+ 		intf = NulStrAttr(DCB_ATTR_IFNAME, self.intf)
+ 		ieee_ets = StrAttr(DCB_ATTR_IEEE_ETS, ets)
+@@ -426,7 +432,7 @@ def get_ieee_qcnstats(self):
+ 	# @_qcn: struct of arrays, each array (_qcn[0], _qcn[1].. etc.) holds the values of a certain qcn parameter for all priorities.
+ 	def set_ieee_qcn(self, _qcn):
+ 
+-		qcn = _qcn[0].tostring() + (_qcn[1] + _qcn[2] + _qcn[3] + _qcn[4] + _qcn[5] + _qcn[6] + _qcn[7] + _qcn[8] + _qcn[9] + _qcn[10] + _qcn[11]).tostring()
++		qcn = to_bytes(_qcn[0]) + to_bytes(_qcn[1] + _qcn[2] + _qcn[3] + _qcn[4] + _qcn[5] + _qcn[6] + _qcn[7] + _qcn[8] + _qcn[9] + _qcn[10] + _qcn[11])
+ 
+ 		intf = NulStrAttr(DCB_ATTR_IFNAME, self.intf)
+ 		ieee_qcn = StrAttr(DCB_ATTR_IEEE_QCN, qcn)
