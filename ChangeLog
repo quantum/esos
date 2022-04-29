@@ -1,3 +1,9 @@
+2022-04-28  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_patch_fix'
+
+	fixed SCST patch for iSCSI abort handling (missing brackets)
+
 2022-04-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20220426_tweaks'
