@@ -1,5 +1,9 @@
 2022-05-12  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'dm-bufio_wa'
+
+	introduce a kernel patch to work-around a buffer corruption issue that occurs with dm-cache (see https://listman.redhat.com/archives/dm-devel/2022-May/050776.html for more details) -- this is only a temporary WA and a real fix coming in the future
+
 	Merge branch 'real_od'
 
 	use the real version of 'od' from the coreutils package

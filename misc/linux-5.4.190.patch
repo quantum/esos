@@ -430,3 +430,19 @@ index 357535a5c89c..c3a314deb09d 100644
  	return 0;
  err:
  	pr_notice("error %s: %s", dc->backing_dev_name, err);
+--- a/drivers/md/persistent-data/dm-block-manager.c	2022-04-20 03:19:40.000000000 -0400
++++ b/drivers/md/persistent-data/dm-block-manager.c	2022-05-12 13:59:09.673908725 -0400
+@@ -611,7 +611,12 @@
+ 
+ void dm_bm_prefetch(struct dm_block_manager *bm, dm_block_t b)
+ {
+-	dm_bufio_prefetch(bm->bufio, b, 1);
++	/* This is commented out for now to work-around a buffer corruption
++	 * issue hit in dm-bufio.c -- if we avoid prefetching, that appears
++	 * to not induce this particular case. See this URL for more details:
++	 * https://listman.redhat.com/archives/dm-devel/2022-May/050776.html
++	 */
++	/*dm_bufio_prefetch(bm->bufio, b, 1);*/
+ }
+ 
+ bool dm_bm_is_read_only(struct dm_block_manager *bm)
