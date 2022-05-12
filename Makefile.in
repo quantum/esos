@@ -4296,6 +4296,7 @@ coreutils.chroot: glibc.chroot gcc.chroot perl.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/dd /bin/dd
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/pr /bin/pr
 	$(INSTALL) -m 0755 $(tgt_src_dir)/src/readlink /usr/bin/readlink
+	$(INSTALL) -m 0755 $(tgt_src_dir)/src/od /usr/bin/od
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
