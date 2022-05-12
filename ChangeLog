@@ -1,3 +1,19 @@
+2022-05-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '406_updates' into 4.x.x
+
+	introduce a kernel patch to work-around a buffer corruption issue that occurs with dm-cache (see https://listman.redhat.com/archives/dm-devel/2022-May/050776.html for more details) -- this is only a temporary WA and a real fix coming in the future
+
+	use the real version of 'od' from the coreutils package
+
+	include the 'partx' tool from util-linux.chroot (udev rule complains about missing this)
+
+	fixed SCST patch for iSCSI abort handling (missing brackets)
+
+	mlnx-tools: added a patch set that fixes Python 3.9 compatability; Makefile.in: several udev rules use 'systemd-run' so fix that
+
+	updated Linux to version 5.4.190
+
 2022-04-02  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '405_updates' into 4.x.x
