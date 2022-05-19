@@ -1,3 +1,9 @@
+2022-05-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_no_bbl'
+
+	MD RAID's BBL (bad block list) feature can be problematic in just about all cases... disable it globally for all mdadm operations
+
 2022-05-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'dm-bufio_wa'
