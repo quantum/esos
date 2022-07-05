@@ -1,3 +1,9 @@
+2022-07-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '408_updates' into 4.x.x
+
+	set scst_sg_table_size=4096 for 'ocs_fc_scst' so we can accomodate large i/o transfer sizes
+
 2022-05-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '407_updates' into 4.x.x
