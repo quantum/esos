@@ -1,3 +1,13 @@
+2022-07-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'msevy-quantum-sevy-new-dmidecode'
+
+	Merge branch 'sevy-new-dmidecode' of https://github.com/msevy-quantum/esos into msevy-quantum-sevy-new-dmidecode
+
+2022-07-11  Michael Sevy  <michael.sevy@quantum.com>
+
+	Add support for dmidecode v3.4
+
 2022-07-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'ocs_sg_inc'
