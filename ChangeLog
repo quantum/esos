@@ -1,3 +1,11 @@
+2022-07-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '409_updates' into 4.x.x
+
+	archive_logs.sh: some daemons don't handle their log file being moved out from under them, so for those use truncate/copy instead of moving when creating the archive
+
+	rc.sbd: increased start-threshold to 1800 seconds (30 minutes) so if we have more than 3 starts in 30 minutes, and we're fenced, then stay fenced -- this handles some odd dual-controller boot scenarios where the previous threshold did not stop endless fencing loops
+
 2022-07-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '408_updates' into 4.x.x
