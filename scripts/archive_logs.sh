@@ -38,8 +38,12 @@ archive_prefix="`hostname`_`date +%F`_`date +%s`"
 # Archive the logs -- we should only fail if there is no room in /tmp (tmpfs)
 mkdir -m 0755 -p ${TMP_DIR}/${archive_prefix} || exit 1
 find ${LOG_DIR} -type f ! -path "*/boot" ! -path "*/pacemaker.log" \
+    ! -path "*/abyss.log" ! -path "*/node_exporter.log" \
+    ! -path "*/libvirtd_exporter.log" ! -path "*/prometheus.log" \
     -exec mv -f {} ${TMP_DIR}/${archive_prefix}/ \; || exit 1
-for i in ${LOG_DIR}/boot ${LOG_DIR}/pacemaker.log; do
+for i in ${LOG_DIR}/boot ${LOG_DIR}/pacemaker.log ${LOG_DIR}/abyss.log \
+    ${LOG_DIR}/node_exporter.log ${LOG_DIR}/libvirtd_exporter.log \
+    ${LOG_DIR}/prometheus.log; do
     # TODO: Need a better solution, we're losing log lines using cp + truncate!
     if [ -f "${i}" ]; then
         cp -p ${i} ${TMP_DIR}/${archive_prefix}/ || exit 1
