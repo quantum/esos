@@ -6,7 +6,7 @@ SBD_CONFIG="/etc/sysconfig/sbd"
 SBD="/usr/sbin/sbd"
 SBD_LOCK="/var/lock/sbd"
 SBD_STARTS_DIR="/etc/esos_sbd/starts"
-SBD_STARTS_SEC="1200"
+SBD_STARTS_SEC="1800"
 SBD_MAX_STARTS="3"
 RC_SBD_LOGGER="/usr/bin/logger -t rc.sbd -p daemon.info"
 
