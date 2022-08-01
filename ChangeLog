@@ -1,3 +1,11 @@
+2022-08-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '4010_updates' into 4.x.x
+
+2022-08-01  Bill O'Hanlon  <bill.ohanlon@gmail.com>
+
+	Fixes buffer overrun in "switchtec status /dev/switchtecX" command.
+
 2022-07-27  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '409_updates' into 4.x.x
