@@ -5144,6 +5144,7 @@ cpuset.chroot: glibc.chroot Python.chroot
 switchtec-user.chroot: glibc.chroot ncurses.chroot openssl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --with-curses --with-openssl
 	$(SED) -i 's/install -s/install/g' $(tgt_src_dir)/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) V=1
