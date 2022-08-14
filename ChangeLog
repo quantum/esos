@@ -1,3 +1,13 @@
+2022-08-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'wmohanlon-pydlm-hang'
+
+	Merge branch 'pydlm-hang' of https://github.com/wmohanlon/esos into wmohanlon-pydlm-hang
+
+2022-08-09  Bill O'Hanlon  <bill.ohanlon@gmail.com>
+
+	Fixes hang in pydlm.lock when /proc/misc has lines with the driver name missing.
+
 2022-08-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'wmohanlon-switchtec-status-crash'
