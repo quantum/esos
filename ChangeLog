@@ -1,3 +1,11 @@
+2022-08-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '4011_updates' into 4.x.x
+
+2022-08-23  Bill O'Hanlon  <bill.ohanlon@gmail.com>
+
+	Fixes hang in pydlm.lock when /proc/misc has lines with the driver name missing.
+
 2022-08-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '4010_updates' into 4.x.x
