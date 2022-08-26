@@ -1,15 +1,21 @@
---- a/heartbeat/Raid1	2018-10-24 01:12:09.000000000 -0700
-+++ b/heartbeat/Raid1	2019-05-01 10:58:13.399354818 -0700
-@@ -182,7 +182,7 @@
+--- a/heartbeat/Raid1	2022-08-25 18:04:08.883013203 -0400
++++ b/heartbeat/Raid1	2022-08-25 18:03:56.440967830 -0400
+@@ -182,7 +182,13 @@
  
  md_assemble() {
  	local mddev=$1
 -	$MDADM --assemble $mddev --config=$RAIDCONF $MDADM_HOMEHOST
 +	ocf_run $MDADM --assemble --run $mddev --verbose --config=$RAIDCONF $MDADM_HOMEHOST
++        rc=$?
++        if [ ${rc} -eq 1 ]; then
++           ocf_log info "Initial assembly of ${mddev} failed.  Retrying with --force."
++           /opt/quantum/scripts/tickets.sh note "Initial assembly of ${mddev} failed.  Retrying with force mode.  Potential data loss."
++           ocf_run $MDADM --assemble --run $mddev --verbose --config=$RAIDCONF --force $MDADM_HOMEHOST
++        fi
  	udev_settle --exit-if-exists=$mddev
  }
  #
-@@ -226,7 +226,7 @@
+@@ -226,7 +232,7 @@
  	local mddev=$1
  	local rc
  	ocf_log info "Attempting to mark array $mddev readonly"
@@ -18,7 +24,7 @@
  	rc=$?
  	if [ $rc -ne 0 ]; then
  		ocf_exit_reason "Failed to set $mddev readonly (rc=$rc)"
-@@ -246,7 +246,7 @@
+@@ -246,7 +252,7 @@
  	rm -f $tmp_block_file
  	ocf_log info "block device file $1 missing, creating one in order to stop the array"
  	mknod $tmp_block_file b 9 $n
@@ -27,7 +33,7 @@
  	rc=$?
  	rm -f $tmp_block_file
  	return $rc
-@@ -254,12 +254,12 @@
+@@ -254,12 +260,12 @@
  raid1_stop_one() {
  	ocf_log info "Stopping array $1"
  	if [ -b "$1" ]; then
@@ -42,7 +48,7 @@
  			return
  		# otherwise create a block device file
  		mknod_raid1_stop $1
-@@ -375,7 +375,7 @@
+@@ -375,7 +381,7 @@
  		return $OCF_NOT_RUNNING
  	fi
  	if [ $HAVE_RAIDTOOLS != "true" ]; then
@@ -51,7 +57,7 @@
  		case $rc in
  		0)	;;
  		1)	ocf_log warn "$mddev has at least one failed device."
-@@ -403,9 +403,9 @@
+@@ -403,9 +409,9 @@
  	if [ "$__OCF_ACTION" = "monitor" -a "$OCF_RESKEY_CRM_meta_interval" != 0 \
  		-a $TRY_READD -eq 1 -a $OCF_CHECK_LEVEL -gt 0 ]; then
  		ocf_log info "Attempting recovery sequence to re-add devices on $mddev:"
