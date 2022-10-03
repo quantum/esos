@@ -1,0 +1,43 @@
+--- switchtec-user-3.0.orig/lib/pmon.c	2021-09-16 16:16:31.000000000 -0400
++++ switchtec-user-3.0/lib/pmon.c	2022-08-01 08:50:29.000000000 -0400
+@@ -445,8 +445,8 @@
+ 
+ 		ret = switchtec_cmd(dev, MRPC_PMON, &cmd, cmd_size, res,
+ 				    sizeof(*res) * cmd.count);
+-		if (ret)
+-			return -1;
++		/* if (ret)
++			return -1; */
+ 
+ 		remain -= cmd.count;
+ 		phys_port_ids += cmd.count;
+diff -ru switchtec-user-3.0.orig/lib/switchtec.c switchtec-user-3.0/lib/switchtec.c
+--- switchtec-user-3.0.orig/lib/switchtec.c	2021-09-16 16:16:31.000000000 -0400
++++ switchtec-user-3.0/lib/switchtec.c	2022-08-01 08:48:38.000000000 -0400
+@@ -448,11 +448,14 @@
+ 
+ static void generate_lane_str(struct switchtec_status *s)
+ {
+-	int i, l;
++	int i, l, w;
+ 
+-	for (i = 0; i < s->cfg_lnk_width; i++)
+-		s->lanes[i] = 'x';
+ 
++	w = s->cfg_lnk_width;
++	if (w > 16)
++		w = 16;
++	for (i = 0; i < w; i++)
++		s->lanes[i] = 'x';
+ 	if (!s->link_up)
+ 		return;
+ 
+@@ -461,7 +464,7 @@
+ 		l += s->neg_lnk_width - 1;
+ 
+ 	for (i = 0; i < s->neg_lnk_width; i++) {
+-		if (l < 0)
++		if (l < 0 || l > 16)
+ 			break;
+ 
+ 		if (i < 10)

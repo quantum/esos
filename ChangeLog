@@ -1,6 +1,62 @@
-2022-05-18  Chris Graves  <chris.graves@quantum.com>
+2022-10-03  Chris Graves  <chris.graves@quantum.com>
 
 	Adds memcached=1.6.14 & pymemcache=3.5.1 as configure option --enable-memcached
+
+2022-09-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'linux_5.4_update'
+
+2022-09-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated Linux to version 5.4.212
+
+2022-08-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'wmohanlon-pydlm-hang'
+
+	Merge branch 'pydlm-hang' of https://github.com/wmohanlon/esos into wmohanlon-pydlm-hang
+
+2022-08-09  Bill O'Hanlon  <bill.ohanlon@gmail.com>
+
+	Fixes hang in pydlm.lock when /proc/misc has lines with the driver name missing.
+
+2022-08-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'wmohanlon-switchtec-status-crash'
+
+2022-08-01  Bill O'Hanlon  <bill.ohanlon@gmail.com>
+
+	Fixes buffer overrun in "switchtec status /dev/switchtecX" command.
+
+2022-07-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20220727_tweaks'
+
+	archive_logs.sh: some daemons don't handle their log file being moved out from under them, so for those use truncate/copy instead of moving when creating the archive
+
+	rc.sbd: increased start-threshold to 1800 seconds (30 minutes) so if we have more than 3 starts in 30 minutes, and we're fenced, then stay fenced -- this handles some odd dual-controller boot scenarios where the previous threshold did not stop endless fencing loops
+
+2022-07-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'msevy-quantum-sevy-new-dmidecode'
+
+	Merge branch 'sevy-new-dmidecode' of https://github.com/msevy-quantum/esos into msevy-quantum-sevy-new-dmidecode
+
+2022-07-11  Michael Sevy  <michael.sevy@quantum.com>
+
+	Add support for dmidecode v3.4
+
+2022-07-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'ocs_sg_inc'
+
+	set scst_sg_table_size=4096 for 'ocs_fc_scst' so we can accomodate large i/o transfer sizes
+
+2022-05-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_no_bbl'
+
+	MD RAID's BBL (bad block list) feature can be problematic in just about all cases... disable it globally for all mdadm operations
 
 2022-05-12  Marc A. Smith  <marc.smith@quantum.com>
 

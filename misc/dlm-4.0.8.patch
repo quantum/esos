@@ -9,3 +9,24 @@
  				daemon_quit = 0;
  			}
  			continue;
+--- dlm-4.0.8.orig/libdlm/libdlm.c	2022-08-03 12:33:05.722803287 -0400
++++ dlm-4.0.8/libdlm/libdlm.c	2022-08-03 12:35:28.541362620 -0400
+@@ -343,15 +343,15 @@
+ static int find_control_minor(int *minor)
+ {
+ 	FILE *f;
+-	char name[256];
++	char name[256], buf[256];
+ 	int found = 0, m = 0;
+ 
+ 	f = fopen("/proc/misc", "r");
+ 	if (!f)
+ 		return -1;
+ 
+-	while (!feof(f)) {
+-		if (fscanf(f, "%d %s", &m, name) != 2)
++	while (fgets(buf, 255, f)) {
++		if (sscanf(buf, "%d %s", &m, name) != 2)
+ 			continue;
+ 		if (strcmp(name, DLM_CONTROL_NAME))
+ 			continue;

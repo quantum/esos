@@ -129,7 +129,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.2.tar.xz \
 		mpfr-4.0.2.tar.xz \
 		mpc-1.1.0.tar.gz \
-		linux-5.4.190.tar.xz \
+		linux-5.4.212.tar.xz \
 		glibc-2.29.tar.xz \
 		tcl-8.6.9.tar.xz \
 		expect-5.45.4.tar.xz \
@@ -267,7 +267,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		attr-2.4.48.tar.gz \
 		acl-2.2.53.tar.gz \
 		htop-2.2.0.tar.gz \
-		dmidecode-3.2.tar.xz \
+		dmidecode-3.4.tar.xz \
 		xmlrpc-c-1.39.13.tar.gz \
 		stunnel-5.53.tar.gz \
 		sudo-1.8.27.tar.gz \
@@ -5155,6 +5155,7 @@ cpuset.chroot: glibc.chroot Python.chroot
 switchtec-user.chroot: glibc.chroot ncurses.chroot openssl.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --with-curses --with-openssl
 	$(SED) -i 's/install -s/install/g' $(tgt_src_dir)/Makefile
 	$(MAKE) --directory=$(tgt_src_dir) V=1
