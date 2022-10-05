@@ -9,22 +9,23 @@ check_args ${@}
 
 start() {
     local ports update
-    update=0
     ports=$(${SETSERIAL} -g /dev/ttyS[0123] | /bin/grep -vi unknown | \
         /usr/bin/sed -e 's/,.*//' | /usr/bin/sed -e 's@/dev/ttyS@@')
+    if [ -n "${ports}" ]; then
+        # Remove any current serial port entries for our ports
+        grep -v "ttyS[$ports]" ${INITTAB} > ${INITTAB}.new
+        mv ${INITTAB}.new ${INITTAB}
+    fi
     for f in ${ports}; do
         /bin/grep "^s${f}" ${INITTAB} > /dev/null
         if [ $? -ne 0 ]; then
             /bin/echo "Adding serial port '${f}' to inittab..."
-            /bin/echo "s${f}:2345:respawn:/sbin/agetty -L ttyS${f} 9600 vt100" \
+            /bin/echo "s${f}:2345:respawn:/sbin/agetty -L ttyS${f} 115200 vt100" \
                 >> ${INITTAB}
-            update=1
         fi
     done
-    if [ ${update} -eq 1 ]; then
-        /bin/sync
-        /sbin/init q
-    fi
+    /usr/local/sbin/conf_sync.sh
+    /sbin/init q
 }
 
 stop() {
