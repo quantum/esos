@@ -2,6 +2,14 @@
 
 	Adds memcached=1.6.17 & pymemcache=3.5.2 as configure option --enable-memcached
 
+2022-10-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'braccuglia1-master'
+
+2022-10-05  braccuglia  <brian.raccuglia@quantum.com>
+
+	Added change to rc.serial to update ttyS port entries in /etc/inittab using baud rate 115200
+
 2022-09-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'linux_5.4_update'
