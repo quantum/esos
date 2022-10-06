@@ -537,7 +537,7 @@ ifeq ($(enable_btier),yes)
 endif
 ifeq ($(enable_memcached),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
-	memcached-1.6.14.tar.gz)
+	memcached-1.6.17.tar.gz)
 	chroot_tgts += memcached.chroot
 endif
 ifeq ($(enable_simple_tui),yes)
@@ -2395,7 +2395,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	  pip3 install SQLAlchemy==1.4.19; \
 	fi
 	$(QUIET) if [ "$(enable_memcached)" = "yes" ]; then \
-	  pip3 install pymemcache==3.5.1; \
+	  pip3 install pymemcache==3.5.2; \
 	fi
 	$(RM) /.cache
 	cd /usr/lib/python*/site-packages/ && \

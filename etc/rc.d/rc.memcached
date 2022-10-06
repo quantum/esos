@@ -1,0 +1,42 @@
+#! /bin/sh
+
+source /etc/rc.d/common
+
+MEMCACHED="/usr/bin/memcached"
+MEMCACHED_LOCK="/var/lock/memcached"
+RC_MEMCACHED_LOGGER="/usr/bin/logger -t rc.memcached -p daemon.info"
+DFLT_OPTS=""
+
+check_args ${@}
+
+SCRIPT="$(/usr/bin/basename ${0})"
+if check_opts_set ${SCRIPT}; then
+    USER_OPTS="$(get_rc_opts ${SCRIPT})"
+    if [ ${?} -ne 0 ]; then
+        /bin/echo ${USER_OPTS}
+        exit 1
+    fi
+else
+    USER_OPTS="${DFLT_OPTS}"
+fi
+
+start() {
+    /bin/echo "Starting memcached..."
+    eval ${MEMCACHED} ${USER_OPTS} || exit 1
+    /bin/touch ${MEMCACHED_LOCK}
+    /bin/sleep 1
+}
+
+stop() {
+    /bin/echo "Stopping memcached..."
+    /usr/bin/kill -TERM $(/usr/bin/pidof ${MEMCACHED}) || exit 1
+    wait_for_stop ${MEMCACHED} && /bin/rm -f ${MEMCACHED_LOCK}
+}
+
+status() {
+    /usr/bin/pidof ${MEMCACHED} > /dev/null 2>&1
+    exit ${?}
+}
+
+# Perform specified action
+${1}
