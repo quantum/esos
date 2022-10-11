@@ -4911,7 +4911,7 @@ procps.chroot: glibc.chroot numactl.chroot ncurses.chroot
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-numa \
-	--with-ncurses --without-systemd --without-elogind
+	--with-ncurses --without-systemd --without-elogind --disable-modern-top
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
