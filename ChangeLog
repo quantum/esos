@@ -1,3 +1,13 @@
+2022-10-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_memcached'
+
+	added the 'memcached' build option ('--enable-memcached') which builds/includes the daemon (from PR # 288 on GH, thank you Chris Graves); fixed issue with patch applied at end of Python.chroot when attempting to rebuild without deleting work/chroot/ directory
+
+	Merge branch 'top_look_fix'
+
+	use '--disable-modern-top' with procps.chroot so we get the old-school top interface by default
+
 2022-10-06  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'braccuglia1-master'
