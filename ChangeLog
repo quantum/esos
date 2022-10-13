@@ -1,3 +1,9 @@
+2022-10-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'cmd2_enhancement'
+
+	include a 'timestamp' attribute in the Cmd2 history log
+
 2022-10-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_memcached'
