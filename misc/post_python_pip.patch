@@ -29,3 +29,53 @@ index 915934cceaab1cf7dc2e3ceb5b42a331bc466b5a..6176454385eef85ed03533ac67b7adcc
  
  class ThreadPool:
      """A Request Queue for an HTTPServer which pools threads.
+
+--- a/cmd2/parsing.py
++++ b/cmd2/parsing.py
+@@ -147,6 +147,9 @@
+     # if output was redirected, the destination file token (quotes preserved)
+     output_to: str = attr.ib(default='', validator=attr.validators.instance_of(str))
+
++    # time/date stamp of command
++    timestamp: str = attr.ib(default='', validator=attr.validators.instance_of(str))
++
+     # Used in JSON dictionaries
+     _args_field = 'args'
+
+@@ -406,6 +409,8 @@
+         :raises: Cmd2ShlexError if a shlex error occurs (e.g. No closing quotation)
+         """
+
++        import datetime
++
+         # handle the special case/hardcoded terminator of a blank line
+         # we have to do this before we tokenize because tokenizing
+         # destroys all unquoted whitespace in the input
+@@ -527,6 +532,9 @@
+         else:
+             multiline_command = ''
+
++        td = datetime.datetime.now()
++        timestampstr = f'{td.year}-{td.month:02}-{td.day:02} {td.hour:02}:{td.minute:02}:{td.second:02}'
++
+         # build the statement
+         statement = Statement(
+             args,
+@@ -539,6 +547,7 @@
+             pipe_to=pipe_to,
+             output=output,
+             output_to=output_to,
++            timestamp=timestampstr,
+         )
+         return statement
+
+--- a/cmd2/cmd2.py
++++ b/cmd2/cmd2.py
+@@ -2600,6 +2600,7 @@
+                 pipe_to=statement.pipe_to,
+                 output=statement.output,
+                 output_to=statement.output_to,
++                timestamp=statement.timestamp,
+             )
+         return statement
+
