@@ -1,3 +1,9 @@
+2022-10-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_bwm-ng'
+
+	added the 'bwm-ng' package (network interface bandwidth monitoring tool)
+
 2022-10-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'cmd2_enhancement'
