@@ -1,3 +1,9 @@
+2022-10-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mofed_udev_tweak'
+
+	mlnx_ofed.chroot: comment out unused/unwanted use of "mlnx_interface_mgr.sh" in the 90-ib.rules udev rule file
+
 2022-10-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_bwm-ng'

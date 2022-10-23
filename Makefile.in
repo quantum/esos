@@ -2163,6 +2163,8 @@ mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	$(SED) -i '312,319 s/^#*/#/' $(mlnx_ofed_dir)/makefile
 	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 build_py_scripts
 	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 install_scripts
+	$(SED) -e '/mlnx_interface_mgr.sh/ s/^#*/#/' \
+	-i /usr/lib/udev/rules.d/90-ib.rules
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
