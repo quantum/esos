@@ -586,6 +586,29 @@ AC_SUBST(bnxt_en_dir, ${bnxt_en_dir})
 AC_SUBST(with_bnxt_en, ${with_bnxt_en})
 AC_MSG_NOTICE([bnxt_en: ${with_bnxt_en}])
 
+dnl Optional package r8152 (user provides package file)
+AC_ARG_WITH(r8152,
+	AS_HELP_STRING([--with-r8152=PATH],
+	[build and include r8152; PATH is the r8152 package file to use]),
+	AS_IF([test "x${withval}" != "xyes" && test "x${withval}" != "xno"],
+	[r8152_file="${withval}"; with_r8152="yes"],
+	[with_r8152="no"]), with_r8152="no")
+if test "x${with_r8152}" = "xyes"; then
+	if test -f "${r8152_file}"; then
+		AC_MSG_NOTICE([extracting the r8152 package file...])
+		r8152_dir="${chroot_dir}/build/r8152"
+		${mkdir} -p ${r8152_dir} || exit 1
+		${tar} xfj ${r8152_file} --strip-components=1 -C ${r8152_dir} || exit 1
+	else
+		AC_MSG_ERROR([unable to access the r8152 file: ${r8152_file}])
+	fi
+fi
+AS_IF([test "x$with_r8152" = "xyes"],
+	[build_opts="${build_opts} r8152"; opt_suffix="${opt_suffix}r"])
+AC_SUBST(r8152_dir, ${r8152_dir})
+AC_SUBST(with_r8152, ${with_r8152})
+AC_MSG_NOTICE([r8152: ${with_r8152}])
+
 AS_IF([test "x${srcdir}" = "x."],
 	[real_src_dir="${PWD}"],
 	[real_src_dir="${srcdir}"])
