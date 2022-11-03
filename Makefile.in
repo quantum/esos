@@ -98,6 +98,8 @@ with_qla2xxx_scst	:= @with_qla2xxx_scst@
 qla2xxx_scst_dir	:= $(subst $(CHROOT_DIR),,@qla2xxx_scst_dir@)
 with_bnxt_en		:= @with_bnxt_en@
 bnxt_en_dir		:= $(subst $(CHROOT_DIR),,@bnxt_en_dir@)
+with_r8152		:= @with_r8152@
+r8152_dir		:= $(subst $(CHROOT_DIR),,@r8152_dir@)
 with_customize_dir	:= @with_customize_dir@
 customize_dir		:= @customize_dir@
 build_opts		:= @build_opts@
@@ -1704,6 +1706,10 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  if [ "$(with_bnxt_en)" = "yes" ]; then \
 	    $(MAKE) --directory=$(bnxt_en_dir) KDIR=$(linux_src) clean; \
 	  fi; \
+	  if [ "$(with_r8152)" = "yes" ]; then \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	    M=$(r8152_dir) clean; \
+	  fi; \
 	  if [ "$(with_rapiddisk)" = "yes" ]; then \
 	    $(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/module \
 	    clean; \
@@ -1996,6 +2002,19 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
 	  cd /lib/modules/$(kernel_ver)$$i/kernel && \
 	  $(INSTALL) -m 0644 drivers/net/ethernet/broadcom/bnxt/bnxt_en.ko \
+	  $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && cd -; \
+	  if [ "$(with_r8152)" = "yes" ]; then \
+	    $(ECHO) "### Compiling the Realtek RTL8152/RTL8153 module..."; \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+            M=$(r8152_dir) V=1 EXTRA_CFLAGS="-DCONFIG_CTAP_SHORT_OFF"; \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+            M=$(r8152_dir) V=1 modules_install; \
+	    $(MV) -f /lib/modules/$(kernel_ver)$$i/extra/r8152.ko \
+	    /lib/modules/$(kernel_ver)$$i/kernel/drivers/net/usb/; \
+	  fi; \
+	  $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
+	  cd /lib/modules/$(kernel_ver)$$i/kernel && \
+	  $(INSTALL) -m 0644 drivers/net/usb/r8152.ko \
 	  $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && cd -; \
 	  if [ "$(with_rapiddisk)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the RapidDisk modules..."; \
