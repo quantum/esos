@@ -1,3 +1,11 @@
+2022-11-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'r8152_driver'
+
+2022-11-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the '--with-r8152=' build time option so we can use an out-of-tree r8152 kernel driver (Realtek USB Ethernet)
+
 2022-10-22  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'mofed_udev_tweak'

@@ -46,6 +46,7 @@ insmod /lib/modules/$(uname -r)/nvme.ko || rescue_shell
 
 # Load early network adapter drivers
 insmod /lib/modules/$(uname -r)/bnxt_en.ko || rescue_shell
+insmod /lib/modules/$(uname -r)/r8152.ko || rescue_shell
 
 # Some devices are delayed
 echo "Waiting for devices to settle..."
