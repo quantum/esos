@@ -364,6 +364,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		cpuset-1.6.tar.gz \
 		switchtec-user-3.0.tar.gz \
 		bwm-ng-0.6.3.tar.gz \
+		lz4-1.9.4.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -455,7 +456,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		file.chroot jansson.chroot pcre.chroot pv.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
 		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot \
-		zip.chroot cpuset.chroot switchtec-user.chroot bwm-ng.chroot
+		zip.chroot cpuset.chroot switchtec-user.chroot bwm-ng.chroot \
+		lz4.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -5204,6 +5206,14 @@ bwm-ng.chroot: glibc.chroot ncurses.chroot
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-ncurses
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+lz4.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) PREFIX=/usr install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
