@@ -1,3 +1,9 @@
+2022-11-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_lz4'
+
+	added the lz4 library
+
 2022-11-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'r8152_driver'
