@@ -1,3 +1,9 @@
+2022-11-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'r8152_tweak'
+
+	don't use CONFIG_CTAP_SHORT_OFF with r8152 out-of-tree driver build (use RTL8152_DEBUG instead)
+
 2022-11-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_lz4'
