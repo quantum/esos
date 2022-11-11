@@ -2008,7 +2008,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  if [ "$(with_r8152)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the Realtek RTL8152/RTL8153 module..."; \
 	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
-            M=$(r8152_dir) V=1 EXTRA_CFLAGS="-DCONFIG_CTAP_SHORT_OFF"; \
+            M=$(r8152_dir) V=1 EXTRA_CFLAGS="-DRTL8152_DEBUG"; \
 	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
             M=$(r8152_dir) V=1 modules_install; \
 	    $(MV) -f /lib/modules/$(kernel_ver)$$i/extra/r8152.ko \
