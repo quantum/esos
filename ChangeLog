@@ -1,3 +1,9 @@
+2022-12-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_minicom'
+
+	added the 'minicom' package (for serial terminal)
+
 2022-11-10  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'r8152_tweak'
