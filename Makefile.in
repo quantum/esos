@@ -198,7 +198,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20211021.tar.xz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.5.x_r9586.tar.xz \
+		scst-3.7.x_20221222.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.16.0.tar.gz \
 		lvm2-2.03.14.tar.xz \
@@ -1736,7 +1736,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    fi; \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) QLA_INI_DIR=$(qla_ini_dir) QLA_DIR=$(qla_dir) \
-	    2perf; \
+	    2release; \
 	  fi; \
 	  if [ "$$i" = "$(debug_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
@@ -1931,6 +1931,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the ATTO SCST Target module..."; \
+	    $(SED) '/\.detect/d' -i $(atto_scst_dir)/atto_scst.c; \
 	    $(CAT) $(celerity_16_32_dir)/src/Module.symvers \
 	    /usr/include/scst/Module.symvers > \
 	    $(atto_scst_dir)/Module.symvers; \
