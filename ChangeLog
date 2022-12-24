@@ -1,3 +1,9 @@
+2022-12-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_update'
+
+	updated SCST to 3.7.x; build SCST with '2release' (instead of '2perf') for production kernel so we get tracing capability (authors claim very little performance impact); updated the SCST patch so we also get the initiator name when an SCST vdisk_* device receives an IO with the "filename" FD closed
+
 2022-12-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_minicom'
