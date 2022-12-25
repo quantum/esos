@@ -1,3 +1,9 @@
+2022-12-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'inc_ring_buf'
+
+	increased kernel ring buffer (accessed via 'dmesg') size to 4 MiB (CONFIG_LOG_BUF_SHIFT=22)
+
 2022-12-23  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'scst_update'
