@@ -1,3 +1,9 @@
+2022-12-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_network_ethtool'
+
+	rc.network: process ethtool options (if any) for bridge (and member) interfaces, and for bond (and slave) interfaces
+
 2022-12-24  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'inc_ring_buf'
