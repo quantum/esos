@@ -1,3 +1,11 @@
+2022-12-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'wmohanlon-add_aiohttp'
+
+2022-12-30  Bill O'Hanlon  <bill.ohanlon@gmail.com>
+
+	Add aiohttp and related modules to Python lib.
+
 2022-12-29  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_network_ethtool'
