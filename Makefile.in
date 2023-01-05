@@ -366,6 +366,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		bwm-ng-0.6.3.tar.gz \
 		lz4-1.9.4.tar.gz \
 		minicom-2.8.tar.gz \
+		smp_utils-0.99.tar.xz \
+		sasutils-0.3.13.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -458,7 +460,7 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
 		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot \
 		zip.chroot cpuset.chroot switchtec-user.chroot bwm-ng.chroot \
-		lz4.chroot minicom.chroot
+		lz4.chroot minicom.chroot smp_utils.chroot sasutils.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -5235,6 +5237,23 @@ minicom.chroot: glibc.chroot ncurses.chroot
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
+
+smp_utils.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+sasutils.chroot: glibc.chroot Python.chroot sg3_utils.chroot smp_utils.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot
