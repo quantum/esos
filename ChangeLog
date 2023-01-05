@@ -1,3 +1,9 @@
+2023-01-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_sas_utils'
+
+	added the smp_utils and sasutils packages
+
 2022-12-30  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'wmohanlon-add_aiohttp'
