@@ -50,6 +50,14 @@ if [ ! -L "/etc/localtime" ]; then
     /bin/ln -s /usr/share/zoneinfo/posix/Factory /etc/localtime
 fi
 
+if /bin/grep single_user /proc/cmdline > /dev/null 2>&1; then
+    if [ -e "/etc/single_user_needs_password" ]; then
+        /usr/sbin/sulogin --force /dev/console
+    else
+        /bin/bash -i
+    fi
+fi
+
 /bin/echo "Starting kernel log daemon (klogd)..."
 /usr/sbin/klogd -c1
 
