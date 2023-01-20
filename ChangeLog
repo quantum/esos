@@ -1,5 +1,9 @@
 2023-01-20  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'scst_n_kern_bump'
+
+	updated Linux to latest 5.4 patch release (5.4.229); updated SCST to latest commit from 3.7.x release branch
+
 	Merge branch 'nvme_tcp'
 
 	enabled additional NVMe drivers in the kernel config (including TCP host/target support); rc.2: load the nvmet-tcp module on boot; fixed tar.bz2 removal in 'clean' target
