@@ -3,7 +3,7 @@
 f58fa8001d60c4c77595fbbb62b63c1d  gmp-6.1.2.tar.xz
 320fbc4463d4c8cb1e566929d8adc4f8  mpfr-4.0.2.tar.xz
 4125404e41e482ec68282a2e687f6c73  mpc-1.1.0.tar.gz
-f428d58353b3855c80c8352f1bcf0cfe  linux-5.4.212.tar.xz
+44b937967db8c76886ef6ec72fa4ea34  linux-5.4.229.tar.xz
 e6c279d5b2f0736f740216f152acf974  glibc-2.29.tar.xz
 24ce012560fb08d05bae849a62e6b41c  tcl-8.6.9.tar.xz
 fc41b0f95da250f9ca082a5ec4b9b291  expect-5.45.4.tar.xz
@@ -176,7 +176,7 @@ b3ce6f476a5b7ea64c583e7d910d2db7  thin-provisioning-tools-0.9.0.tar.gz
 5e2bcbbf3018a4a5ce61fc15e264612e  crmsh-master_20180520.tar.xz
 a4e4976f0cd67507c22442121400532b  nmon-16j.tar.xz
 b6b86767eb9e7e65100d6ef5f77b8d1f  linux_firmware-20190416.tar.xz
-1972acae31220739497225ea36d62d01  scst-3.7.x_20221222.tar.xz
+5084fdb5991d8b9c2695369d60a59158  scst-3.7.x_20230120.tar.xz
 c5bb483ebbf009bcdd02c860ba5689bb  munin-c-0.0.13.tar.xz
 3561b7716c4c94f15e0b4847622967b1  open-iscsi-2.1.1.tar.gz
 512413a285c852195b6240d6a0ad7f5b  open-isns-0.99.tar.gz

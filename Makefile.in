@@ -131,7 +131,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.2.tar.xz \
 		mpfr-4.0.2.tar.xz \
 		mpc-1.1.0.tar.gz \
-		linux-5.4.212.tar.xz \
+		linux-5.4.229.tar.xz \
 		glibc-2.29.tar.xz \
 		tcl-8.6.9.tar.xz \
 		expect-5.45.4.tar.xz \
@@ -198,7 +198,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20211021.tar.xz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.7.x_20221222.tar.xz \
+		scst-3.7.x_20230120.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.16.0.tar.gz \
 		lvm2-2.03.14.tar.xz \
