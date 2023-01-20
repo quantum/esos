@@ -1,3 +1,9 @@
+2023-01-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'single_user'
+
+	fixed incorrect (broken) cleanup steps in the 'image' target; handle the 'single_user' kernel parameter in rc.sysinit
+
 2023-01-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_sas_utils'

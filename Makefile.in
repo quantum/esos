@@ -5285,8 +5285,8 @@ image:
 	    $(KPARTX) -v -d $(loop_dev); \
 	    $(LOSETUP) -v -d $(loop_dev); \
 	  fi; \
-	  $(RM) -v $(BUILD_DIR)/esos_*.img; \
-	  $(RM) -v $(BUILD_DIR)/esos_*.bz2; \
+	  $(RM) -v $(img_file); \
+	  $(RM) -v $(tar_bz2_img_file); \
 	  $(RM) -v $(BUILD_DIR)/dist_*.txt; \
 	fi
 	$(QUIET) $(ECHO) "### Creating initramfs image..."
@@ -5532,7 +5532,7 @@ pkg_dist: $(tar_bz2_img_file)
 	$(call no_chroot)
 	$(ECHO) "$(product) $(esos_ver)" > $(BUILD_DIR)/VERSION
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
-	$(RM) $(BUILD_DIR)/esos_*.zip
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
 	$(LN) $(BUILD_DIR) $(pkg_prefix)
 	$(ZIP) -9 $(pkg_prefix).zip \
