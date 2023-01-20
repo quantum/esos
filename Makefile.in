@@ -696,7 +696,7 @@ clean: $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(BUILD_DIR)/dist_*.txt
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img
-	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.bz2
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.tar.bz2
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.iso
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(QUIET) $(ECHO) && $(ECHO)
