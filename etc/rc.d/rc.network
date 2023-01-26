@@ -23,6 +23,7 @@ my $brctl_prog = "/usr/sbin/brctl";
 my $ethtool_prog = "/usr/sbin/ethtool";
 my $vconfig_prog = "/sbin/vconfig";
 my $tcwrap_prog = "/usr/bin/tc_wrap.py";
+my $killall_prog = "/usr/bin/killall";
 my $net_if_dir = "/sys/class/net";
 my $section;
 my @sections;
@@ -141,6 +142,11 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
     if ($ARGV[0] eq "apply") {
         rem_dflt_gw();
     }
+
+    # Kill off any old DHCP client instances (may background if lease fails)
+    print("Terminating any stale DHCP client processes...\n");
+    my $dhcp_prog_base = (split(/\//, $dhcp_prog))[-1];
+    system($killall_prog . " " . $dhcp_prog_base . " 2>&1");
 
     # Bring up all interfaces
     my @sorted_sections = sort @sections;
@@ -439,6 +445,27 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                 # Add the member interfaces to the bridge
                 my @brmember_vals = split(/,/, $brmembers);
                 foreach my $each_brmember (@brmember_vals) {
+                    # If its a VLAN interface, make sure it exists
+                    if ($each_brmember =~ /.*\.\d+/) {
+                        my $vlan_iface = $net_if_dir . "/" . $each_brmember;
+                        my @vlan_if_parts = split(/\./, $each_brmember);
+                        if (! -e "$vlan_iface") {
+                            printf("Creating VLAN interface " . $each_brmember .
+                                "...\n");
+                            system($vconfig_prog . " add " . $vlan_if_parts[0] .
+                                " " . $vlan_if_parts[1] . " 2>&1");
+                            if ($? == -1) {
+                                print("ERROR: Running $vconfig_prog failed: $!\n");
+                                next;
+                            }
+                            my $exit_status = $? >> 8;
+                            if ($exit_status != 0) {
+                                print("ERROR: The $vconfig_prog program exited with " .
+                                    "value $exit_status.\n");
+                                next;
+                            }
+                        }
+                    }
                     print("Adding member interface $each_brmember to " .
                         "bridge $each...\n");
                     system($brctl_prog . " addif " . $each . " " .
@@ -700,6 +727,21 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
                         print("ERROR: The $ip_prog program exited with " .
                             "value $exit_status.\n");
                         next;
+                    }
+                    if ($each =~ /.*\.\d+/) {
+                        # It's a VLAN interface so ensure it's up for DHCP
+                        print("Bringing up interface $each...\n");
+                        system($ifconfig_prog . " " . $each . " up 2>&1");
+                        if ($? == -1) {
+                            print("ERROR: Running $ifconfig_prog failed: $!\n");
+                            next;
+                        }
+                        my $exit_status = $? >> 8;
+                        if ($exit_status != 0) {
+                            print("ERROR: The $ifconfig_prog program exited " .
+                                "with value $exit_status.\n");
+                            next;
+                        }
                     }
                     # Do DHCP configuration for interface
                     print("Running $dhcp_prog for interface $each...\n");

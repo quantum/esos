@@ -1,3 +1,9 @@
+2023-01-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_network_br_vlan'
+
+	rc.network: applied several enhancements to handle VLAN's with bridge interfaces properly
+
 2023-01-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'scst_n_kern_bump'
