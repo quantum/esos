@@ -1,5 +1,9 @@
 2023-01-25  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'pwatcher'
+
+	added a 'pwatcher' helper script to handle restarting processes; rc.libvirtdexporter: use pwatcher since libvirtdexporter dies randomly
+
 	Merge branch 'rc_network_br_vlan'
 
 	rc.network: applied several enhancements to handle VLAN's with bridge interfaces properly

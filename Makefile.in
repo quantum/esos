@@ -5405,6 +5405,8 @@ image:
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/backup_conf.sh \
 	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/pwatcher.sh \
+	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/sbd_*.sh \
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/cluster_*.sh \
