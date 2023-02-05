@@ -602,7 +602,7 @@ set_tpg_trans() {
             if [ ${?} -ne 0 ]; then
                 error_msg="Failed to set the peer local target group state!"
                 ocf_exit_reason "${error_msg}"
-                exit ${OCF_ERR_GENERIC}
+                exit ${OCF_SUCCESS}
             fi
             ocf_log info "${FUNCNAME[1]}() -> Setting target group" \
                 "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
@@ -616,7 +616,7 @@ set_tpg_trans() {
             if [ ${?} -ne 0 ]; then
                 error_msg="Failed to set the peer remote target group state!"
                 ocf_exit_reason "${error_msg}"
-                exit ${OCF_ERR_GENERIC}
+                exit ${OCF_SUCCESS}
             fi
         else
             ocf_log warn "${FUNCNAME[1]}() -> Failed to ping '${peer_name}'!" \
