@@ -17,8 +17,9 @@ start() {
 }
 
 stop() {
-    # Do nothing
-    :
+    # Deactivate all volume groups
+    /bin/echo "Deactivating all LVM volume groups..."
+    ${VGCHANGE} -an || exit 1
 }
 
 status() {
