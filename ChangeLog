@@ -1,3 +1,9 @@
+2023-02-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_lvm2_stop'
+
+	rc.lvm2: in stop() actually stop (deactivate) any VG's; rc.nvmet: don't write out the JSON config file when stopping (this should be saved separately as how we do with SCST so we don't ever save a "bad" file); fixed bug in ocf:esos:alua when setting the peer TPG state via SSH fails
+
 2023-01-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'pwatcher'
