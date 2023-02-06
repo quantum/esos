@@ -1,3 +1,9 @@
+2023-02-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mofed_5.8'
+
+	updates for MOFED 5.8; etc/rc.d/common: added the wait_for_pid_stop() helper function; rc.libvirtdexporter: use quiet grep and the new wait_for_pid_stop() function after sending SIGTERM
+
 2023-02-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_lvm2_stop'
