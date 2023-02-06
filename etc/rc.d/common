@@ -59,6 +59,23 @@ wait_for_stop() {
     return ${rc}
 }
 
+# Wait for a PID to stop
+wait_for_pid_stop() {
+    timer=0
+    rc=1
+    while [ ${timer} -lt ${STOP_TIMEOUT} ]; do
+        if /usr/bin/ps -p ${1} > /dev/null 2>&1; then
+            /bin/sleep 1
+            timer=$(/usr/bin/expr ${timer} + 1)
+            continue
+        else
+            rc=0
+            break
+        fi
+    done
+    return ${rc}
+}
+
 # Check arguments
 check_args() {
     if [ ${#} -ne 1 ] || [ "${1}" != "start" ] && [ "${1}" != "stop" ] && \
