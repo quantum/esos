@@ -1,3 +1,9 @@
+2023-02-16  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_dmesg'
+
+	include the real 'dmesg' tool from the util-linux package (we left the Busybox command enabled so we have it in initramfs in case it's needed for debugging; during init, Busybox should not make a link since the real binary already exists)
+
 2023-02-06  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'mofed_5.8'
