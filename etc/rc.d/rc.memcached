@@ -5,6 +5,7 @@ source /etc/rc.d/common
 MEMCACHED="/usr/bin/memcached"
 MEMCACHED_LOCK="/var/lock/memcached"
 DFLT_OPTS=""
+PWATCHER="/usr/local/sbin/pwatcher.sh"
 
 check_args ${@}
 
@@ -21,12 +22,19 @@ fi
 
 start() {
     /bin/echo "Starting memcached..."
-    eval ${MEMCACHED} ${USER_OPTS} || exit 1
+    eval ${PWATCHER} ${MEMCACHED} ${USER_OPTS} >/dev/null 2>&1 
     /bin/touch ${MEMCACHED_LOCK}
 }
 
 stop() {
     /bin/echo "Stopping memcached..."
+    pwatcher_pids=$(/usr/bin/pidof -x -o %PPID $(basename ${PWATCHER}))
+    for pwatcher_pid in ${pwatcher_pids}; do
+        if grep -q "${MEMCACHED}" "/proc/${pwatcher_pid}/cmdline"; then
+            kill -TERM "${pwatcher_pid}" 
+            wait_for_pid_stop ${pwatcher_pid}
+        fi
+    done
     /usr/bin/kill -TERM $(/usr/bin/pidof ${MEMCACHED}) || exit 1
     wait_for_stop ${MEMCACHED} && /bin/rm -f ${MEMCACHED_LOCK}
 }
