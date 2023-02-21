@@ -31,10 +31,11 @@ mount_cd_iso() {
     return 0
 }
 
-{
+# Run the normal installation procedure
+run_install() {
     if ! grep -q nfs_iso_device /proc/cmdline; then
         # Mount the CD-ROM (if it's not already)
-        mount_cd_iso || bash
+        mount_cd_iso || return 1
     fi
 
     # Grab the install device / install transport type (if any)
@@ -46,13 +47,13 @@ mount_cd_iso() {
     image_server="$(cmdline imageserver)"
 
     # Change to the mounted CD-ROM directory and run the installer
-    cd /mnt/root || bash
+    cd /mnt/root || return 1
     WIPE_DEVS="${wipe_devs}" NO_PROMPT="${no_prompt}" ./install.sh \
-        "${install_dev}" "${install_tran}" "${install_model}" || bash
+        "${install_dev}" "${install_tran}" "${install_model}" || return 1
 
     if ! grep -q nfs_iso_device /proc/cmdline; then
         # Make sure the CD-ROM is still mounted (may get disconnected)
-        mount_cd_iso || bash
+        mount_cd_iso || return 1
     fi
 
     # Handle after-install customizations
@@ -61,11 +62,11 @@ mount_cd_iso() {
         echo "### Starting additional ESOS installation tasks..."
         WIPE_DEVS="${wipe_devs}" NO_PROMPT="${no_prompt}" \
             IMAGE_SERVER="${image_server}" \
-            sh ./extra_install.sh || bash
+            sh ./extra_install.sh || return 1
     fi
 
     # Done with the CD-ROM
-    cd || exit 1
+    cd || return 1
 
     if [ "x${no_prompt}" != "x1" ]; then
         # Pause until the user continues, then reboot
@@ -81,6 +82,12 @@ mount_cd_iso() {
     echo " "
     echo "### Rebooting..."
     echo " "
-    reboot
-} 2>&1 | tee "/tmp/iso_installer_$(date +%s).log"
+    reboot || return 1
+}
+
+# Bail to a shell if anything goes wrong
+run_install 2>&1 | tee "/tmp/iso_installer_$(date +%s).log"
+if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+    bash
+fi
 

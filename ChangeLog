@@ -1,3 +1,7 @@
+2023-02-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	iso_installer.sh: handle non-zero exit statuses from critical functions by dropping into a bash shell
+
 2023-02-16  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_dmesg'
