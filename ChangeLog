@@ -1,3 +1,143 @@
+2023-02-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	iso_installer.sh: handle non-zero exit statuses from critical functions by dropping into a bash shell
+
+2023-02-16  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_dmesg'
+
+	include the real 'dmesg' tool from the util-linux package (we left the Busybox command enabled so we have it in initramfs in case it's needed for debugging; during init, Busybox should not make a link since the real binary already exists)
+
+2023-02-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mofed_5.8'
+
+	updates for MOFED 5.8; etc/rc.d/common: added the wait_for_pid_stop() helper function; rc.libvirtdexporter: use quiet grep and the new wait_for_pid_stop() function after sending SIGTERM
+
+2023-02-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_lvm2_stop'
+
+	rc.lvm2: in stop() actually stop (deactivate) any VG's; rc.nvmet: don't write out the JSON config file when stopping (this should be saved separately as how we do with SCST so we don't ever save a "bad" file); fixed bug in ocf:esos:alua when setting the peer TPG state via SSH fails
+
+2023-01-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'pwatcher'
+
+	added a 'pwatcher' helper script to handle restarting processes; rc.libvirtdexporter: use pwatcher since libvirtdexporter dies randomly
+
+	Merge branch 'rc_network_br_vlan'
+
+	rc.network: applied several enhancements to handle VLAN's with bridge interfaces properly
+
+2023-01-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_n_kern_bump'
+
+	updated Linux to latest 5.4 patch release (5.4.229); updated SCST to latest commit from 3.7.x release branch
+
+	Merge branch 'nvme_tcp'
+
+	enabled additional NVMe drivers in the kernel config (including TCP host/target support); rc.2: load the nvmet-tcp module on boot; fixed tar.bz2 removal in 'clean' target
+
+	Merge branch 'single_user'
+
+	fixed incorrect (broken) cleanup steps in the 'image' target; handle the 'single_user' kernel parameter in rc.sysinit
+
+2023-01-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_sas_utils'
+
+	added the smp_utils and sasutils packages
+
+2022-12-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'wmohanlon-add_aiohttp'
+
+2022-12-30  Bill O'Hanlon  <bill.ohanlon@gmail.com>
+
+	Add aiohttp and related modules to Python lib.
+
+2022-12-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_network_ethtool'
+
+	rc.network: process ethtool options (if any) for bridge (and member) interfaces, and for bond (and slave) interfaces
+
+2022-12-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'inc_ring_buf'
+
+	increased kernel ring buffer (accessed via 'dmesg') size to 4 MiB (CONFIG_LOG_BUF_SHIFT=22)
+
+2022-12-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_update'
+
+	updated SCST to 3.7.x; build SCST with '2release' (instead of '2perf') for production kernel so we get tracing capability (authors claim very little performance impact); updated the SCST patch so we also get the initiator name when an SCST vdisk_* device receives an IO with the "filename" FD closed
+
+2022-12-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_minicom'
+
+	added the 'minicom' package (for serial terminal)
+
+2022-11-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'r8152_tweak'
+
+	don't use CONFIG_CTAP_SHORT_OFF with r8152 out-of-tree driver build (use RTL8152_DEBUG instead)
+
+2022-11-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_lz4'
+
+	added the lz4 library
+
+2022-11-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'r8152_driver'
+
+2022-11-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the '--with-r8152=' build time option so we can use an out-of-tree r8152 kernel driver (Realtek USB Ethernet)
+
+2022-10-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mofed_udev_tweak'
+
+	mlnx_ofed.chroot: comment out unused/unwanted use of "mlnx_interface_mgr.sh" in the 90-ib.rules udev rule file
+
+2022-10-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_bwm-ng'
+
+	added the 'bwm-ng' package (network interface bandwidth monitoring tool)
+
+2022-10-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'cmd2_enhancement'
+
+	include a 'timestamp' attribute in the Cmd2 history log
+
+2022-10-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_memcached'
+
+	added the 'memcached' build option ('--enable-memcached') which builds/includes the daemon (from PR # 288 on GH, thank you Chris Graves); fixed issue with patch applied at end of Python.chroot when attempting to rebuild without deleting work/chroot/ directory
+
+	Merge branch 'top_look_fix'
+
+	use '--disable-modern-top' with procps.chroot so we get the old-school top interface by default
+
+2022-10-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'braccuglia1-master'
+
+2022-10-05  braccuglia  <brian.raccuglia@quantum.com>
+
+	Added change to rc.serial to update ttyS port entries in /etc/inittab using baud rate 115200
+
 2022-09-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '4012_updates' into 4.x.x
