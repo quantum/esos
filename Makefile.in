@@ -2425,6 +2425,10 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install multidict==6.0.4
 	pip3 install aiosignal==1.1.2
 	pip3 install idna==2.0
+	pip3 install typing-extensions==4.5.0
+	pip3 install async-lru==2.0.2
+	pip3 install caio==0.9.11
+	pip3 install aiofile==3.8.1
 	$(QUIET) if [ "$(enable_python_sql)" = "yes" ]; then \
 	  pip3 install psycopg2==2.8.1; \
 	  pip3 install mysqlclient==2.0.3; \
