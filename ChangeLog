@@ -1,3 +1,9 @@
+2023-02-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_async-lru'
+
+	added the async-lru and aiofile packages for the Python.chroot recipe (via the pip3 installer, along with a couple deps)
+
 2023-02-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	iso_installer.sh: handle non-zero exit statuses from critical functions by dropping into a bash shell
