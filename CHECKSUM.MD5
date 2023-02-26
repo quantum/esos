@@ -3,7 +3,7 @@
 f58fa8001d60c4c77595fbbb62b63c1d  gmp-6.1.2.tar.xz
 320fbc4463d4c8cb1e566929d8adc4f8  mpfr-4.0.2.tar.xz
 4125404e41e482ec68282a2e687f6c73  mpc-1.1.0.tar.gz
-f428d58353b3855c80c8352f1bcf0cfe  linux-5.4.212.tar.xz
+44b937967db8c76886ef6ec72fa4ea34  linux-5.4.229.tar.xz
 e6c279d5b2f0736f740216f152acf974  glibc-2.29.tar.xz
 24ce012560fb08d05bae849a62e6b41c  tcl-8.6.9.tar.xz
 fc41b0f95da250f9ca082a5ec4b9b291  expect-5.45.4.tar.xz
@@ -176,7 +176,7 @@ b3ce6f476a5b7ea64c583e7d910d2db7  thin-provisioning-tools-0.9.0.tar.gz
 5e2bcbbf3018a4a5ce61fc15e264612e  crmsh-master_20180520.tar.xz
 a4e4976f0cd67507c22442121400532b  nmon-16j.tar.xz
 b6b86767eb9e7e65100d6ef5f77b8d1f  linux_firmware-20190416.tar.xz
-a15a7b549a48d91d4eb7fa48ac1137cd  scst-3.5.x_r9586.tar.xz
+5084fdb5991d8b9c2695369d60a59158  scst-3.7.x_20230120.tar.xz
 c5bb483ebbf009bcdd02c860ba5689bb  munin-c-0.0.13.tar.xz
 3561b7716c4c94f15e0b4847622967b1  open-iscsi-2.1.1.tar.gz
 512413a285c852195b6240d6a0ad7f5b  open-isns-0.99.tar.gz
@@ -265,3 +265,9 @@ c7e74bf65289d8f0899c103fca3c0fac  mlnx-tools-5.2.0.tar.gz
 365dcccfef9ac095530821a7e711b308  cpuset-1.6.tar.gz
 c9c73811ca2bef819f2544e83f43514f  cls_switchtec-4.1.0_5.4_20220211.tar.xz
 9bd9516020e3c3610760556100022b9d  switchtec-user-3.0.tar.gz
+84123ce1315cd46db59ab2a5106eacfd  memcached-1.6.17.tar.gz
+eb343c2b806c5e9a40611fc39e907a3d  bwm-ng-0.6.3.tar.gz
+e9286adb64040071c5e23498bf753261  lz4-1.9.4.tar.gz
+dd71fa302ae822a8e73dcfe5bccc8dca  minicom-2.8.tar.gz
+04464828b24d1e0fe064c1a42c3e4515  smp_utils-0.99.tar.xz
+cf76d64cecdcaa28590a3ac0ea69655f  sasutils-0.3.13.tar.gz

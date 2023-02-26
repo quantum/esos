@@ -74,6 +74,7 @@ enable_qemu		:= @enable_qemu@
 enable_mhvtl		:= @enable_mhvtl@
 enable_eio		:= @enable_eio@
 enable_btier		:= @enable_btier@
+enable_memcached	:= @enable_memcached@
 enable_simple_tui	:= @enable_simple_tui@
 enable_auto_dhcp	:= @enable_auto_dhcp@
 enable_tui_eula		:= @enable_tui_eula@
@@ -97,6 +98,8 @@ with_qla2xxx_scst	:= @with_qla2xxx_scst@
 qla2xxx_scst_dir	:= $(subst $(CHROOT_DIR),,@qla2xxx_scst_dir@)
 with_bnxt_en		:= @with_bnxt_en@
 bnxt_en_dir		:= $(subst $(CHROOT_DIR),,@bnxt_en_dir@)
+with_r8152		:= @with_r8152@
+r8152_dir		:= $(subst $(CHROOT_DIR),,@r8152_dir@)
 with_customize_dir	:= @with_customize_dir@
 customize_dir		:= @customize_dir@
 build_opts		:= @build_opts@
@@ -128,7 +131,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.2.tar.xz \
 		mpfr-4.0.2.tar.xz \
 		mpc-1.1.0.tar.gz \
-		linux-5.4.212.tar.xz \
+		linux-5.4.229.tar.xz \
 		glibc-2.29.tar.xz \
 		tcl-8.6.9.tar.xz \
 		expect-5.45.4.tar.xz \
@@ -195,7 +198,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20211021.tar.xz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.5.x_r9586.tar.xz \
+		scst-3.7.x_20230120.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.16.0.tar.gz \
 		lvm2-2.03.14.tar.xz \
@@ -360,6 +363,11 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		zip-3.0.tar.xz \
 		cpuset-1.6.tar.gz \
 		switchtec-user-3.0.tar.gz \
+		bwm-ng-0.6.3.tar.gz \
+		lz4-1.9.4.tar.gz \
+		minicom-2.8.tar.gz \
+		smp_utils-0.99.tar.xz \
+		sasutils-0.3.13.tar.gz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -451,7 +459,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		file.chroot jansson.chroot pcre.chroot pv.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
 		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot \
-		zip.chroot cpuset.chroot switchtec-user.chroot
+		zip.chroot cpuset.chroot switchtec-user.chroot bwm-ng.chroot \
+		lz4.chroot minicom.chroot smp_utils.chroot sasutils.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -533,6 +542,11 @@ ifeq ($(enable_btier),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
 	btier-1.3.11.tar.gz)
 	chroot_tgts += btier.chroot
+endif
+ifeq ($(enable_memcached),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,\
+	memcached-1.6.17.tar.gz)
+	chroot_tgts += memcached.chroot
 endif
 ifeq ($(enable_simple_tui),yes)
 	tui_cpp_flags += -DSIMPLE_TUI
@@ -682,7 +696,7 @@ clean: $(clean_chroot_tgts) $(clean_system_tgts)
 	$(RM) $(BUILD_DIR)/dist_*.txt
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img
-	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.bz2
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.img.tar.bz2
 	$(RM) $(BUILD_DIR)/$(pkg_name)-*.iso
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
 	$(QUIET) $(ECHO) && $(ECHO)
@@ -1697,6 +1711,10 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  if [ "$(with_bnxt_en)" = "yes" ]; then \
 	    $(MAKE) --directory=$(bnxt_en_dir) KDIR=$(linux_src) clean; \
 	  fi; \
+	  if [ "$(with_r8152)" = "yes" ]; then \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+	    M=$(r8152_dir) clean; \
+	  fi; \
 	  if [ "$(with_rapiddisk)" = "yes" ]; then \
 	    $(MAKE) --directory=$(rapiddisk_dir)/rapiddisk-master/module \
 	    clean; \
@@ -1720,7 +1738,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    fi; \
 	    $(MAKE) --directory=$(scst_src) KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) QLA_INI_DIR=$(qla_ini_dir) QLA_DIR=$(qla_dir) \
-	    2perf; \
+	    2release; \
 	  fi; \
 	  if [ "$$i" = "$(debug_suffix)" ]; then \
 	    $(SED) 's/CONFIG_LOCALVERSION\=\"\"/CONFIG_LOCALVERSION\=\"$(debug_suffix)\"/' \
@@ -1915,6 +1933,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the ATTO SCST Target module..."; \
+	    $(SED) '/\.detect/d' -i $(atto_scst_dir)/atto_scst.c; \
 	    $(CAT) $(celerity_16_32_dir)/src/Module.symvers \
 	    /usr/include/scst/Module.symvers > \
 	    $(atto_scst_dir)/Module.symvers; \
@@ -1989,6 +2008,19 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
 	  cd /lib/modules/$(kernel_ver)$$i/kernel && \
 	  $(INSTALL) -m 0644 drivers/net/ethernet/broadcom/bnxt/bnxt_en.ko \
+	  $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && cd -; \
+	  if [ "$(with_r8152)" = "yes" ]; then \
+	    $(ECHO) "### Compiling the Realtek RTL8152/RTL8153 module..."; \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+            M=$(r8152_dir) V=1 EXTRA_CFLAGS="-DRTL8152_DEBUG"; \
+	    $(MAKE) --directory=$(linux_src) KVER=$(kernel_ver)$$i \
+            M=$(r8152_dir) V=1 modules_install; \
+	    $(MV) -f /lib/modules/$(kernel_ver)$$i/extra/r8152.ko \
+	    /lib/modules/$(kernel_ver)$$i/kernel/drivers/net/usb/; \
+	  fi; \
+	  $(MKDIR) $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i; \
+	  cd /lib/modules/$(kernel_ver)$$i/kernel && \
+	  $(INSTALL) -m 0644 drivers/net/usb/r8152.ko \
 	  $(chroot_build)/initramfs/lib/modules/$(kernel_ver)$$i/ && cd -; \
 	  if [ "$(with_rapiddisk)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the RapidDisk modules..."; \
@@ -2153,9 +2185,11 @@ mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	$(mlnx_ofed_dir)/makefile
 	$(SED) -i 's,)/lib/udev$$,)/usr/lib/udev,g' \
 	$(mlnx_ofed_dir)/makefile
-	$(SED) -i '312,319 s/^#*/#/' $(mlnx_ofed_dir)/makefile
+	$(SED) -i '288,295 s/^#*/#/' $(mlnx_ofed_dir)/makefile
 	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 build_py_scripts
 	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 install_scripts
+	$(SED) -e '/mlnx_interface_mgr.sh/ s/^#*/#/' \
+	-i /usr/lib/udev/rules.d/90-ib.rules
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -2314,7 +2348,9 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	db.chroot libxml2.chroot libxslt.chroot curl.chroot util-linux.chroot \
 	libffi.chroot xz.chroot \
 	$(if $(findstring yes,$(enable_python_sql)),\
-	postgresql.chroot mysql.chroot,)
+	postgresql.chroot mysql.chroot ,)\
+	$(if $(findstring yes,$(enable_memcached)),\
+	memcached.chroot,)
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-shared \
@@ -2381,14 +2417,30 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install attrs==21.2.0
 	pip3 install cmd2==2.2.0
 	pip3 install xmltodict==0.12.0
+	pip3 install aiohttp==3.8.3
+	pip3 install frozenlist==1.1.1
+	pip3 install charset-normalizer==2.1.1
+	pip3 install yarl==1.8.2
+	pip3 install async-timeout==4.0.2
+	pip3 install multidict==6.0.4
+	pip3 install aiosignal==1.1.2
+	pip3 install idna==2.0
+	pip3 install typing-extensions==4.5.0
+	pip3 install async-lru==2.0.2
+	pip3 install caio==0.9.11
+	pip3 install aiofile==3.8.1
 	$(QUIET) if [ "$(enable_python_sql)" = "yes" ]; then \
 	  pip3 install psycopg2==2.8.1; \
 	  pip3 install mysqlclient==2.0.3; \
 	  pip3 install SQLAlchemy==1.4.19; \
 	fi
+	$(QUIET) if [ "$(enable_memcached)" = "yes" ]; then \
+	  pip3 install pymemcache==3.5.2; \
+	fi
 	$(RM) /.cache
 	cd /usr/lib/python*/site-packages/ && \
-	$(PATCH) -p1 < $(chroot_build)/misc/post_python_pip.patch
+	$(PATCH) -p1 --forward -r - < \
+	$(chroot_build)/misc/post_python_pip.patch || true
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3655,6 +3707,7 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/agetty /sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/mkfs /usr/sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/sulogin /usr/sbin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/dmesg /bin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4911,7 +4964,7 @@ procps.chroot: glibc.chroot numactl.chroot ncurses.chroot
 	  cd $(tgt_src_dir) && ./autogen.sh; \
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr --enable-numa \
-	--with-ncurses --without-systemd --without-elogind
+	--with-ncurses --without-systemd --without-elogind --disable-modern-top
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
@@ -5152,6 +5205,60 @@ switchtec-user.chroot: glibc.chroot ncurses.chroot openssl.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
+memcached.chroot: glibc.chroot libevent.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+bwm-ng.chroot: glibc.chroot ncurses.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --with-ncurses
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+lz4.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) PREFIX=/usr install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+minicom.chroot: glibc.chroot ncurses.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr --disable-nls
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+smp_utils.chroot: glibc.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && ./configure --prefix=/usr
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+sasutils.chroot: glibc.chroot Python.chroot sg3_utils.chroot smp_utils.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
 
 # post_chroot - Unmount and cleanup after leaving the chroot environment.
 .PHONY: post_chroot
@@ -5183,8 +5290,8 @@ image:
 	    $(KPARTX) -v -d $(loop_dev); \
 	    $(LOSETUP) -v -d $(loop_dev); \
 	  fi; \
-	  $(RM) -v $(BUILD_DIR)/esos_*.img; \
-	  $(RM) -v $(BUILD_DIR)/esos_*.bz2; \
+	  $(RM) -v $(img_file); \
+	  $(RM) -v $(tar_bz2_img_file); \
 	  $(RM) -v $(BUILD_DIR)/dist_*.txt; \
 	fi
 	$(QUIET) $(ECHO) "### Creating initramfs image..."
@@ -5302,6 +5409,8 @@ image:
 	$(INSTALL) $(SRC_DIR)/scripts/boot_raid1.sh \
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/backup_conf.sh \
+	$(STAGING_DIR)/usr/local/sbin/
+	$(INSTALL) $(SRC_DIR)/scripts/pwatcher.sh \
 	$(STAGING_DIR)/usr/local/sbin/
 	$(INSTALL) $(SRC_DIR)/scripts/sbd_*.sh \
 	$(STAGING_DIR)/usr/local/sbin/
@@ -5430,7 +5539,7 @@ pkg_dist: $(tar_bz2_img_file)
 	$(call no_chroot)
 	$(ECHO) "$(product) $(esos_ver)" > $(BUILD_DIR)/VERSION
 	$(RM) $(BUILD_DIR)/ChangeLog-*.txt
-	$(RM) $(BUILD_DIR)/esos_*.zip
+	$(RM) $(BUILD_DIR)/$(pkg_name)-*.zip
 	$(LN) $(SRC_DIR)/ChangeLog $(BUILD_DIR)/ChangeLog-$(esos_ver).txt
 	$(LN) $(BUILD_DIR) $(pkg_prefix)
 	$(ZIP) -9 $(pkg_prefix).zip \

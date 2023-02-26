@@ -5,6 +5,7 @@ source /etc/rc.d/common
 LIBVIRTD_EXPORTER="/usr/bin/libvirtd_exporter"
 LIBVIRTD_EXPORTER_LOCK="/var/lock/libvirtd_exporter"
 DFLT_OPTS="> /var/log/libvirtd_exporter.log 2>&1 &"
+PWATCHER="/usr/local/sbin/pwatcher.sh"
 
 check_args ${@}
 
@@ -21,14 +22,20 @@ fi
 
 start() {
     /bin/echo "Starting libvirtd_exporter..."
-    eval ${LIBVIRTD_EXPORTER} ${USER_OPTS} || exit 1
-    /bin/touch ${LIBVIRTD_EXPORTER_LOCK}
+    eval ${PWATCHER} ${LIBVIRTD_EXPORTER} ${USER_OPTS} || exit 1
 }
 
 stop() {
     /bin/echo "Stopping libvirtd_exporter..."
-    /usr/bin/kill -TERM $(/usr/bin/pidof ${LIBVIRTD_EXPORTER}) || exit 1
-    wait_for_stop ${LIBVIRTD_EXPORTER} && /bin/rm -f ${LIBVIRTD_EXPORTER_LOCK}
+    # Stop the pwatcher process that is monitoring this script and it will stop
+    pwatcher_pids=$(/usr/bin/pidof -x -o %PPID $(basename ${PWATCHER}))
+    for pwatcher_pid in ${pwatcher_pids}; do
+        if grep -q "${LIBVIRTD_EXPORTER}" "/proc/${pwatcher_pid}/cmdline"; then
+            /usr/bin/kill -TERM ${pwatcher_pid}
+            wait_for_pid_stop ${pwatcher_pid}
+            exit 0
+        fi
+    done
 }
 
 status() {

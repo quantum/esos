@@ -3,32 +3,25 @@
 source /etc/rc.d/common
 
 NVMETCLI="/usr/sbin/nvmetcli"
-NVMET_SAVE_FILE="/etc/nvmet/config.json"
+NVMET_CONF_FILE="/etc/nvmet/config.json"
 
 check_args ${@}
 
 start() {
     # Make sure the saved configuration exists
-    if [ ! -f "${NVMET_SAVE_FILE}" ]; then
-        /bin/echo "NVMe Target: The ${NVMET_SAVE_FILE} file is missing!"
+    if [ ! -f "${NVMET_CONF_FILE}" ]; then
+        /bin/echo "NVMe Target: The ${NVMET_CONF_FILE} file is missing!"
         exit 1
     fi
 
     # Restore the configuration
     /bin/echo "Restoring the NVMe Target configuration..."
-    ${NVMETCLI} restore ${NVMET_SAVE_FILE} || exit 1
+    ${NVMETCLI} restore ${NVMET_CONF_FILE} || exit 1
 }
 
 stop() {
-    # Make sure our directory exists and save the configuration
-    nvmet_conf_dir="$(/usr/bin/dirname ${NVMET_SAVE_FILE})"
-    if [ ! -d "${nvmet_conf_dir}" ]; then
-        /bin/mkdir -p ${nvmet_conf_dir} || exit 1
-    fi
-    /bin/echo "Saving the NVMe Target configuration..."
-    ${NVMETCLI} save ${NVMET_SAVE_FILE} || exit 1
-
-    # Now we can safely clear the configuration since we're stopping
+    # We assume the configuration is already saved, so we can clear
+    # the configuration since we're stopping
     /bin/echo "Clearing the NVMe Target configuration..."
     ${NVMETCLI} clear || exit 1
 }
