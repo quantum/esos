@@ -1,3 +1,7 @@
+2023-03-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.libvirtdexporter: updates for the new pwatcher.sh arguments / handling; pwatcher.sh: handling touching the lock file instead of in rc script, and support an additional (optional) status test that can be done after checking for the PID
+
 2023-02-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '410_updates' into 4.x.x
