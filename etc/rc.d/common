@@ -43,10 +43,15 @@ check_enabled() {
 
 # Wait for a daemon to stop
 wait_for_stop() {
+    if [ -n "${2}" ]; then
+        timeout=${2}
+    else
+        timeout=${STOP_TIMEOUT}
+    fi
     timer=0
     rc=1
-    while [ ${timer} -lt ${STOP_TIMEOUT} ]; do
-        pid=$(/usr/bin/pidof ${1} > /dev/null 2>&1)
+    while [ ${timer} -lt ${timeout} ]; do
+        pid=$(/usr/bin/pidof -x ${1} > /dev/null 2>&1)
         if [ ${?} -eq 0 ]; then
             /bin/sleep 1
             timer=$(/usr/bin/expr ${timer} + 1)
@@ -61,9 +66,14 @@ wait_for_stop() {
 
 # Wait for a PID to stop
 wait_for_pid_stop() {
+    if [ -n "${2}" ]; then
+        timeout=${2}
+    else
+        timeout=${STOP_TIMEOUT}
+    fi
     timer=0
     rc=1
-    while [ ${timer} -lt ${STOP_TIMEOUT} ]; do
+    while [ ${timer} -lt ${timeout} ]; do
         if /usr/bin/ps -p ${1} > /dev/null 2>&1; then
             /bin/sleep 1
             timer=$(/usr/bin/expr ${timer} + 1)
