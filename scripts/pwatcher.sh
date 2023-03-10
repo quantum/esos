@@ -25,8 +25,23 @@ stop() {
     log_it "Stopping '${WATCH_PROCESS}'..."
     watch_pid=$(pidof -x "${WATCH_PROCESS}")
     if [ -n "${watch_pid}" ]; then
+        log_it "Sending TERM signal to PID '${watch_pid}'..."
         kill -TERM "${watch_pid}" || exit 1
-        wait_for_stop "${WATCH_PROCESS}"
+        if ! wait_for_stop "${WATCH_PROCESS}" 30; then
+            log_it "TERM didn't seem to stop the process;" \
+                "sending ABRT signal to PID '${watch_pid}'..."
+            kill -ABRT "${watch_pid}" || exit 1
+            if ! wait_for_stop "${WATCH_PROCESS}" 20; then
+                log_it "ABRT didn't seem to stop the process;" \
+                    "sending KILL signal to PID '${watch_pid}'..."
+                kill -KILL "${watch_pid}" || exit 1
+                if ! wait_for_stop "${WATCH_PROCESS}" 10; then
+                    log_it "KILL didn't seem to stop the process;" \
+                        "we're giving up and exiting now..."
+                    exit 1
+                fi
+            fi
+        fi
     fi
 }
 
