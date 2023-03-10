@@ -1,3 +1,9 @@
+2023-03-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'alua_ra_speedup'
+
+	rc.d/common: in wait_for_stop() and wait_for_pid_stop() take an optional second argument for overriding the default stop timeout value, in wait_for_stop() use 'pidof -x' so we can properly get PIDs of scripts (eg, via python); pwatcher.sh: in stop() try TERM first, ABRT second, and KILL last with short stop-timeouts in between (handles misbehaving processes better); alua RA: improvements in operation duration (shorter), lots of code cleanup with help from 'shellcheck' recommendations
+
 2023-03-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'pwatcher_fixup'
