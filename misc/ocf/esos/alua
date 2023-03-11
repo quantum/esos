@@ -171,6 +171,7 @@ alua_stop() {
         # If we're stopping, set all of the devices to inactive for now
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         while read -r i; do
+            [[ -n "${i}" ]] || break
             dev_name="$(basename "${i}")"
             ocf_log debug "alua_stop() -> Setting device '${dev_name}'" \
                 "to inactive..."
@@ -660,6 +661,7 @@ block_scst_devs() {
     ocf_log info "Blocking all '${OCF_RESKEY_device_group}' devices..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
     while read -r i; do
+        [[ -n "${i}" ]] || break
         echo 1 > "${i}/block" &
     done <<< "$(find "${dev_grp_path}/devices" -type l -maxdepth 1)"
     ocf_log debug "Waiting for devices to finish blocking..."
@@ -672,6 +674,7 @@ unblock_scst_devs() {
     ocf_log info "Unblocking all '${OCF_RESKEY_device_group}' devices..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
     while read -r i; do
+        [[ -n "${i}" ]] || break
         echo 0 > "${i}/block"
     done <<< "$(find "${dev_grp_path}/devices" -type l -maxdepth 1)"
 }
@@ -683,6 +686,7 @@ trigger_suspend_resume() {
     ocf_log info "Suspending and resuming I/O globally..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
     while read -r i; do
+        [[ -n "${i}" ]] || break
         ocf_log debug "Rewriting size attribute value for device '${i}'..."
         size_val="$(head -1 "${i}/size")"
         ocf_log debug "Size attribute value: ${size_val}"
@@ -698,6 +702,7 @@ redirect_to_real_dev() {
         "'${OCF_RESKEY_device_group}' devices..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
     while read -r i; do
+        [[ -n "${i}" ]] || break
         dev_name="$(basename "${i}")"
         ocf_log debug "Getting H:C:T:L value for SCST device '${dev_name}'..."
         scsi_hctl="$(lsscsi | awk '{print $1, $4}' | \
@@ -739,6 +744,7 @@ real_to_redirect_dev() {
         "'${OCF_RESKEY_device_group}' devices..."
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
     while read -r i; do
+        [[ -n "${i}" ]] || break
         dev_name="$(basename "${i}")"
         ocf_log debug "Getting H:C:T:L value for SCST device '${dev_name}'..."
         scsi_hctl="$(lsscsi | awk '{print $1, $4}' | \
@@ -793,7 +799,13 @@ get_redirect_filename() {
     filename="$(lsscsi | awk '{print $6, $4}' | grep -m 1 -E "${dev_name}$" | \
         cut -d' ' -f1)"
     ocf_log debug "Redirected backing device for '${dev_name}': ${filename}"
-    echo "${filename}"
+    if [ "${filename}" = "-" ]; then
+        ocf_log debug "The SCSI device exists, but a block device has not" \
+            "been created yet!"
+        echo ""
+    else
+        echo "${filename}"
+    fi
 }
 
 
@@ -829,6 +841,7 @@ bio_dev_to_real() {
     # Loop over each SCST device in the device group and modify the filename
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
     while read -r i; do
+        [[ -n "${i}" ]] || break
         dev_name="$(basename "${i}")"
         if [ -f "${i}/active" ]; then
             # Check if the current filename value is correct
@@ -928,6 +941,7 @@ bio_dev_to_redirect() {
     # Loop over each SCST device in the device group and modify the filename
     dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
     while read -r i; do
+        [[ -n "${i}" ]] || break
         dev_name="$(basename "${i}")"
         if [ -f "${i}/active" ]; then
             # Check if the current filename value is correct
@@ -1028,6 +1042,7 @@ scsi_bus_rescan() {
     local host_list=""
     local i
     while read -r i; do
+        [[ -n "${i}" ]] || break
         iscsi_host="$(basename "${i}")"
         host_num="$(echo "${iscsi_host}" | tr -d "host")"
         if [ -z "${host_list}" ]; then
@@ -1117,6 +1132,7 @@ alua_promote() {
         # Map the device as a LUN on the internal redirection target
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         while read -r i; do
+            [[ -n "${i}" ]] || break
             dev_name="$(basename "${i}")"
             lun_exists=0
             ocf_log info "Adding a LUN mapping for device '${dev_name}'" \
@@ -1124,6 +1140,7 @@ alua_promote() {
             tgt_path="${SCST_SYSFS}/targets/iscsi/${OCF_RESKEY_redirect_tgt}"
             lun_path="${tgt_path}/ini_groups/${OCF_RESKEY_redirect_grp}/luns"
             while read -r j; do
+                [[ -n "${j}" ]] || break
                 lun_dev_path="$(readlink -f "${j}/device")"
                 lun_dev_name="$(basename "${lun_dev_path}")"
                 if [ "${lun_dev_name}" = "${dev_name}" ]; then
@@ -1162,6 +1179,7 @@ alua_promote() {
         device_group="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         devices_path="${device_group}/devices/"
         while read -r i; do
+            [[ -n "${i}" ]] || break
             echo 1 > "${i}"
         done <<< "$(find "${devices_path}" -name active -type f \
             -follow -maxdepth 2)"
@@ -1301,6 +1319,7 @@ alua_demote() {
             "devices to inactive..."
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         while read -r i; do
+            [[ -n "${i}" ]] || break
             echo 0 > "${i}" &
         done <<< "$(find "${dev_grp_path}/devices/" \
             -name active -type f -follow -maxdepth 2)"
@@ -1320,6 +1339,7 @@ alua_demote() {
         # Unmap the device LUN from the internal redirection target
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         while read -r i; do
+            [[ -n "${i}" ]] || break
             dev_name="$(basename "${i}")"
             ocf_log info "Removing the LUN mapping for device '${dev_name}'" \
                 "from the redirection target..."
@@ -1353,6 +1373,7 @@ alua_demote() {
             "devices to inactive..."
         dev_grp_path="${SCST_SYSFS}/device_groups/${OCF_RESKEY_device_group}"
         while read -r i; do
+            [[ -n "${i}" ]] || break
             echo 0 > "${i}" &
         done <<< "$(find "${dev_grp_path}/devices/" \
             -name active -type f -follow -maxdepth 2)"
