@@ -95,7 +95,7 @@ d2514080116c1b0fa5f96295c84538e3  Net-Telnet-3.04.tar.gz
 bab7ea104c7b85529c3ef65c54427aa3  ipmitool-1.8.18.tar.bz2
 4264a9fdafe828bfb232925f764e8fc9  sysklogd-new_remote_opt_20190715.tar.xz
 6a39bccf420c946b0fd7ffc64961315b  less-530.tar.gz
-ee456f27a8f460fe350404ad90709caf  libqb-1.0.5.tar.xz
+95e100f89c53ebe492c00cddd24cf50a  libqb-2.0.6.tar.gz
 6265b8e7933978fb4bc7bf2ffb88bb70  irqbalance-1.8.0.tar.gz
 75bcf5827d77fc5a64ba1d4c57ca27cd  ethtool-5.0.tar.xz
 f361e2ddcd2c31049789ef66f8841de5  postgresql-9.6.13.tar.bz2
@@ -151,7 +151,7 @@ b5c184b13b6b5de32af630af2fd013fd  sudo-1.8.27.tar.gz
 65aa71b8d4cd4b927a7ec69b5d53ecc7  btier-1.3.11.tar.gz
 9e251c0a618ad0824b51117d5d9db87e  gperf-3.1.tar.gz
 5ef9542c5d6490bc566855467abeb012  dlm-4.0.8.tar.xz
-69db29ff4bc035936946be44fc8be5cd  corosync-2.4.4.tar.gz
+7f9d111c53b760cedd5e3bbcdf93f133  corosync-2.4.6.tar.gz
 2d68d72a1c99bc7806364096bdcfcc7d  pacemaker-1.1.20.tar.xz
 5374165735591fac16e9274426a3c56e  multipath-tools-0.8.7.tar.gz
 52b47340d05955efeb384897e813d554  json-c-0.13.1-20180305.tar.xz

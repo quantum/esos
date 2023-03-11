@@ -1,3 +1,9 @@
+2023-03-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'libqb_upgrade'
+
+	updated libqb to 2.0.6 and corosync to 2.4.6; include websockets==10.4 with Python; fstab: don't size size restrictions for /dev and /dev/shm (follows suit of other distros); fixed a couple bugs in the 'ocf:esos:alua' RA
+
 2023-03-10  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'alua_ra_speedup'
