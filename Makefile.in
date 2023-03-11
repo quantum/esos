@@ -205,9 +205,9 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		xfsprogs-4.20.0.tar.xz \
 		mdadm-4.1.tar.xz \
 		parted-3.2.tar.xz \
-		libqb-1.0.5.tar.xz \
+		libqb-2.0.6.tar.gz \
 		pacemaker-1.1.20.tar.xz \
-		corosync-2.4.4.tar.gz \
+		corosync-2.4.6.tar.gz \
 		nss-3.43.tar.gz \
 		glib-2.61.0.tar.xz \
 		libxml2-2.9.9.tar.gz \
@@ -2429,6 +2429,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	pip3 install async-lru==2.0.2
 	pip3 install caio==0.9.11
 	pip3 install aiofile==3.8.1
+	pip3 install websockets==10.4
 	$(QUIET) if [ "$(enable_python_sql)" = "yes" ]; then \
 	  pip3 install psycopg2==2.8.1; \
 	  pip3 install mysqlclient==2.0.3; \
@@ -2836,11 +2837,12 @@ opensm.chroot: glibc.chroot gcc.chroot libibumad.chroot libibverbs.chroot
 libqb.chroot: glibc.chroot glib.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
+	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
+	  cd $(tgt_src_dir) && ./autogen.sh; \
+	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
-	$(LN) -v libqb.so.0.19.2 /usr/lib/libqb.so
-	$(RM) /usr/lib/libqb.la
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
