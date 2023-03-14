@@ -1,3 +1,9 @@
+2023-03-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'md_raid_fix'
+
+	include this patch which is supposed to resolve hangs related to setting the 'sync_action' value in sysfs for MD RAID arrays: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/patch/?id=9dfbdafda3b34e262e43e786077bab8e476a89d1
+
 2023-03-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'libqb_upgrade'
