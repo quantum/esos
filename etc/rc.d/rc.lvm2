@@ -11,7 +11,12 @@ check_args ${@}
 start() {
     # Setup LVM
     /bin/echo "Configuring the LVM subsystem..."
-    ${DMSETUP} mknodes || exit 1
+    # TODO: Running 'dmsetup mknodes' can sometimes cause an issue where it
+    # seems to create the LVM LV /dev/mapper/ entries itself, and then udev is
+    # mad because the symlink already exists. Everything seems to work fine
+    # with this commented out, so if that proves true for a while we can then
+    # remove this note and the commented out line!
+    #${DMSETUP} mknodes || exit 1
     ${VGSCAN} --ignorelockingfailure || exit 1
     ${VGCHANGE} -aay --ignorelockingfailure || exit 1
 }

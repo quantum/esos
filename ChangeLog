@@ -1,3 +1,9 @@
+2023-03-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_lvm2_fix'
+
+	rc.lvm2: comment out 'dmsetup mknodes' line in start() function since it causes issues with udev symlinks on boot
+
 2023-03-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'md_raid_fix'
