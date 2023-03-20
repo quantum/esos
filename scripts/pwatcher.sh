@@ -102,6 +102,9 @@ if [ "$(wc -w <<< "${existing_pids}")" -ge 1 ]; then
     done
 fi
 
+# Start, and allow 10 seconds for initialization
+start
+sleep 10
 # We loop here indefinitely, monitoring the watched process
 while true; do
     if ! status; then
