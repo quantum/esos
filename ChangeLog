@@ -1,3 +1,9 @@
+2023-03-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'pwatcher_timing'
+
+	pwatcher.sh: added some sleep lines to handle odd watched daemon issues
+
 2023-03-18  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_lvm2_fix'
