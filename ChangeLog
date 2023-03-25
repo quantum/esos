@@ -1,3 +1,13 @@
+2023-03-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '415_update' into 4.x.x
+
+	pwatcher.sh: added some sleep lines to handle odd watched daemon issues
+
+2023-03-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.lvm2: comment out 'dmsetup mknodes' line in start() function since it causes issues with udev symlinks on boot
+
 2023-03-16  Marc A. Smith  <marc.smith@quantum.com>
 
 	include this patch which is supposed to resolve hangs related to setting the 'sync_action' value in sysfs for MD RAID arrays: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/patch/?id=9dfbdafda3b34e262e43e786077bab8e476a89d1

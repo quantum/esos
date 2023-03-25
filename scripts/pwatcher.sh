@@ -107,10 +107,11 @@ while true; do
     if ! status; then
         log_it "The '${WATCH_PROCESS}' process is not running," \
             "attempting to start it..."
+        sleep 10
         start
-        sleep 5
+        sleep 15
     else
-        sleep 5
+        sleep 15
     fi
 done
 
