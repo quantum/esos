@@ -1,3 +1,7 @@
+2023-04-19  Chris Graves  <chris.graves@quantum.com>
+
+	Makefile.in: set pip3 version to 23.0.1 instead of latest available
+
 2023-03-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'pwatcher_timing'
@@ -56,7 +60,7 @@
 
 	updates for MOFED 5.8; etc/rc.d/common: added the wait_for_pid_stop() helper function; rc.libvirtdexporter: use quiet grep and the new wait_for_pid_stop() function after sending SIGTERM
 
-2023-02-05  Marc A. Smith  <marc.smith@quantum.com>
+2023-02-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_lvm2_stop'
 
@@ -268,7 +272,7 @@
 
 	updated Linux to version 5.4.190
 
-2022-04-02  Marc A. Smith  <marc.smith@quantum.com>
+2022-04-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'alua_ra_rescan'
 
@@ -294,7 +298,7 @@
 
 	rc.0: when stopping LATE_SERVICES and EARLY_SERVICES check that they return a status of either RUNNING or UNKNOWN before attempting
 
-2022-03-05  Marc A. Smith  <marc.smith@quantum.com>
+2022-03-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_switchtec-user'
 
@@ -404,7 +408,7 @@
 
 	include stderr when writing the iso_installer log file
 
-2021-11-27  Marc A. Smith  <marc.smith@quantum.com>
+2021-11-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20211121_tweaks'
 
@@ -574,7 +578,7 @@
 
 	enabled the CONFIG_NTB_PINGPONG and CONFIG_NTB_TOOL kernel options (as modules for testing NTB)
 
-2021-09-12  Marc A. Smith  <marc.smith@quantum.com>
+2021-09-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210910_updates'
 
@@ -592,13 +596,13 @@
 
 	added the 'usbutils' package and disabled 'lsusb' in Busybox config
 
-2021-08-23  Marc A. Smith  <marc.smith@quantum.com>
+2021-08-22  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_gptfdisk'
 
 	added the 'gptfdisk' package (provides gdisk, cgdisk, sgdisk, and fixparts)
 
-2021-08-21  Marc A. Smith  <marc.smith@quantum.com>
+2021-08-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'edac_drivers'
 
@@ -616,7 +620,7 @@
 
 	added the 'guestfs_app' package (libguestfs appliance image); added the 'pv' utility; fixed exec path for libguestfs
 
-2021-08-16  Marc A. Smith  <marc.smith@quantum.com>
+2021-08-15  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_libguestfs'
 
@@ -640,7 +644,7 @@
 
 	Makefile.in: massage 'scstadmin' so it doesn't produce an ugly warning when applying the config with the '-lip' option and no FC ports present; rc.mdraid: handle stopping "nested" MD RAID arrays
 
-2021-07-30  Marc A. Smith  <marc.smith@quantum.com>
+2021-07-29  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20210726_tweaks'
 
@@ -670,6 +674,8 @@
 
 	updated 'make' to version 4.3 (resolves slow parallel build issue related to pselect)
 
+2021-07-05  Marc A. Smith  <marc.smith@quantum.com>
+
 	Merge branch '20210705_changes'
 
 	bootstrap build fixes
@@ -690,6 +696,8 @@
 
 	iso_installer.sh: don't attempt to mount the CD-ROM if we're using the NFS option, applied several shellcheck recommendations
 
+2021-06-26  Marc A. Smith  <marc.smith@quantum.com>
+
 	Merge branch '20210625_changes'
 
 	include the bnxt_en driver in the initramfs image, install the default.script file for udhcp, create /etc in the initramfs image (udhcpc writes to resolv.conf); build dep fix for libnftnl; rc.0: don't stop the network if we're using an ISO via NFS; busybox: enable NFS mount support; initramfs_init: load bnxt_en, handle new 'nfs_dhcp_iface', 'nfs_iso_device', and 'nfs_mnt_opts' kernel params (mount an ISO via NFS); health_chk.sh: fix parsing issue when using 'esos_persist' mode
@@ -700,7 +708,7 @@
 
 	rc.sbd: updates to auto-unfencing logic that relies on filenames instead of file metadata (creation time) since using Git for /etc/ obliterates ctime attributes
 
-2021-05-16  Marc A. Smith  <marc.smith@quantum.com>
+2021-05-15  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_sbd_unfence'
 
@@ -776,6 +784,8 @@
 
 	Merge branch 'up_drbd-utils'
 
+2021-02-20  Marc A. Smith  <marc.smith@quantum.com>
+
 	updated drbd-utils to version 9.16.0
 
 2021-02-08  Marc A. Smith  <marc.smith@quantum.com>
@@ -825,6 +835,8 @@
 	Merge branch 'virt_fixes'
 
 	use individual mounts for cgroup controllers (resolves cgroup issue with libvirt); enabled CONFIG_IP6_NF_NAT in the kernel config (libvirt)
+
+2021-01-31  Marc A. Smith  <marc.smith@quantum.com>
 
 	added iptables (deps libmnl, libnftnl) and dnsmasq packages (for libvirt); qemu.chroot: install most firmware/bios blobs; libvirt.chroot: specify a qemu user/group, install schemas directory; cleaned up users/groups (added qemu); added the rc.virtlogd init/rc script; enabled kernel options for firewall support and cgroups
 
@@ -900,6 +912,8 @@
 
 	call 'pre_bootstrap' in default target; updated pre_bootstrap target (moved info file generation into separate target, check for existence of local file before attempting to download again); tar invocation fixes when generating the bootstrap archive
 
+2021-01-17  Marc A. Smith  <marc.smith@quantum.com>
+
 	Merge branch 'canned_bootstrap'
 
 	first crack at a pre-built bootstrap setup where "bootstrap" (everything generated by said target) is archived and can be published -- a file using the Makefile lines for all of the bootstrap targets and package versions is created and checksum'd... we then use that checksum to determine if we can fetch/extract a pre-built bootstrap tarball, or if we need to build fresh
@@ -930,6 +944,8 @@
 
 	added the esos2iso.sh script for generating a bootable ESOS ISO file and isolinux components
 
+2021-01-06  Marc A. Smith  <marc.smith@quantum.com>
+
 	Merge branch 'add_squashfs'
 
 	added squashfs-tools; cleanup (rm) /.cpan properly in perl.chroot; use mksquashfs instead of cpio for the root FS image; fix improper staging dir cleanup; require mksquashfs in configure script; use new squashfs/overlayfs setup in initramfs; updated install.sh script to handle sqsh images (and SECONDARY cpio slot); enabled squashfs/overlayfs options in kernel config; simplify iso_installer.sh
@@ -940,7 +956,7 @@
 
 	updated install.sh script to handle NO_PROMPT env var and fixed issue with arguments passed in; updated iso_installer.sh to handle pass NO_PROMPT as needed
 
-2020-12-29  Marc A. Smith  <marc.smith@quantum.com>
+2020-12-28  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'iso_inst_fix'
 
@@ -970,9 +986,9 @@
 
 	more build fixes for libvirt
 
-	more build updates for libvirt
-
 2020-12-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	more build updates for libvirt
 
 	added the pixman package (dep for qemu); added a patch for qemu which resolves bild issues; updated qemu recipe
 
@@ -1012,7 +1028,7 @@
 
 	health_chk.sh: for MegaRAID adapters, "JBOD" is a valid PD state
 
-2020-12-03  Marc A. Smith  <marc.smith@quantum.com>
+2020-12-02  Marc A. Smith  <marc.smith@quantum.com>
 
 	health_chk.sh: for MegaRAID adapters, "JBOD" is a valid PD state
 
@@ -1102,6 +1118,8 @@
 
 	build NVMe kernel drivers as modules (using MOFED replaces these drivers); updated rc.network to use 'ensX' interface names; updated the initramfs script to load the 'nvme' and 'nvme-core' drivers early
 
+2020-09-26  Marc A. Smith  <marc.smith@quantum.com>
+
 	enabled NVMeoF for MOFED; recomposed -debug.patch for kernel config
 
 2020-09-25  Marc A. Smith  <marc.smith@quantum.com>
@@ -1165,7 +1183,7 @@
 
 	archive_logs.sh and usb_sync.sh: handle an already mounted FS and print a warning line if we find it's already mounted
 
-2020-07-24  Marc A. Smith  <marc.smith@quantum.com>
+2020-07-23  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'fix_ra_exit'
 
@@ -1175,7 +1193,7 @@
 
 	Fix snmpd not starting
 
-2020-06-25  Marc A. Smith  <marc.smith@quantum.com>
+2020-06-24  Marc A. Smith  <marc.smith@quantum.com>
 
 	Python.chroot: include the 'pyudev' module via pip3
 
@@ -1235,13 +1253,11 @@
 
 	updated ocf:esos:scst and ocf:esos:alua to make liberal use of the 'ocf_exit_reason' function so we get a better error message (exit reason) when looking at failures reported by the cluster
 
-2020-05-15  Marc A. Smith  <marc.smith@quantum.com>
+2020-05-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'resync_dev_fix'
 
 	added an SCST patch that resolves a bug in 'scstadmin' when using the "-resync_dev" action
-
-2020-05-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'lholowko-disable-blkid-cache'
 
@@ -1275,7 +1291,7 @@
 
 	set the fw_diag_log_size="128K" module option for ocs_fc_scst (enables RAS logging support)
 
-2020-04-22  Marc A. Smith  <marc.smith@quantum.com>
+2020-04-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'qed_fw'
 
@@ -1295,7 +1311,7 @@
 
 	Merge branch 'minimize-locales' of https://github.com/lholowko/esos into lholowko-minimize-locales
 
-2020-04-11  Marc A. Smith  <marc.smith@quantum.com>
+2020-04-10  Marc A. Smith  <marc.smith@quantum.com>
 
 	start with the 'transitioning' ALUA state when loading/starting SCST instead of 'offline'
 
@@ -1310,6 +1326,8 @@
 2020-03-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	initramfs: put the MD RAID boot device assembly stuff into a function, and call this function if a crash dump kernel is running / normal non-ISO boot
+
+2020-03-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'jqwong-BLK-1115'
 
@@ -1374,6 +1392,8 @@
 2020-01-18  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'bnxt_en_fix'
+
+2020-01-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	include a kernel patch that resolves several bugs in the 'bnxt_en' driver: https://lore.kernel.org/netdev/1579239167-16362-1-git-send-email-michael.chan@broadcom.com/
 
@@ -1485,7 +1505,7 @@
 
 	Merge branch 'linux_5.4'
 
-2019-11-22  Marc A. Smith  <marc.smith@quantum.com>
+2019-11-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated Linux to version 5.4-rc8; several Makefile updates for new kernel version; commented out Switchtec driver in esos_kernels.chroot target for now
 
@@ -1593,6 +1613,8 @@
 
 	several fixes for mlnx_ofed.chroot; set a less verbose logging level for the 'ocs_fc_scst' module; increase rc stop() timeout (120 -> 300)
 
+2019-09-22  Marc A. Smith  <marc.smith@quantum.com>
+
 	Merge branch 'ra_tweaks'
 
 	Merge branch 'ra_tweaks' into 2.x.x
@@ -1659,7 +1681,7 @@
 
 	updated kernel config to better support MOFED (additional IB drivers now build as expected with MOFED)
 
-2019-08-05  Marc A. Smith  <marc.smith@quantum.com>
+2019-08-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20190805_updates'
 
@@ -1679,11 +1701,9 @@
 
 	finished adding remaining pieces for '--with-mlnx_ofed' option -- builds modules as-is, need to disable IB modules via sed in kernel config when using mlnx_ofed and update SCST build
 
-2019-08-02  Marc A. Smith  <marc.smith@quantum.com>
+2019-08-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated Mellanox OFED build recipe (builds with success, need to enable specific drivers); updated autoconf to add the '--with-mlnx_ofed' option
-
-2019-08-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20190801_updates'
 
@@ -1797,13 +1817,11 @@
 
 	use correct directory + Makefile when cleaning rpc_agent
 
-2019-06-30  Marc A. Smith  <marc.smith@quantum.com>
+2019-06-29  Marc A. Smith  <marc.smith@quantum.com>
 
 	increase root tmpfs size by 256 MB; exclude /usr/share/xml/ during image creation
 
 	fixed a number of TUI code warnings that are now visible with newer GCC version
-
-2019-06-29  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'more_cleanup'
 
@@ -1841,11 +1859,11 @@
 
 	updated ZFS to version 0.8.0 (separate SPL package is no longer required)
 
+2019-06-13  Marc A. Smith  <marc.smith@quantum.com>
+
 	Merge branch '20190613_updates'
 
 	Merge branch '20190613_updates' into 2.x.x
-
-2019-06-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	modprobe.conf: use DMA mode with the ntb_transport module
 
@@ -1891,11 +1909,11 @@
 
 	Merge branch 'addtl_tweaks' into 2.x.x
 
+2019-06-09  Marc A. Smith  <marc.smith@quantum.com>
+
 	Python SQL support (psycopg2, mysqlclient, SQLAlchemy, and all required libraries) is now a build-time option (disabled by default)
 
 	removed perf-agent (deprecated) and associated scripts / config files
-
-2019-06-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated to make nginx a build-time option to enable (along with the pcre dependency) which is disabled by default
 
@@ -1970,6 +1988,8 @@
 2019-06-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	added the 'apply_pkg_patch' command sequence to better handle applying package patches, and updated all package targets that use patches; specify --sysconfdir for attr.chroot and acl.chroot; updated image target to filter un-needed files
+
+2019-05-31  Marc A. Smith  <marc.smith@quantum.com>
 
 	several updates to refine build process, more tweaks to come...
 
@@ -2117,13 +2137,11 @@
 
 	added the sbd package and associated default config file + rc/init script; updated build instructions in the INSTALL document
 
-2019-03-09  Marc A. Smith  <marc.smith@quantum.com>
+2019-03-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'for_2.1'
 
 	added the rc.watchdog init script to handle starting/stopping the watchdog daemon
-
-2019-03-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	added the telegraf package (pre-compiled Go binary), associated rc/init script (disabled by default), and default config file
 
@@ -2139,11 +2157,13 @@
 
 	Merge branch 'scst_conf'
 
-	writing (saving) the SCST configuration during every config sync and when stopping SCST is redundant, and mostly unneeded -- the bigger concern is it may cause an ESOS system to have a partial or incomplete SCST configuration if SCST is in an inconsistent state when dumping the config to a file (eg, not all SCST modules loaded, or config was only partially loaded); removed use the 'scstadmin -write_config' command from conf_sync.sh, rc.scst, the ocf:esos:scst RA, and in the TUI's syncConfig() function; added the writeSCSTConf() function in the TUI which is now called after each successful operation that modifies the SCST config (ALUA/Devices/Hosts/Targets menu dialogs)
-
 2019-02-26  Marc A. Smith  <marc.smith@quantum.com>
 
+	writing (saving) the SCST configuration during every config sync and when stopping SCST is redundant, and mostly unneeded -- the bigger concern is it may cause an ESOS system to have a partial or incomplete SCST configuration if SCST is in an inconsistent state when dumping the config to a file (eg, not all SCST modules loaded, or config was only partially loaded); removed use the 'scstadmin -write_config' command from conf_sync.sh, rc.scst, the ocf:esos:scst RA, and in the TUI's syncConfig() function; added the writeSCSTConf() function in the TUI which is now called after each successful operation that modifies the SCST config (ALUA/Devices/Hosts/Targets menu dialogs)
+
 	install.sh: get confirmation to overwrite install target block device in a loop, checking input for yes/no
+
+2019-02-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	updated drbd-utils to version 9.8.0 (supports the '--with-prebuiltman' option); updated SCST to version 3.3.x/r7994 (resolves use-after-free bug); don't print mkdir command string every time in tarball extract target
 
@@ -2159,11 +2179,13 @@
 
 	iso_installer.sh script updates (user must type 'yes' to continue instead of just ENTER)
 
-	install.sh: repeat block device path prompt if an empty value is given (eg, if enter is hit); iso_installer.sh: attempt to log script itself using tee (needs testing)
-
 2019-02-13  Marc A. Smith  <marc.smith@quantum.com>
 
+	install.sh: repeat block device path prompt if an empty value is given (eg, if enter is hit); iso_installer.sh: attempt to log script itself using tee (needs testing)
+
 	install.sh: bail on any error with set -e; initramfs_init: don't start rc.mdraid and rc.lvm2 when using the ESOS ISO; iso_installer.sh: bail on any error, and run bash if failure occurs on select scripts
+
+2019-02-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	rc.0: updates to handle the ESOS ISO (don't attempt to do things that we can't when booting off the ISO); rc.2: disable loading the Switchtec module at boot (for now); initramfs_init: don't start SCST when we're running the ISO; rc.serial: hide output from grep; iso_installer.sh: added a hook for installation extras/customization
 
@@ -2209,17 +2231,17 @@
 
 	fixed missing line in autoconf script; fixed typos in rc.network and adjust auto-DHCP link-up delay
 
-	started moving product name strings into the Makefile -- needs more work to control all name strings from one config option; updated rc.network to handle the auto-DHCP feature -- needs testing
-
 2019-02-02  Marc A. Smith  <marc.smith@quantum.com>
+
+	started moving product name strings into the Makefile -- needs more work to control all name strings from one config option; updated rc.network to handle the auto-DHCP feature -- needs testing
 
 	include downloading the iozone3 package; implement no TUI EULA prompt; implement /var/state/esos/ directory for build option control; autoconf script updates
 
 	use the original "esos" package name (prefix)
 
-	updated Makefile.in to accomodate for new updates in autoconf script
-
 2019-02-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated Makefile.in to accomodate for new updates in autoconf script
 
 	added the iozone3 package; copyright updates / name changes; autoconf script enhancements and new build time options; switch from getty to agetty (inittab); enabled use of acpid via the rc.acpid script; issue file updates; new rc.serial script to handle launching agetty on detected serial ports; optional feature to disable building the ESOS -debug kernel; TUI getUsableBlockDevs() fix to support Virt-IO block devices
 
@@ -2250,6 +2272,8 @@
 2019-01-20  Marc A. Smith  <marc.smith@parodyne.com>
 
 	include sync'ing root's .ssh directory via rsync with usb_sync.sh
+
+2019-01-19  Marc A. Smith  <marc.smith@parodyne.com>
 
 	remove un-needed lines for packages that are no longer used in the checksum files
 
@@ -2325,6 +2349,8 @@
 
 	added some default virtual memory tweaks to /etc/sysctl.conf (systems using vdisk_fileio with small amounts of memory may experience stability issues without this)
 
+2018-11-30  Marc A. Smith  <marc.smith@parodyne.com>
+
 	use the real blkdiscard utility (from util-linux) instead of the Busybox variant
 
 2018-11-20  Marc A. Smith  <marc.smith@parodyne.com>
@@ -2387,7 +2413,7 @@
 
 	added the blktrace and hwloc packages (useful for performance testing, tracking down issues); include the 'perf' tool when building the Linux kernels; util-linux.chroot: pull in the lsblk and lscpu binaries; install.sh: use lsblk for listing installation target devices instead of lsscsi (not all boot devices / install media are SCSI disks), updated wording for "USB flash" to more generic words in the script
 
-2018-10-12  Marc A. Smith  <marc.smith@parodyne.com>
+2018-10-11  Marc A. Smith  <marc.smith@parodyne.com>
 
 	include the rescan-scsi-bus.sh tool from the sg3_utils package; patch for mdadm that prevents udev (rule from mdadm) from assemblying MD component devices incrementally if 'raid=noautodetect' is used in boot options; pass several boot options in GRUB entries to prevent auto assembly of MD arrays; several updates to ocf:esos:alua (one bug fix, one enhancement)
 
@@ -2475,7 +2501,7 @@
 
 	we now use two different package names for ESOS Professional (esos_prof) and ESOS Community (esos_comm); updates to the TUI for the Commercial variant that shows RPC agent and web UI service stats
 
-2018-07-29  Marc A. Smith  <marc.smith@parodyne.com>
+2018-07-28  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated license file names (GPL and commercial); added the '--enable-commercial' build time option; updated branding in config files and TUI to use ESOS Professional / Community
 
@@ -2501,21 +2527,19 @@
 
 	fixed several issues with inlining ESOS Web UI
 
-	added the '--with-web_ui=PATH' build time option to support inlining the ESOS Web UI add-on application; updated rc.webui to handle applying Django model migrations if needed
-
 2018-07-21  Marc A. Smith  <marc.smith@parodyne.com>
+
+	added the '--with-web_ui=PATH' build time option to support inlining the ESOS Web UI add-on application; updated rc.webui to handle applying Django model migrations if needed
 
 	updated image target to set permissions for 'shadow' group and 'webui' user; fixed typos in rc.conf; updated rc.webui to handle creating secret key for Django
 
-2018-07-18  Marc A. Smith  <marc.smith@parodyne.com>
+2018-07-17  Marc A. Smith  <marc.smith@parodyne.com>
 
 	include the uWSGI package in Python.chroot; added the 'webui' user and group; added several directory-creation and modification lines to accomodate ESOS Web UI; added the rc.webui init script for ESOS Web UI
 
-2018-07-08  Marc A. Smith  <marc.smith@parodyne.com>
+2018-07-07  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added /etc/pam.d/login to allow normal login via getty
-
-2018-07-07  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the Linux-PAM package (a dep for building Busybox with PAM support); fixed build option for nginx; added default /etc/pam.d/ config files; updated Busybox config to use PAM
 
@@ -2587,7 +2611,7 @@
 
 	updated the scst_qla2xxx_unified package with some Makefile fixes; more fixes for the new Cavium driver (--enable-qla); updated rc scripts to handle the new Cavium driver
 
-2018-04-28  Marc A. Smith  <marc.smith@parodyne.com>
+2018-04-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated the scst_qla2xxx driver to scst_qla2xxx_unified (from Cavium); updated SCST to version trunk/r7398
 
@@ -2602,6 +2626,8 @@
 2018-04-21  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated copyright notice in TUI source; call refreshCDKScreen() at the end of dialog action when using simple TUI instead of trying to call this in each dialog function
+
+2018-04-20  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added the '--enable-simple_tui' autoconf option; moved the opt_suffix variable setup into the autoconf script; TUI: in statusBar() we use prettyShrinkStr() so we can see the whole ESOS version string
 
@@ -2801,9 +2827,9 @@
 
 	etckeeper uses features in the find utility not found in the Busybox variant so include the findutils package in chroot and disable the Busybox find + xargs utilities
 
-	more tweaks for the usb_sync.sh script
-
 2017-11-25  Marc A. Smith  <marc.smith@parodyne.com>
+
+	more tweaks for the usb_sync.sh script
 
 	fix permissions for /etc/etckeeper/*.d files (executable); updates to the conf_sync.sh and usb_sync.sh scripts for the new etckeeper/Git setup
 
@@ -3252,7 +3278,7 @@
 
 	fixed issue with the perccli extraction in Windows installer script; added the ledmon package
 
-2017-02-28  Marc A. Smith  <marc.smith@parodyne.com>
+2017-02-27  Marc A. Smith  <marc.smith@parodyne.com>
 
 	added support for Dell PERC RAID controllers in the hw_raid_cli tool, and in the installation scripts (perccli tool); some code formatting and cleanup in the hw_raid_cli script
 
@@ -3350,11 +3376,9 @@
 
 	updated Linux to 4.9.0-rc2; updated the ZFS, SPL, and SCST packages to support the new Linux version; more build fixes from the recent round of package updates
 
-2016-10-24  Marc A. Smith  <marc.smith@parodyne.com>
+2016-10-23  Marc A. Smith  <marc.smith@parodyne.com>
 
 	more build dependency issues discovered, and fixed when using parallel make
-
-2016-10-23  Marc A. Smith  <marc.smith@parodyne.com>
 
 	updated just about every package that had a new version released; lots of build fixes/changes to go along with the new package versions; added the AUTHORS file to acknowledge the ESOS authors; added new packages libffi, ptyprocess, requests, openwsman, swig, and userspace-rcu, which are dependencies for the updated packages; misc documentation fixes in the root source directory; added the esos_host and esos_target variables so we can start enabling a cross-compiler configuration for packages
 
@@ -3896,11 +3920,9 @@
 
 	updated the CDK patch to modify menu.c which adds support for specifiying rows instead of just TOP or BOTTOM in newCDKMenu(); modified updateInfoLabels() to give an additional row of space for new (additional) menu bar; added a new secondary menu to the TUI; updated menu item description strings to be full length; revamp of some existing menu items and sub-menu locations
 
-2015-08-03  Marc A. Smith  <marc@astersmith.com>
+2015-08-02  Marc A. Smith  <marc@astersmith.com>
 
 	updated to set default Ethernet MTU for enp* and eno* interfaces; increased spacing for interface name in the get-network-ifaces dialog
-
-2015-08-02  Marc A. Smith  <marc@astersmith.com>
 
 	updated the rc.network script to handle "on-board" Ethernet adapters (enoX)
 
@@ -4180,7 +4202,7 @@
 
 	install fixes for the new sudo package; updated the image recipe to zero out the esos_root FS so the package size is consistent; modified /etc/profile to handle ulimit for non-root users
 
-2015-02-21  Marc A. Smith  <msmith626@gmail.com>
+2015-02-20  Marc A. Smith  <msmith626@gmail.com>
 
 	added the 'sudo' package; updated the drbd rc script to suppress version mismatch warnings
 
@@ -4202,7 +4224,7 @@
 
 	fixed build dependency issue; updated default configuration for stunnel
 
-2015-01-24  Marc A. Smith  <msmith626@gmail.com>
+2015-01-23  Marc A. Smith  <msmith626@gmail.com>
 
 	updated health check script to use "MemAvailable" from /proc/meminfo instead of attempting to calculating available memory (new feature in 3.14.x); added xmlrpc-c libs and stunnel; moved rc.local script to /etc/; updated autoconf script and other rc.d components for stunnel; patched sysvinit so bootlogd handles log file lines that start with tabs; added the "btier" RA (thanks Riccardo)
 
@@ -4210,11 +4232,9 @@
 
 	updated health_chk script to handle yet another MR enclosure status; updated hpacucli and linuxcli tool download URLs
 
-2014-12-24  Marc A. Smith  <msmith626@gmail.com>
+2014-12-23  Marc A. Smith  <msmith626@gmail.com>
 
 	updates for Linux installer script to handle an in-place ESOS upgrade... only write from start of MBR to end of esos_root partition which preserves esos_conf and esos_logs; other fixes for updated install.sh script
-
-2014-12-23  Marc A. Smith  <msmith626@gmail.com>
 
 	updates to Makefile and installer scripts to compress the image file with bzip2 and handle it when installing, allowing hosts with < 4 GB of usable RAM to do an in-place upgrade; new local rpm2cpio.sh shell script which replaces the rpm2cpio bin function and eliminates the dependency; modified the Windows installer script to handle USB drives that appear as "fixed disk" appropriately; the install.sh script now supports Mac OS X as an install platform
 
@@ -4314,11 +4334,11 @@
 
 	set tm_isdst to -1 so the DST value is "guessed" (resolves issue # 84)
 
-2014-08-04  Marc A. Smith  <msmith626@gmail.com>
+2014-08-03  Marc A. Smith  <msmith626@gmail.com>
 
 	updated LVM2 to version 2.02.108 (includes lvmcache support)
 
-2014-07-24  Marc A. Smith  <msmith626@gmail.com>
+2014-07-23  Marc A. Smith  <msmith626@gmail.com>
 
 	modified the Date & Time dialog so that we only actually change the date/time if the user changed it (eg, they set the TZ, but not the date); add the mtx and mt-st packages for use with tapes/VTL; Uwire (chfcoe) build issue resolved; global bashrc updated to force interactive cp command; disabled the mt program in busybox; enhanced debugging support and features (kgdb, kdb) for the .esos-debug kernel
 
@@ -4404,6 +4424,8 @@
 
 	fixed build issue with bzip2
 
+2014-03-30  Marc A. Smith  <msmith626@gmail.com>
+
 	fixed broken kernel crash dump support (increased crashkernel to 128M, added makedumpfile to use instead of gzip with /proc/vmcore in initramfs script); don't hide output in rc.mdraid; fixed TUI bug when using block device select dialog; added a sleep to run-level 2 to wait after loading qla2xxx (in the case of being used as an initiator, for targets to appear); updated mail settings dialog so there is now an option to disable user authentication for SMTP; disable use of python with gdb; added elfutils as a dep for makedumpfile; for bzip2 target, include static version of lib (dep for makedumpfile)
 
 2014-03-29  Marc A. Smith  <msmith626@gmail.com>
@@ -4425,6 +4447,8 @@
 	moved user-land SCST progs (iSCSI stuff) to a separate target; removed glibc dependency from esos_kernels target; other build fixes (target deps)
 
 	fixed build issue with source directory variable; updated pkg_dist target to transform archive member paths correctly
+
+2014-03-23  Marc A. Smith  <msmith626@gmail.com>
 
 	updated TUI components to include new strings.h; autoconf script now sets "src_dir" and "build_dir"; added cryptsetup and enabled kernel DM_CRYPT option (resolves issue # 71); updated install script with latest location on LSI's web site for the MegaCLI tool, and changed error strings in install.sh to be more informative; code formatting in main.c and fixed issue with labels when exiting to shell; tweaked size (rows) of device-info dialog; lots of updated to Makefile.in... many line/formatting changes, and make jobs > 1 is now supported
 
@@ -4476,11 +4500,11 @@
 
 	updated the installer script to include the StorCLI tool from LSI (supports Syncro controllers); updated corosync to 2.3.3; Python fix for build platforms that have ncursesw installed (fixes issue # 43)
 
-2014-01-16  Marc A. Smith  <msmith626@gmail.com>
+2014-01-15  Marc A. Smith  <msmith626@gmail.com>
 
 	version bump for SCST (trunk); updated Linux kernel to 3.12; updates/improvements to health-check script which now checks for "failed" physical drives (MegaRAID/AACRAID)
 
-2013-12-27  Marc A. Smith  <msmith626@gmail.com>
+2013-12-26  Marc A. Smith  <msmith626@gmail.com>
 
 	pulled new linux-firmware package from git, which fixes issue # 39; fixed man page placement for expat and cdk packages; added enable-xmlconf and enable-rdma to corosync; new package librdmacm as a dependency (for new corosync build option)
 
@@ -4620,7 +4644,7 @@
 
 	updated mdev.conf and dev_nodes script to handle InfiniBand device nodes (/etc/infiniband/); updated rc.network script to handle ibX devices; make opensm quiet when it starts; added /etc/opensm/partitions.conf default file
 
-2013-04-06  Marc A. Smith  <msmith626@gmail.com>
+2013-04-05  Marc A. Smith  <msmith626@gmail.com>
 
 	added new crm_mon_email.sh script (helper / external agent for crm_mon,    used with ClusterMon RA); updated network rc script to use the /bin/ip binary instead of ifconfig when setting MTU for dhcp-enabled interfaces; removed IBoIP MTU settings from the openibd script (now done through TUI); added misc. network interface (Ethernet) drivers to kernel config; updated SCST RA to use 'nonoptimized' instead of 'offline' for slave status; in TUI, for /dev/dm-* block devices, we look-up the (assumed) full LVM VG+LV device node path (more unique) and use this; first attempt (not tested) at supporting IPoIB interfaces in the TUI; updated TUI to use two different default MTUs based on interface name (Ethernet / IB)
 
@@ -4630,7 +4654,7 @@
 
 	updated Linux kernel to 3.8.5 and DRBD user-land tools to 8.4.2 (matches kernels); updated PAGER variable show less displays color escape sequences correctly; the /etc/localtime sync issue should now be resolved; updated DRBD default config files
 
-2013-03-29  Marc A. Smith  <msmith626@gmail.com>
+2013-03-28  Marc A. Smith  <msmith626@gmail.com>
 
 	added the real GNU less and removed less from busybox config; we now set the PAGER var in global bashrc; in /etc/profile we provide a window bar title; updated rc scripts to use rmmod instead of `modprobe -r` (returns 1 when removing modules on success); rc.openibd -> ipath needs to be loaded first; pacemaker produces an error (warning?) msg even though it starts/runs fine, so we hide it; fixed typo in sysctl.conf; lots of updates/fixes to new RA; if SCST is not loaded, don't run the startup scstadmin commands; a few TUI dialog sizing tweaks; updated TUI to handle SCST not being loaded
 
@@ -4762,11 +4786,9 @@
 
 	added crmsh package, which requires glue, which requires a few other dependencies; started pacemaker/corosync rc scripts (needs more)
 
-2013-01-09  Marc A. Smith  <msmith626@gmail.com>
+2013-01-08  Marc A. Smith  <msmith626@gmail.com>
 
 	fixed CentOS nss build issue
-
-2013-01-08  Marc A. Smith  <msmith626@gmail.com>
 
 	added pacemaker and corosync along with the three dozen required depenencies to support them (libqb, nss, libxml2, libxslt, libtool, bzip2, glib); rearranged lots of default config. files into sub-directories of /etc; updated conf_sync.sh to handle /etc files in sub-directories; updated TUI defines for new config. files locations; the health_chk.sh script will now detect a failed USB flash drive and send a notification email including a config. file tar ball
 
@@ -4910,9 +4932,9 @@
 
 	added build targets and proprietary tools as dependencies for the install target
 
-	fixed issue with 'export CPPFLAGS' using the wildcard function and between the src_dir variable
-
 2012-07-27  Marc A. Smith  <msmith626@gmail.com>
+
+	fixed issue with 'export CPPFLAGS' using the wildcard function and between the src_dir variable
 
 	removed sysfsutils (libsysfs is no longer used); added iniparser (for TUI)
 
@@ -5166,9 +5188,9 @@
 
 	working autoconf configure.ac
 
-	started work on autoconf
-
 2012-01-18  Marc A. Smith  <msmith626@gmail.com>
+
+	started work on autoconf
 
 	fixed /dev umount busy message on halt
 
