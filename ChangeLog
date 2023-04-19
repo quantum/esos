@@ -1,3 +1,7 @@
+2023-04-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	use specific pip3 version in Python.chroot; serialization installation of sasutils.chroot so it doesn't clobber easy-install.pth with other parallel targets
+
 2023-03-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '415_update' into 4.x.x

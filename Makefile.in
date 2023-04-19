@@ -2359,7 +2359,7 @@ Python.chroot: glibc.chroot gcc.chroot bzip2.chroot readline.chroot \
 	$(MAKE) --directory=$(tgt_src_dir) install
 	$(INSTALL) -D -m 0644 $(tgt_src_dir)/python-gdb.py \
 	/usr/share/gdb/auto-load/usr/bin/python3.9-gdb.py
-	pip3 install --upgrade pip
+	pip3 install pip==23.0.1
 	pip3 install configshell-fb==1.1.29
 	pip3 install docutils==0.17.1
 	pip3 install pbr==5.6.0
@@ -5254,7 +5254,8 @@ smp_utils.chroot: glibc.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-sasutils.chroot: glibc.chroot Python.chroot sg3_utils.chroot smp_utils.chroot
+sasutils.chroot: glibc.chroot Python.chroot nvmetcli.chroot \
+	sg3_utils.chroot smp_utils.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
