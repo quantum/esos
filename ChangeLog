@@ -1,3 +1,11 @@
+2023-04-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'gearshot-gearshot-python_pkg_ver_updates'
+
+2023-04-24  Chris Graves  <chris.graves@quantum.com>
+
+	Updating a few python3 packages to avoid unwanted pip downloading of the most recent version during the build.
+
 2023-04-19  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'sasutils_fix'
