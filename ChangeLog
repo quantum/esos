@@ -1,4 +1,14 @@
+2023-04-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '417_update' into 4.x.x
+
+2023-04-24  Chris Graves  <chris.graves@quantum.com>
+
+	Updating a few python3 packages to avoid unwanted pip downloading of the most recent version during the build.
+
 2023-04-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '416_updates' into 4.x.x
 
 	use specific pip3 version in Python.chroot; serialization installation of sasutils.chroot so it doesn't clobber easy-install.pth with other parallel targets
 
