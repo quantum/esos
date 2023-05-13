@@ -1,3 +1,17 @@
+2023-05-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'gearshot-gearshot_add_py-spy'
+
+	Merge branch 'gearshot_add_py-spy' of https://github.com/gearshot/esos into gearshot-gearshot_add_py-spy
+
+	Merge branch 'nvme_qla2xxx'
+
+	updated qlogic_fw package; implemented qla2xxx_scst.chroot target for scripts included with driver package; modprobe.conf: set ql2xnvmeenable=2 for NVMeoF support; rc.2: load the 'nvme_qla2xxx' module on boot
+
+2023-05-11  Chris Graves  <chris.graves@quantum.com>
+
+	Adding py-spy profiler and updating python websockets to 11.0.3.
+
 2023-04-24  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'gearshot-gearshot-python_pkg_ver_updates'
