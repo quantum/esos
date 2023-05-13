@@ -105,6 +105,11 @@ fi
 /sbin/modprobe nvmet-tcp
 /bin/echo 5 > /sys/module/nvme_core/parameters/admin_timeout
 
+if [ -f "/lib/modules/$(/bin/uname -r)/extra/nvme_qla2xxx.ko" ]; then
+    /bin/echo "Loading the QLogic NVMe Target module..."
+    /sbin/modprobe nvme_qla2xxx
+fi
+
 # Start the LATE user settable services
 for i in ${LATE_SERVICES}; do
     if check_enabled "${i}"; then
