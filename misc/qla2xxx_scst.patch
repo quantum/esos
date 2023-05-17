@@ -1,0 +1,399 @@
+--- a/extras/spreadirq.py	2022-10-13 10:50:28.000000000 -0400
++++ b/extras/spreadirq.py	2023-05-17 08:57:26.939174218 -0400
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ 
+ # Marvell Fibre Channel HBA Driver
+ # Copyright (c) (2021) Marvell.  All rights reserved.
+@@ -38,9 +38,9 @@
+         a = subprocess.Popen(['cat', path ], stdout=subprocess.PIPE)
+         tmp =  a.communicate()[0]
+         tmp = tmp.strip()
+-        return tmp
++        return tmp.decode('utf-8')
+     else:
+-        print "cat: Path err: %s" % (path)
++        print("cat: Path err: %s" % (path))
+         return None
+ 
+ def myecho(path="", val=""):
+@@ -54,19 +54,19 @@
+ 
+         return 0
+     else:
+-        print "echo: Path err: %s" % (path)
++        print("echo: Path err: %s" % (path))
+         return 1
+ 
+ def setirq(irq="", cpu=""):
+     cpu = cpu.strip()
+     irq = irq.strip()
+     if not irq or not cpu:
+-        print "invalid irq: %s %s" % (irq, cpu)
++        print("invalid irq: %s %s" % (irq, cpu))
+         return
+ 
+     path='/proc/irq/' + irq + '/smp_affinity_list'
+     if myecho(path, cpu):
+-        print "fail to set irq %s cpu %s" % (irq, cpu)
++        print("fail to set irq %s cpu %s" % (irq, cpu))
+ 
+ # return 1st cpu in the list
+ def first_cpu(cstr):
+@@ -353,73 +353,73 @@
+                 shdict  = self.sh_dict[h]
+                 irqdict = shdict['irqdict']
+             except KeyError:
+-                print "Invalid host number %s" % h
++                print("Invalid host number %s" % h)
+                 return
+ 
+             naqp = shdict['naqp']
+             nirqs = shdict['nirqs']
+ 
+-            print "%s | pcifn: %s | naqp: %d|%d | local_cpus=%s" % \
++            print("%s | pcifn: %s | naqp: %d|%d | local_cpus=%s" % \
+                 (h, shdict['fn'], naqp, irqdict['maxnaqp'], 
+-                 shdict['local_cpulist'])
++                 shdict['local_cpulist']))
+ 
+-            print "%s : %16s : %3s : %s : " % \
+-            	("irq", "irqname", "cpu", "cnt")
+-            print "------------------------------------"
++            print("%s : %16s : %3s : %s : " % \
++            	("irq", "irqname", "cpu", "cnt"))
++            print("------------------------------------")
+ 
+             hstr = "qla2xxx" + str(shdict['host_no']) +"_"
+             k = hstr + "default"
+             if k in irqdict:
+-                print "%s : %16s : %3s : %d * " % \
+-                    (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] )
++                print("%s : %16s : %3s : %d * " % \
++                    (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] ))
+                 nirqs -= 1
+ 
+             k = hstr + "atio_q"
+             if k in irqdict:
+-                print "%s : %16s : %3s : %d * " % \
+-                    (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] )
++                print("%s : %16s : %3s : %d * " % \
++                    (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] ))
+                 nirqs -= 1
+ 
+             k = hstr + "intx"
+             if k in irqdict:
+-                print "%s : %16s : %3s : %d * " % \
+-                    (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] )
++                print("%s : %16s : %3s : %d * " % \
++                    (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] ))
+                 nirqs -= 1
+ 
+             k = hstr + "rsp_q"
+             if k in irqdict:
+-                print "%s : %16s : %3s : %d *" % \
+-                    (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] )
++                print("%s : %16s : %3s : %d *" % \
++                    (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] ))
+                 nirqs -= 1
+ 
+             for i in range(0, nirqs):
+                 k = hstr + "qpair" + str(i)
+                 if naqp > 0:
+-                    print "%s : %16s : %3s : %d *" % \
+-                        (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] )
++                    print("%s : %16s : %3s : %d *" % \
++                        (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] ))
+                 else:
+-                    print "%s : %16s : %3s : %d " % \
+-                        (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] )
++                    print("%s : %16s : %3s : %d " % \
++                        (irqdict[k][0], k, irqdict[k][1], irqdict[k][2] ))
+                 naqp -= 1
+ 
+-            print "------------------------------------"
++            print("------------------------------------")
+ 
+-        except Exception, e: 
+-            print e
++        except Exception as e: 
++            print(e)
+             exc_type, exc_value, exc_traceback = sys.exc_info()
+-            print repr(traceback.format_tb(exc_traceback))
+-            print "*** tb_lineno:", exc_traceback.tb_lineno
++            print(repr(traceback.format_tb(exc_traceback)))
++            print("*** tb_lineno:", exc_traceback.tb_lineno)
+     #end list_sh    
+     
+     def list_all(self):
+         try:
+-            for k in self.sh_dict.keys():
++            for k in list(self.sh_dict.keys()):
+                 self.list_sh(k)
+-        except Exception, e: 
+-            print e
++        except Exception as e: 
++            print(e)
+             exc_type, exc_value, exc_traceback = sys.exc_info()
+-            print repr(traceback.format_tb(exc_traceback))
+-            print "*** tb_lineno:", exc_traceback.tb_lineno
++            print(repr(traceback.format_tb(exc_traceback)))
++            print("*** tb_lineno:", exc_traceback.tb_lineno)
+             
+     def list(self):
+         o = self.o
+@@ -557,10 +557,10 @@
+                     cpg = tot_irqs;
+         #endif local
+ 
+-        print "%s | pcifn: %s | naqp: %d|%d | local_cpus=%s" % \
+-            (h, shdict['fn'], naqp, irqdict['maxnaqp'], shdict['local_cpulist'])
+-        print "%s : %16s : %3s -> %3s" % ("irq", "irqname", "fr", "to")
+-        print "------------------------------------"
++        print("%s | pcifn: %s | naqp: %d|%d | local_cpus=%s" % \
++            (h, shdict['fn'], naqp, irqdict['maxnaqp'], shdict['local_cpulist']))
++        print("%s : %16s : %3s -> %3s" % ("irq", "irqname", "fr", "to"))
++        print("------------------------------------")
+ 
+         hstr = "qla2xxx" + str(shdict['host_no']) + "_"
+         #-------------------------------
+@@ -570,11 +570,11 @@
+         if k in irqdict or k2 in irqdict:
+ 
+             cpu = cpulist[portno * cpg];
+-            print "%s : %16s : %3s -> %3s" % \
+-                (irqdict[k][0], k, irqdict[k][1], cpu)
++            print("%s : %16s : %3s -> %3s" % \
++                (irqdict[k][0], k, irqdict[k][1], cpu))
+             if irqdict[k][1] != str(cpu):
+                 setirq(irqdict[k][0], str(cpu))
+-            print "------------------------------------"
++            print("------------------------------------")
+             return
+         #endif INTx
+ 
+@@ -585,15 +585,15 @@
+ 
+         k = hstr + "default"
+         if k in irqdict:
+-            print "%s : %16s : %3s -> %3s" % \
+-                (irqdict[k][0], k, irqdict[k][1], cpu)
++            print("%s : %16s : %3s -> %3s" % \
++                (irqdict[k][0], k, irqdict[k][1], cpu))
+             if irqdict[k][1] != str(cpu):
+                 setirq(irqdict[k][0], str(cpu))
+ 
+         k = hstr + "atio_q"
+         if k in irqdict:
+-            print "%s : %16s : %3s -> %3s" % \
+-                (irqdict[k][0], k, irqdict[k][1], cpu)
++            print("%s : %16s : %3s -> %3s" % \
++                (irqdict[k][0], k, irqdict[k][1], cpu))
+             if irqdict[k][1] != str(cpu):
+                 setirq(irqdict[k][0], str(cpu))
+ 
+@@ -602,8 +602,8 @@
+ 
+         k = hstr + "rsp_q"
+         if k in irqdict:
+-            print "%s : %16s : %3s -> %3s" % \
+-                (irqdict[k][0], k, irqdict[k][1], cpu)
++            print("%s : %16s : %3s -> %3s" % \
++                (irqdict[k][0], k, irqdict[k][1], cpu))
+             if irqdict[k][1] != str(cpu):
+                 setirq(irqdict[k][0], str(cpu))
+ 
+@@ -622,14 +622,14 @@
+             if int(o.loopback) == 0:
+                 cpu = cpulist[idx]
+ 
+-            print "%s : %16s : %3s -> %3s" % \
+-                (irqdict[k][0], k, irqdict[k][1], cpu)
++            print("%s : %16s : %3s -> %3s" % \
++                (irqdict[k][0], k, irqdict[k][1], cpu))
+ 
+             if irqdict[k][1] != str(cpu):
+                 setirq(irqdict[k][0], str(cpu))
+             j+=1
+         #end for i
+-        print "------------------------------------"
++        print("------------------------------------")
+     #end def spread_qp
+ 
+     def spread_sh(self, h='host99999'):
+@@ -640,7 +640,7 @@
+             shdict  = self.sh_dict[h]
+             irqdict = shdict['irqdict']
+         except KeyError:
+-            print "Invalid host number %s" % h
++            print("Invalid host number %s" % h)
+             return
+ 
+         maxnaqp = irqdict['maxnaqp']
+@@ -648,7 +648,7 @@
+ 
+         if o.naqp.isdigit():
+             if int(o.naqp) > maxnaqp :
+-                print "max naqp is %d" % (maxnaqp)
++                print("max naqp is %d" % (maxnaqp))
+                 return
+             else:
+                 naqp = int(o.naqp)
+@@ -667,7 +667,7 @@
+                 try:
+                     newnaqp = int(mycat(tmp))
+                     if naqp != newnaqp:
+-                        print "%s unable to set naqp %d/%s" % (h,naqp, newnaqp)
++                        print("%s unable to set naqp %d/%s" % (h,naqp, newnaqp))
+                     shdict['naqp'] = naqp
+                 except:
+                     pass
+@@ -676,22 +676,22 @@
+ 
+             #endif
+             self.spread_qp(h, shdict)
+-        except Exception, e: 
+-            print e
++        except Exception as e: 
++            print(e)
+             exc_type, exc_value, exc_traceback = sys.exc_info()
+-            print repr(traceback.format_tb(exc_traceback))
+-            print "*** tb_lineno:", exc_traceback.tb_lineno
++            print(repr(traceback.format_tb(exc_traceback)))
++            print("*** tb_lineno:", exc_traceback.tb_lineno)
+ 
+ 
+     def spread_all(self):
+         try:
+-            for k in self.sh_dict.keys():
++            for k in list(self.sh_dict.keys()):
+                 self.spread_sh(k)
+-        except Exception, e: 
+-            print e
++        except Exception as e: 
++            print(e)
+             exc_type, exc_value, exc_traceback = sys.exc_info()
+-            print repr(traceback.format_tb(exc_traceback))
+-            print "*** tb_lineno:", exc_traceback.tb_lineno
++            print(repr(traceback.format_tb(exc_traceback)))
++            print("*** tb_lineno:", exc_traceback.tb_lineno)
+ 
+     def spread(self):
+         o = self.o
+@@ -737,6 +737,6 @@
+ #    else:
+ #        myecho("/sys/module/qla2xxx/parameters/qlb_enabled", "0")
+ 
+-except Exception, e: 
+-    print e
++except Exception as e: 
++    print(e)
+     exit_pgm(-1)
+--- a/extras/qla2xxx_npiv.py	2022-10-13 10:50:28.000000000 -0400
++++ b/extras/qla2xxx_npiv.py	2023-05-17 08:41:55.900039088 -0400
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ # 
+ # Tool to create, remove, enable and disable ports (NPIV/Physical).
+ # Adapter: - Marvell Adapter.
+@@ -117,7 +117,7 @@
+ 	global npivpwwn, pci_path	
+ 	cmd = "lspci | grep QLogic | awk '{print $1}'"
+ 	out, ret, err = Run(cmd)
+-	if out is not 0:
++	if out != 0:
+ 		logging.error(err)	
+ 	else:
+ 		pci_list = ret.split()
+@@ -183,7 +183,7 @@
+ 		cmd = "echo " + '"nvmet"' + "> /sys/class/scsi_host/"+Host+"/qlini_mode"	
+ 		out, ret, err = Run(cmd)
+ 		logging.debug("out= {}  ret= {} err={}".format(out, ret, err))			
+-		if out is not 0:
++		if out != 0:
+ 			logging.error(err)
+ 			sys.exit(1)
+ 		else:
+@@ -213,7 +213,7 @@
+ 		logging.debug("{} {}".format(temppwwn, tempnwwn))
+ 		cmd = "echo " + '"' + temppwwn + ":" + tempnwwn + '"' + "> /sys/class/fc_host/" + pHost + "/vport_create"
+ 		out, ret, err = Run(cmd)
+-		if out is not 0:
++		if out != 0:
+ 			logging.error(err)
+ 			sys.exit(1)
+ 		else:
+@@ -221,7 +221,7 @@
+ 			cmd = "echo " + '"nvmet"' + "> /sys/class/scsi_host/"+Host+"/qlini_mode"	
+ 
+ 			out, ret, err = Run(cmd)
+-			if out is not 0:
++			if out != 0:
+ 				logging.error(err)
+ 			else:
+ 				logging.info("NVMe vport {} Created Successfully.".format(npivpwwn))
+@@ -262,7 +262,7 @@
+ 				tmpnwwn = formatWWN(npivnwwn)
+ 				cmd = 'echo "add_target ' + tmppwwn + " node_name=" + tmpnwwn + ";parent_host=" + tmpparentpn + '"' + " > /sys/kernel/scst_tgt/targets/qla2x00t/mgmt"
+ 				out, ret, err = Run(cmd)
+-				if out is not 0:
++				if out != 0:
+ 					logging.error(err)
+ 				else:
+ 					logging.info("FCP port {} Create successfully.".format(npivpwwn))
+@@ -287,7 +287,7 @@
+ 			if flag == "enable":
+ 				cmd = "echo 1 > " + fctgtDir + "/" + port + "/enabled"
+ 				out, ret, err = Run(cmd)
+-				if out is not 0:
++				if out != 0:
+ 					logging.info("FCP port {} might have enabled Already.".format(npivpwwn))
+ 					#logging.debug(err)
+ 				else:
+@@ -308,7 +308,7 @@
+ 				cmd = "echo 0 > " + fctgtDir + "/" + port + "/enabled"
+ 
+ 				out, ret, err = Run(cmd)
+-				if out is not 0:
++				if out != 0:
+ 					logging.info("FCP port {} might have Disabled Already.".format(npivpwwn))
+ 					#logging.error(err)
+ 				else:
+@@ -324,7 +324,7 @@
+ 	if flag == "enable":
+ 		cmd = "echo 1 > " + nvmetgtDir + host + "/enable"	
+ 		out, ret, err = Run(cmd)
+-		if out is not 0:
++		if out != 0:
+ 			logging.info("NVMe port {} have enabled Already.".format(npivpwwn))
+ 			#logging.error(err)
+ 		else:
+@@ -342,7 +342,7 @@
+ 	else:
+ 		cmd = "echo 0 > " + nvmetgtDir + host + "/enable"	
+ 		out, ret, err = Run(cmd)
+-		if out is not 0:
++		if out != 0:
+ 			logging.info("NVMe port {} have Disabled Already.".format(npivpwwn))
+ 			#logging.error(err)
+ 		else:
+@@ -458,7 +458,7 @@
+ 					
+ 	cmd = "echo " + npivpwwn + ":" + npivnwwn + " > /sys/class/fc_host/" + pHost + "/vport_delete"
+ 	out, ret, err = Run(cmd)
+-	if out is not 0:
++	if out != 0:
+ 		logging.error(err)
+ 	else:
+ 		logging.info("NVMe port 0x{} Deleted successfully".format(npivpwwn))
+@@ -486,7 +486,7 @@
+ 	tmppwwn = formatWWN(npivpwwn)	
+ 	cmd = 'echo "del_target ' + tmppwwn + '"' + " > /sys/kernel/scst_tgt/targets/qla2x00t/mgmt"
+ 	out, ret, err = Run(cmd)
+-	if out is not 0:
++	if out != 0:
+ 		logging.error(err)
+ 	else:
+ 		logging.info("FCP port 0x{} Deleted successfully".format(npivpwwn))

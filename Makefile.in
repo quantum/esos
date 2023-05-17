@@ -1660,6 +1660,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(scst_src)/srpt/src/Kbuild; \
 	  fi; \
 	  if [ "$(with_qla2xxx_scst)" = "yes" ]; then \
+	    if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	      if ! $(GREP) -q "$(mlnx_ofed_dir)" "$(qla2xxx_scst_dir)/Makefile"; then \
+	        $(SED) "0,/^EXTRA_CFLAGS.*/s,^EXTRA_CFLAGS.*,LINUXINCLUDE := -I$(mlnx_ofed_dir)/include -I$(mlnx_ofed_dir)/include/uapi -include $(mlnx_ofed_dir)/include/linux/compat-2.6.h $$\(LINUXINCLUDE\)\n&," -i $(qla2xxx_scst_dir)/Makefile; \
+	      fi; \
+	      $(SED) '/-DRHEL_8_4/s/^#//' -i $(qla2xxx_scst_dir)/Makefile; \
+	    fi; \
 	    $(SED) -i '/obj-m/s/tcm_qla2xxx.o/scst_qla2xxx.o/' \
 	    $(qla2xxx_scst_dir)/Makefile; \
 	    $(MAKE) --directory=$(qla2xxx_scst_dir) KVER=$(kernel_ver)$$i \
@@ -1849,8 +1855,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  INSTALL_DIR_H=/usr/include/scst scst_install; \
 	  if [ "$(with_qla2xxx_scst)" = "yes" ]; then \
 	    $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
-	    $(CP) /usr/include/scst/Module.symvers $(qla2xxx_scst_dir)/; \
-	    $(MAKE) --directory=$(qla2xxx_scst_dir) KVER=$(kernel_ver)$$i \
+	    if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	      $(CAT) /usr/include/scst/Module.symvers $(mlnx_ofed_dir)/Module.symvers > $(qla2xxx_scst_dir)/Module.symvers; \
+	    else \
+	      $(CP) /usr/include/scst/Module.symvers $(qla2xxx_scst_dir)/; \
+	    fi; \
+	    $(MAKE) --directory=$(qla2xxx_scst_dir) V=1 KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) SCST_INC_DIR=$(scst_src)/scst/include all; \
 	    $(MAKE) --directory=$(linux_src) M=$(qla2xxx_scst_dir) \
 	    modules_install; \
@@ -2137,8 +2147,15 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 qla2xxx_scst.chroot: eudev.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(INSTALL) -m 0755 $(qla2xxx_scst_dir)/extras/spreadirq.py /usr/sbin/
-	$(INSTALL) -m 0755 $(qla2xxx_scst_dir)/extras/qla2xxx_npiv.py /usr/sbin/
+	$(QUIET) if [ ! -d $(qla2xxx_scst_dir)/qla2xxx_scst.patch ]; then \
+	  $(PATCH) -d $(qla2xxx_scst_dir) -b \
+	  -B $(qla2xxx_scst_dir)/qla2xxx_scst.patch/ -p1 < \
+	  $(chroot_build)/misc/qla2xxx_scst.patch; \
+	fi
+	$(INSTALL) -m 0755 $(qla2xxx_scst_dir)/extras/spreadirq.py \
+	/usr/sbin/
+	$(INSTALL) -m 0755 $(qla2xxx_scst_dir)/extras/qla2xxx_npiv.py \
+	/usr/sbin/
 	$(INSTALL) -m 0755 $(qla2xxx_scst_dir)/extras/qla2xxx_udev.sh \
 	/usr/lib/udev/
 	$(TOUCH) $(@)
