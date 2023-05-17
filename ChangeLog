@@ -1,3 +1,9 @@
+2023-05-17  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'nvme_qla2xxx_fixup'
+
+	fixup the esos_kernels.chroot target to handle building qla2xxx_scst against MOFED (when used) properly; added several fixes for Python scripts included with the qla2xxx_scst driver
+
 2023-05-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'gearshot-gearshot_add_py-spy'
