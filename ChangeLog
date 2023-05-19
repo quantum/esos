@@ -1,3 +1,9 @@
+2023-05-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'nvmetcli_update'
+
+	updated nvmetcli to latest revision from master branch
+
 2023-05-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'nvme_qla2xxx_fixup'
