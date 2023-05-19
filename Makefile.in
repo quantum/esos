@@ -302,7 +302,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		nvme-cli-1.15.tar.gz \
 		freetype-2.10.0.tar.bz2 \
 		ledmon-0.92.tar.gz \
-		nvmetcli-master_20180523.tar.xz \
+		nvmetcli-master_20230519.tar.xz \
 		bc-1.07.1.tar.gz \
 		etckeeper-1.18.10.tar.gz \
 		git-2.21.0.tar.xz \
