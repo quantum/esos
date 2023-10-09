@@ -376,7 +376,7 @@ alua_validate_all() {
     fi
     rm -f "${state_dir}/${$}"
 
-    # There can only be one instance of SCST running per node
+    # There can only be one instance of resource running per node
     if [ -n "${OCF_RESKEY_CRM_meta_clone_node_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_clone_node_max}" -ne 1 ]; then
         error_msg="The 'clone-node-max' parameter must equal '1'."
@@ -786,6 +786,7 @@ get_real_filename() {
     if [ ! -f "${SCST_DEV_MAPS}/${dev_name}" ]; then
         ocf_log err "No SCST device map file found for device '${dev_name}'!"
         echo ""
+        return
     fi
     filename="$(head -1 "${SCST_DEV_MAPS}/${dev_name}")"
     ocf_log debug "Real backing device for '${dev_name}': ${filename}"
@@ -1106,7 +1107,7 @@ alua_promote() {
         ;;
     esac
 
-    # Set the local target group to the "Master" ALUA state
+    # Make sure the ALUA configuration is legit
     check_alua
 
     # TODO: Don't block devices for now... needs to be re-visited.
@@ -1298,7 +1299,7 @@ alua_demote() {
         ;;
     esac
 
-    # Set the local target group to the "Slave" ALUA state
+    # Make sure the ALUA configuration is legit
     check_alua
 
     # TODO: Don't block devices for now... needs to be re-visited.
