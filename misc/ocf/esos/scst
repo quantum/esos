@@ -381,7 +381,7 @@ scst_validate_all() {
     # Test for required binaries
     check_binary scstadmin
 
-    # There can only be one instance of SCST running per node
+    # There can only be one instance of resource running per node
     if [ ! -z "${OCF_RESKEY_CRM_meta_clone_node_max}" ] &&
         [ "${OCF_RESKEY_CRM_meta_clone_node_max}" -ne 1 ]; then
         error_msg="The 'clone-node-max' parameter must equal '1'."

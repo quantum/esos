@@ -1,3 +1,9 @@
+2023-10-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'nvmeof_ra'
+
+	sysctl.conf: set a default packet scheduling algorithm; enabled CONFIG_NET_SCH_NETEM in kernel config; added new RA scripts for NVMe target stuff (NVMeoF); fixed a few wording/formatting things in current RA scripts
+
 2023-08-24  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'atto_fix'
