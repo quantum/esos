@@ -46,13 +46,13 @@ ana_start() {
     # Try to set the devices to the redirected backing device to start
     if ns_to_redirect; then
         # It's only safe to advertise the Slave state if all are redirected
-        set_ana_group_state "${FUNCNAME[1]}" "${OCF_RESKEY_ana_group_id}" \
+        set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
             "${OCF_RESKEY_s_ana_state}"
     fi
 
     # Make sure the resource started correctly
     while ! ana_monitor; do
-        ocf_log debug "${FUNCNAME[1]}() -> Resource has not" \
+        ocf_log debug "${FUNCNAME[0]}() -> Resource has not" \
             "started yet, waiting..."
         sleep 1
     done
@@ -91,20 +91,23 @@ ana_stop() {
     set_trans_state
 
     # Set our ports to the offline/unavailable ANA state
-    # shellcheck disable=SC2154
-    set_ana_group_state "${FUNCNAME[1]}" "${OCF_RESKEY_ana_group_id}" \
+    set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
         "${OCF_RESKEY_remote_inact_state}"
 
     # If we're stopping, set all of the namespaces to disabled for now
     ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
     while read -r i; do
         [[ -n "${i}" ]] || break
+        if [ "$(head -1 "${i}/ana_grpid")" != \
+            "${OCF_RESKEY_ana_group_id}" ]; then
+            continue
+        fi
         ns_id="$(basename "${i}")"
-        ocf_log debug "${FUNCNAME[1]}() -> Setting namespace '${ns_id}'" \
+        ocf_log debug "${FUNCNAME[0]}() -> Setting namespace '${ns_id}'" \
             "to disabled..."
         echo 0 > "${i}/enable" &
     done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
-    ocf_log debug "${FUNCNAME[1]}() -> Waiting for namespaces to" \
+    ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
         "disable..."
     wait
 
@@ -113,7 +116,7 @@ ana_stop() {
 
     # Make sure the resource stopped correctly
     while ana_monitor; do
-        ocf_log debug "${FUNCNAME[1]}() -> Resource has not" \
+        ocf_log debug "${FUNCNAME[0]}() -> Resource has not" \
             "stopped yet, waiting..."
         sleep 1
     done
@@ -141,11 +144,11 @@ ana_monitor() {
     # Determine our status using the state file
     local rc
     if check_state "master"; then
-        ocf_log debug "${FUNCNAME[1]}() -> Resource is running (Master)."
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is running (Master)."
         crm_master -l reboot -v 100
         rc="${OCF_RUNNING_MASTER}"
     elif check_state "slave"; then
-        ocf_log debug "${FUNCNAME[1]}() -> Resource is running."
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is running."
         crm_master -l reboot -v 100
         rc="${OCF_SUCCESS}"
     elif [ -f "${OCF_RESKEY_state}" ]; then
@@ -154,7 +157,7 @@ ana_monitor() {
         rc="${OCF_ERR_GENERIC}"
         return "${rc}"
     else
-        ocf_log debug "${FUNCNAME[1]}() -> Resource is not running."
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is not running."
         crm_master -l reboot -D
         rc="${OCF_NOT_RUNNING}"
         return "${rc}"
@@ -162,19 +165,19 @@ ana_monitor() {
 
     # Don't complete the steps below if this is a probe or non-monitor op
     if ocf_is_probe || [ "${__OCF_ACTION}" != "monitor" ]; then
-        ocf_log debug "${FUNCNAME[1]}() -> Probe or non-monitor operation," \
+        ocf_log debug "${FUNCNAME[0]}() -> Probe or non-monitor operation," \
             "returning early..."
         return "${rc}"
     fi
 
     # Print the current NVMe Target port states
-    ocf_log debug "${FUNCNAME[1]}() -> Current NVMe Target ANA port states" \
+    ocf_log debug "${FUNCNAME[0]}() -> Current NVMe Target ANA port states" \
         "for group ID '${OCF_RESKEY_ana_group_id}':"
     while read -r i; do
         port_num="$(basename "${i}")"
         ana_state_file="${i}/ana_groups/${OCF_RESKEY_ana_group_id}/ana_state"
         ana_state="$(head -1 "${ana_state_file}")"
-        ocf_log debug "${FUNCNAME[1]}() -> Port #${port_num}: ${ana_state}"
+        ocf_log debug "${FUNCNAME[0]}() -> Port #${port_num}: ${ana_state}"
     done <<< "$(find "${NVMET_SYSFS}/ports/" -maxdepth 1 -mindepth 1 -type d)"
 
     # Resource starts as Slave, but the redirected device might not be
@@ -184,7 +187,7 @@ ana_monitor() {
             # All NVMe namespaces are set to the redirection block I/O device
             # TODO: This call may be expensive, but we don't have one value to
             # test like we do with SCST, so we should keep an eye on this.
-            set_ana_group_state "${FUNCNAME[1]}" "${OCF_RESKEY_ana_group_id}" \
+            set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
                 "${OCF_RESKEY_s_ana_state}"
         else
             # Not all namespaces are redirected yet, rescan here and we'll
@@ -204,7 +207,7 @@ ana_monitor() {
         if ns_to_real; then
             # TODO: This call may be expensive, but we don't have one value to
             # test like we do with SCST, so we should keep an eye on this.
-            set_ana_group_state "${FUNCNAME[1]}" "${OCF_RESKEY_ana_group_id}" \
+            set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
                 "${OCF_RESKEY_m_ana_state}"
         fi
     fi
@@ -215,7 +218,12 @@ ana_monitor() {
 
 ana_validate_all() {
     # Test for required binaries
-    check_binary echo
+    check_binary timeout
+    check_binary sg_turs
+    check_binary sg_read
+    check_binary rescan-scsi-bus.sh
+    check_binary iscsiadm
+    check_binary ssh
 
     # Make sure the state directory is writable
     state_dir="$(dirname "${OCF_RESKEY_state}")"
@@ -357,15 +365,6 @@ check_state() {
 }
 
 
-remote_inactive() {
-    # Determine if there is an inactive (stopped) instance
-    crm_mon --as-xml | \
-        grep "resource.*id=\"${OCF_RESOURCE_INSTANCE}\".*active=\"false\"" \
-        > /dev/null 2>&1
-    return ${?}
-}
-
-
 pending_fence() {
     # Determine if there is a pending fence event
     crm_mon --as-xml | \
@@ -396,7 +395,7 @@ set_ana_group_state() {
             # Current port state doesn't match the new value, change it
             ocf_log info "${func_name}() -> Setting '${ana_state_file}' to" \
                 "'${ana_state}'..."
-            ocf_run echo "${ana_state}" > "${ana_state_file}"
+            echo "${ana_state}" > "${ana_state_file}"
             # shellcheck disable=SC2181
             if [ ${?} -ne 0 ]; then
                 error_msg="Failed to set a port's ANA state!"
@@ -415,7 +414,7 @@ set_ana_group_state() {
 
 set_trans_state() {
     # Set the transitioning state for our group on all ports
-    set_ana_group_state "${FUNCNAME[1]}" "${OCF_RESKEY_ana_group_id}" \
+    set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
         "${TRANSITION_STATE}"
     # Get the peer node name (if any)
     local peer_name
@@ -424,7 +423,7 @@ set_trans_state() {
     if [ -n "${peer_name}" ]; then
         if ping -c 1 -W 1 "${peer_name}" > /dev/null; then
             # Set the ANA state on our ports + group ID's on the peer via SSH
-            ocf_log info "${FUNCNAME[1]}() -> Setting all ports matching" \
+            ocf_log info "${FUNCNAME[0]}() -> Setting all ports matching" \
                 "group ID '${OCF_RESKEY_ana_group_id}' ANA state to" \
                 "'${TRANSITION_STATE}' on peer '${peer_name}'..."
             find_path="*/ana_groups/${OCF_RESKEY_ana_group_id}/ana_state"
@@ -443,7 +442,7 @@ set_trans_state() {
             #    exit "${OCF_SUCCESS}"
             #fi
         else
-            ocf_log warn "${FUNCNAME[1]}() -> Failed to ping '${peer_name}'!" \
+            ocf_log warn "${FUNCNAME[0]}() -> Failed to ping '${peer_name}'!" \
                 "It may be offline..."
         fi
     fi
@@ -575,7 +574,7 @@ ns_to_real() {
         echo 0 > "${ns_path}/enable" &
     done
     if [ -n "${disable_devs}" ]; then
-        ocf_log debug "${FUNCNAME[1]}() -> Waiting for namespaces to" \
+        ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
             "disable..."
         wait
     fi
@@ -602,7 +601,7 @@ ns_to_real() {
         echo 1 > "${ns_path}/enable" &
     done
     if [ -n "${enable_devs}" ]; then
-        ocf_log debug "${FUNCNAME[1]}() -> Waiting for namespaces to" \
+        ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
             "enable..."
         wait
     fi
@@ -677,7 +676,7 @@ ns_to_redirect() {
         echo 0 > "${ns_path}/enable" &
     done
     if [ -n "${disable_devs}" ]; then
-        ocf_log debug "${FUNCNAME[1]}() -> Waiting for namespaces to" \
+        ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
             "disable..."
         wait
     fi
@@ -707,7 +706,7 @@ ns_to_redirect() {
         enable_ns_pids+=" ${!}"
     done
     if [ -n "${enable_devs}" ]; then
-        ocf_log debug "${FUNCNAME[1]}() -> Waiting for devices to" \
+        ocf_log debug "${FUNCNAME[0]}() -> Waiting for devices to" \
             "enable (current return value is ${rc})..."
         for pid in ${enable_ns_pids}; do
             wait "${pid}"
@@ -720,7 +719,7 @@ ns_to_redirect() {
         done
     fi
     if [ "${rc}" -eq 0 ]; then
-        ocf_log debug "${FUNCNAME[1]}() -> All NVMe namespaces for group ID" \
+        ocf_log debug "${FUNCNAME[0]}() -> All NVMe namespaces for group ID" \
             "'${OCF_RESKEY_ana_group_id}' have been set to the" \
             "redirection block device and are enabled."
     else
@@ -778,7 +777,7 @@ ana_promote() {
     case "${rc}" in
     "${OCF_SUCCESS}")
         # Running as Slave; normal, expected behavior
-        ocf_log debug "${FUNCNAME[1]}() -> Resource is" \
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is" \
             "currently running as Slave."
         ;;
     "${OCF_RUNNING_MASTER}")
@@ -806,7 +805,7 @@ ana_promote() {
 
     # Change the backing device to the real one (we could timeout here)
     while ! ns_to_real; do
-        ocf_log debug "${FUNCNAME[1]}() -> Waiting for redirection-to-real" \
+        ocf_log debug "${FUNCNAME[0]}() -> Waiting for redirection-to-real" \
             "device setup to complete..."
         sleep 1
     done
@@ -814,7 +813,7 @@ ana_promote() {
     # 'ocf:esos:alua' resource agent, so nothing for us to do here
 
     # Set our port's ANA state for Master (the ns_to_real() had to finish)
-    set_ana_group_state "${FUNCNAME[1]}" "${OCF_RESKEY_ana_group_id}" \
+    set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
         "${OCF_RESKEY_m_ana_state}"
 
     # Set the new resource state
@@ -827,7 +826,7 @@ ana_promote() {
             ocf_log info "Resource was promoted successfully."
             break
         else
-            ocf_log debug "${FUNCNAME[1]}() -> Resource still" \
+            ocf_log debug "${FUNCNAME[0]}() -> Resource still" \
                 "awaiting promotion."
             sleep 1
         fi
@@ -848,12 +847,12 @@ ana_demote() {
     case "${rc}" in
     "${OCF_RUNNING_MASTER}")
         # Running as Master; normal, expected behavior
-        ocf_log debug "${FUNCNAME[1]}() -> Resource is" \
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is" \
             "currently running as Master."
         ;;
     "${OCF_SUCCESS}")
         # Already running as Slave; nothing to do
-        ocf_log debug "${FUNCNAME[1]}() -> Resource is" \
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is" \
             "currently running as Slave."
         return "${OCF_SUCCESS}"
         ;;
@@ -876,7 +875,7 @@ ana_demote() {
     set_trans_state
 
     local change_tpg_safe=1
-    ocf_log debug "${FUNCNAME[1]}() -> Disabling all namespaces that are" \
+    ocf_log debug "${FUNCNAME[0]}() -> Disabling all namespaces that are" \
         "part of our ANA group..."
     ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
     while read -r i; do
@@ -887,7 +886,7 @@ ana_demote() {
         fi
         echo 0 > "${i}/enable" &
     done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
-    ocf_log debug "${FUNCNAME[1]}() -> Waiting for namespaces to" \
+    ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
         "disable..."
     wait
     # TODO: I'm not sure trying to set devices to the redirection device
@@ -905,7 +904,7 @@ ana_demote() {
 
     if [ ${change_tpg_safe} -eq 1 ]; then
         # Set our port's ANA state for Master (only if its safe)
-        set_ana_group_state "${FUNCNAME[1]}" "${OCF_RESKEY_ana_group_id}" \
+        set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
             "${OCF_RESKEY_s_ana_state}"
     fi
 
@@ -916,7 +915,7 @@ ana_demote() {
     while true; do
         ana_monitor
         if [ ${?} -eq "${OCF_RUNNING_MASTER}" ]; then
-            ocf_log debug "${FUNCNAME[1]}() -> Resource still" \
+            ocf_log debug "${FUNCNAME[0]}() -> Resource still" \
                 "awaiting demotion."
             sleep 1
         else
@@ -933,7 +932,7 @@ ana_demote() {
 ana_notify() {
     # Handle notification events
     # shellcheck disable=SC2154
-    ocf_log debug "${FUNCNAME[1]}() -> Received a" \
+    ocf_log debug "${FUNCNAME[0]}() -> Received a" \
         "'${OCF_RESKEY_CRM_meta_notify_type}' /" \
         "'${OCF_RESKEY_CRM_meta_notify_operation}' notification."
     case "${OCF_RESKEY_CRM_meta_notify_type}" in
@@ -986,6 +985,7 @@ check_ana() {
 
 
 # This must always be set
+: "${OCF_RESKEY_remote_inact_state=inaccessible}"
 : "${OCF_RESKEY_state=${HA_RSCTMP}/ana-${OCF_RESOURCE_INSTANCE}.state}"
 
 # Make sure meta-data and usage always succeed

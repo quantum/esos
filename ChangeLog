@@ -1,3 +1,9 @@
+2023-10-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'nvmeof_ra_fixes'
+
+	fixed a few issues in new NVMeoF RA scripts
+
 2023-10-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'nvmeof_ra'
