@@ -120,7 +120,7 @@ nvmet_validate_all() {
 }
 
 
-ana_meta_data() {
+nvmet_meta_data() {
 	cat <<-EOF
 	<?xml version="1.0"?>
 	<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
