@@ -174,6 +174,7 @@ ana_monitor() {
     ocf_log debug "${FUNCNAME[0]}() -> Current NVMe Target ANA port states" \
         "for group ID '${OCF_RESKEY_ana_group_id}':"
     while read -r i; do
+        [[ -n "${i}" ]] || break
         port_num="$(basename "${i}")"
         ana_state_file="${i}/ana_groups/${OCF_RESKEY_ana_group_id}/ana_state"
         ana_state="$(head -1 "${ana_state_file}")"
@@ -389,6 +390,7 @@ set_ana_group_state() {
     local ana_state="${3}"
     # Find all group ID matches in ports and set the new ANA state value
     while read -r i; do
+        [[ -n "${i}" ]] || break
         ana_state_file="${i}/ana_state"
         port_ana_state="$(head -1 "${ana_state_file}")"
         if [ "${port_ana_state}" != "${ana_state}" ]; then
@@ -467,7 +469,12 @@ get_real_dev_path() {
     fi
     dev_path="$(head -1 "${dev_map_file}" | cut -d' ' -f2)"
     ocf_log debug "Real backing device for '${dev_name}': ${dev_path}"
-    echo "${dev_path}"
+    if [ -e "${dev_path}" ]; then
+        echo "${dev_path}"
+    else
+        ocf_log warn "The real backing device '${dev_path}' does not exist!"
+        echo ""
+    fi
 }
 
 
@@ -613,12 +620,9 @@ enable_ns_redirect() {
     # If the block device is ready, we can enable it
     local block_dev="${1}"
     local ns_path="${2}"
-    # TODO: We shouldn't need to do this test here, since we require the
-    # SCST/ALUA resources to be settled as a requirement, so the device
-    # should be safe to use.
-    #if ! test_if_dev_ready "${block_dev}"; then
-    #    return 1
-    #fi
+    if ! test_if_dev_ready "${block_dev}"; then
+        return 1
+    fi
     ns_id="$(basename "${ns_path}")"
     ocf_log debug "Setting namespace '${ns_id}' to enabled..."
     echo 1 > "${ns_path}/enable"
