@@ -1,3 +1,9 @@
+2023-10-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'more_ana_tweaks'
+
+	more tweaks in the 'ocf:esos:ana' RA script; fixed an issue for 'ocf:esos:Raid1' introduced by our resource-agents patched (no harm, but there was an extra error message)
+
 2023-10-10  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'nvmeof_ra_fixes'
