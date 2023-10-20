@@ -1,3 +1,9 @@
+2023-10-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20231017_changes'
+
+	added a kernel patch that sets dm-zero block devices to a 4096-byte logical + phsyical sector size; updates/improvements for the 'ocf:esos:nvmet' and 'ocf:esos:ana' RA scripts
+
 2023-10-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'more_ana_tweaks'

@@ -11,6 +11,9 @@
 # shellcheck disable=SC1091
 . "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 NVMET_CONF_FILE="/etc/nvmet/config.json"
+NVMET_DEV_MAPS="/etc/esos_dev_maps/nvmet"
+ZERO_DEV_PREFIX="zero_dev-"
+REDIRECT_DEV_PREFIX="redirect_dev-"
 
 
 nvmet_start() {
@@ -30,10 +33,14 @@ nvmet_start() {
     jq '.ports[].ana_groups[].ana.state = "inaccessible"' \
         "${NVMET_CONF_FILE}" > /tmp/nvmet_config.json
     mv -f /tmp/nvmet_config.json "${NVMET_CONF_FILE}"
-    # Ensure all namespaces are disabled to start
-    jq '.subsystems[].namespaces[].enable = 0' \
+    # Ensure all namespaces are enabled to start
+    jq '.subsystems[].namespaces[].enable = 1' \
         "${NVMET_CONF_FILE}" > /tmp/nvmet_config.json
     mv -f /tmp/nvmet_config.json "${NVMET_CONF_FILE}"
+
+    # Configure the dm-linear redirection devices
+    start_redirect_devs
+
     # Now we can load it
     ocf_log info "Restoring the NVMe Target configuration..."
     ocf_run nvmetcli restore "${NVMET_CONF_FILE}"
@@ -74,6 +81,9 @@ nvmet_stop() {
     # Zap the running configuration from sysfs (not the config file)
     ocf_log info "Clearing the NVMe Target configuration..."
     ocf_run nvmetcli clear
+
+    # Now remove all of our redirection devices
+    stop_redirect_devs
 
     # Remove the state file
     rm -f "${OCF_RESKEY_state}"
@@ -152,6 +162,98 @@ nvmet_usage() {
     echo "usage: ${0} {start|stop|monitor|validate-all|reload|meta-data}"
     echo ""
     echo "Expects to have a fully populated OCF RA-compliant environment set."
+}
+
+
+start_redirect_devs() {
+    # Start and configure all redirection block devices
+    while read -r i; do
+        if [ ! -d "${NVMET_DEV_MAPS}/${i}" ]; then
+            ocf_log warn "Subsystem '${i}' not found in the ESOS device maps" \
+                "directory! Skipping..."
+            continue
+        fi
+        while read -r j; do
+            group_id="$(echo "${j}" | cut -d, -f1)"
+            ns_id="$(echo "${j}" | cut -d, -f2)"
+            dev_map_file="${NVMET_DEV_MAPS}/${i}/${group_id}/${ns_id}"
+            if [ ! -f "${dev_map_file}" ]; then
+                ocf_log warn "The ESOS device map file for subsystem '${i}'" \
+                    "+ ANA group ID '${group_id}' + namespace ID '${ns_id}'" \
+                    "does not exist! Skipping..."
+                continue
+            fi
+            # Get the device name + device size (in 512-byte sectors)
+            dev_name="$(head -1 "${dev_map_file}" | cut -d' ' -f1)"
+            ocf_log debug "${FUNCNAME[0]}() -> Parsed device name: ${dev_name}"
+            dev_size="$(head -1 "${dev_map_file}" | cut -d' ' -f3)"
+            ocf_log debug "${FUNCNAME[0]}() -> Parsed device size: ${dev_size}"
+            # Create the dm-zero device if it doesn't already exist
+            zero_dev_name="${ZERO_DEV_PREFIX}${dev_name}"
+            zero_dev_path="/dev/mapper/${zero_dev_name}"
+            if [ -e "${zero_dev_path}" ]; then
+                ocf_log warn "The dm-zero device '${zero_dev_name}' already" \
+                    "exists! Unexpected, but continuing anyways..."
+            else
+                ocf_log info "Creating the dm-zero device for '${dev_name}'" \
+                    "with size '${dev_size}'..."
+                # ESOS's dm-zero driver is always a 4096/4096 block size
+                ocf_run dmsetup create "${zero_dev_name}" \
+                    --table "0 ${dev_size} zero"
+                # shellcheck disable=SC2181
+                if [ ${?} -ne 0 ]; then
+                    error_msg="Failed to create the '${zero_dev_name}' "
+                    error_msg+="dm-zero device!"
+                    ocf_exit_reason "${error_msg}"
+                    exit "${OCF_SUCCESS}"
+                fi
+            fi
+            # Create the dm-linear (redirect) device if it doesn't already exist
+            redirect_dev_name="${REDIRECT_DEV_PREFIX}${dev_name}"
+            redirect_dev_path="/dev/mapper/${redirect_dev_name}"
+            if [ -e "${redirect_dev_path}" ]; then
+                ocf_log warn "The dm-linear device '${redirect_dev_name}'" \
+                    "already exists! Unexpected, but continuing anyways..."
+                # TODO: We assume this DM device is healthy/usable, but we
+                # might want to make sure here.
+            else
+                ocf_log info "Creating the dm-linear device for '${dev_name}'" \
+                    "with size '${dev_size}' using backing device" \
+                    "'${zero_dev_path}'..."
+                # TODO: We assume that all block devices we use have a logical
+                # and physical sector size of 4096 bytes!
+                ocf_run dmsetup create "${redirect_dev_name}" \
+                    --table "0 ${dev_size} linear ${zero_dev_path} 0"
+                # shellcheck disable=SC2181
+                if [ ${?} -ne 0 ]; then
+                    error_msg="Failed to create the '${redirect_dev_name}' "
+                    error_msg+="dm-linear device!"
+                    ocf_exit_reason "${error_msg}"
+                    exit "${OCF_SUCCESS}"
+                fi
+            fi
+        done <<< "$(jq -r --arg SUBSYS "${i}" '.subsystems[] | 
+            select(.nqn==$SUBSYS) | .namespaces[] | [.ana_grpid, .nsid] 
+            | @csv' "${NVMET_CONF_FILE}")"
+    done <<< "$(jq -r '.subsystems[].nqn' "${NVMET_CONF_FILE}")"
+}
+
+
+stop_redirect_devs() {
+    # Remove all of the redirection devices; we rely on sorted results so we
+    # stop the redirect (dm-linear) devices before the fillers (dm-zero)
+    ocf_log info "Removing all DM redirection devices..."
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        ocf_run dmsetup remove "${i}"
+        # shellcheck disable=SC2181
+        if [ ${?} -ne 0 ]; then
+            error_msg="Failed to remove the '${i}' device!"
+            ocf_exit_reason "${error_msg}"
+            exit "${OCF_ERR_GENERIC}"
+        fi
+    done <<< "$(find /dev/mapper/ -iname "${REDIRECT_DEV_PREFIX}*" \
+        -or -iname "${ZERO_DEV_PREFIX}*" | sort)"
 }
 
 
