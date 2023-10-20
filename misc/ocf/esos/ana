@@ -16,6 +16,8 @@ NVMET_SYSFS="/sys/kernel/config/nvmet"
 ANA_STATES="optimized non-optimized inaccessible persistent-loss change"
 TRANSITION_STATE="change"
 NVMET_DEV_MAPS="/etc/esos_dev_maps/nvmet"
+ZERO_DEV_PREFIX="zero_dev-"
+REDIRECT_DEV_PREFIX="redirect_dev-"
 SG_CMD_TIMEOUT=1
 ISCSIADM_TIMEOUT=5
 RESCAN_SCSI_TIMEOUT=20
@@ -88,13 +90,14 @@ ana_stop() {
     esac
 
     # Set all ports matching our group ID to the transitioning state
+    # TODO: Do we really need to set this when we set them to offline below?
     set_trans_state
 
     # Set our ports to the offline/unavailable ANA state
     set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
         "${OCF_RESKEY_remote_inact_state}"
 
-    # If we're stopping, set all of the namespaces to disabled for now
+    # If we're stopping, set all of our redirection devices to dm-zero for now
     ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
     while read -r i; do
         [[ -n "${i}" ]] || break
@@ -104,11 +107,11 @@ ana_stop() {
         fi
         ns_id="$(basename "${i}")"
         ocf_log debug "${FUNCNAME[0]}() -> Setting namespace '${ns_id}'" \
-            "to disabled..."
-        echo 0 > "${i}/enable" &
+            "block device to the dm-zero device..."
+        ( set_ns_dev_zero "${ns_id}" ) &
     done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
-    ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
-        "disable..."
+    ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespace block" \
+        "devices to transition to dm-zero..."
     wait
 
     # Zap the state file
@@ -454,24 +457,14 @@ set_trans_state() {
 get_real_dev_path() {
     # Lookup the real backing device name from the map file
     local ns_id="${1}"
-    dev_map_file="${NVMET_DEV_MAPS}/${OCF_RESKEY_subsys_name}"
-    dev_map_file+="/${OCF_RESKEY_ana_group_id}/${ns_id}"
-    if [ ! -f "${dev_map_file}" ]; then
-        ocf_log err "No NVMe Target device map file found for NS '${ns_id}'!"
-        echo ""
-        return
-    fi
-    dev_name="$(head -1 "${dev_map_file}" | cut -d' ' -f1)"
-    if [ -z "${dev_name}" ]; then
-        ocf_log err "Unable to resolve the device name for NS '${ns_id}'!"
-        echo ""
-        return
-    fi
+    dev_map_file="$(get_dev_map_file "${ns_id}")"
+    dev_name="$(get_device_name "${ns_id}")"
     dev_path="$(head -1 "${dev_map_file}" | cut -d' ' -f2)"
     ocf_log debug "Real backing device for '${dev_name}': ${dev_path}"
     if [ -e "${dev_path}" ]; then
         echo "${dev_path}"
     else
+        # This might be a transient condition if the LVM resource isn't up yet
         ocf_log warn "The real backing device '${dev_path}' does not exist!"
         echo ""
     fi
@@ -481,19 +474,7 @@ get_real_dev_path() {
 get_redirect_dev_path() {
     # Find the redirected (iSCSI) block device from lsscsi output
     local ns_id="${1}"
-    dev_map_file="${NVMET_DEV_MAPS}/${OCF_RESKEY_subsys_name}"
-    dev_map_file+="/${OCF_RESKEY_ana_group_id}/${ns_id}"
-    if [ ! -f "${dev_map_file}" ]; then
-        ocf_log err "No NVMe Target device map file found for NS '${ns_id}'!"
-        echo ""
-        return
-    fi
-    dev_name="$(head -1 "${dev_map_file}" | cut -d' ' -f1)"
-    if [ -z "${dev_name}" ]; then
-        ocf_log err "Unable to resolve the device name for NS '${ns_id}'!"
-        echo ""
-        return
-    fi
+    dev_name="$(get_device_name "${ns_id}")"
     dev_path="$(lsscsi | awk '{print $6, $4}' | grep -m 1 -E "${dev_name}$" | \
         cut -d' ' -f1)"
     ocf_log debug "Redirected backing device for '${dev_name}': ${dev_path}"
@@ -504,6 +485,56 @@ get_redirect_dev_path() {
     else
         echo "${dev_path}"
     fi
+}
+
+
+get_dev_map_file() {
+    # Lookup the device name from the map file
+    local ns_id="${1}"
+    dev_map_file="${NVMET_DEV_MAPS}/${OCF_RESKEY_subsys_name}"
+    dev_map_file+="/${OCF_RESKEY_ana_group_id}/${ns_id}"
+    if [ ! -f "${dev_map_file}" ]; then
+        error_msg="No NVMe Target device map file found for NS '${ns_id}'!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_SUCCESS}"
+    fi
+    echo "${dev_map_file}"
+}
+
+
+get_device_name() {
+    # Lookup the device name from the map file
+    local ns_id="${1}"
+    dev_map_file="$(get_dev_map_file "${ns_id}")"
+    dev_name="$(head -1 "${dev_map_file}" | cut -d' ' -f1)"
+    if [ -z "${dev_name}" ]; then
+        error_msg="Unable to resolve the device name for NS '${ns_id}'!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_SUCCESS}"
+    fi
+    echo "${dev_name}"
+}
+
+
+get_device_size() {
+    # Lookup the device size from the map file
+    local ns_id="${1}"
+    dev_map_file="$(get_dev_map_file "${ns_id}")"
+    dev_size="$(head -1 "${dev_map_file}" | cut -d' ' -f3)"
+    if [ -z "${dev_size}" ]; then
+        error_msg="Unable to resolve the device size for NS '${ns_id}'!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_SUCCESS}"
+    fi
+    echo "${dev_size}"
+}
+
+
+get_dm_redirect_dev() {
+    # Return the full path to the dm-linear "redirection" block device
+    local ns_id="${1}"
+    dev_name="$(get_device_name "${ns_id}")"
+    echo "/dev/mapper/${REDIRECT_DEV_PREFIX}${dev_name}"
 }
 
 
@@ -533,9 +564,7 @@ test_if_dev_ready() {
 ns_to_real() {
     # We assume success unless we encounter a problem below
     local rc=0
-    local disable_devs=""
     local chg_dev_paths=""
-    local enable_devs=""
     # Loop over each NS in our subsystem and find those matching our group ID
     ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
     while read -r i; do
@@ -556,86 +585,40 @@ ns_to_real() {
             rc=1
             continue
         fi
-        dev_path_val="$(head -1 "${i}/device_path")"
-        enable_val="$(head -1 "${i}/enable")"
-        if [ "${new_dev_path}" = "${dev_path_val}" ]; then
-            ocf_log debug "The 'device_path' attribute value is already" \
+        dm_redirect="$(get_dm_redirect_dev "${ns_id}")"
+        if test_redirect_dev_dep "${dm_redirect}" "${new_dev_path}"; then
+            ocf_log debug "The dm-linear backing device is already" \
                 "what it should be..."
-            if [ "${enable_val}" = "0" ]; then
-                ocf_log debug "Setting namespace '${ns_id}' to enabled..."
-                echo 1 > "${i}/enable"
-            fi
             continue
         fi
-        # The current device path value is not accurate, so change it
-        if [ "${enable_val}" = "1" ]; then
-            disable_devs+=" ${i}"
-        fi
-        chg_dev_paths+=" ${i},${new_dev_path}"
-        enable_devs+=" ${i}"
+        # The current dm-linear backing device is not accurate, so change it
+        chg_dev_paths+=" ${ns_id},${new_dev_path}"
     done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
-    # Disable the namespaces here and background each call (slow)
-    for ns_path in ${disable_devs}; do
-        ns_id="$(basename "${ns_path}")"
-        ocf_log debug "Setting namespace '${ns_id}' to disabled..."
-        echo 0 > "${ns_path}/enable" &
-    done
-    if [ -n "${disable_devs}" ]; then
-        ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
-            "disable..."
-        wait
-    fi
-    # Change the namespace 'device_path' attributes that need it
+    # Change the namespace redirect backing devices that need it
     for csv_item in ${chg_dev_paths}; do
-        ns_path="$(echo "${csv_item}" | cut -d, -f1)"
-        ns_id="$(basename "${ns_path}")"
+        ns_id="$(echo "${csv_item}" | cut -d, -f1)"
         new_dev_path="$(echo "${csv_item}" | cut -d, -f2)"
-        ocf_log info "Changing 'device_path' attribute for namespace" \
-            "'${ns_id}' to the real backing device..."
-        echo "${new_dev_path}" > "${ns_path}/device_path"
-        # shellcheck disable=SC2181
-        if [ ${?} -ne 0 ]; then
-            ocf_log warn "Changing the namespace 'device_path' attribute" \
+        redirect_dev="$(get_dm_redirect_dev "${ns_id}")"
+        dev_size="$(get_device_size "${ns_id}")"
+        ocf_log info "Changing the dm-linear backing device for namespace" \
+            "'${ns_id}' to the real device..."
+        # TODO: We may want to background this call to speed things up...
+        if ! set_redirect_backing "${redirect_dev}" "${new_dev_path}" \
+            "${dev_size}"; then
+            ocf_log warn "Changing the dm-linear backing device" \
                 "failed, check kernel logs!"
             rc=1
             continue
         fi
     done
-    # Enable the devices here and background each call (slow)
-    for ns_path in ${enable_devs}; do
-        ns_id="$(basename "${ns_path}")"
-        ocf_log debug "Setting namespace '${ns_id}' to enabled..."
-        echo 1 > "${ns_path}/enable" &
-    done
-    if [ -n "${enable_devs}" ]; then
-        ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
-            "enable..."
-        wait
-    fi
     return "${rc}"
-}
-
-
-enable_ns_redirect() {
-    # If the block device is ready, we can enable it
-    local block_dev="${1}"
-    local ns_path="${2}"
-    if ! test_if_dev_ready "${block_dev}"; then
-        return 1
-    fi
-    ns_id="$(basename "${ns_path}")"
-    ocf_log debug "Setting namespace '${ns_id}' to enabled..."
-    echo 1 > "${ns_path}/enable"
-    return 0
 }
 
 
 ns_to_redirect() {
     # We assume success unless we encounter a problem below
     local rc=0
-    local disable_devs=""
     local chg_dev_paths=""
-    local enable_devs=""
     # Loop over each NS in our subsystem and find those matching our group ID
     ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
     while read -r i; do
@@ -656,82 +639,135 @@ ns_to_redirect() {
             rc=1
             continue
         fi
-        dev_path_val="$(head -1 "${i}/device_path")"
-        enable_val="$(head -1 "${i}/enable")"
-        if [ "${new_dev_path}" = "${dev_path_val}" ]; then
-            ocf_log debug "The 'device_path' attribute value is already" \
+        dm_redirect="$(get_dm_redirect_dev "${ns_id}")"
+        if test_redirect_dev_dep "${dm_redirect}" "${new_dev_path}"; then
+            ocf_log debug "The dm-linear backing device is already" \
                 "what it should be..."
-            if [ "${enable_val}" = "0" ]; then
-                enable_devs+=" ${i},${new_dev_path}"
-            fi
             continue
         fi
-        # The current device path value is not accurate, so change it
-        if [ "${enable_val}" = "1" ]; then
-            disable_devs+=" ${i}"
+        # The internal redirection iSCSI LUN might not be ready yet
+        if ! test_if_dev_ready "${new_dev_path}"; then
+            rc=1
+            continue
         fi
-        chg_dev_paths+=" ${i},${new_dev_path}"
-        enable_devs+=" ${i},${new_dev_path}"
+        # The current dm-linear backing device is not accurate, so change it
+        chg_dev_paths+=" ${ns_id},${new_dev_path}"
     done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
-    # Disable the namespaces here and background each call (slow)
-    for ns_path in ${disable_devs}; do
-        ns_id="$(basename "${ns_path}")"
-        ocf_log debug "Setting namespace '${ns_id}' to disabled..."
-        echo 0 > "${ns_path}/enable" &
-    done
-    if [ -n "${disable_devs}" ]; then
-        ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
-            "disable..."
-        wait
-    fi
-    # Change the namespace 'device_path' attributes that need it
+    # Change the namespace redirect backing devices that need it
     for csv_item in ${chg_dev_paths}; do
-        ns_path="$(echo "${csv_item}" | cut -d, -f1)"
-        ns_id="$(basename "${ns_path}")"
+        ns_id="$(echo "${csv_item}" | cut -d, -f1)"
         new_dev_path="$(echo "${csv_item}" | cut -d, -f2)"
-        ocf_log info "Changing 'device_path' attribute for namespace" \
-            "'${ns_id}' to the redirected backing device..."
-        echo "${new_dev_path}" > "${ns_path}/device_path"
-        # shellcheck disable=SC2181
-        if [ ${?} -ne 0 ]; then
-            ocf_log warn "Changing the device 'device_path' attribute" \
+        redirect_dev="$(get_dm_redirect_dev "${ns_id}")"
+        dev_size="$(get_device_size "${ns_id}")"
+        ocf_log info "Changing the dm-linear backing device for namespace" \
+            "'${ns_id}' to the redirected device..."
+        # TODO: We may want to background this call to speed things up...
+        if ! set_redirect_backing "${redirect_dev}" "${new_dev_path}" \
+            "${dev_size}"; then
+            ocf_log warn "Changing the dm-linear backing device" \
                 "failed, check kernel logs!"
             rc=1
             continue
         fi
     done
-    # Enable the namespaces here and background each call (slow)
-    local enable_ns_pids=""
-    for csv_item in ${enable_devs}; do
-        ns_path="$(echo "${csv_item}" | cut -d, -f1)"
-        ns_id="$(basename "${ns_path}")"
-        new_dev_path="$(echo "${csv_item}" | cut -d, -f2)"
-        ( enable_ns_redirect "${new_dev_path}" "${ns_path}" ) &
-        enable_ns_pids+=" ${!}"
-    done
-    if [ -n "${enable_devs}" ]; then
-        ocf_log debug "${FUNCNAME[0]}() -> Waiting for devices to" \
-            "enable (current return value is ${rc})..."
-        for pid in ${enable_ns_pids}; do
-            wait "${pid}"
-            pid_rc=${?}
-            if [ "${pid_rc}" -ne 0 ]; then
-                ocf_log debug "The return value from enable_ns_redirect()" \
-                    "for PID ${pid} returned ${pid_rc} (non-zero)!"
-                rc=1
-            fi
-        done
-    fi
     if [ "${rc}" -eq 0 ]; then
         ocf_log debug "${FUNCNAME[0]}() -> All NVMe namespaces for group ID" \
             "'${OCF_RESKEY_ana_group_id}' have been set to the" \
-            "redirection block device and are enabled."
+            "redirection block device and are active."
     else
         ocf_log warn "One or more NVMe namespaces for group ID" \
             "'${OCF_RESKEY_ana_group_id}' are missing a redirection" \
             "block device and are NOT active!"
     fi
     return "${rc}"
+}
+
+
+set_redirect_backing() {
+    # Suspend the dm-linear redirection device, change the backing device
+    # to the new block device using the given size, and finally resume it
+    local redirect_dev="${1}"
+    local backing_dev="${2}"
+    local dev_size="${3}"
+    ocf_log debug "${FUNCNAME[0]}() -> Suspending DM device" \
+        "'${redirect_dev}'..."
+    ocf_run dmsetup suspend "${redirect_dev}"
+    # shellcheck disable=SC2181
+    if [ ${?} -ne 0 ]; then
+        ocf_log err "Failed to suspend the '${redirect_dev}' dm-linear device!"
+        return 1
+    fi
+    ocf_log debug "${FUNCNAME[0]}() -> Reloading DM device" \
+        "'${redirect_dev}' using device '${backing_dev}'" \
+        "and size '${dev_size}'..."
+    ocf_run dmsetup reload "${redirect_dev}" --table \
+        "0 ${dev_size} linear ${backing_dev} 0"
+    # shellcheck disable=SC2181
+    if [ ${?} -ne 0 ]; then
+        ocf_log err "Failed to reload the '${redirect_dev}' dm-linear device!"
+        return 1
+    fi
+    ocf_log debug "${FUNCNAME[0]}() -> Resuming DM device" \
+        "'${redirect_dev}'..."
+    ocf_run dmsetup resume "${redirect_dev}"
+    # shellcheck disable=SC2181
+    if [ ${?} -ne 0 ]; then
+        ocf_log err "Failed to resume the '${redirect_dev}' dm-linear device!"
+        return 1
+    fi
+    return 0
+}
+
+
+set_ns_dev_zero() {
+    local ns_id="${1}"
+    dev_name="$(get_device_name "${ns_id}")"
+    dev_size="$(get_device_size "${ns_id}")"
+    redirect_dev="/dev/mapper/${REDIRECT_DEV_PREFIX}${dev_name}"
+    zero_dev="/dev/mapper/${ZERO_DEV_PREFIX}${dev_name}"
+    if ! set_redirect_backing "${redirect_dev}" "${zero_dev}" \
+        "${dev_size}"; then
+        # It's fatal if we can't release the real/redirected device
+        error_msg="Failed to change the dm-linear backing device to the"
+        error_msg+="dm-zero device for NS '${ns_id}'!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_SUCCESS}"
+    fi
+}
+
+
+test_redirect_dev_dep() {
+    # Take the given "redirection" device (should be a dm-linear block device)
+    # and check if the other given block device is a slave of the DM device
+    local redirect_dev="${1}"
+    local dep_blk_dev="${2}"
+    # Resolve symlinks (if present) and get the short block device name
+    if [ -L "${redirect_dev}" ]; then
+        redirect_short="$(basename "$(readlink -f "${redirect_dev}")")"
+    else
+        redirect_short="$(basename "${redirect_dev}")"
+    fi
+    ocf_log debug "${FUNCNAME[0]}() -> Resolved redirect block" \
+        "device name: ${redirect_short}"
+    if [ -L "${dep_blk_dev}" ]; then
+        dep_blk_short="$(basename "$(readlink -f "${dep_blk_dev}")")"
+    else
+        dep_blk_short="$(basename "${dep_blk_dev}")"
+    fi
+    ocf_log debug "${FUNCNAME[0]}() -> Resolved dependent block" \
+        "device name: ${dep_blk_short}"
+    # Now see if we can find a matching slave -- if we do, then return success
+    # otherwise it is not a slave, so return failure
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        if [ "${i}" = "${dep_blk_short}" ]; then
+            ocf_log debug "${FUNCNAME[0]}() -> Device '${dep_blk_short}'" \
+                "is a slave to device '${redirect_short}'!"
+            return 0
+        fi
+    done <<< "$(find "/sys/block/${redirect_short}/slaves/" \
+        -maxdepth 1 -type l -exec basename {} \;)"
+    return 1
 }
 
 
@@ -879,8 +915,6 @@ ana_demote() {
     set_trans_state
 
     local change_tpg_safe=1
-    ocf_log debug "${FUNCNAME[0]}() -> Disabling all namespaces that are" \
-        "part of our ANA group..."
     ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
     while read -r i; do
         [[ -n "${i}" ]] || break
@@ -888,10 +922,13 @@ ana_demote() {
             "${OCF_RESKEY_ana_group_id}" ]; then
             continue
         fi
-        echo 0 > "${i}/enable" &
+        ns_id="$(basename "${i}")"
+        ocf_log debug "${FUNCNAME[0]}() -> Setting namespace '${ns_id}'" \
+            "block device to the dm-zero device..."
+        ( set_ns_dev_zero "${ns_id}" ) &
     done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
-    ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespaces to" \
-        "disable..."
+    ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespace block" \
+        "devices to transition to dm-zero..."
     wait
     # TODO: I'm not sure trying to set devices to the redirection device
     # during this demote operation is worth the time; from what I've seen
