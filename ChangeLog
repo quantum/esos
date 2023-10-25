@@ -1,3 +1,9 @@
+2023-10-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'su_fixup' into 4.x.x
+
+	disabled Busybox 'su' and included the real program from the util-linux package; added additional pam.d files for su
+
 2023-05-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '418_update' into 4.x.x
