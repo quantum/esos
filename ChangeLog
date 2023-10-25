@@ -1,5 +1,9 @@
 2023-10-25  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'more_cmd2'
+
+	included some changes/enhancememnts for the Cmd2 Python module
+
 	Merge branch 'master_su_fixup'
 
 	disabled Busybox 'su' and included the real program from the util-linux package; added additional pam.d files for su
