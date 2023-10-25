@@ -79,3 +79,65 @@ index 915934cceaab1cf7dc2e3ceb5b42a331bc466b5a..6176454385eef85ed03533ac67b7adcc
              )
          return statement
 
+--- a/cmd2/constants.py
++++ b/cmd2/constants.py
+@@ -57,3 +57,6 @@
+ 
+ # custom attributes added to argparse Namespaces
+ NS_ATTR_SUBCMD_HANDLER = '__subcmd_handler__'
++
++# QUANTUM - define list of allowed pipe commands
++ALLOWED_PIPES_CMDS = ['grep', 'egrep', 'wc', 'more', 'less', 'tail', 'head']
+--- a/cmd2/cmd2.py
++++ b/cmd2/cmd2.py
+@@ -2668,6 +2668,25 @@
+             pass
+ 
+         elif statement.pipe_to:
++            # QUANTUM - filter out unwanted characters in pipe string
++            pipe_to_str = ''
++            # Dont allow '&', '||' characters in pipe string
++            pipe_to_str = re.split(r'&|\|\|', statement.pipe_to)[0]
++
++            # process subpipes to make sure all commands they are allowed
++            if '|' in pipe_to_str:
++                # Make sure all subpipe commands are allowed
++                sub_pipe_cmd = pipe_to_str.split('|')[1:]
++                for x in sub_pipe_cmd:
++                    # ignore the whole pipe sequence and subpipes if we found
++                    # a command that is not allowed
++                    if x.split()[0] not in constants.ALLOWED_PIPES_CMDS:
++                        return
++
++            # ignore the whole pipe sequence if we found an unsupported command
++            if not any([x in pipe_to_str for x in constants.ALLOWED_PIPES_CMDS]):
++                return
++
+             # Create a pipe with read and write sides
+             read_fd, write_fd = os.pipe()
+ 
+@@ -2691,7 +2710,7 @@
+ 
+             # For any stream that is a StdSim, we will use a pipe so we can capture its output
+             proc = subprocess.Popen(  # type: ignore[call-overload]
+-                statement.pipe_to,
++                pipe_to_str,
+                 stdin=subproc_stdin,
+                 stdout=subprocess.PIPE if isinstance(self.stdout, utils.StdSim) else self.stdout,  # type: ignore[unreachable]
+                 stderr=subprocess.PIPE if isinstance(sys.stderr, utils.StdSim) else sys.stderr,  # type: ignore[unreachable]
+@@ -4050,8 +4069,14 @@
+             if shell:
+                 kwargs['executable'] = shell
+ 
++        # QUANTUM - Don't allow certain characters in the shell command args
++        cmd_args = ''
++        if args.command_args:
++            # Don't allow '&', '||' characters in the command
++            cmd_args = re.split(r'&|\|\|', ' '.join(args.command_args))[0]
++
+         # Create a list of arguments to shell
+-        tokens = [args.command] + args.command_args
++        tokens = [args.command] + cmd_args.split()
+ 
+         # Expand ~ where needed
+         utils.expand_user_in_tokens(tokens)
