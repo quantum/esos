@@ -3711,6 +3711,7 @@ util-linux.chroot: glibc.chroot ncurses.chroot zlib.chroot
 	$(INSTALL) -m 0755 $(tgt_src_dir)/mkfs /usr/sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/sulogin /usr/sbin/
 	$(INSTALL) -m 0755 $(tgt_src_dir)/dmesg /bin/
+	$(INSTALL) -m 0755 $(tgt_src_dir)/su /bin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -5458,8 +5459,8 @@ image:
 	$(FIND) $(STAGING_DIR)/etc/etckeeper/*.d -type f ! -path "*/README" \
 	-print0 | $(XARGS) -0 $(CHMOD) 0755
 	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
-	$(CHMOD) 4750 $(STAGING_DIR)/usr/local/bin/esos_tui
-	$(CHMOD) 4755 $(STAGING_DIR)/usr/bin/sudo
+	$(CHMOD) 4111 $(STAGING_DIR)/usr/bin/sudo
+	$(CHMOD) 4755 $(STAGING_DIR)/bin/su
 	$(CHMOD) 640 $(STAGING_DIR)/etc/shadow
 	$(CHOWN) 0:42 $(STAGING_DIR)/etc/shadow
 	$(CHMOD) 600 $(STAGING_DIR)/etc/crontab
