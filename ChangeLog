@@ -1,3 +1,9 @@
+2023-10-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'pam_su_fixup' into 4.x.x
+
+	fixed pam.d files for su + su-l (wasn't allow root w/o password)
+
 2023-10-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'cmd2_change' into 4.x.x
