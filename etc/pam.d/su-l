@@ -1,6 +1,9 @@
 # Begin /etc/pam.d/su-l
 
+auth        required       pam_env.so
+auth        sufficient     pam_rootok.so
 auth        include        system-auth
+account     sufficient     pam_succeed_if.so uid = 0 use_uid quiet
 account     include        system-account
 password    include        system-password
 session     include        system-session
