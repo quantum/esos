@@ -245,13 +245,15 @@ stop_redirect_devs() {
     ocf_log info "Removing all DM redirection devices..."
     while read -r i; do
         [[ -n "${i}" ]] || break
-        ocf_run dmsetup remove "${i}"
-        # shellcheck disable=SC2181
-        if [ ${?} -ne 0 ]; then
-            error_msg="Failed to remove the '${i}' device!"
-            ocf_exit_reason "${error_msg}"
-            exit "${OCF_ERR_GENERIC}"
-        fi
+        # The device may still be in-use, so we spin here until they are gone
+        while [ -e "${i}" ]; do
+            ocf_run dmsetup remove "${i}"
+            # shellcheck disable=SC2181
+            if [ ${?} -ne 0 ]; then
+                ocf_log warn "Failed to remove the '${i}' device! Retrying..."
+                sleep 1
+            fi
+        done
     done <<< "$(find /dev/mapper/ -iname "${REDIRECT_DEV_PREFIX}*" \
         -or -iname "${ZERO_DEV_PREFIX}*" | sort)"
 }
