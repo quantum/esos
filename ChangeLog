@@ -1,3 +1,9 @@
+2023-11-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'nvmet_ra_tweak'
+
+	handle retrying of DM removal in ocf:esos:nvmet (during a stop action)
+
 2023-10-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'pam_su_fixup_master'
