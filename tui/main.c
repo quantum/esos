@@ -56,7 +56,6 @@ int main(int argc, char** argv) {
             tty_fd = 0;
     pid_t child_pid = 0;
     uid_t saved_uid = 0;
-    boolean inet_works = FALSE;
 
     /* The "blue" TUI theme */
     g_color_main_text[BLUE_TUI]         = COLOR_PAIR(5);
@@ -111,11 +110,6 @@ int main(int argc, char** argv) {
     for (i = 1; i < argc; i++)
         DEBUG_LOG("Argument %d: %s", i, argv[i]);
 
-#ifdef USAGE_PROMPT
-    /* Check if there is Internet access */
-    inet_works = checkInetAccess();
-#endif
-
     /* Set the TUI interface theme (colors) */
     setTheme();
 
@@ -158,12 +152,6 @@ start:
                 "agreement to use this software. Hit ENTER to exit.");
         goto quit;
     }
-#endif
-
-#ifdef USAGE_PROMPT
-    /* Usage count (only if we have Internet) */
-    if (inet_works)
-        reportUsage(cdk_screen);
 #endif
 
     /* Check and see if SCST is loaded */
@@ -1489,201 +1477,6 @@ boolean acceptLicense(CDKSCREEN *main_cdk_screen) {
     destroyCDKLabel(transmit_msg);
     refreshCDKScreen(main_cdk_screen);
     return eula_accepted;
-}
-
-
-/**
- * @brief Read the ESOS configuration file and prompt the user to participate
- * in anonymous usage statistics; if user participates, whenever the ESOS
- * version changes (upgrade), an HTTP POST request is made.
- */
-void reportUsage(CDKSCREEN *main_cdk_screen) {
-    boolean question = FALSE;
-    dictionary *ini_dict = NULL;
-    uuid_t install_id = {0};
-    CDKLABEL *transmit_msg = 0;
-    char *error_msg = NULL;
-    const char *conf_install_id = NULL, *conf_last_ver = NULL,
-            *conf_participate = NULL;
-    char install_id_str[UUID_STR_SIZE] = {0};
-    FILE *ini_file = NULL;
-    CURL *curl = NULL;
-    CURLcode result = 0;
-    struct curl_httppost *form_post = NULL, *last_ptr = NULL;
-
-    while (1) {
-        if (access(ESOS_CONF, F_OK) != 0) {
-            if (errno == ENOENT) {
-                /* The iniparser_load function expects a file (even empty) */
-                if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR,
-                            strerror(errno));
-                    errorDialog(main_cdk_screen, error_msg, NULL);
-                    FREE_NULL(error_msg);
-                    break;
-                }
-                fclose(ini_file);
-            } else {
-                /* Missing file is okay, but fail otherwise */
-                SAFE_ASPRINTF(&error_msg, "access(): %s", strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
-                break;
-            }
-        }
-
-        /* Read ESOS configuration file (INI file) */
-        ini_dict = iniparser_load(ESOS_CONF);
-        if (ini_dict == NULL) {
-            errorDialog(main_cdk_screen, ESOS_CONF_READ_ERR_1,
-                    ESOS_CONF_READ_ERR_2);
-            break;
-        }
-
-        /* We set the section in every case */
-        if (iniparser_set(ini_dict, "usage", NULL) == -1) {
-            errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-            break;
-        }
-
-        /* Parse INI file values (if any) */
-        conf_participate = iniparser_getstring(ini_dict,
-                "usage:participate", "");
-        conf_install_id = iniparser_getstring(ini_dict,
-                "usage:install_id", "");
-        conf_last_ver = iniparser_getstring(ini_dict,
-                "usage:last_ver", "");
-
-        /* This may be a new configuration file, prompt the user */
-        if (conf_participate[0] == '\0') {
-            question = questionDialog(main_cdk_screen,
-                    "Anonymously report usage statistics?", NULL);
-            if (iniparser_set(ini_dict, "usage:participate",
-                    (question ? "yes" : "no")) == -1) {
-                errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                break;
-            }
-            /* Read the string value again, and save the file */
-            conf_participate = iniparser_getstring(ini_dict,
-                    "usage:participate", "");
-            if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR, strerror(errno));
-                errorDialog(main_cdk_screen, error_msg, NULL);
-                FREE_NULL(error_msg);
-                break;
-            }
-            iniparser_dump_ini(ini_dict, ini_file);
-            fclose(ini_file);
-        }
-
-        if (strcmp(conf_participate, "no") == 0) {
-            /* Nothing to do */
-            break;
-
-        } else if (strcmp(conf_participate, "yes") == 0) {
-            /* If we don't have an installation ID, generate one */
-            if (conf_install_id[0] == '\0') {
-                uuid_generate(install_id);
-                uuid_unparse_lower(install_id, install_id_str);
-                if (iniparser_set(ini_dict, "usage:install_id",
-                        install_id_str) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    break;
-                }
-                /* Read the string value again, and save the file */
-                conf_install_id = iniparser_getstring(ini_dict,
-                        "usage:install_id", "");
-                if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR,
-                            strerror(errno));
-                    errorDialog(main_cdk_screen, error_msg, NULL);
-                    FREE_NULL(error_msg);
-                    break;
-                }
-                iniparser_dump_ini(ini_dict, ini_file);
-                fclose(ini_file);
-            }
-
-            /* Last reported version doesn't match what we have, report it */
-            if (strcmp(conf_last_ver, ESOS_VERSION) != 0) {
-                /* Display a message while we transmit */
-                transmit_msg = newCDKLabel(main_cdk_screen, CENTER, CENTER,
-                        g_usage_label_msg, g_usage_label_msg_size(),
-                        TRUE, FALSE);
-                if (!transmit_msg) {
-                    errorDialog(main_cdk_screen, LABEL_ERR_MSG, NULL);
-                    break;
-                }
-                setCDKLabelBackgroundAttrib(transmit_msg,
-                        g_color_dialog_text[g_curr_theme]);
-                setCDKLabelBoxAttribute(transmit_msg,
-                        g_color_dialog_box[g_curr_theme]);
-                refreshCDKScreen(main_cdk_screen);
-
-                /* Initialize cURL */
-                curl_global_init(CURL_GLOBAL_ALL);
-                if ((curl = curl_easy_init()) != NULL) {
-                    /* Fill in our form fields */
-                    curl_formadd(&form_post, &last_ptr, CURLFORM_COPYNAME,
-                            "branch", CURLFORM_COPYCONTENTS,
-                            GIT_BRANCH, CURLFORM_END);
-                    curl_formadd(&form_post, &last_ptr, CURLFORM_COPYNAME,
-                            "ver_string", CURLFORM_COPYCONTENTS,
-                            ESOS_VERSION, CURLFORM_END);
-                    curl_formadd(&form_post, &last_ptr, CURLFORM_COPYNAME,
-                            "install_id", CURLFORM_COPYCONTENTS,
-                            conf_install_id, CURLFORM_END);
-
-                    /* Set cURL options for our HTTP POST */
-                    curl_easy_setopt(curl, CURLOPT_URL, USAGE_POST_URL);
-                    curl_easy_setopt(curl, CURLOPT_HTTPPOST, form_post);
-                    curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
-                    curl_easy_setopt(curl, CURLOPT_USERAGENT, TUI_LOG_PREFIX);
-
-                    /* Perform the request */
-                    result = curl_easy_perform(curl);
-                    if (result != CURLE_OK) {
-                        SAFE_ASPRINTF(&error_msg, "curl_easy_perform(): %s",
-                                curl_easy_strerror(result));
-                        errorDialog(main_cdk_screen, error_msg, NULL);
-                        FREE_NULL(error_msg);
-                        break;
-                    }
-
-                    /* Cleanup */
-                    curl_easy_cleanup(curl);
-                    curl_formfree(form_post);
-                }
-
-                /* Success if we made it this far, set the last version */
-                if (iniparser_set(ini_dict, "usage:last_ver",
-                        ESOS_VERSION) == -1) {
-                    errorDialog(main_cdk_screen, SET_FILE_VAL_ERR, NULL);
-                    break;
-                }
-                /* Save the file */
-                if ((ini_file = fopen(ESOS_CONF, "w")) == NULL) {
-                    SAFE_ASPRINTF(&error_msg, ESOS_CONF_WRITE_ERR,
-                            strerror(errno));
-                    errorDialog(main_cdk_screen, error_msg, NULL);
-                    FREE_NULL(error_msg);
-                    break;
-                }
-                iniparser_dump_ini(ini_dict, ini_file);
-                fclose(ini_file);
-            }
-        }
-
-        /* We got this far successfully, exit the loop */
-        break;
-    }
-
-    /* Done */
-    if (ini_dict != NULL)
-        iniparser_freedict(ini_dict);
-    destroyCDKLabel(transmit_msg);
-    refreshCDKScreen(main_cdk_screen);
-    return;
 }
 
 

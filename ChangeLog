@@ -1,3 +1,9 @@
+2023-11-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rem_usage_stuff'
+
+	removed all "ESOS usage" collection stuff (from TUI code, and disable build option)
+
 2023-11-09  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'nvmet_ra_tweak'
