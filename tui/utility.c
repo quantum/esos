@@ -362,7 +362,6 @@ boolean checkInetAccess() {
     }
 
     /* Done */
-    //freeaddrinfo(requests[0]->ar_request);
     freeaddrinfo(requests[0]->ar_result);
     free(requests);
     return has_inet;
