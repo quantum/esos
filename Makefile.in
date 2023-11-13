@@ -78,7 +78,6 @@ enable_memcached	:= @enable_memcached@
 enable_simple_tui	:= @enable_simple_tui@
 enable_auto_dhcp	:= @enable_auto_dhcp@
 enable_tui_eula		:= @enable_tui_eula@
-enable_tui_usage	:= @enable_tui_usage@
 enable_login_tui	:= @enable_login_tui@
 enable_debug_kernel	:= @enable_debug_kernel@
 enable_qla32		:= @enable_qla32@
@@ -553,9 +552,6 @@ ifeq ($(enable_simple_tui),yes)
 endif
 ifeq ($(enable_tui_eula),yes)
 	tui_cpp_flags += -DEULA_PROMPT
-endif
-ifeq ($(enable_tui_usage),yes)
-	tui_cpp_flags += -DUSAGE_PROMPT
 endif
 ifeq ($(enable_qla32),yes)
 	qla_ini_dir=qla2x00t-32gbit

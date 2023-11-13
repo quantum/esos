@@ -23,7 +23,6 @@ void screenResize(CDKSCREEN *cdk, WINDOW *main_screen, WINDOW *sub_screen,
         int *latest_term_y, int *latest_term_x);
 void statusBar(WINDOW *window);
 boolean acceptLicense(CDKSCREEN *main_cdk_screen);
-void reportUsage(CDKSCREEN *main_cdk_screen);
 void setTheme();
 void cleanExit(int signal_num);
 
@@ -206,7 +205,6 @@ size_t g_save_label_msg_size();
 size_t g_add_ld_label_msg_size();
 size_t g_add_array_label_msg_size();
 size_t g_add_lv_label_msg_size();
-size_t g_usage_label_msg_size();
 
 #ifdef	__cplusplus
 }
