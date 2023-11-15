@@ -1,3 +1,9 @@
+2023-11-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mofed_nvmet_tweaks'
+
+	when using the MOFED package, in the NVMe target driver, set the 'fr' attribute to contain the ESOS version string, and increase the 'anatt' attribute to 60 seconds
+
 2023-11-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rem_usage_stuff'
