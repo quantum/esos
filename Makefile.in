@@ -1614,6 +1614,7 @@ esos_kernels.chroot: switchtec_src = $(wildcard /sources/cls_switchtec-*)
 esos_kernels.chroot: cls_base = $(switchtec_src)/Driver/Switchtec
 esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.19
 esos_kernels.chroot: cls_switchtec = $(cls_base)/$(switchtec_kern)
+esos_kernels.chroot: esos_ver := $(shell head -1 $(chroot_build)/esos_ver)
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot \
 	openssl.chroot libcap.chroot
@@ -1654,6 +1655,10 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(scst_src)/iscsi-scst/kernel/isert-scst/Kbuild; \
 	    $(SED) -i 's,/usr/src/ofa_kernel/default,$(mlnx_ofed_dir),' \
 	    $(scst_src)/srpt/src/Kbuild; \
+	    $(SED) -i 's/UTS_RELEASE/ESOS_VERSION/g' \
+	    $(mlnx_ofed_dir)/drivers/nvme/target/{admin-cmd,discovery}.c; \
+	    $(SED) -i 's/id->anatt = 10;/id->anatt = 60;/' \
+	    $(mlnx_ofed_dir)/drivers/nvme/target/admin-cmd.c; \
 	  fi; \
 	  if [ "$(with_qla2xxx_scst)" = "yes" ]; then \
 	    if [ "$(with_mlnx_ofed)" = "yes" ]; then \
@@ -1810,6 +1815,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    --with-mlx5-mod --with-mlx4-mod --with-mlx4_inf-mod \
 	    --with-mlx5_inf-mod --with-mlxfw-mod --with-iser-mod \
 	    --with-nvmf_host-mod --with-nvmf_target-mod; \
+	    $(SED) '0,/^CFLAGS.*/s/^CFLAGS.*/CFLAGS += -DESOS_VERSION="\\"$(esos_ver)\\"" \\/' -i $(mlnx_ofed_dir)/makefile; \
 	    $(MAKE) --directory=$(mlnx_ofed_dir) V=1 MLNX_CFLAGS="" kernel; \
 	    $(MAKE) --directory=$(mlnx_ofed_dir) DEPMOD=true install_kernel; \
 	    while read -r line; do \
