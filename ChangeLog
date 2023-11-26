@@ -1,3 +1,9 @@
+2023-11-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'contrib_ra_tweaks'
+
+	tweaked the 'ocf:heartbeat:VirtualDomain' and 'stonith:external/sbd' RA scripts for better handling
+
 2023-11-15  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'mofed_nvmet_tweaks'
