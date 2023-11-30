@@ -1,5 +1,9 @@
 2023-11-29  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'ra_rescan_fix'
+
+	updated RA scripts to use the new argument name with the rescan-scsi-bus.sh script (--timeout) provided by the new sg3_utils version (our one-off patch is no longer needed)
+
 	Merge branch 'sg3_utils_bump'
 
 	bump'd sg3_utils to version 1.48
