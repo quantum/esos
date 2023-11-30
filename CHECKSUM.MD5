@@ -122,7 +122,7 @@ c044b7146903ec51c9d2337a29aee93b  gdb-10.2.tar.xz
 b2a80e4789af23d67dfe1e88a997abbf  smartmontools-7.0.tar.gz
 d2d668223e795dcf750da44dc3e7076b  cryptsetup-1.7.5.tar.xz
 3743beefa3dd6247a73f8f7a32c14c33  popt-1.16.tar.gz
-3a1ba25fe7b43577de4a5c1edb018526  sg3_utils-1.45.tar.xz
+0024393d2d2942cc081ce613d98db68a  sg3_utils-1.48.tar.xz
 077e4f49320cad82bf17a997068b1db9  elfutils-0.176.tar.bz2
 2aad5635f9bb338bc2c6b7d19cbc9676  openssl-1.1.1n.tar.gz
 696ccedc02c5a44b8b33641902792241  libusb_compat-0.1.7.tar.xz

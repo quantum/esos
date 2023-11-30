@@ -1,3 +1,9 @@
+2023-11-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'sg3_utils_bump'
+
+	bump'd sg3_utils to version 1.48
+
 2023-11-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'contrib_ra_tweaks'
