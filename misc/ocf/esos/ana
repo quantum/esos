@@ -788,7 +788,7 @@ scsi_bus_rescan() {
     if [ -n "${host_list}" ]; then
         ocf_log debug "Issuing a SCSI bus rescan on host(s) '${host_list}'..."
         ocf_run timeout "${RESCAN_SCSI_TIMEOUT}" rescan-scsi-bus.sh \
-            --hosts="${host_list}" --remove --online-wait=1
+            --hosts="${host_list}" --remove --timeout=1
     else
         ocf_log warn "No iSCSI host entries were found! Nothing to rescan!"
     fi
