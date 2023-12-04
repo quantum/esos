@@ -1614,7 +1614,9 @@ esos_kernels.chroot: switchtec_src = $(wildcard /sources/cls_switchtec-*)
 esos_kernels.chroot: cls_base = $(switchtec_src)/Driver/Switchtec
 esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.19
 esos_kernels.chroot: cls_switchtec = $(cls_base)/$(switchtec_kern)
+ifneq ($(wildcard $(chroot_build)/esos_ver),)
 esos_kernels.chroot: esos_ver := $(shell head -1 $(chroot_build)/esos_ver)
+endif
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot \
 	openssl.chroot libcap.chroot
@@ -2218,7 +2220,8 @@ mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	$(mlnx_ofed_dir)/makefile
 	$(SED) -i 's,)/lib/udev$$,)/usr/lib/udev,g' \
 	$(mlnx_ofed_dir)/makefile
-	$(SED) -i '288,295 s/^#*/#/' $(mlnx_ofed_dir)/makefile
+	$(SED) -e '/Installing scripts and/,+7 s/^/#/' \
+	-i $(mlnx_ofed_dir)/makefile
 	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 build_py_scripts
 	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 install_scripts
 	$(SED) -e '/mlnx_interface_mgr.sh/ s/^#*/#/' \
