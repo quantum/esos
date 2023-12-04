@@ -1,3 +1,9 @@
+2023-12-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mofed_23.10'
+
+	fixed up for new MOFED version
+
 2023-11-29  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'ra_rescan_fix'
