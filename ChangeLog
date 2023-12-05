@@ -1,3 +1,9 @@
+2023-12-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'mofed_fw_rev'
+
+	use the ESOS version string in core.c as well
+
 2023-12-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'mofed_23.10'
