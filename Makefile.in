@@ -1658,7 +1658,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(SED) -i 's,/usr/src/ofa_kernel/default,$(mlnx_ofed_dir),' \
 	    $(scst_src)/srpt/src/Kbuild; \
 	    $(SED) -i 's/UTS_RELEASE/ESOS_VERSION/g' \
-	    $(mlnx_ofed_dir)/drivers/nvme/target/{admin-cmd,discovery}.c; \
+	    $(mlnx_ofed_dir)/drivers/nvme/target/{core,discovery}.c; \
 	    $(SED) -i 's/id->anatt = 10;/id->anatt = 60;/' \
 	    $(mlnx_ofed_dir)/drivers/nvme/target/admin-cmd.c; \
 	  fi; \
