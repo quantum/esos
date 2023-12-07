@@ -1,3 +1,9 @@
+2023-12-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'fcoemon_dep'
+
+	updated rc.scst and ocf:esos:scst scripts to make starting/stopping 'fcoemon' dependent on lldpad running (otherwise we get annoying messages in the logs since it's truly dependent on this)
+
 2023-12-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'mofed_fw_rev'
