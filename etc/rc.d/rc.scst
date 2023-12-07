@@ -10,6 +10,7 @@ ISCSI_SCSTD="/usr/sbin/iscsi-scstd"
 ISCSI_SCSTD_LOCK="/var/lock/iscsi-scstd"
 FCOEMON="/usr/sbin/fcoemon"
 FCOEMON_LOCK="/var/lock/fcoemon"
+LLDPAD_PID="/var/run/lldpad.pid"
 
 # Which Cavium/QLogic target module
 if [ -f "/lib/modules/$(/bin/uname -r)/extra/qla2x00tgt.ko" ]; then
@@ -66,15 +67,19 @@ start_user_progs() {
     /bin/echo "Starting SCST userland daemons..."
     ${ISCSI_SCSTD} || return 1
     /bin/touch ${ISCSI_SCSTD_LOCK}
-    ${FCOEMON} -s || return 1
-    /bin/touch ${FCOEMON_LOCK}
+    if [ -e "${LLDPAD_PID}" ]; then
+        ${FCOEMON} -s || return 1
+        /bin/touch ${FCOEMON_LOCK}
+    fi
     return 0
 }
 
 stop_user_progs() {
     /bin/echo "Stopping SCST userland daemons..."
-    /usr/bin/kill -TERM $(/usr/bin/pidof ${FCOEMON}) || return 1
-    wait_for_stop ${FCOEMON} && /bin/rm -f ${FCOEMON_LOCK}
+    if [ -e "${LLDPAD_PID}" ]; then
+        /usr/bin/kill -TERM $(/usr/bin/pidof ${FCOEMON}) || return 1
+        wait_for_stop ${FCOEMON} && /bin/rm -f ${FCOEMON_LOCK}
+    fi
     /usr/bin/kill -TERM $(/usr/bin/pidof ${ISCSI_SCSTD}) || return 1
     wait_for_stop ${ISCSI_SCSTD} && /bin/rm -f ${ISCSI_SCSTD_LOCK}
     /bin/sleep 1
