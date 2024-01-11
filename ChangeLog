@@ -1,3 +1,9 @@
+2024-01-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20240110_tweaks'
+
+	applied several tweaks/enhancements to 'archive_logs.sh'
+
 2023-12-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'fcoemon_dep'
