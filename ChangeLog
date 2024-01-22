@@ -1,3 +1,9 @@
+2024-01-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'fcoemon_fix_2'
+
+	rc.lldpad: in stop() if fcoemon is running, kill that first before stopping lldpad (otherwise fcoemon complains loudly via logging)
+
 2024-01-11  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20240110_tweaks'
