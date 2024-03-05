@@ -78,7 +78,6 @@ enable_memcached	:= @enable_memcached@
 enable_simple_tui	:= @enable_simple_tui@
 enable_auto_dhcp	:= @enable_auto_dhcp@
 enable_tui_eula		:= @enable_tui_eula@
-enable_tui_usage	:= @enable_tui_usage@
 enable_login_tui	:= @enable_login_tui@
 enable_debug_kernel	:= @enable_debug_kernel@
 enable_qla32		:= @enable_qla32@
@@ -193,9 +192,9 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		e2fsprogs-1.45.1.tar.xz \
 		zlib-1.2.11.tar.xz \
 		lsscsi-030r154.tar.gz \
-		sg3_utils-1.45.tar.xz \
+		sg3_utils-1.48.tar.xz \
 		groff-1.22.4.tar.gz \
-		qlogic_fw-20211021.tar.xz \
+		qlogic_fw-20230820.tar.xz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
 		scst-3.7.x_20230120.tar.xz \
@@ -302,7 +301,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		nvme-cli-1.15.tar.gz \
 		freetype-2.10.0.tar.bz2 \
 		ledmon-0.92.tar.gz \
-		nvmetcli-master_20180523.tar.xz \
+		nvmetcli-master_20230519.tar.xz \
 		bc-1.07.1.tar.gz \
 		etckeeper-1.18.10.tar.gz \
 		git-2.21.0.tar.xz \
@@ -554,15 +553,15 @@ endif
 ifeq ($(enable_tui_eula),yes)
 	tui_cpp_flags += -DEULA_PROMPT
 endif
-ifeq ($(enable_tui_usage),yes)
-	tui_cpp_flags += -DUSAGE_PROMPT
-endif
 ifeq ($(enable_qla32),yes)
 	qla_ini_dir=qla2x00t-32gbit
 	qla_dir=qla2x00t-32gbit/qla2x00-target
 else
 	qla_ini_dir=qla2x00t
 	qla_dir=qla2x00t/qla2x00-target
+endif
+ifeq ($(with_qla2xxx_scst),yes)
+	chroot_tgts += qla2xxx_scst.chroot
 endif
 ifeq ($(with_celerity_16_32),yes)
 	chroot_tgts += celerity_16_32.chroot
@@ -1615,6 +1614,9 @@ esos_kernels.chroot: switchtec_src = $(wildcard /sources/cls_switchtec-*)
 esos_kernels.chroot: cls_base = $(switchtec_src)/Driver/Switchtec
 esos_kernels.chroot: switchtec_kern = switchtec-kernel-release_4.19
 esos_kernels.chroot: cls_switchtec = $(cls_base)/$(switchtec_kern)
+ifneq ($(wildcard $(chroot_build)/esos_ver),)
+esos_kernels.chroot: esos_ver := $(shell head -1 $(chroot_build)/esos_ver)
+endif
 esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	glibc.chroot gcc.chroot util-linux.chroot attr.chroot pciutils.chroot \
 	openssl.chroot libcap.chroot
@@ -1655,8 +1657,18 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(scst_src)/iscsi-scst/kernel/isert-scst/Kbuild; \
 	    $(SED) -i 's,/usr/src/ofa_kernel/default,$(mlnx_ofed_dir),' \
 	    $(scst_src)/srpt/src/Kbuild; \
+	    $(SED) -i 's/UTS_RELEASE/ESOS_VERSION/g' \
+	    $(mlnx_ofed_dir)/drivers/nvme/target/{core,discovery}.c; \
+	    $(SED) -i 's/id->anatt = 10;/id->anatt = 60;/' \
+	    $(mlnx_ofed_dir)/drivers/nvme/target/admin-cmd.c; \
 	  fi; \
 	  if [ "$(with_qla2xxx_scst)" = "yes" ]; then \
+	    if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	      if ! $(GREP) -q "$(mlnx_ofed_dir)" "$(qla2xxx_scst_dir)/Makefile"; then \
+	        $(SED) "0,/^EXTRA_CFLAGS.*/s,^EXTRA_CFLAGS.*,LINUXINCLUDE := -I$(mlnx_ofed_dir)/include -I$(mlnx_ofed_dir)/include/uapi -include $(mlnx_ofed_dir)/include/linux/compat-2.6.h $$\(LINUXINCLUDE\)\n&," -i $(qla2xxx_scst_dir)/Makefile; \
+	      fi; \
+	      $(SED) '/-DRHEL_8_4/s/^#//' -i $(qla2xxx_scst_dir)/Makefile; \
+	    fi; \
 	    $(SED) -i '/obj-m/s/tcm_qla2xxx.o/scst_qla2xxx.o/' \
 	    $(qla2xxx_scst_dir)/Makefile; \
 	    $(MAKE) --directory=$(qla2xxx_scst_dir) KVER=$(kernel_ver)$$i \
@@ -1697,6 +1709,8 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    $(MAKE) --directory=$(atto_scst_dir) clean; \
 	  fi; \
 	  if [ "$(with_ocs_sdk)" = "yes" ]; then \
+	    $(SED) -i 's/-Werror//' \
+	    $(ocs_sdk_dir)/driver/linux/ocs_fc_scst/Makefile; \
 	    $(MAKE) --directory=$(linux_src) \
 	    M=$(ocs_sdk_dir)/driver/linux/ocs_fc_scst clean; \
 	  fi; \
@@ -1803,6 +1817,7 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	    --with-mlx5-mod --with-mlx4-mod --with-mlx4_inf-mod \
 	    --with-mlx5_inf-mod --with-mlxfw-mod --with-iser-mod \
 	    --with-nvmf_host-mod --with-nvmf_target-mod; \
+	    $(SED) '0,/^CFLAGS.*/s/^CFLAGS.*/CFLAGS += -DESOS_VERSION="\\"$(esos_ver)\\"" \\/' -i $(mlnx_ofed_dir)/makefile; \
 	    $(MAKE) --directory=$(mlnx_ofed_dir) V=1 MLNX_CFLAGS="" kernel; \
 	    $(MAKE) --directory=$(mlnx_ofed_dir) DEPMOD=true install_kernel; \
 	    while read -r line; do \
@@ -1846,8 +1861,12 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  INSTALL_DIR_H=/usr/include/scst scst_install; \
 	  if [ "$(with_qla2xxx_scst)" = "yes" ]; then \
 	    $(RM) /lib/modules/$(kernel_ver)$$i/kernel/drivers/scsi/qla2xxx; \
-	    $(CP) /usr/include/scst/Module.symvers $(qla2xxx_scst_dir)/; \
-	    $(MAKE) --directory=$(qla2xxx_scst_dir) KVER=$(kernel_ver)$$i \
+	    if [ "$(with_mlnx_ofed)" = "yes" ]; then \
+	      $(CAT) /usr/include/scst/Module.symvers $(mlnx_ofed_dir)/Module.symvers > $(qla2xxx_scst_dir)/Module.symvers; \
+	    else \
+	      $(CP) /usr/include/scst/Module.symvers $(qla2xxx_scst_dir)/; \
+	    fi; \
+	    $(MAKE) --directory=$(qla2xxx_scst_dir) V=1 KVER=$(kernel_ver)$$i \
 	    KDIR=$(linux_src) SCST_INC_DIR=$(scst_src)/scst/include all; \
 	    $(MAKE) --directory=$(linux_src) M=$(qla2xxx_scst_dir) \
 	    modules_install; \
@@ -1933,7 +1952,6 @@ esos_kernels.chroot: kernel_headers.chroot bc.chroot elfutils.chroot \
 	  fi; \
 	  if [ "$(with_atto_scst)" = "yes" ]; then \
 	    $(ECHO) "### Compiling the ATTO SCST Target module..."; \
-	    $(SED) '/\.detect/d' -i $(atto_scst_dir)/atto_scst.c; \
 	    $(CAT) $(celerity_16_32_dir)/src/Module.symvers \
 	    /usr/include/scst/Module.symvers > \
 	    $(atto_scst_dir)/Module.symvers; \
@@ -2131,6 +2149,23 @@ zfs.chroot: esos_kernels.chroot eudev.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
+qla2xxx_scst.chroot: eudev.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(QUIET) if [ ! -d $(qla2xxx_scst_dir)/qla2xxx_scst.patch ]; then \
+	  $(PATCH) -d $(qla2xxx_scst_dir) -b \
+	  -B $(qla2xxx_scst_dir)/qla2xxx_scst.patch/ -p1 < \
+	  $(chroot_build)/misc/qla2xxx_scst.patch; \
+	fi
+	$(INSTALL) -m 0755 $(qla2xxx_scst_dir)/extras/spreadirq.py \
+	/usr/sbin/
+	$(INSTALL) -m 0755 $(qla2xxx_scst_dir)/extras/qla2xxx_npiv.py \
+	/usr/sbin/
+	$(INSTALL) -m 0755 $(qla2xxx_scst_dir)/extras/qla2xxx_udev.sh \
+	/usr/lib/udev/
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
 celerity_16_32.chroot:
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -2185,7 +2220,8 @@ mlnx_ofed.chroot: esos_kernels.chroot Python.chroot
 	$(mlnx_ofed_dir)/makefile
 	$(SED) -i 's,)/lib/udev$$,)/usr/lib/udev,g' \
 	$(mlnx_ofed_dir)/makefile
-	$(SED) -i '288,295 s/^#*/#/' $(mlnx_ofed_dir)/makefile
+	$(SED) -e '/Installing scripts and/,+7 s/^/#/' \
+	-i $(mlnx_ofed_dir)/makefile
 	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 build_py_scripts
 	$(MAKE) --directory=$(mlnx_ofed_dir) V=1 install_scripts
 	$(SED) -e '/mlnx_interface_mgr.sh/ s/^#*/#/' \
@@ -2678,7 +2714,6 @@ lsscsi.chroot: glibc.chroot
 sg3_utils.chroot: glibc.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(call apply_pkg_patch)
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install

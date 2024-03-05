@@ -1,0 +1,1088 @@
+#! /bin/bash
+
+#
+#   Resource Agent for managing the NVMe Asymmetric Namespace Access (ANA)
+#   group states. Starting/stopping the layer is handled by a different RA.
+#   This RA script relies on the iSCSI internal redirection paths setup by
+#   the 'ocf:esos:alua' RA script, and the same mode is assumed here.
+#
+
+# Initialization
+# shellcheck disable=SC2223
+: ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}
+# shellcheck disable=SC1091
+. "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
+NVMET_SYSFS="/sys/kernel/config/nvmet"
+ANA_STATES="optimized non-optimized inaccessible persistent-loss change"
+TRANSITION_STATE="change"
+NVMET_DEV_MAPS="/etc/esos_dev_maps/nvmet"
+ZERO_DEV_PREFIX="zero_dev-"
+REDIRECT_DEV_PREFIX="redirect_dev-"
+SG_CMD_TIMEOUT=1
+ISCSIADM_TIMEOUT=5
+RESCAN_SCSI_TIMEOUT=20
+
+
+ana_start() {
+    # Exit immediately if configuration is not valid
+    ana_validate_all || exit ${?}
+
+    # If resource is already running, bail out early
+    if ana_monitor; then
+        ocf_log info "Resource is already running."
+        return "${OCF_SUCCESS}"
+    fi
+
+    # Set all ports matching our group ID to the transitioning state
+    set_trans_state
+
+    # Create/update the state file
+    update_state "slave"
+
+    # We are likley using iSCSI with redirect mode, rescan here
+    # TODO: Since this RA script relies on the fact that the 'ocf:esos:alua'
+    # RA is using "redirect" mode, and has already setup the iSCSI redirection
+    # devices for us, we shouldn't need to ever call these functions.
+    #iscsi_sess_rescan
+    #scsi_bus_rescan
+    # Try to set the devices to the redirected backing device to start
+    if ns_to_redirect; then
+        # It's only safe to advertise the Slave state if all are redirected
+        set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
+            "${OCF_RESKEY_s_ana_state}"
+    fi
+
+    # Make sure the resource started correctly
+    while ! ana_monitor; do
+        ocf_log debug "${FUNCNAME[0]}() -> Resource has not" \
+            "started yet, waiting..."
+        sleep 1
+    done
+
+    # Only return $OCF_SUCCESS if _everything_ succeeded as expected
+    return "${OCF_SUCCESS}"
+}
+
+
+ana_stop() {
+    # Exit immediately if configuration is not valid
+    ana_validate_all || exit ${?}
+
+    # Check the current resource state
+    ana_monitor
+    local rc=${?}
+    case "${rc}" in
+    "${OCF_SUCCESS}")
+        # Currently running; normal, expected behavior
+        ocf_log info "Resource is currently running."
+        ;;
+    "${OCF_RUNNING_MASTER}")
+        # Running as a Master; need to demote before stopping
+        ocf_log info "Resource is currently running as Master."
+        ana_demote || ocf_log warn "Demote failed, trying to" \
+            "stop anyway..."
+        ;;
+    "${OCF_NOT_RUNNING}")
+        # Currently not running; nothing to do
+        ocf_log info "Resource is already stopped."
+        return "${OCF_SUCCESS}"
+        ;;
+    esac
+
+    # Set all ports matching our group ID to the transitioning state
+    # TODO: Do we really need to set this when we set them to offline below?
+    set_trans_state
+
+    # Set our ports to the offline/unavailable ANA state
+    set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
+        "${OCF_RESKEY_remote_inact_state}"
+
+    # If we're stopping, set all of our redirection devices to dm-zero for now
+    ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        if [ "$(head -1 "${i}/ana_grpid")" != \
+            "${OCF_RESKEY_ana_group_id}" ]; then
+            continue
+        fi
+        ns_id="$(basename "${i}")"
+        ocf_log debug "${FUNCNAME[0]}() -> Setting namespace '${ns_id}'" \
+            "block device to the dm-zero device..."
+        ( set_ns_dev_zero "${ns_id}" ) &
+    done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
+    ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespace block" \
+        "devices to transition to dm-zero..."
+    wait
+
+    # Zap the state file
+    rm -f "${OCF_RESKEY_state}"
+
+    # Make sure the resource stopped correctly
+    while ana_monitor; do
+        ocf_log debug "${FUNCNAME[0]}() -> Resource has not" \
+            "stopped yet, waiting..."
+        sleep 1
+    done
+
+    # Only return $OCF_SUCCESS if _everything_ succeeded as expected
+    return "${OCF_SUCCESS}"
+}
+
+
+ana_monitor() {
+    # Exit immediately if configuration is not valid
+    ana_validate_all || exit ${?}
+
+    # If our subsystem doesn't exist, then we'll just say the resource
+    # isn't running
+    if [ ! -d "${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}" ]; then
+        ocf_log warn "Our '${OCF_RESKEY_subsys_name}' NVMe Target subsystem" \
+            "isn't available yet..."
+        return "${OCF_NOT_RUNNING}"
+    fi
+
+    # Make sure the ANA configuration is legit
+    check_ana
+
+    # Determine our status using the state file
+    local rc
+    if check_state "master"; then
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is running (Master)."
+        crm_master -l reboot -v 100
+        rc="${OCF_RUNNING_MASTER}"
+    elif check_state "slave"; then
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is running."
+        crm_master -l reboot -v 100
+        rc="${OCF_SUCCESS}"
+    elif [ -f "${OCF_RESKEY_state}" ]; then
+        ocf_log err "The '${OCF_RESKEY_state}' state file exists, but" \
+            "contains an unexpected value: $(cat "${OCF_RESKEY_state}")"
+        rc="${OCF_ERR_GENERIC}"
+        return "${rc}"
+    else
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is not running."
+        crm_master -l reboot -D
+        rc="${OCF_NOT_RUNNING}"
+        return "${rc}"
+    fi
+
+    # Don't complete the steps below if this is a probe or non-monitor op
+    if ocf_is_probe || [ "${__OCF_ACTION}" != "monitor" ]; then
+        ocf_log debug "${FUNCNAME[0]}() -> Probe or non-monitor operation," \
+            "returning early..."
+        return "${rc}"
+    fi
+
+    # Print the current NVMe Target port states
+    ocf_log debug "${FUNCNAME[0]}() -> Current NVMe Target ANA port states" \
+        "for group ID '${OCF_RESKEY_ana_group_id}':"
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        port_num="$(basename "${i}")"
+        ana_state_file="${i}/ana_groups/${OCF_RESKEY_ana_group_id}/ana_state"
+        ana_state="$(head -1 "${ana_state_file}")"
+        ocf_log debug "${FUNCNAME[0]}() -> Port #${port_num}: ${ana_state}"
+    done <<< "$(find "${NVMET_SYSFS}/ports/" -maxdepth 1 -mindepth 1 -type d)"
+
+    # Resource starts as Slave, but the redirected device might not be
+    # available then, so we check it's set correctly here
+    if [ "${rc}" -eq "${OCF_SUCCESS}" ]; then
+        if ns_to_redirect; then
+            # All NVMe namespaces are set to the redirection block I/O device
+            # TODO: This call may be expensive, but we don't have one value to
+            # test like we do with SCST, so we should keep an eye on this.
+            set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
+                "${OCF_RESKEY_s_ana_state}"
+        else
+            # Not all namespaces are redirected yet, rescan here and we'll
+            # try setting them again on the next monitor run
+            # TODO: Since this RA script relies on the fact that the
+            # 'ocf:esos:alua' RA is using "redirect" mode, and has already
+            # setup the iSCSI redirection devices for us, we shouldn't need
+            # to ever call these functions.
+            #iscsi_sess_rescan
+            #scsi_bus_rescan
+            :
+        fi
+    fi
+    # If we're Master make sure we are advertising the correct
+    # state (left over from transitioning)
+    if [ "${rc}" -eq "${OCF_RUNNING_MASTER}" ]; then
+        if ns_to_real; then
+            # TODO: This call may be expensive, but we don't have one value to
+            # test like we do with SCST, so we should keep an eye on this.
+            set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
+                "${OCF_RESKEY_m_ana_state}"
+        fi
+    fi
+
+    return "${rc}"
+}
+
+
+ana_validate_all() {
+    # Test for required binaries
+    check_binary timeout
+    check_binary sg_turs
+    check_binary sg_read
+    check_binary rescan-scsi-bus.sh
+    check_binary iscsiadm
+    check_binary ssh
+
+    # Make sure the state directory is writable
+    state_dir="$(dirname "${OCF_RESKEY_state}")"
+    if ! touch "${state_dir}/${$}"; then
+        ocf_exit_reason "The state file '${OCF_RESKEY_state}' is not writable!"
+        return "${OCF_ERR_ARGS}"
+    fi
+    rm -f "${state_dir}/${$}"
+
+    # There can only be one instance of resource running per node
+    if [ -n "${OCF_RESKEY_CRM_meta_clone_node_max}" ] &&
+        [ "${OCF_RESKEY_CRM_meta_clone_node_max}" -ne 1 ]; then
+        error_msg="The 'clone-node-max' parameter must equal '1'."
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+
+    # Check the ANA parameters (make sure they are set)
+    if [ -z "${OCF_RESKEY_subsys_name}" ]; then
+        error_msg="The 'subsys_name' parameter is not set!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+    if [ -z "${OCF_RESKEY_ana_group_id}" ]; then
+        error_msg="The 'ana_group_id' parameter is not set!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+    if [ -z "${OCF_RESKEY_m_ana_state}" ]; then
+        error_msg="The 'm_ana_state' parameter is not set!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+    if [ -z "${OCF_RESKEY_s_ana_state}" ]; then
+        error_msg="The 's_ana_state' parameter is not set!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+    # Currently, we only support using one Master with this RA
+    if [ -n "${OCF_RESKEY_CRM_meta_master_max}" ] &&
+        [ "${OCF_RESKEY_CRM_meta_master_max}" -ne 1 ]; then
+        error_msg="The 'master-max' parameter must equal '1'."
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+    if [ -n "${OCF_RESKEY_CRM_meta_master_node_max}" ] &&
+        [ "${OCF_RESKEY_CRM_meta_master_node_max}" -ne 1 ]; then
+        error_msg="The 'master-node-max' parameter must equal '1'."
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+
+    return "${OCF_SUCCESS}"
+}
+
+
+ana_meta_data() {
+	cat <<-EOF
+	<?xml version="1.0"?>
+	<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+	<resource-agent name="ana" version="0.1">
+	  <version>0.1</version>
+	  <longdesc lang="en">The "ANA states" NVMe Target OCF resource agent for ESOS; this RA only manages the NVMe Target layer's ANA states.</longdesc>
+	  <shortdesc lang="en">ANA states OCF RA script for ESOS.</shortdesc>
+	  <parameters>
+	    <parameter name="subsys_name" unique="0" required="1">
+	      <longdesc lang="en">The name of the NVMe Target subsystem.</longdesc>
+	      <shortdesc lang="en">The 'subsys_name' parameter.</shortdesc>
+	      <content type="string" default="" />
+	    </parameter>
+	    <parameter name="ana_group_id" unique="1" required="1">
+	      <longdesc lang="en">The ID of the NVMe Target ANA group (unique to cluster configuration).</longdesc>
+	      <shortdesc lang="en">The 'ana_group_id' parameter.</shortdesc>
+	      <content type="string" default="" />
+	    </parameter>
+	    <parameter name="m_ana_state" unique="0" required="1">
+	      <longdesc lang="en">The ANA state (eg, optimized) for a Master node.</longdesc>
+	      <shortdesc lang="en">The 'm_ana_state' parameter.</shortdesc>
+	      <content type="string" default="optimized" />
+	    </parameter>
+	    <parameter name="s_ana_state" unique="0" required="1">
+	      <longdesc lang="en">The ANA state (eg, non-optimized) for a Slave node.</longdesc>
+	      <shortdesc lang="en">The 's_ana_state' parameter.</shortdesc>
+	      <content type="string" default="non-optimized" />
+	    </parameter>
+	    <parameter name="remote_inact_state" unique="0" required="0">
+	      <longdesc lang="en">The ANA state for an inactive / offline node.</longdesc>
+	      <shortdesc lang="en">The 'remote_inact_state' parameter.</shortdesc>
+	      <content type="string" default="inaccessible" />
+	    </parameter>
+	    <parameter name="state" unique="1" required="0">
+	      <longdesc lang="en">Full path to the resource state file.</longdesc>
+	      <shortdesc lang="en">The 'state' parameter.</shortdesc>
+	      <content type="string" default="${HA_RSCTMP}/ana-{OCF_RESOURCE_INSTANCE}.state" />
+	    </parameter>
+	  </parameters>
+	  <actions>
+	    <action name="meta-data" timeout="5" />
+	    <action name="start" timeout="90" />
+	    <action name="stop" timeout="60" />
+	    <action name="monitor" timeout="20" depth="0" interval="10" role="Master" />
+	    <action name="monitor" timeout="20" depth="0" interval="20" role="Slave" />
+	    <action name="notify" timeout="20" />
+	    <action name="promote" timeout="60" />
+	    <action name="demote" timeout="60" />
+	    <action name="reload" timeout="20" />
+	    <action name="validate-all" timeout="20" />
+	  </actions>
+	</resource-agent>
+	EOF
+}
+
+
+ana_usage() {
+    echo "usage: ${0} {start|stop|monitor|validate-all|promote|demote|reload|notify|meta-data}"
+    echo ""
+    echo "Expects to have a fully populated OCF RA-compliant environment set."
+}
+
+
+update_state() {
+    echo "${1}" > "${OCF_RESKEY_state}"
+}
+
+
+check_state() {
+    target="${1}"
+    if [ -f "${OCF_RESKEY_state}" ]; then
+        state="$(cat "${OCF_RESKEY_state}")"
+        if [ "${target}" = "${state}" ]; then
+            return "${OCF_SUCCESS}"
+        fi
+    else
+        if [ -z "${target}" ]; then
+            return "${OCF_SUCCESS}"
+        fi
+    fi
+    return "${OCF_ERR_GENERIC}"
+}
+
+
+pending_fence() {
+    # Determine if there is a pending fence event
+    crm_mon --as-xml | \
+        grep "fence_event.*state=\"pending\"" \
+        > /dev/null 2>&1
+    return ${?}
+}
+
+
+crm_get_peer_name() {
+    local peer_name
+    peer_name="$(crm_resource --resource "${OCF_RESOURCE_INSTANCE}" --locate \
+        2>/dev/null | sed -ne 's/^.*is running on: \([^ ]*\).*$/\1/p' | \
+         grep -vix -m1 -e "$(crm_node --name)")"
+    echo "${peer_name}"
+}
+
+
+set_ana_group_state() {
+    local func_name="${1}"
+    local group_id="${2}"
+    local ana_state="${3}"
+    # Find all group ID matches in ports and set the new ANA state value
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        ana_state_file="${i}/ana_state"
+        port_ana_state="$(head -1 "${ana_state_file}")"
+        if [ "${port_ana_state}" != "${ana_state}" ]; then
+            # Current port state doesn't match the new value, change it
+            ocf_log info "${func_name}() -> Setting '${ana_state_file}' to" \
+                "'${ana_state}'..."
+            echo "${ana_state}" > "${ana_state_file}"
+            # shellcheck disable=SC2181
+            if [ ${?} -ne 0 ]; then
+                error_msg="Failed to set a port's ANA state!"
+                ocf_exit_reason "${error_msg}"
+                exit "${OCF_ERR_GENERIC}"
+            fi
+        else
+            # Nothing to do, the ANA state is already what we want it to be
+            ocf_log debug "${func_name}() -> The ANA state for" \
+                "'${ana_state_file}' is already set to the" \
+                "requested value (${ana_state})!"
+        fi
+    done <<< "$(find "${NVMET_SYSFS}/ports/" -path "*/ana_groups/${group_id}")"
+}
+
+
+set_trans_state() {
+    # Set the transitioning state for our group on all ports
+    set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
+        "${TRANSITION_STATE}"
+    # Get the peer node name (if any)
+    local peer_name
+    peer_name="$(crm_get_peer_name)"
+    ocf_log debug "Detected peer node name as '${peer_name}'!"
+    if [ -n "${peer_name}" ]; then
+        if ping -c 1 -W 1 "${peer_name}" > /dev/null; then
+            # Set the ANA state on our ports + group ID's on the peer via SSH
+            ocf_log info "${FUNCNAME[0]}() -> Setting all ports matching" \
+                "group ID '${OCF_RESKEY_ana_group_id}' ANA state to" \
+                "'${TRANSITION_STATE}' on peer '${peer_name}'..."
+            find_path="*/ana_groups/${OCF_RESKEY_ana_group_id}/ana_state"
+            long_ssh_cmd="find ${NVMET_SYSFS}/ports/ "
+            long_ssh_cmd+="-path \"${find_path}\" "
+            long_ssh_cmd+="-exec bash -c 'echo ${TRANSITION_STATE} > {}' \;"
+            ocf_run ssh -q -o ConnectTimeout=5 -o StrictHostKeyChecking=no \
+                -o PasswordAuthentication=no "root@${peer_name}" \
+                "${long_ssh_cmd}"
+            # TODO: Using 'find' like we do above we can't get the exit status
+            # of writing to the sysfs attribute file... would be nice to
+            # have that!
+            #if [ ${?} -ne 0 ]; then
+            #    error_msg="Failed to set the peer's ANA group state!"
+            #    ocf_exit_reason "${error_msg}"
+            #    exit "${OCF_SUCCESS}"
+            #fi
+        else
+            ocf_log warn "${FUNCNAME[0]}() -> Failed to ping '${peer_name}'!" \
+                "It may be offline..."
+        fi
+    fi
+}
+
+
+get_real_dev_path() {
+    # Lookup the real backing device name from the map file
+    local ns_id="${1}"
+    dev_map_file="$(get_dev_map_file "${ns_id}")"
+    dev_name="$(get_device_name "${ns_id}")"
+    dev_path="$(head -1 "${dev_map_file}" | cut -d' ' -f2)"
+    ocf_log debug "Real backing device for '${dev_name}': ${dev_path}"
+    if [ -e "${dev_path}" ]; then
+        echo "${dev_path}"
+    else
+        # This might be a transient condition if the LVM resource isn't up yet
+        ocf_log warn "The real backing device '${dev_path}' does not exist!"
+        echo ""
+    fi
+}
+
+
+get_redirect_dev_path() {
+    # Find the redirected (iSCSI) block device from lsscsi output
+    local ns_id="${1}"
+    dev_name="$(get_device_name "${ns_id}")"
+    dev_path="$(lsscsi | awk '{print $6, $4}' | grep -m 1 -E "${dev_name}$" | \
+        cut -d' ' -f1)"
+    ocf_log debug "Redirected backing device for '${dev_name}': ${dev_path}"
+    if [ "${dev_path}" = "-" ]; then
+        ocf_log debug "The SCSI device exists, but a block device has not" \
+            "been created yet!"
+        echo ""
+    else
+        echo "${dev_path}"
+    fi
+}
+
+
+get_dev_map_file() {
+    # Lookup the device name from the map file
+    local ns_id="${1}"
+    dev_map_file="${NVMET_DEV_MAPS}/${OCF_RESKEY_subsys_name}"
+    dev_map_file+="/${OCF_RESKEY_ana_group_id}/${ns_id}"
+    if [ ! -f "${dev_map_file}" ]; then
+        error_msg="No NVMe Target device map file found for NS '${ns_id}'!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_SUCCESS}"
+    fi
+    echo "${dev_map_file}"
+}
+
+
+get_device_name() {
+    # Lookup the device name from the map file
+    local ns_id="${1}"
+    dev_map_file="$(get_dev_map_file "${ns_id}")"
+    dev_name="$(head -1 "${dev_map_file}" | cut -d' ' -f1)"
+    if [ -z "${dev_name}" ]; then
+        error_msg="Unable to resolve the device name for NS '${ns_id}'!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_SUCCESS}"
+    fi
+    echo "${dev_name}"
+}
+
+
+get_device_size() {
+    # Lookup the device size from the map file
+    local ns_id="${1}"
+    dev_map_file="$(get_dev_map_file "${ns_id}")"
+    dev_size="$(head -1 "${dev_map_file}" | cut -d' ' -f3)"
+    if [ -z "${dev_size}" ]; then
+        error_msg="Unable to resolve the device size for NS '${ns_id}'!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_SUCCESS}"
+    fi
+    echo "${dev_size}"
+}
+
+
+get_dm_redirect_dev() {
+    # Return the full path to the dm-linear "redirection" block device
+    local ns_id="${1}"
+    dev_name="$(get_device_name "${ns_id}")"
+    echo "/dev/mapper/${REDIRECT_DEV_PREFIX}${dev_name}"
+}
+
+
+test_if_dev_ready() {
+    # Perform several checks on the given block device to see if it's working
+    block_dev="${1}"
+    ocf_log debug "Executing 'sg_turs' on '${block_dev}'..."
+    ocf_run timeout "${SG_CMD_TIMEOUT}" sg_turs "${block_dev}"
+    sg_cmd_rc=${?}
+    if [ "${sg_cmd_rc}" != 0 ]; then
+        ocf_log warn "The backing SCSI disk '${block_dev}'" \
+            "is not ready yet (TUR failed), skipping..."
+        return 1
+    fi
+    ocf_log debug "Executing 'sg_read' on '${block_dev}'..."
+    ocf_run timeout "${SG_CMD_TIMEOUT}" sg_read if="${block_dev}" bs=512 count=1
+    sg_cmd_rc=${?}
+    if [ "${sg_cmd_rc}" != 0 ]; then
+        ocf_log warn "The backing SCSI disk '${block_dev}'" \
+            "is not ready yet (read failed), skipping..."
+        return 1
+    fi
+    return 0
+}
+
+
+ns_to_real() {
+    # We assume success unless we encounter a problem below
+    local rc=0
+    local chg_dev_paths=""
+    # Loop over each NS in our subsystem and find those matching our group ID
+    ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        # Skip namespaces that aren't ours
+        ns_id="$(basename "${i}")"
+        if [ "$(head -1 "${i}/ana_grpid")" != \
+            "${OCF_RESKEY_ana_group_id}" ]; then
+            ocf_log debug "Skipping NS '${ns_id}' since it doesn't" \
+                "match our group ID..."
+            continue
+        fi
+        # Check if the current device path value is correct
+        new_dev_path="$(get_real_dev_path "${ns_id}")"
+        if [ -z "${new_dev_path}" ]; then
+            ocf_log warn "A valid backing block device was not" \
+                "found, skipping..."
+            rc=1
+            continue
+        fi
+        dm_redirect="$(get_dm_redirect_dev "${ns_id}")"
+        if test_redirect_dev_dep "${dm_redirect}" "${new_dev_path}"; then
+            ocf_log debug "The dm-linear backing device is already" \
+                "what it should be..."
+            continue
+        fi
+        # The current dm-linear backing device is not accurate, so change it
+        chg_dev_paths+=" ${ns_id},${new_dev_path}"
+    done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
+    # Change the namespace redirect backing devices that need it
+    for csv_item in ${chg_dev_paths}; do
+        ns_id="$(echo "${csv_item}" | cut -d, -f1)"
+        new_dev_path="$(echo "${csv_item}" | cut -d, -f2)"
+        redirect_dev="$(get_dm_redirect_dev "${ns_id}")"
+        dev_size="$(get_device_size "${ns_id}")"
+        ocf_log info "Changing the dm-linear backing device for namespace" \
+            "'${ns_id}' to the real device..."
+        # TODO: We may want to background this call to speed things up...
+        if ! set_redirect_backing "${redirect_dev}" "${new_dev_path}" \
+            "${dev_size}"; then
+            ocf_log warn "Changing the dm-linear backing device" \
+                "failed, check kernel logs!"
+            rc=1
+            continue
+        fi
+    done
+    return "${rc}"
+}
+
+
+ns_to_redirect() {
+    # We assume success unless we encounter a problem below
+    local rc=0
+    local chg_dev_paths=""
+    # Loop over each NS in our subsystem and find those matching our group ID
+    ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        # Skip namespaces that aren't ours
+        ns_id="$(basename "${i}")"
+        if [ "$(head -1 "${i}/ana_grpid")" != \
+            "${OCF_RESKEY_ana_group_id}" ]; then
+            ocf_log debug "Skipping NS '${ns_id}' since it doesn't" \
+                "match our group ID..."
+            continue
+        fi
+        # Check if the current device path value is correct
+        new_dev_path="$(get_redirect_dev_path "${ns_id}")"
+        if [ -z "${new_dev_path}" ]; then
+            ocf_log warn "A valid backing block device was not" \
+                "found for namespace '${ns_id}', continuing..."
+            rc=1
+            continue
+        fi
+        dm_redirect="$(get_dm_redirect_dev "${ns_id}")"
+        if test_redirect_dev_dep "${dm_redirect}" "${new_dev_path}"; then
+            ocf_log debug "The dm-linear backing device is already" \
+                "what it should be..."
+            continue
+        fi
+        # The internal redirection iSCSI LUN might not be ready yet
+        if ! test_if_dev_ready "${new_dev_path}"; then
+            rc=1
+            continue
+        fi
+        # The current dm-linear backing device is not accurate, so change it
+        chg_dev_paths+=" ${ns_id},${new_dev_path}"
+    done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
+    # Change the namespace redirect backing devices that need it
+    for csv_item in ${chg_dev_paths}; do
+        ns_id="$(echo "${csv_item}" | cut -d, -f1)"
+        new_dev_path="$(echo "${csv_item}" | cut -d, -f2)"
+        redirect_dev="$(get_dm_redirect_dev "${ns_id}")"
+        dev_size="$(get_device_size "${ns_id}")"
+        ocf_log info "Changing the dm-linear backing device for namespace" \
+            "'${ns_id}' to the redirected device..."
+        # TODO: We may want to background this call to speed things up...
+        if ! set_redirect_backing "${redirect_dev}" "${new_dev_path}" \
+            "${dev_size}"; then
+            ocf_log warn "Changing the dm-linear backing device" \
+                "failed, check kernel logs!"
+            rc=1
+            continue
+        fi
+    done
+    if [ "${rc}" -eq 0 ]; then
+        ocf_log debug "${FUNCNAME[0]}() -> All NVMe namespaces for group ID" \
+            "'${OCF_RESKEY_ana_group_id}' have been set to the" \
+            "redirection block device and are active."
+    else
+        ocf_log warn "One or more NVMe namespaces for group ID" \
+            "'${OCF_RESKEY_ana_group_id}' are missing a redirection" \
+            "block device and are NOT active!"
+    fi
+    return "${rc}"
+}
+
+
+set_redirect_backing() {
+    # Suspend the dm-linear redirection device, change the backing device
+    # to the new block device using the given size, and finally resume it
+    local redirect_dev="${1}"
+    local backing_dev="${2}"
+    local dev_size="${3}"
+    ocf_log debug "${FUNCNAME[0]}() -> Suspending DM device" \
+        "'${redirect_dev}'..."
+    ocf_run dmsetup suspend "${redirect_dev}"
+    # shellcheck disable=SC2181
+    if [ ${?} -ne 0 ]; then
+        ocf_log err "Failed to suspend the '${redirect_dev}' dm-linear device!"
+        return 1
+    fi
+    ocf_log debug "${FUNCNAME[0]}() -> Reloading DM device" \
+        "'${redirect_dev}' using device '${backing_dev}'" \
+        "and size '${dev_size}'..."
+    ocf_run dmsetup reload "${redirect_dev}" --table \
+        "0 ${dev_size} linear ${backing_dev} 0"
+    # shellcheck disable=SC2181
+    if [ ${?} -ne 0 ]; then
+        ocf_log err "Failed to reload the '${redirect_dev}' dm-linear device!"
+        return 1
+    fi
+    ocf_log debug "${FUNCNAME[0]}() -> Resuming DM device" \
+        "'${redirect_dev}'..."
+    ocf_run dmsetup resume "${redirect_dev}"
+    # shellcheck disable=SC2181
+    if [ ${?} -ne 0 ]; then
+        ocf_log err "Failed to resume the '${redirect_dev}' dm-linear device!"
+        return 1
+    fi
+    return 0
+}
+
+
+set_ns_dev_zero() {
+    local ns_id="${1}"
+    dev_name="$(get_device_name "${ns_id}")"
+    dev_size="$(get_device_size "${ns_id}")"
+    redirect_dev="/dev/mapper/${REDIRECT_DEV_PREFIX}${dev_name}"
+    zero_dev="/dev/mapper/${ZERO_DEV_PREFIX}${dev_name}"
+    if ! set_redirect_backing "${redirect_dev}" "${zero_dev}" \
+        "${dev_size}"; then
+        # It's fatal if we can't release the real/redirected device
+        error_msg="Failed to change the dm-linear backing device to the"
+        error_msg+="dm-zero device for NS '${ns_id}'!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_SUCCESS}"
+    fi
+}
+
+
+test_redirect_dev_dep() {
+    # Take the given "redirection" device (should be a dm-linear block device)
+    # and check if the other given block device is a slave of the DM device
+    local redirect_dev="${1}"
+    local dep_blk_dev="${2}"
+    # Resolve symlinks (if present) and get the short block device name
+    if [ -L "${redirect_dev}" ]; then
+        redirect_short="$(basename "$(readlink -f "${redirect_dev}")")"
+    else
+        redirect_short="$(basename "${redirect_dev}")"
+    fi
+    ocf_log debug "${FUNCNAME[0]}() -> Resolved redirect block" \
+        "device name: ${redirect_short}"
+    if [ -L "${dep_blk_dev}" ]; then
+        dep_blk_short="$(basename "$(readlink -f "${dep_blk_dev}")")"
+    else
+        dep_blk_short="$(basename "${dep_blk_dev}")"
+    fi
+    ocf_log debug "${FUNCNAME[0]}() -> Resolved dependent block" \
+        "device name: ${dep_blk_short}"
+    # Now see if we can find a matching slave -- if we do, then return success
+    # otherwise it is not a slave, so return failure
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        if [ "${i}" = "${dep_blk_short}" ]; then
+            ocf_log debug "${FUNCNAME[0]}() -> Device '${dep_blk_short}'" \
+                "is a slave to device '${redirect_short}'!"
+            return 0
+        fi
+    done <<< "$(find "/sys/block/${redirect_short}/slaves/" \
+        -maxdepth 1 -type l -exec basename {} \;)"
+    return 1
+}
+
+
+scsi_bus_rescan() {
+    # Find all iSCSI host entries and rescan the SCSI bus on any found
+    local host_list=""
+    local i
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        iscsi_host="$(basename "${i}")"
+        host_num="$(echo "${iscsi_host}" | tr -d "host")"
+        if [ -z "${host_list}" ]; then
+            host_list="${host_num}"
+        else
+            host_list="${host_list},${host_num}"
+        fi
+    done <<< "$(find /sys/class/iscsi_host -maxdepth 1 -type l)"
+    if [ -n "${host_list}" ]; then
+        ocf_log debug "Issuing a SCSI bus rescan on host(s) '${host_list}'..."
+        ocf_run timeout "${RESCAN_SCSI_TIMEOUT}" rescan-scsi-bus.sh \
+            --hosts="${host_list}" --remove --timeout=1
+    else
+        ocf_log warn "No iSCSI host entries were found! Nothing to rescan!"
+    fi
+}
+
+
+iscsi_sess_rescan() {
+    # Issue an iSCSI session rescan, and login to targets if needed
+    ocf_log debug "Rescanning all running iSCSI initiator sessions..."
+    ocf_run timeout "${ISCSIADM_TIMEOUT}" iscsiadm --mode session --rescan
+    if [ ${?} -eq 21 ]; then
+        ocf_log warn "No iSCSI sessions were found, attempting to login..."
+        ocf_run timeout "${ISCSIADM_TIMEOUT}" iscsiadm --mode node \
+            --loginall=automatic
+    fi
+}
+
+
+ana_promote() {
+    # Exit immediately if configuration is not valid
+    ana_validate_all || exit ${?}
+
+    # Test the resource's current state
+    ana_monitor
+    local rc=${?}
+    case "${rc}" in
+    "${OCF_SUCCESS}")
+        # Running as Slave; normal, expected behavior
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is" \
+            "currently running as Slave."
+        ;;
+    "${OCF_RUNNING_MASTER}")
+        # Already a Master; unexpected, but not a problem
+        ocf_log info "Resource is already running as Master."
+        return "${OCF_SUCCESS}"
+        ;;
+    "${OCF_NOT_RUNNING}")
+        # Currently not running; need to start before promoting
+        ocf_log info "Resource is currently not running."
+        ana_start
+        ;;
+    *)
+        # Failed resource; let the cluster manager recover
+        ocf_log err "Unexpected error, cannot promote."
+        exit "${rc}"
+        ;;
+    esac
+
+    # Make sure the ALUA configuration is legit
+    check_ana
+
+    # Set all ports matching our group ID to the transitioning state
+    set_trans_state
+
+    # Change the backing device to the real one (we could timeout here)
+    while ! ns_to_real; do
+        ocf_log debug "${FUNCNAME[0]}() -> Waiting for redirection-to-real" \
+            "device setup to complete..."
+        sleep 1
+    done
+    # LUN mapping on the internal redirection target is handled by the
+    # 'ocf:esos:alua' resource agent, so nothing for us to do here
+
+    # Set our port's ANA state for Master (the ns_to_real() had to finish)
+    set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
+        "${OCF_RESKEY_m_ana_state}"
+
+    # Set the new resource state
+    update_state "master"
+
+    # After the resource has been promoted, check whether the promotion worked
+    while true; do
+        ana_monitor
+        if [ ${?} -eq "${OCF_RUNNING_MASTER}" ]; then
+            ocf_log info "Resource was promoted successfully."
+            break
+        else
+            ocf_log debug "${FUNCNAME[0]}() -> Resource still" \
+                "awaiting promotion."
+            sleep 1
+        fi
+    done
+
+    # Only return $OCF_SUCCESS if _everything_ succeeded as expected
+    return "${OCF_SUCCESS}"
+}
+
+
+ana_demote() {
+    # Exit immediately if configuration is not valid
+    ana_validate_all || exit ${?}
+
+    # Test the resource's current state
+    ana_monitor
+    local rc=${?}
+    case "${rc}" in
+    "${OCF_RUNNING_MASTER}")
+        # Running as Master; normal, expected behavior
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is" \
+            "currently running as Master."
+        ;;
+    "${OCF_SUCCESS}")
+        # Already running as Slave; nothing to do
+        ocf_log debug "${FUNCNAME[0]}() -> Resource is" \
+            "currently running as Slave."
+        return "${OCF_SUCCESS}"
+        ;;
+    "${OCF_NOT_RUNNING}")
+        # Not running; getting a demote action in this state is unexpected
+        ocf_log err "Resource is currently not running."
+        exit "${OCF_ERR_GENERIC}"
+        ;;
+    *)
+        # Failed resource; let the cluster manager recover
+        ocf_log err "Unexpected error, cannot demote."
+        exit "${rc}"
+        ;;
+    esac
+
+    # Make sure the ALUA configuration is legit
+    check_ana
+
+    # Set all ports matching our group ID to the transitioning state
+    set_trans_state
+
+    local change_tpg_safe=1
+    ns_path="${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}/namespaces"
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        if [ "$(head -1 "${i}/ana_grpid")" != \
+            "${OCF_RESKEY_ana_group_id}" ]; then
+            continue
+        fi
+        ns_id="$(basename "${i}")"
+        ocf_log debug "${FUNCNAME[0]}() -> Setting namespace '${ns_id}'" \
+            "block device to the dm-zero device..."
+        ( set_ns_dev_zero "${ns_id}" ) &
+    done <<< "$(find "${ns_path}" -maxdepth 1 -mindepth 1 -type d)"
+    ocf_log debug "${FUNCNAME[0]}() -> Waiting for namespace block" \
+        "devices to transition to dm-zero..."
+    wait
+    # TODO: I'm not sure trying to set devices to the redirection device
+    # during this demote operation is worth the time; from what I've seen
+    # so far in testing, it never completes and add seconds to the
+    # transition time. So we rely on the monitor operation to set these.
+    # We are likley using iSCSI with redirect mode, rescan here
+    #iscsi_sess_rescan
+    #scsi_bus_rescan
+    # Change the backing device to the redirected one
+    #ns_to_redirect || change_tpg_safe=0
+    change_tpg_safe=0
+    # LUN unmapping on the internal redirection target is handled by the
+    # 'ocf:esos:alua' resource agent, so nothing for us to do here
+
+    if [ ${change_tpg_safe} -eq 1 ]; then
+        # Set our port's ANA state for Master (only if its safe)
+        set_ana_group_state "${FUNCNAME[0]}" "${OCF_RESKEY_ana_group_id}" \
+            "${OCF_RESKEY_s_ana_state}"
+    fi
+
+    # Set the new resource state
+    update_state "slave"
+
+    # After the resource has been demoted, check whether the demotion worked
+    while true; do
+        ana_monitor
+        if [ ${?} -eq "${OCF_RUNNING_MASTER}" ]; then
+            ocf_log debug "${FUNCNAME[0]}() -> Resource still" \
+                "awaiting demotion."
+            sleep 1
+        else
+            ocf_log info "Resource was demoted successfully."
+            break
+        fi
+    done
+
+    # Only return $OCF_SUCCESS if _everything_ succeeded as expected
+    return "${OCF_SUCCESS}"
+}
+
+
+ana_notify() {
+    # Handle notification events
+    # shellcheck disable=SC2154
+    ocf_log debug "${FUNCNAME[0]}() -> Received a" \
+        "'${OCF_RESKEY_CRM_meta_notify_type}' /" \
+        "'${OCF_RESKEY_CRM_meta_notify_operation}' notification."
+    case "${OCF_RESKEY_CRM_meta_notify_type}" in
+    pre)
+        if [ "${OCF_RESKEY_CRM_meta_notify_operation}" = "demote" ] && \
+            pending_fence; then
+            # Handle this special case
+            ocf_log info "Pre-demote + pending fence detected," \
+                "setting ports to transitioning..."
+            set_trans_state
+        fi
+        ;;
+    esac
+
+    # Always return success
+    return "${OCF_SUCCESS}"
+}
+
+
+check_ana() {
+    # Make sure the directories exist in the NVMe Target sysfs structure
+    if [ ! -d "${NVMET_SYSFS}/subsystems/${OCF_RESKEY_subsys_name}" ]; then
+        ocf_log err "The '${OCF_RESKEY_subsys_name}' subsystem" \
+            "does not exist!"
+        exit "${OCF_ERR_INSTALLED}"
+    fi
+
+    # Check that the given ANA states are valid
+    local valid_m_ana_state=0
+    local valid_s_ana_state=0
+    for i in ${ANA_STATES}; do
+        if [ "${OCF_RESKEY_m_ana_state}" = "${i}" ]; then
+            valid_m_ana_state=1
+        fi
+        if [ "${OCF_RESKEY_s_ana_state}" = "${i}" ]; then
+            valid_s_ana_state=1
+        fi
+    done
+    if [ ${valid_m_ana_state} -eq 0 ]; then
+        ocf_log err "The 'm_ana_state' value is" \
+            "not valid: ${OCF_RESKEY_m_ana_state}"
+        exit "${OCF_ERR_INSTALLED}"
+    fi
+    if [ ${valid_s_ana_state} -eq 0 ]; then
+        ocf_log err "The 's_ana_state' value is" \
+            "not valid: ${OCF_RESKEY_s_ana_state}"
+        exit "${OCF_ERR_INSTALLED}"
+    fi
+}
+
+
+# This must always be set
+: "${OCF_RESKEY_remote_inact_state=inaccessible}"
+: "${OCF_RESKEY_state=${HA_RSCTMP}/ana-${OCF_RESOURCE_INSTANCE}.state}"
+
+# Make sure meta-data and usage always succeed
+case "${__OCF_ACTION}" in
+meta-data)
+    ana_meta_data
+    exit "${OCF_SUCCESS}"
+    ;;
+usage|help)
+    ana_usage
+    exit "${OCF_SUCCESS}"
+    ;;
+esac
+
+# Anything other than meta-data and usage must pass validation
+ana_validate_all || exit ${?}
+
+# Translate each action into the appropriate function call
+case "${__OCF_ACTION}" in
+start)
+    ana_start
+    ;;
+stop)
+    ana_stop
+    ;;
+status|monitor)
+    ana_monitor
+    ;;
+notify)
+    ana_notify
+    ;;
+promote)
+    ana_promote
+    ;;
+demote)
+    ana_demote
+    ;;
+reload)
+    ocf_log info "Reloading..."
+    ana_start
+    ;;
+validate-all)
+    ana_validate_all
+    ;;
+migrate_to|migrate_from)
+    ana_usage
+    exit "${OCF_ERR_UNIMPLEMENTED}"
+    ;;
+*)
+    ana_usage
+    exit "${OCF_ERR_UNIMPLEMENTED}"
+    ;;
+esac
+
+# Log a debug message and exit
+rc=${?}
+ocf_log debug "${OCF_RESOURCE_INSTANCE} ${__OCF_ACTION} returned: ${rc}"
+exit "${rc}"
+

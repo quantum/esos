@@ -543,3 +543,41 @@ index f511f183aca67..7bc967131ac55 100644
 -- 
 cgit 
 
+--- a/drivers/md/dm-zero.c	2023-01-18 05:42:07.000000000 -0500
++++ b/drivers/md/dm-zero.c	2023-10-17 13:25:10.571641186 -0400
+@@ -56,12 +56,20 @@
+ 	return DM_MAPIO_SUBMITTED;
+ }
+ 
++static void zero_io_hints(struct dm_target *ti, struct queue_limits *limits)
++{
++	limits->logical_block_size = 4096;
++	limits->physical_block_size = 4096;
++	blk_limits_io_min(limits, limits->logical_block_size);
++}
++
+ static struct target_type zero_target = {
+ 	.name   = "zero",
+ 	.version = {1, 1, 0},
+ 	.module = THIS_MODULE,
+ 	.ctr    = zero_ctr,
+ 	.map    = zero_map,
++	.io_hints = zero_io_hints,
+ };
+ 
+ static int __init dm_zero_init(void)
+--- a/drivers/md/dm-table.c	2023-10-18 09:13:10.662354645 -0400
++++ b/drivers/md/dm-table.c	2023-10-18 09:13:20.979395552 -0400
+@@ -1522,8 +1522,11 @@
+ 
+ 		ti = dm_table_get_target(table, i);
+ 
+-		if (!ti->type->iterate_devices)
++		if (!ti->type->iterate_devices) {
++			if (ti->type->io_hints)
++				ti->type->io_hints(ti, &ti_limits);
+ 			goto combine_limits;
++		}
+ 
+ 		/*
+ 		 * Combine queue limits of all the devices this target uses.

@@ -4,6 +4,8 @@ source /etc/rc.d/common
 
 LLDPAD="/usr/sbin/lldpad"
 LLDPAD_LOCK="/var/lock/lldpad"
+FCOEMON="/usr/sbin/fcoemon"
+FCOEMON_LOCK="/var/lock/fcoemon"
 DFLT_OPTS="-d"
 
 check_args ${@}
@@ -26,6 +28,11 @@ start() {
 }
 
 stop() {
+    if [ -n "$(/usr/bin/pidof ${FCOEMON})" ]; then
+        /bin/echo "The 'fcoemon' daemon is running, stopping..."
+        /usr/bin/kill -TERM $(/usr/bin/pidof ${FCOEMON}) || exit 1
+        wait_for_stop ${FCOEMON} && /bin/rm -f ${FCOEMON_LOCK}
+    fi
     /bin/echo "Stopping lldpad..."
     /usr/bin/kill -TERM $(/usr/bin/pidof ${LLDPAD}) || exit 1
     wait_for_stop ${LLDPAD} && /bin/rm -f ${LLDPAD_LOCK}

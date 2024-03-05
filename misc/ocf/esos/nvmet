@@ -1,0 +1,308 @@
+#! /bin/bash
+
+#
+#   Resource Agent for managing the Linux NVMe Target (NVMeoF) stack;
+#   this RA is responsible for loading/unloading the configuration.
+#
+
+# Initialization
+# shellcheck disable=SC2223
+: ${OCF_FUNCTIONS_DIR=${OCF_ROOT}/lib/heartbeat}
+# shellcheck disable=SC1091
+. "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
+NVMET_CONF_FILE="/etc/nvmet/config.json"
+NVMET_DEV_MAPS="/etc/esos_dev_maps/nvmet"
+ZERO_DEV_PREFIX="zero_dev-"
+REDIRECT_DEV_PREFIX="redirect_dev-"
+
+
+nvmet_start() {
+    # Exit immediately if configuration is not valid
+    nvmet_validate_all || exit ${?}
+
+    # If resource is already running, bail out early
+    if nvmet_monitor; then
+        ocf_log info "Resource is already running."
+        return "${OCF_SUCCESS}"
+    fi
+
+    # Massage the configuration file
+    ocf_log debug "Adjusting the NVMe Target configuration file..."
+    cp -f ${NVMET_CONF_FILE} ${NVMET_CONF_FILE}.cluster_backup
+    # Set the ANA group states to a start-up value
+    jq '.ports[].ana_groups[].ana.state = "inaccessible"' \
+        "${NVMET_CONF_FILE}" > /tmp/nvmet_config.json
+    mv -f /tmp/nvmet_config.json "${NVMET_CONF_FILE}"
+    # Ensure all namespaces are enabled to start
+    jq '.subsystems[].namespaces[].enable = 1' \
+        "${NVMET_CONF_FILE}" > /tmp/nvmet_config.json
+    mv -f /tmp/nvmet_config.json "${NVMET_CONF_FILE}"
+
+    # Configure the dm-linear redirection devices
+    start_redirect_devs
+
+    # Now we can load it
+    ocf_log info "Restoring the NVMe Target configuration..."
+    ocf_run nvmetcli restore "${NVMET_CONF_FILE}"
+    # shellcheck disable=SC2181
+    if [ ${?} -ne 0 ]; then
+        error_msg="Something is wrong with the NVMe Target configuration!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_GENERIC}"
+    fi
+
+    # Create our RA state file
+    touch "${OCF_RESKEY_state}"
+
+    # Only return $OCF_SUCCESS if _everything_ succeeded as expected
+    return "${OCF_SUCCESS}"
+}
+
+
+nvmet_stop() {
+    # Exit immediately if configuration is not valid
+    nvmet_validate_all || exit ${?}
+
+    # Check the current resource state
+    nvmet_monitor
+    local rc=${?}
+    case "${rc}" in
+    "${OCF_SUCCESS}")
+        # Currently running; normal, expected behavior
+        ocf_log info "Resource is currently running."
+        ;;
+    "${OCF_NOT_RUNNING}")
+        # Currently not running; nothing to do
+        ocf_log info "Resource is already stopped."
+        return "${OCF_SUCCESS}"
+        ;;
+    esac
+
+    # Zap the running configuration from sysfs (not the config file)
+    ocf_log info "Clearing the NVMe Target configuration..."
+    ocf_run nvmetcli clear
+
+    # Now remove all of our redirection devices
+    stop_redirect_devs
+
+    # Remove the state file
+    rm -f "${OCF_RESKEY_state}"
+
+    # Only return $OCF_SUCCESS if _everything_ succeeded as expected
+    return "${OCF_SUCCESS}"
+}
+
+
+nvmet_monitor() {
+    # Exit immediately if configuration is not valid
+    nvmet_validate_all || exit ${?}
+
+    # Determine our status using the state file
+    if [ -f "${OCF_RESKEY_state}" ]; then
+        return "${OCF_SUCCESS}"
+    else
+        return "${OCF_NOT_RUNNING}"
+    fi
+}
+
+
+nvmet_validate_all() {
+    # Test for required binaries
+    check_binary nvmetcli
+    check_binary jq
+
+    # There can only be one instance running per node
+    if [ -n "${OCF_RESKEY_CRM_meta_clone_node_max}" ] &&
+        [ "${OCF_RESKEY_CRM_meta_clone_node_max}" -ne 1 ]; then
+        error_msg="The 'clone-node-max' parameter must equal '1'."
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+
+    # The NVMe target configuration file is required
+    if [ ! -f "${NVMET_CONF_FILE}" ]; then
+        error_msg="The '${NVMET_CONF_FILE}' file does not exist!"
+        ocf_exit_reason "${error_msg}"
+        exit "${OCF_ERR_CONFIGURED}"
+    fi
+
+    return "${OCF_SUCCESS}"
+}
+
+
+nvmet_meta_data() {
+	cat <<-EOF
+	<?xml version="1.0"?>
+	<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+	<resource-agent name="nvmet" version="0.1">
+	  <version>0.1</version>
+	  <longdesc lang="en">The NVMe Target OCF resource agent for ESOS; handles loading/unloading configuration.</longdesc>
+	  <shortdesc lang="en">NVMe Target OCF RA script for ESOS.</shortdesc>
+	  <parameters>
+	    <parameter name="state" unique="1" required="0">
+	      <longdesc lang="en">Full path to the resource state file.</longdesc>
+	      <shortdesc lang="en">The 'state' parameter.</shortdesc>
+	      <content type="string" default="${HA_RSCTMP}/nvmet-{OCF_RESOURCE_INSTANCE}.state" />
+	    </parameter>
+	  </parameters>
+	  <actions>
+	    <action name="meta-data" timeout="5" />
+	    <action name="start" timeout="20" />
+	    <action name="stop" timeout="40" />
+	    <action name="monitor" timeout="20" depth="0" interval="30" />
+	    <action name="reload" timeout="20" />
+	    <action name="validate-all" timeout="20" />
+	  </actions>
+	</resource-agent>
+	EOF
+}
+
+
+nvmet_usage() {
+    echo "usage: ${0} {start|stop|monitor|validate-all|reload|meta-data}"
+    echo ""
+    echo "Expects to have a fully populated OCF RA-compliant environment set."
+}
+
+
+start_redirect_devs() {
+    # Start and configure all redirection block devices
+    while read -r i; do
+        if [ ! -d "${NVMET_DEV_MAPS}/${i}" ]; then
+            ocf_log warn "Subsystem '${i}' not found in the ESOS device maps" \
+                "directory! Skipping..."
+            continue
+        fi
+        while read -r j; do
+            group_id="$(echo "${j}" | cut -d, -f1)"
+            ns_id="$(echo "${j}" | cut -d, -f2)"
+            dev_map_file="${NVMET_DEV_MAPS}/${i}/${group_id}/${ns_id}"
+            if [ ! -f "${dev_map_file}" ]; then
+                ocf_log warn "The ESOS device map file for subsystem '${i}'" \
+                    "+ ANA group ID '${group_id}' + namespace ID '${ns_id}'" \
+                    "does not exist! Skipping..."
+                continue
+            fi
+            # Get the device name + device size (in 512-byte sectors)
+            dev_name="$(head -1 "${dev_map_file}" | cut -d' ' -f1)"
+            ocf_log debug "${FUNCNAME[0]}() -> Parsed device name: ${dev_name}"
+            dev_size="$(head -1 "${dev_map_file}" | cut -d' ' -f3)"
+            ocf_log debug "${FUNCNAME[0]}() -> Parsed device size: ${dev_size}"
+            # Create the dm-zero device if it doesn't already exist
+            zero_dev_name="${ZERO_DEV_PREFIX}${dev_name}"
+            zero_dev_path="/dev/mapper/${zero_dev_name}"
+            if [ -e "${zero_dev_path}" ]; then
+                ocf_log warn "The dm-zero device '${zero_dev_name}' already" \
+                    "exists! Unexpected, but continuing anyways..."
+            else
+                ocf_log info "Creating the dm-zero device for '${dev_name}'" \
+                    "with size '${dev_size}'..."
+                # ESOS's dm-zero driver is always a 4096/4096 block size
+                ocf_run dmsetup create "${zero_dev_name}" \
+                    --table "0 ${dev_size} zero"
+                # shellcheck disable=SC2181
+                if [ ${?} -ne 0 ]; then
+                    error_msg="Failed to create the '${zero_dev_name}' "
+                    error_msg+="dm-zero device!"
+                    ocf_exit_reason "${error_msg}"
+                    exit "${OCF_SUCCESS}"
+                fi
+            fi
+            # Create the dm-linear (redirect) device if it doesn't already exist
+            redirect_dev_name="${REDIRECT_DEV_PREFIX}${dev_name}"
+            redirect_dev_path="/dev/mapper/${redirect_dev_name}"
+            if [ -e "${redirect_dev_path}" ]; then
+                ocf_log warn "The dm-linear device '${redirect_dev_name}'" \
+                    "already exists! Unexpected, but continuing anyways..."
+                # TODO: We assume this DM device is healthy/usable, but we
+                # might want to make sure here.
+            else
+                ocf_log info "Creating the dm-linear device for '${dev_name}'" \
+                    "with size '${dev_size}' using backing device" \
+                    "'${zero_dev_path}'..."
+                # TODO: We assume that all block devices we use have a logical
+                # and physical sector size of 4096 bytes!
+                ocf_run dmsetup create "${redirect_dev_name}" \
+                    --table "0 ${dev_size} linear ${zero_dev_path} 0"
+                # shellcheck disable=SC2181
+                if [ ${?} -ne 0 ]; then
+                    error_msg="Failed to create the '${redirect_dev_name}' "
+                    error_msg+="dm-linear device!"
+                    ocf_exit_reason "${error_msg}"
+                    exit "${OCF_SUCCESS}"
+                fi
+            fi
+        done <<< "$(jq -r --arg SUBSYS "${i}" '.subsystems[] | 
+            select(.nqn==$SUBSYS) | .namespaces[] | [.ana_grpid, .nsid] 
+            | @csv' "${NVMET_CONF_FILE}")"
+    done <<< "$(jq -r '.subsystems[].nqn' "${NVMET_CONF_FILE}")"
+}
+
+
+stop_redirect_devs() {
+    # Remove all of the redirection devices; we rely on sorted results so we
+    # stop the redirect (dm-linear) devices before the fillers (dm-zero)
+    ocf_log info "Removing all DM redirection devices..."
+    while read -r i; do
+        [[ -n "${i}" ]] || break
+        # The device may still be in-use, so we spin here until they are gone
+        while [ -e "${i}" ]; do
+            ocf_run dmsetup remove "${i}"
+            # shellcheck disable=SC2181
+            if [ ${?} -ne 0 ]; then
+                ocf_log warn "Failed to remove the '${i}' device! Retrying..."
+                sleep 1
+            fi
+        done
+    done <<< "$(find /dev/mapper/ -iname "${REDIRECT_DEV_PREFIX}*" \
+        -or -iname "${ZERO_DEV_PREFIX}*" | sort)"
+}
+
+
+# This must always be set
+: "${OCF_RESKEY_state=${HA_RSCTMP}/nvmet-${OCF_RESOURCE_INSTANCE}.state}"
+
+# Make sure meta-data and usage always succeed
+case ${__OCF_ACTION} in
+meta-data)
+    nvmet_meta_data
+    exit "${OCF_SUCCESS}"
+    ;;
+usage|help)
+    nvmet_usage
+    exit "${OCF_SUCCESS}"
+    ;;
+esac
+
+# Anything other than meta-data and usage must pass validation
+nvmet_validate_all || exit ${?}
+
+# Translate each action into the appropriate function call
+case ${__OCF_ACTION} in
+start)
+    nvmet_start
+    ;;
+stop)
+    nvmet_stop
+    ;;
+reload)
+    ocf_log info "Reloading..."
+    nvmet_start
+    ;;
+status|monitor)
+    nvmet_monitor
+    ;;
+validate-all)
+    nvmet_validate_all
+    ;;
+*)
+    nvmet_usage
+    exit "${OCF_ERR_UNIMPLEMENTED}"
+    ;;
+esac
+
+# Log a debug message and exit
+rc=${?}
+ocf_log debug "${OCF_RESOURCE_INSTANCE} ${__OCF_ACTION} returned: ${rc}"
+exit "${rc}"
+

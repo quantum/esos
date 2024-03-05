@@ -1,3 +1,49 @@
+2024-03-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'next_420_ver' into 4.x.x
+
+2024-01-22  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.lldpad: in stop() if fcoemon is running, kill that first before stopping lldpad (otherwise fcoemon complains loudly via logging)
+
+2024-01-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	applied several tweaks/enhancements to 'archive_logs.sh'
+
+2023-12-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated rc.scst and ocf:esos:scst scripts to make starting/stopping 'fcoemon' dependent on lldpad running (otherwise we get annoying messages in the logs since it's truly dependent on this)
+
+2023-12-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	use the ESOS version string in core.c as well
+
+2023-12-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	fixed up for new MOFED version
+
+2023-11-29  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated RA scripts to use the new argument name with the rescan-scsi-bus.sh script (--timeout) provided by the new sg3_utils version (our one-off patch is no longer needed)
+
+	bump'd sg3_utils to version 1.48
+
+2023-11-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	tweaked the 'ocf:heartbeat:VirtualDomain' and 'stonith:external/sbd' RA scripts for better handling
+
+2023-11-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	when using the MOFED package, in the NVMe target driver, set the 'fr' attribute to contain the ESOS version string, and increase the 'anatt' attribute to 60 seconds
+
+2023-11-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	removed all "ESOS usage" collection stuff (from TUI code, and disable build option)
+
+2023-11-09  Marc A. Smith  <marc.smith@quantum.com>
+
+	handle retrying of DM removal in ocf:esos:nvmet (during a stop action)
+
 2023-10-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'pam_su_fixup' into 4.x.x
@@ -14,6 +60,42 @@
 
 	disabled Busybox 'su' and included the real program from the util-linux package; added additional pam.d files for su
 
+2023-10-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	added a kernel patch that sets dm-zero block devices to a 4096-byte logical + phsyical sector size; updates/improvements for the 'ocf:esos:nvmet' and 'ocf:esos:ana' RA scripts
+
+2023-10-11  Marc A. Smith  <marc.smith@quantum.com>
+
+	more tweaks in the 'ocf:esos:ana' RA script; fixed an issue for 'ocf:esos:Raid1' introduced by our resource-agents patched (no harm, but there was an extra error message)
+
+2023-10-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	fixed a few issues in new NVMeoF RA scripts
+
+2023-10-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	sysctl.conf: set a default packet scheduling algorithm; enabled CONFIG_NET_SCH_NETEM in kernel config; added new RA scripts for NVMe target stuff (NVMeoF); fixed a few wording/formatting things in current RA scripts
+
+2023-08-24  Marc A. Smith  <marc.smith@quantum.com>
+
+	no longer need to delete the .detect lines for latest driver version
+
+2023-08-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated QLogic FW package; build fix for OCS SDK driver
+
+2023-05-19  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated nvmetcli to latest revision from master branch
+
+2023-05-17  Marc A. Smith  <marc.smith@quantum.com>
+
+	fixup the esos_kernels.chroot target to handle building qla2xxx_scst against MOFED (when used) properly; added several fixes for Python scripts included with the qla2xxx_scst driver
+
+2023-05-12  Chris Graves  <chris.graves@quantum.com>
+
+	Adding py-spy profiler and updating python websockets to 11.0.3.
+
 2023-05-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '418_update' into 4.x.x
@@ -21,6 +103,10 @@
 2023-05-12  Chris Graves  <chris.graves@quantum.com>
 
 	Adding py-spy profiler and updating python websockets to 11.0.3.
+
+2023-05-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated qlogic_fw package; implemented qla2xxx_scst.chroot target for scripts included with driver package; modprobe.conf: set ql2xnvmeenable=2 for NVMeoF support; rc.2: load the 'nvme_qla2xxx' module on boot
 
 2023-04-24  Marc A. Smith  <marc.smith@quantum.com>
 
