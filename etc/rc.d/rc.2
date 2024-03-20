@@ -6,9 +6,6 @@ source /etc/rc.d/common
 /sbin/ifconfig lo 127.0.0.1
 /sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
 
-# Set a temporary host name
-/bin/hostname localhost
-
 # Start the EARLY user settable services
 for i in ${EARLY_SERVICES}; do
     if check_enabled "${i}"; then
@@ -48,6 +45,9 @@ if [ -x /etc/rc.d/rc.network ]; then
 fi
 
 if [ -x /etc/rc.d/rc.syslogd ]; then
+    if /usr/bin/pidof /usr/sbin/syslogd > /dev/null; then
+        /etc/rc.d/rc.syslogd stop
+    fi
     /etc/rc.d/rc.syslogd start
 fi
 
