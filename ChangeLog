@@ -1,3 +1,9 @@
+2024-03-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20240320_tweaks'
+
+	rc.2: moved setting temp/initial hostname to rc.sysinit, handle restarting syslogd so we get earlier messages and if remote logging is configured; rc.sysinit: start syslogd early and set a temporary hostname so early log messages don't show "none"
+
 2024-01-22  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'fcoemon_fix_2'

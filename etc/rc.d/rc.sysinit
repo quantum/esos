@@ -31,7 +31,12 @@ if /bin/grep esos_persist /proc/cmdline > /dev/null 2>&1; then
     fi
 fi
 
+# Set a temporary host name
+/bin/hostname localhost
+
+# Start logging daemons early
 /sbin/bootlogd -c
+/usr/sbin/syslogd
 
 if ! /bin/grep esos_iso /proc/cmdline > /dev/null 2>&1; then
     /bin/echo "Performing initial configuration sync..."
