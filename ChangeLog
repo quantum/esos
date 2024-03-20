@@ -1,3 +1,9 @@
+2024-03-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '421_updates' into 4.x.x
+
+	rc.2: moved setting temp/initial hostname to rc.sysinit, handle restarting syslogd so we get earlier messages and if remote logging is configured; rc.sysinit: start syslogd early and set a temporary hostname so early log messages don't show "none"
+
 2024-03-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'next_420_ver' into 4.x.x
