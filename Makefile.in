@@ -252,7 +252,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		freeipmi-1.6.3.tar.gz \
 		libgcrypt-1.8.4.tar.bz2 \
 		libgpg-error-1.36.tar.bz2 \
-		smartmontools-7.0.tar.gz \
+		smartmontools-7.4.tar.gz \
 		cryptsetup-1.7.5.tar.xz \
 		popt-1.16.tar.gz \
 		makedumpfile-1.6.7.tar.gz \
