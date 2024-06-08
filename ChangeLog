@@ -1,3 +1,9 @@
+2024-06-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'smartmontools_update'
+
+	updated the smartmontools package to version 7.4
+
 2024-03-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20240320_tweaks'
