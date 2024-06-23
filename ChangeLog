@@ -1,3 +1,9 @@
+2024-06-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'hung_task_timeout'
+
+	decreased hung task timeout to 60s
+
 2024-06-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'smartmontools_update'
