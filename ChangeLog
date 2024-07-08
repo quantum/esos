@@ -1,3 +1,9 @@
+2024-07-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'anything_ra_tweak'
+
+	make the anything_status() function in RA 'ocf:heartbeat:anything' quieter
+
 2024-06-23  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'hung_task_timeout'
