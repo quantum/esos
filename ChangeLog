@@ -1,3 +1,9 @@
+2024-07-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'use_rdma-core'
+
+	replaced a whole slew of IB/RDMA packages with the 'rdma-core' package; updated libnl to 3.x (dep for rdma-core); updated openlldp package to latest version (build fixes and links against libnl-3)
+
 2024-07-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'anything_ra_tweak'
