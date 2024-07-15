@@ -1,3 +1,9 @@
+2024-07-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rdma-core_udev_fixup'
+
+	fixed new udev rules that come with rdma-core package (no systemd, and renaming interfaces breaks other RDMA scripts/tools)
+
 2024-07-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'use_rdma-core'
