@@ -2591,6 +2591,10 @@ rdma-core.chroot: glibc.chroot libnl.chroot
 	cd $(tgt_src_dir)/build && ninja
 	cd $(tgt_src_dir)/build && ninja install
 	$(RM) /etc/init.d
+	$(SED) -i '/^ACTION=="add",/ s/^#*/#/' \
+	/usr/lib/udev/rules.d/60-rdma-persistent-naming.rules
+	$(RM) /usr/lib/udev/rules.d/90-rdma-hw-modules.rules
+	$(RM) /usr/lib/udev/rules.d/60-srp_daemon.rules
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -3365,19 +3369,10 @@ open-fcoe.chroot: glibc.chroot openlldp.chroot libpciaccess.chroot
 openlldp.chroot: glibc.chroot libconfig.chroot libnl.chroot readline.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	#$(SED) -i 's/^AC_FUNC_MALLOC/dnl AC_FUNC_MALLOC/' \
-	#$(tgt_src_dir)/configure.ac
-	#$(SED) -i 's/^AC_FUNC_REALLOC/dnl AC_FUNC_REALLOC/' \
-	#$(tgt_src_dir)/configure.ac
-	#$(SED) -i 's/foreign/foreign subdir-objects/' \
-	#$(tgt_src_dir)/configure.ac
-	#$(SED) -i 's/-Werror//' $(tgt_src_dir)/Makefile.am
-	#$(SED) -i 's/-Werror//' $(tgt_src_dir)/configure.ac
 	$(QUIET) if [ ! -f "$(tgt_src_dir)/configure" ]; then \
 	  cd $(tgt_src_dir) && ./bootstrap.sh; \
 	fi
 	cd $(tgt_src_dir) && ./configure --prefix=/usr
-	#$(MAKE) --directory=$(tgt_src_dir) CC="gcc -fgnu89-inline"
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install-exec
 	$(MAKE) --directory=$(tgt_src_dir) install-lldpad_includeHEADERS
