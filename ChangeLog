@@ -1,3 +1,9 @@
+2024-07-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'alua_ssh_tweak'
+
+	updated set_tpg_trans() in the 'ocf:esos:alua' RA script so it makes SSH failures clearer (exit status 255) and don't exit success, otherwise the resource may flop back and fourth between controllers
+
 2024-07-14  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rdma-core_udev_fixup'
