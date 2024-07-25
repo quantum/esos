@@ -625,11 +625,15 @@ set_tpg_trans() {
                 "${OCF_RESKEY_local_tgt_grp}" -dev_group \
                 "${OCF_RESKEY_device_group}" -attributes \
                 "state=${TRANSITION_STATE}"
-            # shellcheck disable=SC2181
-            if [ ${?} -ne 0 ]; then
+            ssh_cmd_rc=${?}
+            if [ "${ssh_cmd_rc}" -eq 255 ]; then
+                error_msg="SSH'ing to peer '${peer_name}' failed!"
+                ocf_exit_reason "${error_msg}"
+                exit "${OCF_ERR_GENERIC}"
+            elif [ "${ssh_cmd_rc}" -ne 0 ]; then
                 error_msg="Failed to set the peer local target group state!"
                 ocf_exit_reason "${error_msg}"
-                exit "${OCF_SUCCESS}"
+                exit "${OCF_ERR_GENERIC}"
             fi
             ocf_log info "${FUNCNAME[1]}() -> Setting target group" \
                 "'${OCF_RESKEY_remote_tgt_grp}' ALUA state to" \
@@ -640,11 +644,15 @@ set_tpg_trans() {
                 "${OCF_RESKEY_remote_tgt_grp}" -dev_group \
                 "${OCF_RESKEY_device_group}" -attributes \
                 "state=${TRANSITION_STATE}"
-            # shellcheck disable=SC2181
-            if [ ${?} -ne 0 ]; then
+            ssh_cmd_rc=${?}
+            if [ "${ssh_cmd_rc}" -eq 255 ]; then
+                error_msg="SSH'ing to peer '${peer_name}' failed!"
+                ocf_exit_reason "${error_msg}"
+                exit "${OCF_ERR_GENERIC}"
+            elif [ ${ssh_cmd_rc} -ne 0 ]; then
                 error_msg="Failed to set the peer remote target group state!"
                 ocf_exit_reason "${error_msg}"
-                exit "${OCF_SUCCESS}"
+                exit "${OCF_ERR_GENERIC}"
             fi
         else
             ocf_log warn "${FUNCNAME[1]}() -> Failed to ping '${peer_name}'!" \
