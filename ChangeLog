@@ -1,3 +1,9 @@
+2024-07-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'rc_network_fix_map'
+
+	rc.network: handle any egress priority mapping values that have changed -- if we detect any that aren't in the config, then remove the VLAN interface so we can start fresh
+
 2024-07-25  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'alua_ssh_tweak'
