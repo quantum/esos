@@ -494,6 +494,49 @@ if (($ARGV[0] eq "start") || ($ARGV[0] eq "apply")) {
             if ($each =~ /.*\.\d+/) {
                 my $vlan_iface = $net_if_dir . "/" . $each;
                 my @vlan_if_parts = split(/\./, $each);
+                # Handle any old VLAN egress priority map values
+                my $vlanegressmap = "";
+                if (exists($ini_hash{$each . ":vlanegressmap"})) {
+                    $vlanegressmap = $ini_hash{$each . ":vlanegressmap"};
+                }
+                my %egprio_hash = map {$_ => 1} split(/,/, $vlanegressmap);
+                my $vlan_conf_file = "/proc/net/vlan/" . $each;
+                if ( -e "$vlan_conf_file") {
+                    open(VLAN_CONF, "$vlan_conf_file") ||
+                        die("ERROR: Can't open $vlan_conf_file $!");
+                    my @vlan_conf_lines = <VLAN_CONF>;
+                    close(VLAN_CONF);
+                    foreach my $vlan_conf_line (@vlan_conf_lines) {
+                        if ($vlan_conf_line =~ /EGRESS priority mappings:/) {
+                            $vlan_conf_line =~ s/ EGRESS priority mappings: //;
+                            chomp $vlan_conf_line;
+                            my @egress_prio_maps = split(/ /, $vlan_conf_line);
+                            foreach my $each_map (@egress_prio_maps) {
+                                if (not exists $egprio_hash{"$each_map"}) {
+                                    printf("EGRESS priority mappings changed!" .
+                                        " Removing VLAN interface " . $each .
+                                        "...\n");
+                                    system($vconfig_prog . " rem " . $each .
+                                        " 2>&1");
+                                    if ($? == -1) {
+                                        print("ERROR: Running $vconfig_prog " .
+                                            "failed: $!\n");
+                                        next;
+                                    }
+                                    my $exit_status = $? >> 8;
+                                    if ($exit_status != 0) {
+                                        print("ERROR: The $vconfig_prog " .
+                                            "program exited with " .
+                                            "value $exit_status.\n");
+                                        next;
+                                    }
+                                    last;
+                                }
+                            }
+                            last;
+                        }
+                    }
+                }
                 if (! -e "$vlan_iface") {
                     printf("Creating VLAN interface " . $each . "...\n");
                     system($vconfig_prog . " add " . $vlan_if_parts[0] .

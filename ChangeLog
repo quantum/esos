@@ -1,3 +1,35 @@
+2024-08-18  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_next_430_ver' into 4.x.x
+
+2024-07-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.network: handle any egress priority mapping values that have changed -- if we detect any that aren't in the config, then remove the VLAN interface so we can start fresh
+
+2024-07-25  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated set_tpg_trans() in the 'ocf:esos:alua' RA script so it makes SSH failures clearer (exit status 255) and don't exit success, otherwise the resource may flop back and fourth between controllers
+
+2024-07-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	fixed new udev rules that come with rdma-core package (no systemd, and renaming interfaces breaks other RDMA scripts/tools)
+
+2024-07-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	replaced a whole slew of IB/RDMA packages with the 'rdma-core' package; updated libnl to 3.x (dep for rdma-core); updated openlldp package to latest version (build fixes and links against libnl-3)
+
+2024-07-08  Marc A. Smith  <marc.smith@quantum.com>
+
+	make the anything_status() function in RA 'ocf:heartbeat:anything' quieter
+
+2024-06-23  Marc A. Smith  <marc.smith@quantum.com>
+
+	decreased hung task timeout to 60s
+
+2024-06-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated the smartmontools package to version 7.4
+
 2024-03-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '421_updates' into 4.x.x
