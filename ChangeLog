@@ -1,3 +1,9 @@
+2024-08-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'qlogic_fw'
+
+	updated qlogic_fw package (2700/2800)
+
 2024-07-30  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'rc_network_fix_map'
