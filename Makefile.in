@@ -176,9 +176,9 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		sysvinit-2.94.tar.xz \
 		vixie-cron-4.1.tar.bz2 \
 		rdma-core-52.0.tar.gz \
-		openssh-8.7p1.tar.gz \
+		openssh-9.8p1.tar.gz \
 		ssmtp-2.64.tar.bz2 \
-		openssl-1.1.1n.tar.gz \
+		openssl-1.1.1w.tar.gz \
 		e2fsprogs-1.45.1.tar.xz \
 		zlib-1.2.11.tar.xz \
 		lsscsi-030r154.tar.gz \
