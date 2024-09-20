@@ -1,3 +1,9 @@
+2024-09-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'ssl_ssh_bump'
+
+	updated OpenSSL and OpenSSH packages to latest release versions
+
 2024-09-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_schedstats'
