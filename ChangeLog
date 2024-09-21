@@ -1,3 +1,11 @@
+2024-09-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '433_update' into 4.x.x
+
+2024-09-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated OpenSSL and OpenSSH packages to latest release versions
+
 2024-09-08  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '432_update' into 4.x.x
