@@ -1,3 +1,9 @@
+2024-09-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'install_set_x_fix'
+
+	install.sh: remove use of 'set -x' since we handle each statement failure as needed, retry the partition-table re-read once if needed
+
 2024-09-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'ssl_ssh_bump'

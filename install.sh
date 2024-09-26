@@ -12,9 +12,6 @@ MACOSX="MACOSX"
 SYNC_LOCK="/var/lock/conf_sync"
 WIPE_TRAN_TYPES="sata|sas|nvme"
 
-# Always bail on any error
-set -e
-
 # Optional installation block device path parameter
 install_dev="${1}"
 # Optional installation device transport type parameter
@@ -472,7 +469,11 @@ while : ; do
         if [ "${this_os}" = "${LINUX}" ]; then
             # Re-read the partition table (not fatal)
             if ! echo ${dev_node} | grep -E -q 'loop'; then
-                blockdev --rereadpt ${dev_node}
+                if ! blockdev --rereadpt ${dev_node}; then
+                    # Might as well retry once
+                    sleep 10
+                    blockdev --rereadpt ${dev_node}
+                fi
             fi
         fi
         echo
