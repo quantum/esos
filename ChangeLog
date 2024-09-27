@@ -1,3 +1,11 @@
+2024-09-27  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '434_update' into 4.x.x
+
+2024-09-26  Marc A. Smith  <marc.smith@quantum.com>
+
+	install.sh: remove use of 'set -x' since we handle each statement failure as needed, retry the partition-table re-read once if needed
+
 2024-09-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '433_update' into 4.x.x
