@@ -1,3 +1,9 @@
+2024-10-04  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_usb_serial'
+
+	enabled the CONFIG_USB_SERIAL_CP210X kernel config option (USB serial port interface driver)
+
 2024-09-26  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'install_set_x_fix'
