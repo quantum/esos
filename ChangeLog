@@ -1,3 +1,9 @@
+2024-10-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'minicom_fix'
+
+	corrected sysconf dir (/etc) for minicom; added default minicom rc file in /etc
+
 2024-10-04  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_usb_serial'
