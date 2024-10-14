@@ -1,3 +1,15 @@
+2024-10-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '435_updates' into 4.x.x
+
+2024-10-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	corrected sysconf dir (/etc) for minicom; added default minicom rc file in /etc
+
+2024-10-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	enabled the CONFIG_USB_SERIAL_CP210X kernel config option (USB serial port interface driver)
+
 2024-09-27  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '434_update' into 4.x.x
