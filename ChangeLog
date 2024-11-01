@@ -1,3 +1,9 @@
+2024-11-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_crash'
+
+	added support for the 'crash' package (optional build time arg) including the 'pykdump' extension
+
 2024-10-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'minicom_fix'
