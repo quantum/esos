@@ -1,3 +1,9 @@
+2024-11-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'sed_iso_check'
+
+	iso_installer.sh: don't allow the install to proceed if one or more SED-capable devices is locked/enabled
+
 2024-11-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_crash'
