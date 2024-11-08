@@ -46,6 +46,33 @@ run_install() {
     no_prompt="$(cmdline no_prompt)"
     image_server="$(cmdline imageserver)"
 
+    # Make sure we don't have any SED-capable drives locked/enabled
+    sed_locked=0
+    # shellcheck disable=SC2010
+    for i in $(ls /dev/ | grep -E '(sd[a-z]+|nvme[0-9]+)$'); do
+        device="/dev/${i}"
+        sed_cap="$(sedutil-cli --isValidSED "${device}" 2> /dev/null | \
+            cut -d' ' -f2)"
+        if [ "${sed_cap}" = "SED" ]; then
+            locking="$(sedutil-cli --query /dev/nvme0 | \
+                awk '/Locking function \(0x0002\)/{getline; print}' | \
+                tr -d ' ' | tr ',' ' ')"
+            eval "${locking}"
+            # shellcheck disable=SC2154
+            echo "SED '${device}' -> Locked: ${Locked}," \
+                "LockingEnabled: ${LockingEnabled}"
+            if [ "${Locked}" = "Y" ] || [ "${LockingEnabled}" = "Y" ]; then
+                sed_locked=1
+            fi
+        fi
+    done
+    if [ "${sed_locked}" -eq 1 ]; then
+        echo "ERROR: One or more SED-capable devices has SED locking" \
+            "enabled and/or is currently locked (see output above)! You" \
+            "must unlock and disable SED on all devices before continuing!"
+        return 1
+    fi
+
     # Change to the mounted CD-ROM directory and run the installer
     cd /mnt/root || return 1
     WIPE_DEVS="${wipe_devs}" NO_PROMPT="${no_prompt}" ./install.sh \
