@@ -47,6 +47,7 @@ run_install() {
     image_server="$(cmdline imageserver)"
 
     # Make sure we don't have any SED-capable drives locked/enabled
+    echo "### Checking all SED-capable drives..."
     sed_locked=0
     # shellcheck disable=SC2010
     for i in $(ls /dev/ | grep -E '(sd[a-z]+|nvme[0-9]+)$'); do
@@ -72,6 +73,7 @@ run_install() {
             "must unlock and disable SED on all devices before continuing!"
         return 1
     fi
+    echo " "
 
     # Change to the mounted CD-ROM directory and run the installer
     cd /mnt/root || return 1
