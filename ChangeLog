@@ -1,3 +1,9 @@
+2024-11-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'logs_tmp_cleanup'
+
+	archive_logs.sh: handle cleaning up /tmp if we bail early; iso_installer.sh: make the SED-check message look nicer
+
 2024-11-07  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'sed_iso_check'

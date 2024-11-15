@@ -11,6 +11,17 @@ TMP_DIR="/tmp"
 NO_MV_FILES="boot pacemaker.log abyss.log node_exporter.log \
 libvirtd_exporter.log prometheus.log"
 
+# Don't leave anything behind
+function cleanup {
+    if [ -n "${archive_prefix}" ]; then
+        rm -rf "${TMP_DIR:?}/${archive_prefix}"
+    fi
+    if [ -n "${new_arch_tarball}" ]; then
+        rm -rf "${new_arch_tarball}"
+    fi
+}
+trap cleanup INT TERM QUIT EXIT
+
 # Make sure we always unmount (or try to)
 function unmount_fs {
     umount "${LOGS_MNT}" || exit 1
@@ -67,14 +78,14 @@ for i in ${NO_MV_FILES}; do
         truncate -s 0 "${file_path}" || exit 1
     fi
 done
-file_path="${TMP_DIR}/${archive_prefix}.tar.gz"
-tar cpfz "${file_path}" -C "${TMP_DIR}" "${archive_prefix}" || exit 1
-new_arch_size="$(du -k "${file_path}" | awk '{print $1}')"
+new_arch_tarball="${TMP_DIR}/${archive_prefix}.tar.gz"
+tar cpfz "${new_arch_tarball}" -C "${TMP_DIR}" "${archive_prefix}" || exit 1
+new_arch_size="$(du -k "${new_arch_tarball}" | awk '{print $1}')"
 
 # Make sure this is even feasible
 total_space=$(df -k ${LOGS_MNT} | grep -v '^Filesystem' | awk '{print $2}')
 if [ "${new_arch_size}" -gt "${total_space}" ]; then
-    echo "The new log archive (${file_path}) will not fit on" \
+    echo "The new log archive (${new_arch_tarball}) will not fit on" \
         "the ${LOGS_MNT} file system." 1>&2
     exit 1
 fi
@@ -86,7 +97,7 @@ while [ "${new_arch_size}" -gt "$(check_free)" ]; do
 done
 
 # Move the new archive to USB
-mv -f "${file_path}" "${LOGS_MNT}/" || exit 1
+mv -f "${new_arch_tarball}" "${LOGS_MNT}/" || exit 1
 
 # Make syslogd happy again
 killall -q -SIGHUP syslogd
