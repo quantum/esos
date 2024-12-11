@@ -4,6 +4,7 @@ source /etc/rc.d/common
 
 SBD_CONFIG="/etc/sysconfig/sbd"
 SBD="/usr/sbin/sbd"
+SBD_PID_FILE="/var/run/sbd.pid"
 SBD_LOCK="/var/lock/sbd"
 SBD_STARTS_DIR="/etc/esos_sbd/starts"
 SBD_STARTS_SEC="1800"
@@ -50,9 +51,13 @@ start() {
         fi
     fi
     /bin/sh -c "/usr/bin/nohup ${SBD} ${SBD_OPTS} \
-        -p /var/run/sbd.pid watch > /dev/null 2>&1 &"
-    /bin/touch ${SBD_LOCK}
+        -p ${SBD_PID_FILE} watch > /dev/null 2>&1 &"
     /bin/sleep 1
+    if [ ! -e "${SBD_PID_FILE}" ]; then
+        /bin/echo "SBD failed to start! Check the logs for more information."
+        exit 1
+    fi
+    /bin/touch ${SBD_LOCK}
 }
 
 stop() {
