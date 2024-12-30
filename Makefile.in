@@ -188,7 +188,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20240820.tar.xz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.7.x_20230120.tar.xz \
+		scst-3.9.x_20241230.tar.xz \
 		kexec-tools-2.0.19.tar.xz \
 		drbd-utils-9.16.0.tar.gz \
 		lvm2-2.03.14.tar.xz \
