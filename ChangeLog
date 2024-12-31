@@ -1,5 +1,9 @@
 2024-12-30  Marc A. Smith  <marc.smith@quantum.com>
 
+	Merge branch 'kernel_5.4.288'
+
+	updated Linux to version 5.4.288
+
 	Merge branch 'scst_390'
 
 	updated SCST to version 3.9.0
