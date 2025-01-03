@@ -1,3 +1,9 @@
+2025-01-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_3.9_excl_fix'
+
+	in ESOS we don't expect the backing block devices for SCST vdisk devices to be opened exclusively, so disable this behavior found in newer versions of SCST (can revisit in the future)
+
 2024-12-30  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'kernel_5.4.288'

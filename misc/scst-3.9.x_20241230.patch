@@ -27,3 +27,16 @@
  			scst_set_cmd_error(cmd, SCST_LOAD_SENSE(scst_sense_no_medium));
  			goto err;
  		}
+--- a/scst/include/backport.h	2024-12-28 08:44:09.000000000 -0500
++++ b/scst/include/backport.h	2025-01-02 09:16:44.365918033 -0500
+@@ -265,8 +265,10 @@
+ 	 * See also commit 2736e8eeb0cc ("block: use the holder as
+ 	 * indication for exclusive opens") # v6.5.
+ 	 */
++#if 0
+ 	if (holder)
+ 		mode |= BLK_OPEN_EXCL;
++#endif
+ 
+ 	return blkdev_get_by_path(path, mode, holder);
+ }
