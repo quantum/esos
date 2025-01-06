@@ -1,3 +1,9 @@
+2025-01-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'scst_39_tweak_pt2'
+
+	part 2 of the fix for not opening block devices with O_EXCL in SCST 3.9.0
+
 2025-01-03  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'scst_3.9_excl_fix'
