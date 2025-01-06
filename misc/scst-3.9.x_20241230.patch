@@ -40,3 +40,14 @@
  
  	return blkdev_get_by_path(path, mode, holder);
  }
+@@ -281,7 +281,10 @@
+  */
+ static inline void blkdev_put_backport(struct block_device *bdev, void *holder)
+ {
++#if 0
+ 	blkdev_put(bdev, holder ? BLK_OPEN_EXCL : 0);
++#endif
++	blkdev_put(bdev, 0);
+ }
+ 
+ #define blkdev_put blkdev_put_backport
