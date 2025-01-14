@@ -1,3 +1,9 @@
+2025-01-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '20250113_tweaks'
+
+	updated kexec-tools to version 2.0.30; rc.sshd: updated key types for recent OpenSSH bump
+
 2025-01-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'scst_39_tweak_pt2'
