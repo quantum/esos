@@ -355,6 +355,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		minicom-2.8.tar.gz \
 		smp_utils-0.99.tar.xz \
 		sasutils-0.3.13.tar.gz \
+		moreutils-master_20250114.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
@@ -443,7 +444,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
 		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot \
 		zip.chroot cpuset.chroot switchtec-user.chroot bwm-ng.chroot \
-		lz4.chroot minicom.chroot smp_utils.chroot sasutils.chroot
+		lz4.chroot minicom.chroot smp_utils.chroot sasutils.chroot \
+		moreutils.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -4724,8 +4726,8 @@ kmod.chroot: glibc.chroot zlib.chroot openssl.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-docbook-xsl-nons.chroot: docbook = /usr/share/xml/docbook
-docbook-xsl-nons.chroot: stylesheets = $(docbook)/xsl-stylesheets-nons-1.79.2
+docbook-xsl-nons.chroot: stylesheets = /usr/share/xml/docbook/$\
+	$(subst docbook-xsl-nons,xsl-stylesheets-nons,$(notdir $(tgt_src_dir)))
 docbook-xsl-nons.chroot: libxml2.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -4737,9 +4739,9 @@ docbook-xsl-nons.chroot: libxml2.chroot
 	webhelp website xhtml xhtml-1_1 xhtml5 $(stylesheets)/
 	$(LN) VERSION $(stylesheets)/VERSION.xsl
 	$(INSTALL) -v -m 0644 -D $(tgt_src_dir)/README \
-	/usr/share/doc/docbook-xsl-nons-1.79.2/README.txt
+	/usr/share/doc/$(notdir $(tgt_src_dir))/README.txt
 	$(INSTALL) -v -m 0644 $(tgt_src_dir)/RELEASE-NOTES* \
-	$(tgt_src_dir)/NEWS* /usr/share/doc/docbook-xsl-nons-1.79.2
+	$(tgt_src_dir)/NEWS* /usr/share/doc/$(notdir $(tgt_src_dir))
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -5182,6 +5184,15 @@ sasutils.chroot: glibc.chroot Python.chroot nvmetcli.chroot \
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+moreutils.chroot: glibc.chroot perl.chroot docbook-xsl-nons.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir) \
+	DOCBOOKXSL=$(wildcard /usr/share/xml/docbook/xsl-stylesheets-nons-*)
+	$(MAKE) --directory=$(tgt_src_dir) install
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
