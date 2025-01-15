@@ -1,3 +1,9 @@
+2025-01-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'add_moreutils'
+
+	added the 'moreutils' package; fixed static version usage in the docbook-xsl-nons.chroot target
+
 2025-01-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '20250113_tweaks'
