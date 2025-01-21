@@ -1,3 +1,9 @@
+2025-01-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'sed_chk_fix'
+
+	iso_installer.sh: use the device var when querying SED info (bug fix)
+
 2025-01-15  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'add_moreutils'
