@@ -55,7 +55,7 @@ run_install() {
         sed_cap="$(sedutil-cli --isValidSED "${device}" 2> /dev/null | \
             cut -d' ' -f2)"
         if [ "${sed_cap}" = "SED" ]; then
-            locking="$(sedutil-cli --query /dev/nvme0 | \
+            locking="$(sedutil-cli --query "${device}" | \
                 awk '/Locking function \(0x0002\)/{getline; print}' | \
                 tr -d ' ' | tr ',' ' ')"
             eval "${locking}"
