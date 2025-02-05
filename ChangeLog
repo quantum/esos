@@ -1,3 +1,9 @@
+2025-02-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'sas_sed_chk_fix'
+
+	iso_installer.sh: we can't use the same SED-enabled check for SAS Enterprise drives, check if the default SED passphrase is in use
+
 2025-01-21  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'sed_chk_fix'
