@@ -49,28 +49,43 @@ run_install() {
     # Make sure we don't have any SED-capable drives locked/enabled
     echo "### Checking all SED-capable drives..."
     sed_locked=0
+    auth_failed=0
     # shellcheck disable=SC2010
     for i in $(ls /dev/ | grep -E '(sd[a-z]+|nvme[0-9]+)$'); do
         device="/dev/${i}"
         sed_cap="$(sedutil-cli --isValidSED "${device}" 2> /dev/null | \
             cut -d' ' -f2)"
         if [ "${sed_cap}" = "SED" ]; then
-            locking="$(sedutil-cli --query "${device}" | \
-                awk '/Locking function \(0x0002\)/{getline; print}' | \
-                tr -d ' ' | tr ',' ' ')"
-            eval "${locking}"
-            # shellcheck disable=SC2154
-            echo "SED '${device}' -> Locked: ${Locked}," \
-                "LockingEnabled: ${LockingEnabled}"
-            if [ "${Locked}" = "Y" ] || [ "${LockingEnabled}" = "Y" ]; then
-                sed_locked=1
+            if [[ ${device} == *"/dev/nvme"* ]]; then
+                # NVMe Opal2 SED check
+                locking="$(sedutil-cli --query "${device}" | \
+                    awk '/Locking function \(0x0002\)/{getline; print}' | \
+                    tr -d ' ' | tr ',' ' ')"
+                eval "${locking}"
+                # shellcheck disable=SC2154
+                echo "NVMe SED '${device}' -> Locked: ${Locked}," \
+                    "LockingEnabled: ${LockingEnabled}"
+                if [ "${Locked}" = "Y" ] || [ "${LockingEnabled}" = "Y" ]; then
+                    sed_locked=1
+                fi
+            else
+                # SAS Enterprise SED check
+                auth="$(sedutil-cli --listLockingRange 0 "" "${device}" 2>&1)"
+                auth_status="${?}"
+                echo "SAS SED '${device}' -> Default authentication status:" \
+                    "${auth_status}"
+                if [ "${auth_status}" -ne 0 ] && echo "${auth}" | \
+                    grep -q -E '.*(Authenticate\s+failed)'; then
+                    auth_failed=1
+                fi
             fi
         fi
     done
-    if [ "${sed_locked}" -eq 1 ]; then
+    if [ "${sed_locked}" -eq 1 ] || [ "${auth_failed}" -eq 1 ]; then
         echo "ERROR: One or more SED-capable devices has SED locking" \
-            "enabled and/or is currently locked (see output above)! You" \
-            "must unlock and disable SED on all devices before continuing!"
+            "enabled and/or is currently locked, or default passphrase" \
+            "authentication failed (see output above)! You must unlock" \
+            "and disable SED on all devices before continuing!"
         return 1
     fi
     echo " "
