@@ -70,11 +70,28 @@ run_install() {
                 fi
             else
                 # SAS Enterprise SED check
-                auth="$(sedutil-cli --listLockingRange 0 "" "${device}" 2>&1)"
-                auth_status="${?}"
+                auth_tries=0
+                while true; do
+                    auth_output="$(sedutil-cli --listLockingRange 0 "" \
+                        "${device}" 2>&1)"
+                    auth_status="${?}"
+                    if [ "${auth_status}" -eq 255 ] || \
+                        [ "${auth_status}" -eq 136 ] || \
+                        [ "${auth_status}" -eq 7 ]; then
+                        # Some SED devices don't handle concurrent sessions
+                        ((auth_tries++))
+                        if [ "${auth_tries}" -ge 3 ]; then
+                            break
+                        fi
+                        sleep "$(shuf -i 1-10 -n 1)"
+                        continue
+                    else
+                        break
+                    fi
+                done
                 echo "SAS SED '${device}' -> Default authentication status:" \
                     "${auth_status}"
-                if [ "${auth_status}" -ne 0 ] && echo "${auth}" | \
+                if [ "${auth_status}" -ne 0 ] && echo "${auth_output}" | \
                     grep -q -E '.*(Authenticate\s+failed)'; then
                     auth_failed=1
                 fi
