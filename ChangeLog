@@ -1,3 +1,9 @@
+2025-02-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'sas_sed_chk_fix_2'
+
+	iso_installer.sh: another fix/tweak for the SED-detection section
+
 2025-02-05  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'sas_sed_chk_fix'
