@@ -1,3 +1,9 @@
+2025-02-17  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch '5.4.288_dlm_fix'
+
+	added a fix for DLM bug introduced at Linux 5.4.255 (dlm: replace usage of found with dedicated list iterator variable); enable fault injectors in prod kernel (remove from debug patch); updated the 'makedumpfile' package to latest version
+
 2025-02-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'sas_sed_chk_fix_2'

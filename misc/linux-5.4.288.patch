@@ -581,3 +581,14 @@ cgit
  
  		/*
  		 * Combine queue limits of all the devices this target uses.
+--- a/fs/dlm/lock.c	2024-12-19 12:05:05.000000000 -0500
++++ b/fs/dlm/lock.c	2025-02-16 21:21:42.544181390 -0500
+@@ -1888,7 +1888,7 @@
+ 		}
+ 		mutex_unlock(&ls->ls_timeout_mutex);
+ 
+-		if (!lkb)
++		if (!do_cancel && !do_warn)
+ 			break;
+ 
+ 		r = lkb->lkb_resource;
