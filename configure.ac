@@ -68,6 +68,7 @@ MY_PATH_PROG([rmdir])
 MY_PATH_PROG([cut])
 MY_PATH_PROG([tr])
 MY_PATH_PROG([mountpoint])
+MY_PATH_PROG([findmnt])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
