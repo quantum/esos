@@ -1,3 +1,9 @@
+2025-03-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'chroot_test_fix'
+
+	use 'findmnt' to determine if we're chroot'd or not (prior method doesn't work on a Buildbot host that uses systemd for the worker service)
+
 2025-02-17  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '5.4.288_dlm_fix'
