@@ -61,6 +61,7 @@ RMDIR		:= @rmdir@
 CUT		:= @cut@
 TR		:= @tr@
 MOUNTPOINT	:= @mountpoint@
+FINDMNT		:= @findmnt@
 
 enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
@@ -360,12 +361,10 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 dist_files_repo	= http://download.esos-project.com/dist_files
 
 # Check if we're chroot'd or not
-ifeq ($(shell if [ "`awk '$$5=="/" {print $$1}' </proc/1/mountinfo`" != \
-	"`awk '$$5=="/" {print $$1}' </proc/$$PPID/mountinfo`" ]; then \
-	echo chroot; fi),chroot)
-	in_chroot = yes
-else
+ifeq ($(shell $(FINDMNT) -n -o TARGET /proc/self/root),/)
 	in_chroot = no
+else
+	in_chroot = yes
 endif
 
 # Handle variable overrides via customization directory
