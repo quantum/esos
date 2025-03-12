@@ -5189,9 +5189,12 @@ sasutils.chroot: glibc.chroot Python.chroot nvmetcli.chroot \
 moreutils.chroot: glibc.chroot perl.chroot docbook-xsl-nons.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
-	$(MAKE) --directory=$(tgt_src_dir) \
+	$(MAKE) --directory=$(tgt_src_dir) MANS="" \
 	DOCBOOKXSL=$(wildcard /usr/share/xml/docbook/xsl-stylesheets-nons-*)
-	$(MAKE) --directory=$(tgt_src_dir) install
+	cd $(tgt_src_dir) && $(INSTALL) -v -s isutf8 ifdata ifne pee \
+	sponge mispipe lckdo parallel errno /usr/bin/
+	cd $(tgt_src_dir) && $(INSTALL) -v vidir vipe ts combine zrun \
+	chronic /usr/bin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
