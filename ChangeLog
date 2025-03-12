@@ -1,3 +1,9 @@
+2025-03-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'moreutils_xmllint'
+
+	lots of failures fetching artifacts when validating XML, etc. for docbook in the moreutils package (for man pages), so don't build/install the man pages
+
 2025-03-01  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'chroot_test_fix'
