@@ -1,3 +1,9 @@
+2025-03-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'addtl_dm_tgts'
+
+	include CONFIG_DM_DELAY, CONFIG_DM_DUST, and CONFIG_DM_FLAKEY as modules for testing
+
 2025-03-12  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'moreutils_xmllint'
