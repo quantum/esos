@@ -1,3 +1,73 @@
+2025-04-14  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'for_next_440_ver' into 4.x.x
+
+2025-03-20  Marc A. Smith  <marc.smith@quantum.com>
+
+	include CONFIG_DM_DELAY, CONFIG_DM_DUST, and CONFIG_DM_FLAKEY as modules for testing
+
+2025-03-12  Marc A. Smith  <marc.smith@quantum.com>
+
+	lots of failures fetching artifacts when validating XML, etc. for docbook in the moreutils package (for man pages), so don't build/install the man pages
+
+2025-03-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	use 'findmnt' to determine if we're chroot'd or not (prior method doesn't work on a Buildbot host that uses systemd for the worker service)
+
+2025-02-17  Marc A. Smith  <marc.smith@quantum.com>
+
+	added a fix for DLM bug introduced at Linux 5.4.255 (dlm: replace usage of found with dedicated list iterator variable); enable fault injectors in prod kernel (remove from debug patch); updated the 'makedumpfile' package to latest version
+
+2025-02-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	iso_installer.sh: another fix/tweak for the SED-detection section
+
+2025-02-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	iso_installer.sh: we can't use the same SED-enabled check for SAS Enterprise drives, check if the default SED passphrase is in use
+
+2025-01-21  Marc A. Smith  <marc.smith@quantum.com>
+
+	iso_installer.sh: use the device var when querying SED info (bug fix)
+
+2025-01-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	added the 'moreutils' package; fixed static version usage in the docbook-xsl-nons.chroot target
+
+2025-01-13  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated kexec-tools to version 2.0.30; rc.sshd: updated key types for recent OpenSSH bump
+
+2025-01-05  Marc A. Smith  <marc.smith@quantum.com>
+
+	part 2 of the fix for not opening block devices with O_EXCL in SCST 3.9.0
+
+2025-01-03  Marc A. Smith  <marc.smith@quantum.com>
+
+	in ESOS we don't expect the backing block devices for SCST vdisk devices to be opened exclusively, so disable this behavior found in newer versions of SCST (can revisit in the future)
+
+2024-12-30  Marc A. Smith  <marc.smith@quantum.com>
+
+	updated Linux to version 5.4.288
+
+	updated SCST to version 3.9.0
+
+2024-12-10  Marc A. Smith  <marc.smith@quantum.com>
+
+	rc.sbd: bail in start() if SBD doesn't produce a PID file
+
+2024-11-15  Marc A. Smith  <marc.smith@quantum.com>
+
+	archive_logs.sh: handle cleaning up /tmp if we bail early; iso_installer.sh: make the SED-check message look nicer
+
+2024-11-07  Marc A. Smith  <marc.smith@quantum.com>
+
+	iso_installer.sh: don't allow the install to proceed if one or more SED-capable devices is locked/enabled
+
+2024-11-01  Marc A. Smith  <marc.smith@quantum.com>
+
+	added support for the 'crash' package (optional build time arg) including the 'pykdump' extension
+
 2024-10-13  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch '435_updates' into 4.x.x

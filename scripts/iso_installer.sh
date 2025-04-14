@@ -46,6 +46,67 @@ run_install() {
     no_prompt="$(cmdline no_prompt)"
     image_server="$(cmdline imageserver)"
 
+    # Make sure we don't have any SED-capable drives locked/enabled
+    echo "### Checking all SED-capable drives..."
+    sed_locked=0
+    auth_failed=0
+    # shellcheck disable=SC2010
+    for i in $(ls /dev/ | grep -E '(sd[a-z]+|nvme[0-9]+)$'); do
+        device="/dev/${i}"
+        sed_cap="$(sedutil-cli --isValidSED "${device}" 2> /dev/null | \
+            cut -d' ' -f2)"
+        if [ "${sed_cap}" = "SED" ]; then
+            if [[ ${device} == *"/dev/nvme"* ]]; then
+                # NVMe Opal2 SED check
+                locking="$(sedutil-cli --query "${device}" | \
+                    awk '/Locking function \(0x0002\)/{getline; print}' | \
+                    tr -d ' ' | tr ',' ' ')"
+                eval "${locking}"
+                # shellcheck disable=SC2154
+                echo "NVMe SED '${device}' -> Locked: ${Locked}," \
+                    "LockingEnabled: ${LockingEnabled}"
+                if [ "${Locked}" = "Y" ] || [ "${LockingEnabled}" = "Y" ]; then
+                    sed_locked=1
+                fi
+            else
+                # SAS Enterprise SED check
+                auth_tries=0
+                while true; do
+                    auth_output="$(sedutil-cli --listLockingRange 0 "" \
+                        "${device}" 2>&1)"
+                    auth_status="${?}"
+                    if [ "${auth_status}" -eq 255 ] || \
+                        [ "${auth_status}" -eq 136 ] || \
+                        [ "${auth_status}" -eq 7 ]; then
+                        # Some SED devices don't handle concurrent sessions
+                        ((auth_tries++))
+                        if [ "${auth_tries}" -ge 3 ]; then
+                            break
+                        fi
+                        sleep "$(shuf -i 1-10 -n 1)"
+                        continue
+                    else
+                        break
+                    fi
+                done
+                echo "SAS SED '${device}' -> Default authentication status:" \
+                    "${auth_status}"
+                if [ "${auth_status}" -ne 0 ] && echo "${auth_output}" | \
+                    grep -q -E '.*(Authenticate\s+failed)'; then
+                    auth_failed=1
+                fi
+            fi
+        fi
+    done
+    if [ "${sed_locked}" -eq 1 ] || [ "${auth_failed}" -eq 1 ]; then
+        echo "ERROR: One or more SED-capable devices has SED locking" \
+            "enabled and/or is currently locked, or default passphrase" \
+            "authentication failed (see output above)! You must unlock" \
+            "and disable SED on all devices before continuing!"
+        return 1
+    fi
+    echo " "
+
     # Change to the mounted CD-ROM directory and run the installer
     cd /mnt/root || return 1
     WIPE_DEVS="${wipe_devs}" NO_PROMPT="${no_prompt}" ./install.sh \

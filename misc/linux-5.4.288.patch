@@ -1,0 +1,594 @@
+From f039274aed11c9e3e1cf86668a18e0b6e0a9a8b9 Mon Sep 17 00:00:00 2001
+From: Coly Li <colyli@suse.de>
+Date: Sun, 22 Dec 2019 14:06:05 +0800
+Subject: [PATCH 17/25] bcache: remove member accessed from struct btree
+
+The member 'accessed' of struct btree is used in bch_mca_scan() when
+shrinking btree node caches. The original idea is, if b->accessed is
+set, clean it and look at next btree node cache from c->btree_cache
+list, and only shrink the caches whose b->accessed is cleaned. Then
+only cold btree node cache will be shrunk.
+
+But when I/O pressure is high, it is very probably that b->accessed
+of a btree node cache will be set again in bch_btree_node_get()
+before bch_mca_scan() selects it again. Then there is no chance for
+bch_mca_scan() to shrink enough memory back to slub or slab system.
+
+This patch removes member accessed from struct btree, then once a
+btree node ache is selected, it will be immediately shunk. By this
+change, bch_mca_scan() may release btree node cahce more efficiently.
+
+Signed-off-by: Coly Li <colyli@suse.de>
+---
+ drivers/md/bcache/btree.c | 8 ++------
+ drivers/md/bcache/btree.h | 2 --
+ 2 files changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/md/bcache/btree.c b/drivers/md/bcache/btree.c
+index 14d6c33b0957..357535a5c89c 100644
+--- a/drivers/md/bcache/btree.c
++++ b/drivers/md/bcache/btree.c
+@@ -754,14 +754,12 @@ static unsigned long bch_mca_scan(struct shrinker *shrink,
+ 		b = list_first_entry(&c->btree_cache, struct btree, list);
+ 		list_rotate_left(&c->btree_cache);
+ 
+-		if (!b->accessed &&
+-		    !mca_reap(b, 0, false)) {
++		if (!mca_reap(b, 0, false)) {
+ 			mca_bucket_free(b);
+ 			mca_data_free(b);
+ 			rw_unlock(true, b);
+ 			freed++;
+-		} else
+-			b->accessed = 0;
++		}
+ 	}
+ out:
+ 	mutex_unlock(&c->bucket_lock);
+@@ -1069,7 +1067,6 @@ struct btree *bch_btree_node_get(struct cache_set *c, struct btree_op *op,
+ 	BUG_ON(!b->written);
+ 
+ 	b->parent = parent;
+-	b->accessed = 1;
+ 
+ 	for (; i <= b->keys.nsets && b->keys.set[i].size; i++) {
+ 		prefetch(b->keys.set[i].tree);
+@@ -1160,7 +1157,6 @@ struct btree *__bch_btree_node_alloc(struct cache_set *c, struct btree_op *op,
+ 		goto retry;
+ 	}
+ 
+-	b->accessed = 1;
+ 	b->parent = parent;
+ 	bch_bset_init_next(&b->keys, b->keys.set->data, bset_magic(&b->c->sb));
+ 
+diff --git a/drivers/md/bcache/btree.h b/drivers/md/bcache/btree.h
+index 76cfd121a486..f4dcca449391 100644
+--- a/drivers/md/bcache/btree.h
++++ b/drivers/md/bcache/btree.h
+@@ -121,8 +121,6 @@ struct btree {
+ 	/* Key/pointer for this btree node */
+ 	BKEY_PADDED(key);
+ 
+-	/* Single bit - set when accessed, cleared by shrinker */
+-	unsigned long		accessed;
+ 	unsigned long		seq;
+ 	struct rw_semaphore	lock;
+ 	struct cache_set	*c;
+-- 
+2.16.4
+
+From bcfa9939d7e65463902f39681c43d201ed3f2892 Mon Sep 17 00:00:00 2001
+From: Coly Li <colyli@suse.de>
+Date: Sun, 22 Dec 2019 19:16:36 +0800
+Subject: [PATCH 18/25] bcache: reap c->btree_cache_freeable from the tail in
+ bch_mca_scan()
+
+In order to skip the most recently freed btree node cahce, currently
+in bch_mca_scan() the first 3 caches in c->btree_cache_freeable list
+are skipped when shrinking bcache node caches in bch_mca_scan(). The
+related code in bch_mca_scan() is,
+
+ 737 list_for_each_entry_safe(b, t, &c->btree_cache_freeable, list) {
+ 738         if (nr <= 0)
+ 739                 goto out;
+ 740
+ 741         if (++i > 3 &&
+ 742             !mca_reap(b, 0, false)) {
+             		lines free cache memory
+ 746         }
+ 747         nr--;
+ 748 }
+
+The problem is, if virtual memory code calls bch_mca_scan() and
+the calculated 'nr' is 1 or 2, then in the above loop, nothing will
+be shunk. In such case, if slub/slab manager calls bch_mca_scan()
+for many times with small scan number, it does not help to shrink
+cache memory and just wasts CPU cycles.
+
+This patch just selects btree node caches from tail of the
+c->btree_cache_freeable list, then the newly freed host cache can
+still be allocated by mca_alloc(), and at least 1 node can be shunk.
+
+Signed-off-by: Coly Li <colyli@suse.de>
+---
+ drivers/md/bcache/btree.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/md/bcache/btree.c b/drivers/md/bcache/btree.c
+index 357535a5c89c..c3a314deb09d 100644
+--- a/drivers/md/bcache/btree.c
++++ b/drivers/md/bcache/btree.c
+@@ -734,17 +734,17 @@ static unsigned long bch_mca_scan(struct shrinker *shrink,
+ 
+ 	i = 0;
+ 	btree_cache_used = c->btree_cache_used;
+-	list_for_each_entry_safe(b, t, &c->btree_cache_freeable, list) {
++	list_for_each_entry_safe_reverse(b, t, &c->btree_cache_freeable, list) {
+ 		if (nr <= 0)
+ 			goto out;
+ 
+-		if (++i > 3 &&
+-		    !mca_reap(b, 0, false)) {
++		if (!mca_reap(b, 0, false)) {
+ 			mca_data_free(b);
+ 			rw_unlock(true, b);
+ 			freed++;
+ 		}
+ 		nr--;
++		i++;
+ 	}
+ 
+ 	for (;  (nr--) && i < btree_cache_used; i++) {
+-- 
+2.16.4
+
+--- a/drivers/md/bcache/closure.c	2020-11-25 01:03:03.899962395 -0500
++++ b/drivers/md/bcache/closure.c	2020-11-24 23:59:29.555465288 -0500
+@@ -110,7 +110,7 @@
+ 
+ 	rcu_read_lock();
+ 	p = READ_ONCE(s->task);
+-	s->done = 1;
++	WRITE_ONCE(s->done, 1);
+ 	wake_up_process(p);
+ 	rcu_read_unlock();
+ }
+@@ -123,8 +123,10 @@
+ 	continue_at(cl, closure_sync_fn, NULL);
+ 
+ 	while (1) {
++		int done;
+ 		set_current_state(TASK_UNINTERRUPTIBLE);
+-		if (s.done)
++		done = READ_ONCE(s.done);
++		if (done)
+ 			break;
+ 		schedule();
+ 	}
+
+--- a/drivers/md/bcache/bcache.h	2020-10-01 07:19:27.000000000 -0400
++++ b/drivers/md/bcache/bcache.h	2021-05-03 15:18:39.132857582 -0400
+@@ -392,6 +392,10 @@
+ 	unsigned int		error_limit;
+ 	unsigned int		offline_seconds;
+ 
++	struct rb_root_cached	inflight_bypass_write_root;
++	struct rb_root_cached	inflight_read_root;
++	spinlock_t		inflight_lock;
++
+ 	char			backing_dev_name[BDEVNAME_SIZE];
+ };
+ 
+--- a/drivers/md/bcache/request.c	2020-10-01 07:19:27.000000000 -0400
++++ b/drivers/md/bcache/request.c	2021-05-03 15:18:39.132857582 -0400
+@@ -17,12 +17,34 @@
+ #include <linux/hash.h>
+ #include <linux/random.h>
+ #include <linux/backing-dev.h>
++#include <linux/interval_tree_generic.h>
+ 
+ #include <trace/events/bcache.h>
+ 
+ #define CUTOFF_CACHE_ADD	95
+ #define CUTOFF_CACHE_READA	90
+ 
++struct bch_itree_node {
++	struct rb_node	rb;
++	uint64_t	start;
++	uint64_t	last;
++	uint64_t	__subtree_last;
++};
++
++static uint64_t bch_itree_node_start(struct bch_itree_node *node)
++{
++	return node->start;
++}
++
++static uint64_t bch_itree_node_last(struct bch_itree_node *node)
++{
++	return node->last;
++}
++
++INTERVAL_TREE_DEFINE(struct bch_itree_node, rb,
++	uint64_t, __subtree_last,
++	bch_itree_node_start, bch_itree_node_last,, bch_itree)
++
+ struct kmem_cache *bch_search_cache;
+ 
+ static void bch_data_insert_start(struct closure *cl);
+@@ -491,8 +513,40 @@
+ 
+ 	struct btree_op		op;
+ 	struct data_insert_op	iop;
++	struct bch_itree_node   itree_node;
++	int			do_not_cache;
+ };
+ 
++static bool check_inflight_overlapping(struct search *s)
++{
++	struct bch_itree_node *node;
++	struct cached_dev *dc = container_of(s->d, struct cached_dev, disk);
++	struct rb_root_cached *search_root, *insert_root;
++	unsigned long flags;
++
++	if (s->write) {
++		search_root = &dc->inflight_read_root;
++		insert_root = &dc->inflight_bypass_write_root;
++	} else {
++		search_root = &dc->inflight_bypass_write_root;
++		insert_root = &dc->inflight_read_root;
++	}
++
++	spin_lock_irqsave(&dc->inflight_lock, flags);
++	node = bch_itree_iter_first(search_root,
++			s->itree_node.start, s->itree_node.last);
++	if (node == NULL) {
++		bch_itree_insert(&s->itree_node, insert_root);
++	}
++	spin_unlock_irqrestore(&dc->inflight_lock, flags);
++
++	if (node) {
++		bch_mark_cache_bypass_race(s->d->c, s->d);
++		return(true);
++	}
++	return(false);
++}
++
+ static void bch_cache_read_endio(struct bio *bio)
+ {
+ 	struct bbio *b = container_of(bio, struct bbio, bio);
+@@ -713,6 +767,21 @@
+ static void search_free(struct closure *cl)
+ {
+ 	struct search *s = container_of(cl, struct search, cl);
++	struct cached_dev *dc = container_of(s->d,
++					struct cached_dev, disk);
++	unsigned long flags;
++
++	if (!RB_EMPTY_NODE(&s->itree_node.rb)) {
++		spin_lock_irqsave(&dc->inflight_lock, flags);
++		if (s->write) {
++			bch_itree_remove(&s->itree_node,
++				&dc->inflight_bypass_write_root);
++		} else {
++			bch_itree_remove(&s->itree_node,
++				&dc->inflight_read_root);
++		}
++		spin_unlock_irqrestore(&dc->inflight_lock, flags);
++	}
+ 
+ 	atomic_dec(&s->iop.c->search_inflight);
+ 
+@@ -743,6 +812,10 @@
+ 	s->write		= op_is_write(bio_op(bio));
+ 	s->read_dirty_data	= 0;
+ 	s->start_time		= jiffies;
++	RB_CLEAR_NODE(&s->itree_node.rb);
++	s->itree_node.start	= bio->bi_iter.bi_sector;
++	s->itree_node.last	= s->itree_node.start + bio_sectors(bio) - 1;
++	s->do_not_cache		= 0;
+ 
+ 	s->iop.c		= d->c;
+ 	s->iop.bio		= NULL;
+@@ -859,7 +932,7 @@
+ 	closure_get(&dc->disk.cl);
+ 	bio_complete(s);
+ 
+-	if (s->iop.bio &&
++	if (s->iop.bio && s->do_not_cache == 0 &&
+ 	    !test_bit(CACHE_SET_STOPPING, &s->iop.c->flags)) {
+ 		BUG_ON(!s->iop.replace);
+ 		closure_call(&s->iop.cl, bch_data_insert, NULL, cl);
+@@ -895,6 +968,12 @@
+ 
+ 	s->cache_missed = 1;
+ 
++	if (s->do_not_cache == 0 && RB_EMPTY_NODE(&s->itree_node.rb)) {
++		if (check_inflight_overlapping(s)) {
++			s->do_not_cache = 1;
++		}
++	}
++
+ 	if (s->cache_miss || s->iop.bypass) {
+ 		miss = bio_next_split(bio, sectors, GFP_NOIO, &s->d->bio_split);
+ 		ret = miss == bio ? MAP_DONE : MAP_CONTINUE;
+@@ -989,6 +1068,13 @@
+ 
+ 	bch_keybuf_check_overlapping(&s->iop.c->moving_gc_keys, &start, &end);
+ 
++	if (s->iop.bypass == true) {
++		if (check_inflight_overlapping(s)) {
++			/* convert bypass write into writethrough write */
++			s->iop.bypass = false;
++		}
++	}
++
+ 	down_read_non_owner(&dc->writeback_lock);
+ 	if (bch_keybuf_check_overlapping(&dc->writeback_keys, &start, &end)) {
+ 		/*
+--- a/drivers/md/bcache/stats.h	2020-10-01 07:19:27.000000000 -0400
++++ b/drivers/md/bcache/stats.h	2021-05-03 15:18:39.133857604 -0400
+@@ -10,6 +10,7 @@
+ 	atomic_t cache_readaheads;
+ 	atomic_t cache_miss_collisions;
+ 	atomic_t sectors_bypassed;
++	atomic_t cache_bypass_races;
+ };
+ 
+ struct cache_stats {
+@@ -22,6 +23,7 @@
+ 	unsigned long cache_readaheads;
+ 	unsigned long cache_miss_collisions;
+ 	unsigned long sectors_bypassed;
++	unsigned long cache_bypass_races;
+ 
+ 	unsigned int		rescale;
+ };
+@@ -61,5 +63,7 @@
+ void bch_mark_sectors_bypassed(struct cache_set *c,
+ 			       struct cached_dev *dc,
+ 			       int sectors);
++void bch_mark_cache_bypass_race(struct cache_set *c,
++			       struct bcache_device *d);
+ 
+ #endif /* _BCACHE_STATS_H_ */
+--- a/drivers/md/bcache/stats.c	2020-10-01 07:19:27.000000000 -0400
++++ b/drivers/md/bcache/stats.c	2021-05-03 15:18:39.133857604 -0400
+@@ -49,6 +49,7 @@
+ read_attribute(cache_readaheads);
+ read_attribute(cache_miss_collisions);
+ read_attribute(bypassed);
++read_attribute(cache_bypass_races);
+ 
+ SHOW(bch_stats)
+ {
+@@ -66,6 +67,7 @@
+ 
+ 	var_print(cache_readaheads);
+ 	var_print(cache_miss_collisions);
++	var_print(cache_bypass_races);
+ 	sysfs_hprint(bypassed,	var(sectors_bypassed) << 9);
+ #undef var
+ 	return 0;
+@@ -89,6 +91,7 @@
+ 	&sysfs_cache_readaheads,
+ 	&sysfs_cache_miss_collisions,
+ 	&sysfs_bypassed,
++	&sysfs_cache_bypass_races,
+ 	NULL
+ };
+ static KTYPE(bch_stats);
+@@ -116,6 +119,7 @@
+ 	acc->total.cache_readaheads = 0;
+ 	acc->total.cache_miss_collisions = 0;
+ 	acc->total.sectors_bypassed = 0;
++	acc->total.cache_bypass_races = 0;
+ }
+ 
+ void bch_cache_accounting_destroy(struct cache_accounting *acc)
+@@ -148,6 +152,7 @@
+ 		scale_stat(&stats->cache_readaheads);
+ 		scale_stat(&stats->cache_miss_collisions);
+ 		scale_stat(&stats->sectors_bypassed);
++		scale_stat(&stats->cache_bypass_races);
+ 	}
+ }
+ 
+@@ -171,6 +176,7 @@
+ 	move_stat(cache_readaheads);
+ 	move_stat(cache_miss_collisions);
+ 	move_stat(sectors_bypassed);
++	move_stat(cache_bypass_races);
+ 
+ 	scale_stats(&acc->total, 0);
+ 	scale_stats(&acc->day, DAY_RESCALE);
+@@ -232,6 +238,14 @@
+ 	atomic_add(sectors, &c->accounting.collector.sectors_bypassed);
+ }
+ 
++void bch_mark_cache_bypass_race(struct cache_set *c, struct bcache_device *d)
++{
++	struct cached_dev *dc = container_of(d, struct cached_dev, disk);
++
++	atomic_inc(&dc->accounting.collector.cache_bypass_races);
++	atomic_inc(&c->accounting.collector.cache_bypass_races);
++}
++
+ void bch_cache_accounting_init(struct cache_accounting *acc,
+ 			       struct closure *parent)
+ {
+--- a/drivers/md/bcache/super.c	2020-10-01 07:19:27.000000000 -0400
++++ b/drivers/md/bcache/super.c	2021-05-03 15:18:39.134857626 -0400
+@@ -1398,6 +1398,10 @@
+ 			goto err;
+ 	}
+ 
++	spin_lock_init(&dc->inflight_lock);
++	dc->inflight_read_root = RB_ROOT_CACHED;
++	dc->inflight_bypass_write_root = RB_ROOT_CACHED;
++
+ 	return 0;
+ err:
+ 	pr_notice("error %s: %s", dc->backing_dev_name, err);
+--- a/drivers/md/persistent-data/dm-block-manager.c	2022-04-20 03:19:40.000000000 -0400
++++ b/drivers/md/persistent-data/dm-block-manager.c	2022-05-12 13:59:09.673908725 -0400
+@@ -611,7 +611,12 @@
+ 
+ void dm_bm_prefetch(struct dm_block_manager *bm, dm_block_t b)
+ {
+-	dm_bufio_prefetch(bm->bufio, b, 1);
++	/* This is commented out for now to work-around a buffer corruption
++	 * issue hit in dm-bufio.c -- if we avoid prefetching, that appears
++	 * to not induce this particular case. See this URL for more details:
++	 * https://listman.redhat.com/archives/dm-devel/2022-May/050776.html
++	 */
++	/*dm_bufio_prefetch(bm->bufio, b, 1);*/
+ }
+ 
+ bool dm_bm_is_read_only(struct dm_block_manager *bm)
+From 9dfbdafda3b34e262e43e786077bab8e476a89d1 Mon Sep 17 00:00:00 2001
+From: Guoqing Jiang <guoqing.jiang@linux.dev>
+Date: Tue, 21 Jun 2022 11:11:29 +0800
+Subject: md: unlock mddev before reap sync_thread in action_store
+
+Since the bug which commit 8b48ec23cc51a ("md: don't unregister sync_thread
+with reconfig_mutex held") fixed is related with action_store path, other
+callers which reap sync_thread didn't need to be changed.
+
+Let's pull md_unregister_thread from md_reap_sync_thread, then fix previous
+bug with belows.
+
+1. unlock mddev before md_reap_sync_thread in action_store.
+2. save reshape_position before unlock, then restore it to ensure position
+   not changed accidentally by others.
+
+Signed-off-by: Guoqing Jiang <guoqing.jiang@linux.dev>
+Signed-off-by: Song Liu <song@kernel.org>
+Signed-off-by: Jens Axboe <axboe@kernel.dk>
+---
+ drivers/md/dm-raid.c |  1 +
+ drivers/md/md.c      | 19 +++++++++++++++++--
+ 2 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/md/dm-raid.c b/drivers/md/dm-raid.c
+index 1ec17c32867fa..c640be453313e 100644
+--- a/drivers/md/dm-raid.c
++++ b/drivers/md/dm-raid.c
+@@ -3728,6 +3728,7 @@ static int raid_message(struct dm_target *ti, unsigned int argc, char **argv,
+ 	if (!strcasecmp(argv[0], "idle") || !strcasecmp(argv[0], "frozen")) {
+ 		if (mddev->sync_thread) {
+ 			set_bit(MD_RECOVERY_INTR, &mddev->recovery);
++			md_unregister_thread(&mddev->sync_thread);
+ 			md_reap_sync_thread(mddev);
+ 		}
+ 	} else if (decipher_sync_action(mddev, mddev->recovery) != st_idle)
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index f511f183aca67..7bc967131ac55 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -4830,6 +4830,19 @@ action_store(struct mddev *mddev, const char *page, size_t len)
+ 			if (work_pending(&mddev->del_work))
+ 				flush_workqueue(md_misc_wq);
+ 			if (mddev->sync_thread) {
++				sector_t save_rp = mddev->reshape_position;
++
++				mddev_unlock(mddev);
++				set_bit(MD_RECOVERY_INTR, &mddev->recovery);
++				md_unregister_thread(&mddev->sync_thread);
++				mddev_lock_nointr(mddev);
++				/*
++				 * set RECOVERY_INTR again and restore reshape
++				 * position in case others changed them after
++				 * got lock, eg, reshape_position_store and
++				 * md_check_recovery.
++				 */
++				mddev->reshape_position = save_rp;
+ 				set_bit(MD_RECOVERY_INTR, &mddev->recovery);
+ 				md_reap_sync_thread(mddev);
+ 			}
+@@ -6197,6 +6210,7 @@ static void __md_stop_writes(struct mddev *mddev)
+ 		flush_workqueue(md_misc_wq);
+ 	if (mddev->sync_thread) {
+ 		set_bit(MD_RECOVERY_INTR, &mddev->recovery);
++		md_unregister_thread(&mddev->sync_thread);
+ 		md_reap_sync_thread(mddev);
+ 	}
+ 
+@@ -9309,6 +9323,7 @@ void md_check_recovery(struct mddev *mddev)
+ 			 * ->spare_active and clear saved_raid_disk
+ 			 */
+ 			set_bit(MD_RECOVERY_INTR, &mddev->recovery);
++			md_unregister_thread(&mddev->sync_thread);
+ 			md_reap_sync_thread(mddev);
+ 			clear_bit(MD_RECOVERY_RECOVER, &mddev->recovery);
+ 			clear_bit(MD_RECOVERY_NEEDED, &mddev->recovery);
+@@ -9344,6 +9359,7 @@ void md_check_recovery(struct mddev *mddev)
+ 			goto unlock;
+ 		}
+ 		if (mddev->sync_thread) {
++			md_unregister_thread(&mddev->sync_thread);
+ 			md_reap_sync_thread(mddev);
+ 			goto unlock;
+ 		}
+@@ -9423,8 +9439,7 @@ void md_reap_sync_thread(struct mddev *mddev)
+ 	sector_t old_dev_sectors = mddev->dev_sectors;
+ 	bool is_reshaped = false;
+ 
+-	/* resync has finished, collect result */
+-	md_unregister_thread(&mddev->sync_thread);
++	/* sync_thread should be unregistered, collect result */
+ 	if (!test_bit(MD_RECOVERY_INTR, &mddev->recovery) &&
+ 	    !test_bit(MD_RECOVERY_REQUESTED, &mddev->recovery) &&
+ 	    mddev->degraded != mddev->raid_disks) {
+-- 
+cgit 
+
+--- a/drivers/md/dm-zero.c	2023-01-18 05:42:07.000000000 -0500
++++ b/drivers/md/dm-zero.c	2023-10-17 13:25:10.571641186 -0400
+@@ -56,12 +56,20 @@
+ 	return DM_MAPIO_SUBMITTED;
+ }
+ 
++static void zero_io_hints(struct dm_target *ti, struct queue_limits *limits)
++{
++	limits->logical_block_size = 4096;
++	limits->physical_block_size = 4096;
++	blk_limits_io_min(limits, limits->logical_block_size);
++}
++
+ static struct target_type zero_target = {
+ 	.name   = "zero",
+ 	.version = {1, 1, 0},
+ 	.module = THIS_MODULE,
+ 	.ctr    = zero_ctr,
+ 	.map    = zero_map,
++	.io_hints = zero_io_hints,
+ };
+ 
+ static int __init dm_zero_init(void)
+--- a/drivers/md/dm-table.c	2023-10-18 09:13:10.662354645 -0400
++++ b/drivers/md/dm-table.c	2023-10-18 09:13:20.979395552 -0400
+@@ -1522,8 +1522,11 @@
+ 
+ 		ti = dm_table_get_target(table, i);
+ 
+-		if (!ti->type->iterate_devices)
++		if (!ti->type->iterate_devices) {
++			if (ti->type->io_hints)
++				ti->type->io_hints(ti, &ti_limits);
+ 			goto combine_limits;
++		}
+ 
+ 		/*
+ 		 * Combine queue limits of all the devices this target uses.
+--- a/fs/dlm/lock.c	2024-12-19 12:05:05.000000000 -0500
++++ b/fs/dlm/lock.c	2025-02-16 21:21:42.544181390 -0500
+@@ -1888,7 +1888,7 @@
+ 		}
+ 		mutex_unlock(&ls->ls_timeout_mutex);
+ 
+-		if (!lkb)
++		if (!do_cancel && !do_warn)
+ 			break;
+ 
+ 		r = lkb->lkb_resource;

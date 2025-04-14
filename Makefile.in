@@ -61,9 +61,11 @@ RMDIR		:= @rmdir@
 CUT		:= @cut@
 TR		:= @tr@
 MOUNTPOINT	:= @mountpoint@
+FINDMNT		:= @findmnt@
 
 enable_debug		:= @enable_debug@
 enable_gdb		:= @enable_gdb@
+enable_crash		:= @enable_crash@
 enable_valgrind		:= @enable_valgrind@
 enable_strace		:= @enable_strace@
 enable_nginx		:= @enable_nginx@
@@ -130,7 +132,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		gmp-6.1.2.tar.xz \
 		mpfr-4.0.2.tar.xz \
 		mpc-1.1.0.tar.gz \
-		linux-5.4.229.tar.xz \
+		linux-5.4.288.tar.xz \
 		glibc-2.29.tar.xz \
 		tcl-8.6.9.tar.xz \
 		expect-5.45.4.tar.xz \
@@ -187,8 +189,8 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		qlogic_fw-20240820.tar.xz \
 		iniparser-4.1.tar.gz \
 		cdk-5.0-20161210.tar.gz \
-		scst-3.7.x_20230120.tar.xz \
-		kexec-tools-2.0.19.tar.xz \
+		scst-3.9.x_20241230.tar.xz \
+		kexec-tools-2.0.30.tar.xz \
 		drbd-utils-9.16.0.tar.gz \
 		lvm2-2.03.14.tar.xz \
 		xfsprogs-4.20.0.tar.xz \
@@ -242,7 +244,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		smartmontools-7.4.tar.gz \
 		cryptsetup-1.7.5.tar.xz \
 		popt-1.16.tar.gz \
-		makedumpfile-1.6.7.tar.gz \
+		makedumpfile-1.7.6.tar.gz \
 		elfutils-0.176.tar.bz2 \
 		fio-3.13.tar.xz \
 		mtx-1.3.12.tar.gz \
@@ -354,16 +356,15 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		minicom-2.8.tar.gz \
 		smp_utils-0.99.tar.xz \
 		sasutils-0.3.13.tar.gz \
+		moreutils-master_20250114.tar.xz \
 		win_binaries-20180813.tar.xz)
 dist_files_repo	= http://download.esos-project.com/dist_files
 
 # Check if we're chroot'd or not
-ifeq ($(shell if [ "`awk '$$5=="/" {print $$1}' </proc/1/mountinfo`" != \
-	"`awk '$$5=="/" {print $$1}' </proc/$$PPID/mountinfo`" ]; then \
-	echo chroot; fi),chroot)
-	in_chroot = yes
-else
+ifeq ($(shell $(FINDMNT) -n -o TARGET /proc/self/root),/)
 	in_chroot = no
+else
+	in_chroot = yes
 endif
 
 # Handle variable overrides via customization directory
@@ -442,7 +443,8 @@ chroot_tgts	:= kernel_headers.chroot glibc.chroot gcc.chroot \
 		gptfdisk.chroot usbutils.chroot libvirtd_exporter.chroot \
 		xz.chroot wget.chroot cacerts.chroot mlnx-tools.chroot \
 		zip.chroot cpuset.chroot switchtec-user.chroot bwm-ng.chroot \
-		lz4.chroot minicom.chroot smp_utils.chroot sasutils.chroot
+		lz4.chroot minicom.chroot smp_utils.chroot sasutils.chroot \
+		moreutils.chroot
 
 # And finally these targets should be built without parallel execution
 system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
@@ -451,6 +453,12 @@ system_tgts	:= bash.chroot findutils.chroot sed.chroot tar.chroot
 ifeq ($(enable_gdb),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,gdb-10.2.tar.xz)
 	chroot_tgts += gdb.chroot
+endif
+ifeq ($(enable_crash),yes)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,crash-8.0.5.tar.gz)
+	dist_files += $(addprefix $(DIST_FILES_DIR)/,pykdump-master_20241031.tar.xz)
+	chroot_tgts += crash.chroot
+	chroot_tgts += pykdump.chroot
 endif
 ifeq ($(enable_valgrind),yes)
 	dist_files += $(addprefix $(DIST_FILES_DIR)/,valgrind-3.15.0.tar.bz2)
@@ -2101,6 +2109,33 @@ gdb.chroot: glibc.chroot ncurses.chroot zlib.chroot readline.chroot \
 	--with-system-readline
 	$(MAKE) --directory=$(tgt_src_dir)
 	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+crash.chroot: glibc.chroot ncurses.chroot zlib.chroot readline.chroot \
+	Python.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir)
+	$(MAKE) --directory=$(tgt_src_dir) install
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+pykdump.chroot: crash_src = $(wildcard /sources/crash-*)
+pykdump.chroot: python_src = $(wildcard /sources/Python-*)
+pykdump.chroot: crash.chroot Python.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	- $(MAKE) --directory=$(python_src) distclean
+	cd $(python_src) && ./configure CFLAGS=-fPIC --disable-shared
+	$(CP) $(tgt_src_dir)/Extension/Setup.local-3.9 \
+	$(python_src)/Modules/Setup.local
+	$(MAKE) --directory=$(python_src)
+	cd $(tgt_src_dir)/Extension && ./configure \
+	-p $(python_src) -c $(crash_src)
+	$(MAKE) --jobs=1 --directory=$(tgt_src_dir)/Extension
+	$(INSTALL) -D -m 0755 $(tgt_src_dir)/Extension/mpykdump.so \
+	/usr/lib/crash/extensions/mpykdump.so
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -4690,8 +4725,8 @@ kmod.chroot: glibc.chroot zlib.chroot openssl.chroot
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
-docbook-xsl-nons.chroot: docbook = /usr/share/xml/docbook
-docbook-xsl-nons.chroot: stylesheets = $(docbook)/xsl-stylesheets-nons-1.79.2
+docbook-xsl-nons.chroot: stylesheets = /usr/share/xml/docbook/$\
+	$(subst docbook-xsl-nons,xsl-stylesheets-nons,$(notdir $(tgt_src_dir)))
 docbook-xsl-nons.chroot: libxml2.chroot
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
@@ -4703,9 +4738,9 @@ docbook-xsl-nons.chroot: libxml2.chroot
 	webhelp website xhtml xhtml-1_1 xhtml5 $(stylesheets)/
 	$(LN) VERSION $(stylesheets)/VERSION.xsl
 	$(INSTALL) -v -m 0644 -D $(tgt_src_dir)/README \
-	/usr/share/doc/docbook-xsl-nons-1.79.2/README.txt
+	/usr/share/doc/$(notdir $(tgt_src_dir))/README.txt
 	$(INSTALL) -v -m 0644 $(tgt_src_dir)/RELEASE-NOTES* \
-	$(tgt_src_dir)/NEWS* /usr/share/doc/docbook-xsl-nons-1.79.2
+	$(tgt_src_dir)/NEWS* /usr/share/doc/$(notdir $(tgt_src_dir))
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 
@@ -5148,6 +5183,18 @@ sasutils.chroot: glibc.chroot Python.chroot nvmetcli.chroot \
 	$(QUIET) $(ECHO) "### Building $(@)"
 	$(call chroot_only)
 	cd $(tgt_src_dir) && python3 ./setup.py install --prefix=/usr
+	$(TOUCH) $(@)
+	$(QUIET) $(ECHO) "### Done $(@)"
+
+moreutils.chroot: glibc.chroot perl.chroot docbook-xsl-nons.chroot
+	$(QUIET) $(ECHO) "### Building $(@)"
+	$(call chroot_only)
+	$(MAKE) --directory=$(tgt_src_dir) MANS="" \
+	DOCBOOKXSL=$(wildcard /usr/share/xml/docbook/xsl-stylesheets-nons-*)
+	cd $(tgt_src_dir) && $(INSTALL) -v -s isutf8 ifdata ifne pee \
+	sponge mispipe lckdo parallel errno /usr/bin/
+	cd $(tgt_src_dir) && $(INSTALL) -v vidir vipe ts combine zrun \
+	chronic /usr/bin/
 	$(TOUCH) $(@)
 	$(QUIET) $(ECHO) "### Done $(@)"
 

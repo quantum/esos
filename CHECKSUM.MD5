@@ -3,7 +3,7 @@
 f58fa8001d60c4c77595fbbb62b63c1d  gmp-6.1.2.tar.xz
 320fbc4463d4c8cb1e566929d8adc4f8  mpfr-4.0.2.tar.xz
 4125404e41e482ec68282a2e687f6c73  mpc-1.1.0.tar.gz
-44b937967db8c76886ef6ec72fa4ea34  linux-5.4.229.tar.xz
+4be99f8fb26ea9ed1743936a660c17ab  linux-5.4.288.tar.xz
 e6c279d5b2f0736f740216f152acf974  glibc-2.29.tar.xz
 24ce012560fb08d05bae849a62e6b41c  tcl-8.6.9.tar.xz
 fc41b0f95da250f9ca082a5ec4b9b291  expect-5.45.4.tar.xz
@@ -117,6 +117,8 @@ b2d97e20db9b81b460ce1b9dad5bf54e  freeipmi-1.6.3.tar.gz
 fbfdaebbbc6d7e5fbbf6ffdb3e139573  libgcrypt-1.8.4.tar.bz2
 eff437f397e858a9127b76c0d87fa5ed  libgpg-error-1.36.tar.bz2
 c044b7146903ec51c9d2337a29aee93b  gdb-10.2.tar.xz
+b1976b20980a179572bd4d709cc5f209  crash-8.0.5.tar.gz
+65e102d47c672fb5d95a1578006631f9  pykdump-master_20241031.tar.xz
 46e5fbdcbc3502a5976a317a0860a975  valgrind-3.15.0.tar.bz2
 8c7c4866beeecf3a964934cc6e5d49c9  strace-5.1.tar.xz
 178d31a6ff5256c093227ab45a3f52aa  smartmontools-7.4.tar.gz
@@ -136,7 +138,7 @@ c4f491dd411a09e9de3b8702ea6f73eb  libmcrypt-2.5.8.tar.bz2
 1c4bb16165c456d286e7babf9b1d4cfa  btrfs-progs-4.20.2.tar.xz
 bc1e5cb5c96d99b24886f1f527d3bb3d  attr-2.4.48.tar.gz
 007aabf1dbb550bcddde52a244cd1070  acl-2.2.53.tar.gz
-d399dc099fac5f384b429f09d79b2608  kexec-tools-2.0.19.tar.xz
+3495ca3f3f74e5e4412511d7ed88be86  kexec-tools-2.0.30.tar.xz
 424715ae4229d93fc3e8b62fedfe3065  qlogic_fw-20240820.tar.xz
 8afdb925dba24a58b74fff74d7f3180e  lessfs-1.7.0.tar.gz
 52c697aeeba75b8077cb3f6023011e15  mdadm-4.1.tar.xz
@@ -170,13 +172,13 @@ cd907e359c3d1e81c2b0cc53df42085e  iperf2-2.0.13.tar.xz
 8ab5b9739eff8126b93a5ebce4a93b80  iperf3-3.6.tar.xz
 7acec816283b96392b41594606d1a637  mhvtl-1.5-3_release.tar.gz
 bf5a283c07b12f0a75d17f09674a73a7  EnhanceIO-master_20151029.tar.gz
-808ef840ca49ca6bfde77c097cf429f5  makedumpfile-1.6.7.tar.gz
+494c697b89ce08af27d538cf6224a37c  makedumpfile-1.7.6.tar.gz
 b0b7a94b7f3e4127f1e31405ecf01932  drbd-utils-9.16.0.tar.gz
 b3ce6f476a5b7ea64c583e7d910d2db7  thin-provisioning-tools-0.9.0.tar.gz
 5e2bcbbf3018a4a5ce61fc15e264612e  crmsh-master_20180520.tar.xz
 a4e4976f0cd67507c22442121400532b  nmon-16j.tar.xz
 b6b86767eb9e7e65100d6ef5f77b8d1f  linux_firmware-20190416.tar.xz
-5084fdb5991d8b9c2695369d60a59158  scst-3.7.x_20230120.tar.xz
+a29baee4c51542ac8df1139279f88dfc  scst-3.9.x_20241230.tar.xz
 c5bb483ebbf009bcdd02c860ba5689bb  munin-c-0.0.13.tar.xz
 3561b7716c4c94f15e0b4847622967b1  open-iscsi-2.1.1.tar.gz
 512413a285c852195b6240d6a0ad7f5b  open-isns-0.99.tar.gz
@@ -272,3 +274,4 @@ dd71fa302ae822a8e73dcfe5bccc8dca  minicom-2.8.tar.gz
 04464828b24d1e0fe064c1a42c3e4515  smp_utils-0.99.tar.xz
 cf76d64cecdcaa28590a3ac0ea69655f  sasutils-0.3.13.tar.gz
 d39dc45a98fdf9a5b21c4088c6d499ff  rdma-core-52.0.tar.gz
+98042ce069c3039f333c3f2f0c5c8bfe  moreutils-master_20250114.tar.xz

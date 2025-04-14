@@ -68,6 +68,7 @@ MY_PATH_PROG([rmdir])
 MY_PATH_PROG([cut])
 MY_PATH_PROG([tr])
 MY_PATH_PROG([mountpoint])
+MY_PATH_PROG([findmnt])
 
 dnl Setup build directories
 if test x"${PWD}" != x; then
@@ -166,6 +167,16 @@ AS_IF([test "x$enable_gdb" = "xyes"],
 	[build_opts="${build_opts} gdb"; opt_suffix="${opt_suffix}g"])
 AC_SUBST(enable_gdb, ${enable_gdb})
 AC_MSG_NOTICE([gdb: ${enable_gdb}])
+
+dnl Optional feature crash
+AC_ARG_ENABLE(crash,
+	AS_HELP_STRING([--enable-crash], [build and include crash]),
+	AS_IF([test "x${enableval}" = "xyes" || test "x${enableval}" = "xno"],
+	[enable_crash="${enableval}"], [enable_crash="no"]), enable_crash="no")
+AS_IF([test "x$enable_crash" = "xyes"],
+	[build_opts="${build_opts} crash"; opt_suffix="${opt_suffix}k"])
+AC_SUBST(enable_crash, ${enable_crash})
+AC_MSG_NOTICE([crash: ${enable_crash}])
 
 dnl Optional feature valgrind
 AC_ARG_ENABLE(valgrind,

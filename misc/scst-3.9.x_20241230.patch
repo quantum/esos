@@ -1,0 +1,53 @@
+--- a/iscsi-scst/kernel/iscsi.c	2024-12-28 08:44:09.000000000 -0500
++++ b/iscsi-scst/kernel/iscsi.c	2024-12-30 11:55:10.785995470 -0500
+@@ -2395,7 +2395,12 @@
+ 			*status = ISCSI_RESPONSE_FUNCTION_COMPLETE;
+ 			res = 0;
+ 		} else {
+-			*status = ISCSI_RESPONSE_UNKNOWN_TASK;
++			PRINT_WARNING("Aborting out-of-window command ref_cmd_sn=%d (cmd_sn - 2048)=%d cmd_sn=%d",
++				      req_hdr->ref_cmd_sn,
++				      req_hdr->cmd_sn - 2048,
++				      req_hdr->cmd_sn);
++			*status = ISCSI_RESPONSE_FUNCTION_COMPLETE;
++			res = 0;
+ 		}
+ 	}
+ 
+--- a/scst/src/dev_handlers/scst_vdisk.c	2024-12-28 08:44:09.000000000 -0500
++++ b/scst/src/dev_handlers/scst_vdisk.c	2024-12-30 11:58:58.458261219 -0500
+@@ -3353,8 +3353,8 @@
+ 			 * "DRBD and other replication/failover SW
+ 			 * compatibility" section in SCST README.
+ 			 */
+-			PRINT_WARNING("Closed FD on exec. Not active ALUA state or not blocked dev before ALUA state change? (cmd %p, op %s, dev %s)",
+-				      cmd, cmd->op_name, cmd->dev->virt_name);
++			PRINT_WARNING("Closed FD on exec. Not active ALUA state or not blocked dev before ALUA state change? (cmd %p, op %s, dev %s, initiator %s)",
++				      cmd, cmd->op_name, cmd->dev->virt_name, cmd->sess->initiator_name);
+ 			scst_set_cmd_error(cmd, SCST_LOAD_SENSE(scst_sense_no_medium));
+ 			goto err;
+ 		}
+--- a/scst/include/backport.h	2024-12-28 08:44:09.000000000 -0500
++++ b/scst/include/backport.h	2025-01-02 09:16:44.365918033 -0500
+@@ -265,8 +265,10 @@
+ 	 * See also commit 2736e8eeb0cc ("block: use the holder as
+ 	 * indication for exclusive opens") # v6.5.
+ 	 */
++#if 0
+ 	if (holder)
+ 		mode |= BLK_OPEN_EXCL;
++#endif
+ 
+ 	return blkdev_get_by_path(path, mode, holder);
+ }
+@@ -281,7 +281,10 @@
+  */
+ static inline void blkdev_put_backport(struct block_device *bdev, void *holder)
+ {
++#if 0
+ 	blkdev_put(bdev, holder ? BLK_OPEN_EXCL : 0);
++#endif
++	blkdev_put(bdev, 0);
+ }
+ 
+ #define blkdev_put blkdev_put_backport
