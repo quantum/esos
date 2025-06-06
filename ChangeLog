@@ -1,3 +1,9 @@
+2025-06-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'openssh_10.0p2'
+
+	updated OpenSSH to version 10.0p2
+
 2025-03-20  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'addtl_dm_tgts'
