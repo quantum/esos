@@ -1,4 +1,4 @@
-The ESOS project is comprised of a Makefile that puts all of the pieces
+The ESOS project is comprises, a Makefile that puts all of the pieces
 together, scripts, config files, and a text user interface (TUI) for system
 management and storage provisioning functions. The Makefile fetches all
 required distribution files, and then extracts and compiles everything.
