@@ -1554,6 +1554,7 @@ glibc.chroot: kernel_headers.chroot
 	$(MKDIR) $(chroot_build)/glibc-build
 	cd $(chroot_build)/glibc-build && \
 	CC="gcc -isystem $(gcc_inc_dir) -isystem /usr/include" \
+	CFLAGS="-g -O2" CXXFLAGS="-g -O2" \
 	$(tgt_src_dir)/configure --prefix=/usr --disable-werror \
 	--enable-kernel=3.2 --enable-stack-protector=strong \
 	--enable-obsolete-rpc --enable-obsolete-nsl libc_cv_slibdir=/lib
