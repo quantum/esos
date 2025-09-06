@@ -1,3 +1,9 @@
+2025-09-06  Marc A. Smith  <marc.smith@quantum.com>
+
+	Merge branch 'valgrind_fix'
+
+	build glibc with debug information so valgrind works properly
+
 2025-06-06  Marc A. Smith  <marc.smith@quantum.com>
 
 	Merge branch 'openssh_10.0p2'
