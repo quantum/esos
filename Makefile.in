@@ -207,7 +207,7 @@ dist_files	= $(addprefix $(DIST_FILES_DIR)/, \
 		libaio-0.3.111.tar.xz \
 		glue-1.0.12.tar.bz2 \
 		readline-8.0.tar.gz \
-		resource-agents-4.2.0.tar.gz \
+		resource-agents-4.17.0.tar.gz \
 		lzo-2.10.tar.gz \
 		fuse-2.9.7.tar.gz \
 		db-5.3.28.tar.gz \
